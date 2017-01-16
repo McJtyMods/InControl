@@ -37,6 +37,9 @@ public class SpawnRule {
         if (builder.passive != null) {
             addPassiveCheck(builder);
         }
+        if (builder.weather != null) {
+            addWeatherCheck(builder);
+        }
         if (!builder.mobs.isEmpty()) {
             addMobsCheck(builder);
         }
@@ -124,6 +127,21 @@ public class SpawnRule {
             Set<Integer> dimensions = new HashSet<>(builder.dimensions);
             checks.add(event -> {
                 return dimensions.contains(event.getWorld().provider.getDimension());
+            });
+        }
+    }
+
+    private void addWeatherCheck(Builder builder) {
+        String weather = builder.weather;
+        boolean raining = weather.toLowerCase().startsWith("rain");
+        boolean thunder = weather.toLowerCase().startsWith("thunder");
+        if (raining) {
+            checks.add(event -> {
+                return event.getWorld().isRaining();
+            });
+        } else if (thunder) {
+            checks.add(event -> {
+                return event.getWorld().isThundering();
             });
         }
     }
@@ -234,6 +252,10 @@ public class SpawnRule {
                     .ifPresent(e -> JSonTools.asArrayOrSingle(e)
                             .map(JsonElement::getAsString)
                             .forEach(builder::biome));
+            JSonTools.getElement(jsonObject, "weather")
+                    .ifPresent(e -> JSonTools.asArrayOrSingle(e)
+                            .map(JsonElement::getAsString)
+                            .forEach(builder::weather));
             JSonTools.getElement(jsonObject, "dimension")
                     .ifPresent(e -> JSonTools.asArrayOrSingle(e)
                             .map(JsonElement::getAsInt)
@@ -248,6 +270,7 @@ public class SpawnRule {
         private int maxheight = -1;
         private Boolean passive = null;
         private Boolean hostile = null;
+        private String weather = null;
         private List<String> mobs = new ArrayList<>();
         private List<String> mods = new ArrayList<>();
         private List<String> blocks = new ArrayList<>();
@@ -298,6 +321,11 @@ public class SpawnRule {
 
         public Builder biome(String biome) {
             this.biomes.add(biome);
+            return this;
+        }
+
+        public Builder weather(String weather) {
+            this.weather = weather;
             return this;
         }
 
