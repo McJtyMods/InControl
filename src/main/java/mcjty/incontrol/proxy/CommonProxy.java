@@ -3,6 +3,7 @@ package mcjty.incontrol.proxy;
 import com.google.common.util.concurrent.ListenableFuture;
 import mcjty.incontrol.ForgeEventHandlers;
 import mcjty.incontrol.config.ConfigSetup;
+import mcjty.incontrol.rules.SpawnRules;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
@@ -16,6 +17,7 @@ public class CommonProxy {
     public void preInit(FMLPreInitializationEvent e) {
         //PacketHandler.registerMessages("incontrol");
         ConfigSetup.preInit(e);
+        SpawnRules.readRules(e.getModConfigurationDirectory());
     }
 
     public void init(FMLInitializationEvent e) {

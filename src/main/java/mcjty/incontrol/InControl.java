@@ -7,6 +7,7 @@ import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import org.apache.logging.log4j.Logger;
 
 @Mod(modid = InControl.MODID, name = InControl.MODNAME,
@@ -20,7 +21,7 @@ public class InControl {
 
     public static final String MODID = "incontrol";
     public static final String MODNAME = "InControl";
-    public static final String VERSION = "0.0.1";
+    public static final String VERSION = "1.0.0";
     public static final String MIN_FORGE10_VER = "12.18.1.2082";
     public static final String MIN_FORGE11_VER = "13.19.0.2176";
     public static final String COMPATLAYER_VER = "0.1.7";
@@ -47,5 +48,11 @@ public class InControl {
     @Mod.EventHandler
     public void postInit(FMLPostInitializationEvent e) {
         proxy.postInit(e);
+    }
+
+    @Mod.EventHandler
+    public void serverLoad(FMLServerStartingEvent event) {
+        event.registerServerCommand(new CmdReload());
+        event.registerServerCommand(new CmdDebug());
     }
 }

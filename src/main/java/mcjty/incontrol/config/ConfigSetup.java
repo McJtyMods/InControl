@@ -14,8 +14,7 @@ public class ConfigSetup {
 
     public static void preInit(FMLPreInitializationEvent e) {
         modConfigDir = e.getModConfigurationDirectory();
-        mainConfig = new Configuration(new File(modConfigDir.getPath(), "incontrol.cfg"));
-
+        mainConfig = new Configuration(new File(modConfigDir.getPath() + File.separator + "incontrol", "main.cfg"));
         readMainConfig();
     }
 
