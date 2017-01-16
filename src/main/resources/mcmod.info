@@ -1,0 +1,15 @@
+[
+{
+  "modid": "incontrol",
+  "name": "InControl",
+  "description": "Be In Control",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["McJty"],
+  "credits": "McJty",
+  "logoFile": "",
+  "screenshots": []
+}
+]
