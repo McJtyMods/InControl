@@ -121,6 +121,9 @@ public class SpawnRule {
         if (builder.damagemultiply != null || builder.damageadd != null) {
             addDamageAction(builder);
         }
+        if (builder.sizemultiply != null || builder.sizeadd != null) {
+            addSizeActions(builder);
+        }
         if (builder.angry != null) {
             addAngryAction(builder);
         }
@@ -211,6 +214,18 @@ public class SpawnRule {
                     double newMax = entityAttribute.getBaseValue() * m + a;
                     entityAttribute.setBaseValue(newMax);
                 }
+            }
+        });
+    }
+
+    private void addSizeActions(Builder builder) {
+        float m = builder.sizemultiply != null ? builder.sizemultiply : 1;
+        float a = builder.sizeadd != null ? builder.sizeadd : 0;
+        actions.add(event -> {
+            EntityLivingBase entityLiving = event.getEntityLiving();
+            if (entityLiving != null) {
+                // Not implemented yet
+//                entityLiving.setSize();
             }
         });
     }
@@ -519,6 +534,8 @@ public class SpawnRule {
             builder.speedadd(JSonTools.parseFloat(jsonObject, "speedadd"));
             builder.damagemultiply(JSonTools.parseFloat(jsonObject, "damagemultiply"));
             builder.damageadd(JSonTools.parseFloat(jsonObject, "damageadd"));
+            builder.sizemultiply(JSonTools.parseFloat(jsonObject, "sizemultiply"));
+            builder.sizeadd(JSonTools.parseFloat(jsonObject, "sizeadd"));
             builder.angry(JSonTools.parseBool(jsonObject, "angry"));
             JSonTools.getElement(jsonObject, "potion")
                     .ifPresent(e -> JSonTools.asArrayOrSingle(e)
@@ -602,6 +619,8 @@ public class SpawnRule {
         private Float speedadd = null;
         private Float damagemultiply = null;
         private Float damageadd = null;
+        private Float sizemultiply = null;
+        private Float sizeadd = null;
         private List<String> potions = new ArrayList<>();
         private Boolean angry = null;
 
@@ -612,6 +631,16 @@ public class SpawnRule {
 
         public Builder angry(Boolean angry) {
             this.angry = angry;
+            return this;
+        }
+
+        public Builder sizemultiply(Float sizemultiply) {
+            this.sizemultiply = sizemultiply;
+            return this;
+        }
+
+        public Builder sizeadd(Float sizeadd) {
+            this.sizeadd = sizeadd;
             return this;
         }
 
