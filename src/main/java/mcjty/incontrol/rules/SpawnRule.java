@@ -11,6 +11,7 @@ import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.passive.IAnimals;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.EnumDifficulty;
+import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import net.minecraftforge.fml.common.eventhandler.Event;
@@ -33,6 +34,13 @@ public class SpawnRule {
         }
         if (builder.maxheight != null) {
             addMaxHeightCheck(builder);
+        }
+
+        if (builder.minlight != null) {
+            addMinLightCheck(builder);
+        }
+        if (builder.maxlight != null) {
+            addMaxLightCheck(builder);
         }
 
         if (builder.minAdditionalDifficulty != null) {
@@ -237,6 +245,20 @@ public class SpawnRule {
         }
     }
 
+    private void addMinLightCheck(Builder builder) {
+        checks.add(event -> {
+            BlockPos pos = new BlockPos(event.getX(), event.getY(), event.getZ());
+            return event.getWorld().getLight(pos, true) >= builder.minlight;
+        });
+    }
+
+    private void addMaxLightCheck(Builder builder) {
+        checks.add(event -> {
+            BlockPos pos = new BlockPos(event.getX(), event.getY(), event.getZ());
+            return event.getWorld().getLight(pos, true) <= builder.maxlight;
+        });
+    }
+
     private void addMinAdditionalDifficultyCheck(Builder builder) {
         checks.add(event -> {
             return event.getWorld().getDifficultyForLocation(new BlockPos(event.getX(), event.getY(), event.getZ())).getAdditionalDifficulty() >= builder.minAdditionalDifficulty;
@@ -282,6 +304,8 @@ public class SpawnRule {
             JsonObject jsonObject = element.getAsJsonObject();
             builder.minheight(JSonTools.parseInt(jsonObject, "minheight"));
             builder.maxheight(JSonTools.parseInt(jsonObject, "maxheight"));
+            builder.minlight(JSonTools.parseInt(jsonObject, "minlight"));
+            builder.maxlight(JSonTools.parseInt(jsonObject, "maxlight"));
             builder.minAdditionalDifficulty(JSonTools.parseFloat(jsonObject, "mindifficulty"));
             builder.maxAdditionalDifficulty(JSonTools.parseFloat(jsonObject, "maxdifficulty"));
             builder.passive(JSonTools.parseBool(jsonObject, "passive"));
@@ -321,6 +345,8 @@ public class SpawnRule {
     }
 
     public static class Builder {
+        private Integer minlight = null;
+        private Integer maxlight = null;
         private Integer minheight = null;
         private Integer maxheight = null;
         private Boolean passive = null;
@@ -344,6 +370,16 @@ public class SpawnRule {
 
         public Builder maxheight(Integer maxheight) {
             this.maxheight = maxheight;
+            return this;
+        }
+
+        public Builder minlight(Integer minlight) {
+            this.minlight = minlight;
+            return this;
+        }
+
+        public Builder maxlight(Integer maxlight) {
+            this.maxlight = maxlight;
             return this;
         }
 
