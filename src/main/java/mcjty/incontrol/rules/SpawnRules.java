@@ -12,15 +12,55 @@ public class SpawnRules {
 
     private static String path;
     public static List<SpawnRule> rules = new ArrayList<>();
+    public static List<PotentialSpawnRule> potentialSpawnRules = new ArrayList<>();
 
-    public static void reloadRuiles() {
+    public static void reloadRules() {
         rules.clear();
+        potentialSpawnRules.clear();
         readRules();
+        readPotentialSpawnRules();
     }
 
     public static void readRules(File directory) {
         path = directory.getPath();
         readRules();
+        readPotentialSpawnRules();
+    }
+
+    private static void readPotentialSpawnRules() {
+        File file = new File(path + File.separator + "incontrol", "potentialspawn.json");
+        if (!file.exists()) {
+            // Create an empty rule file
+            makeEmptyRuleFile(file);
+            return;
+        }
+
+        InControl.logger.log(Level.INFO, "Reading spawn rules from potentialspawn.json");
+        InputStream inputstream = null;
+        try {
+            inputstream = new FileInputStream(file);
+        } catch (FileNotFoundException e) {
+            InControl.logger.log(Level.ERROR, "Error reading potentialspawn.json!");
+            return;
+        }
+
+        readPotentialSpawnRulesFromFile(inputstream);
+    }
+
+    private static void readPotentialSpawnRulesFromFile(InputStream inputstream) {
+        BufferedReader br;
+        try {
+            br = new BufferedReader(new InputStreamReader(inputstream, "UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            InControl.logger.log(Level.ERROR, "Error reading potentialspawn.json!");
+            return;
+        }
+        JsonParser parser = new JsonParser();
+        JsonElement element = parser.parse(br);
+        for (JsonElement entry : element.getAsJsonArray()) {
+            PotentialSpawnRule rule = PotentialSpawnRule.parse(entry);
+            potentialSpawnRules.add(rule);
+        }
     }
 
     private static void readRules() {

@@ -22,6 +22,6 @@ public class CmdReload extends CompatCommandBase {
     @Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
         ChatTools.addChatMessage(sender, new TextComponentString("Reloaded InControl rules"));
-        SpawnRules.reloadRuiles();
+        SpawnRules.reloadRules();
     }
 }
