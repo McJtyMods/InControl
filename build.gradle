@@ -56,6 +56,12 @@ dependencies {
     deobfCompile "com.github.mcjty:compatlayer:1.11.2-0.1.7"
 }
 
+jar {
+    manifest {
+        attributes 'FMLAT': 'incontrol_at.cfg'
+    }
+}
+
 processResources
 {
     // this will ensure that this task is redone when the versions change.

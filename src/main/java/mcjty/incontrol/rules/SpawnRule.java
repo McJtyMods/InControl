@@ -7,11 +7,14 @@ import mcjty.incontrol.varia.JSonTools;
 import mcjty.incontrol.varia.Tools;
 import mcjty.lib.tools.EntityTools;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.IAttributeInstance;
+import net.minecraft.entity.monster.EntityPigZombie;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.passive.IAnimals;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.EnumDifficulty;
@@ -114,6 +117,27 @@ public class SpawnRule {
         if (builder.damagemultiply != null || builder.damageadd != null) {
             addDamageAction(builder);
         }
+        if (builder.angry != null) {
+            addAngryAction(builder);
+        }
+    }
+
+    private void addAngryAction(Builder builder) {
+        actions.add(event -> {
+            EntityLivingBase entityLiving = event.getEntityLiving();
+            if (entityLiving instanceof EntityPigZombie) {
+                EntityPigZombie pigZombie = (EntityPigZombie) entityLiving;
+                EntityPlayer player = event.getWorld().getClosestPlayerToEntity(entityLiving, 50);
+                if (player != null) {
+                    pigZombie.becomeAngryAt(player);
+                }
+            } else if (entityLiving instanceof EntityLiving) {
+                EntityPlayer player = event.getWorld().getClosestPlayerToEntity(entityLiving, 50);
+                if (player != null) {
+                    ((EntityLiving) entityLiving).setAttackTarget(player);
+                }
+            }
+        });
     }
 
     private void addHealthAction(Builder builder) {
@@ -445,6 +469,7 @@ public class SpawnRule {
             builder.speedadd(JSonTools.parseFloat(jsonObject, "speedadd"));
             builder.damagemultiply(JSonTools.parseFloat(jsonObject, "damagemultiply"));
             builder.damageadd(JSonTools.parseFloat(jsonObject, "damageadd"));
+            builder.angry(JSonTools.parseBool(jsonObject, "angry"));
             if (jsonObject.has("result")) {
                 builder.result(jsonObject.get("result").getAsString());
             }
@@ -523,6 +548,12 @@ public class SpawnRule {
         private Float speedadd = null;
         private Float damagemultiply = null;
         private Float damageadd = null;
+        private Boolean angry = null;
+
+        public Builder angry(Boolean angry) {
+            this.angry = angry;
+            return this;
+        }
 
         public Builder damagemultiply(Float damagemultiply) {
             this.damagemultiply = damagemultiply;
