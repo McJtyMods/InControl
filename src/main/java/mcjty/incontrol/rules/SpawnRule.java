@@ -213,13 +213,15 @@ public class SpawnRule {
         if (builder.blocks.size() == 1) {
             String blockname = builder.blocks.get(0);
             checks.add(event -> {
-                String name = event.getWorld().getBlockState(new BlockPos(event.getX(), event.getY(), event.getZ())).getBlock().getRegistryName().toString();
+                BlockPos pos = new BlockPos(event.getX(), event.getY(), event.getZ());
+                String name = event.getWorld().getBlockState(pos.down()).getBlock().getRegistryName().toString();
                 return blockname.equals(name);
             });
         } else {
             Set<String> blocknames = new HashSet<>(builder.blocks);
             checks.add(event -> {
-                String name = event.getWorld().getBlockState(new BlockPos(event.getX(), event.getY(), event.getZ())).getBlock().getRegistryName().toString();
+                BlockPos pos = new BlockPos(event.getX(), event.getY(), event.getZ());
+                String name = event.getWorld().getBlockState(pos.down()).getBlock().getRegistryName().toString();
                 return blocknames.contains(name);
             });
         }
