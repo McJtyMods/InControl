@@ -62,6 +62,13 @@ public class SpawnRule {
             addMaxLightCheck(builder);
         }
 
+        if (builder.minspawndist != null) {
+            addMinSpawnDistCheck(builder);
+        }
+        if (builder.maxspawndist != null) {
+            addMaxSpawnDistCheck(builder);
+        }
+
         if (builder.minAdditionalDifficulty != null) {
             addMinAdditionalDifficultyCheck(builder);
         }
@@ -219,13 +226,14 @@ public class SpawnRule {
     }
 
     private void addSizeActions(Builder builder) {
+        InControl.logger.log(Level.WARN, "Mob resizing not implemented yet!");
         float m = builder.sizemultiply != null ? builder.sizemultiply : 1;
         float a = builder.sizeadd != null ? builder.sizeadd : 0;
         actions.add(event -> {
             EntityLivingBase entityLiving = event.getEntityLiving();
             if (entityLiving != null) {
                 // Not implemented yet
-//                entityLiving.setSize();
+//                entityLiving.setSize(entityLiving.width * m + a, entityLiving.height * m + a);
             }
         });
     }
@@ -463,6 +471,25 @@ public class SpawnRule {
         });
     }
 
+    private void addMinSpawnDistCheck(Builder builder) {
+        Float d = builder.minspawndist * builder.minspawndist;
+        checks.add(event -> {
+            BlockPos pos = new BlockPos(event.getX(), event.getY(), event.getZ());
+            double sqdist = pos.distanceSqToCenter(0, 0, 0);
+            return sqdist >= d;
+        });
+    }
+
+    private void addMaxSpawnDistCheck(Builder builder) {
+        Float d = builder.maxspawndist * builder.maxspawndist;
+        checks.add(event -> {
+            BlockPos pos = new BlockPos(event.getX(), event.getY(), event.getZ());
+            double sqdist = pos.distanceSqToCenter(0, 0, 0);
+            return sqdist <= d;
+        });
+    }
+
+
     private void addMinLightCheck(Builder builder) {
         checks.add(event -> {
             BlockPos pos = new BlockPos(event.getX(), event.getY(), event.getZ());
@@ -552,6 +579,8 @@ public class SpawnRule {
             builder.maxheight(JSonTools.parseInt(jsonObject, "maxheight"));
             builder.minlight(JSonTools.parseInt(jsonObject, "minlight"));
             builder.maxlight(JSonTools.parseInt(jsonObject, "maxlight"));
+            builder.minspawndist(JSonTools.parseFloat(jsonObject, "minspawndist"));
+            builder.maxspawndist(JSonTools.parseFloat(jsonObject, "maxspawndist"));
             builder.minAdditionalDifficulty(JSonTools.parseFloat(jsonObject, "mindifficulty"));
             builder.maxAdditionalDifficulty(JSonTools.parseFloat(jsonObject, "maxdifficulty"));
             builder.passive(JSonTools.parseBool(jsonObject, "passive"));
@@ -598,6 +627,8 @@ public class SpawnRule {
         private Integer maxlight = null;
         private Integer minheight = null;
         private Integer maxheight = null;
+        private Float minspawndist = null;
+        private Float maxspawndist = null;
         private Boolean passive = null;
         private Boolean hostile = null;
         private Boolean seesky = null;
@@ -671,6 +702,16 @@ public class SpawnRule {
 
         public Builder healthadd(Float healthadd) {
             this.healthadd = healthadd;
+            return this;
+        }
+
+        public Builder minspawndist(Float minspawndist) {
+            this.minspawndist = minspawndist;
+            return this;
+        }
+
+        public Builder maxspawndist(Float maxspawndist) {
+            this.maxspawndist = maxspawndist;
             return this;
         }
 
