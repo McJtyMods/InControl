@@ -24,6 +24,15 @@ public class JSonTools {
     }
 
     @Nullable
+    public static Float parseFloat(JsonObject jsonObject, String name) {
+        if (jsonObject.has(name)) {
+            return jsonObject.get(name).getAsFloat();
+        } else {
+            return null;
+        }
+    }
+
+    @Nullable
     public static Integer parseInt(JsonObject jsonObject, String name) {
         if (jsonObject.has(name)) {
             return jsonObject.get(name).getAsInt();

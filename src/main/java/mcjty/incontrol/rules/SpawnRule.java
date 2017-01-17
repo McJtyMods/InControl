@@ -2,6 +2,7 @@ package mcjty.incontrol.rules;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import mcjty.incontrol.InControl;
 import mcjty.incontrol.varia.JSonTools;
 import mcjty.incontrol.varia.Tools;
 import mcjty.lib.tools.EntityTools;
@@ -9,9 +10,11 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.passive.IAnimals;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import net.minecraftforge.fml.common.eventhandler.Event;
+import org.apache.logging.log4j.Level;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -25,12 +28,20 @@ public class SpawnRule {
     private final List<Function<LivingSpawnEvent.CheckSpawn, Boolean>> checks = new ArrayList<>();
 
     private SpawnRule(Builder builder) {
-        if (builder.minheight != -1) {
+        if (builder.minheight != null) {
             addMinHeightCheck(builder);
         }
-        if (builder.maxheight != -1) {
+        if (builder.maxheight != null) {
             addMaxHeightCheck(builder);
         }
+
+        if (builder.minAdditionalDifficulty != null) {
+            addMinAdditionalDifficultyCheck(builder);
+        }
+        if (builder.maxAdditionalDifficulty != null) {
+            addMaxAdditionalDifficultyCheck(builder);
+        }
+
         if (builder.hostile != null) {
             addHostileCheck(builder);
         }
@@ -39,6 +50,9 @@ public class SpawnRule {
         }
         if (builder.weather != null) {
             addWeatherCheck(builder);
+        }
+        if (builder.difficulty != null) {
+            addDifficultyCheck(builder);
         }
         if (!builder.mobs.isEmpty()) {
             addMobsCheck(builder);
@@ -99,6 +113,8 @@ public class SpawnRule {
                 checks.add(event -> {
                     return clazz.equals(event.getEntity().getClass());
                 });
+            } else {
+                InControl.logger.log(Level.ERROR, "Unknown mob '" + name + "'!");
             }
         } else {
             Set<Class> classes = new HashSet<>();
@@ -107,6 +123,8 @@ public class SpawnRule {
                 Class<? extends Entity> clazz = EntityTools.findClassById(id);
                 if (clazz != null) {
                     classes.add(clazz);
+                } else {
+                    InControl.logger.log(Level.ERROR, "Unknown mob '" + name + "'!");
                 }
             }
             if (!classes.isEmpty()) {
@@ -131,6 +149,25 @@ public class SpawnRule {
         }
     }
 
+    private void addDifficultyCheck(Builder builder) {
+        String difficulty = builder.difficulty.toLowerCase();
+        EnumDifficulty diff = null;
+        for (EnumDifficulty d : EnumDifficulty.values()) {
+            if (d.getDifficultyResourceKey().endsWith("." + difficulty)) {
+                diff = d;
+                break;
+            }
+        }
+        if (diff != null) {
+            EnumDifficulty finalDiff = diff;
+            checks.add(event -> {
+                return event.getWorld().getDifficulty() == finalDiff;
+            });
+        } else {
+            InControl.logger.log(Level.ERROR, "Unknown difficulty '" + difficulty + "'! Use one of 'easy', 'normal', 'hard',  or 'peaceful'");
+        }
+    }
+
     private void addWeatherCheck(Builder builder) {
         String weather = builder.weather;
         boolean raining = weather.toLowerCase().startsWith("rain");
@@ -143,6 +180,8 @@ public class SpawnRule {
             checks.add(event -> {
                 return event.getWorld().isThundering();
             });
+        } else {
+            InControl.logger.log(Level.ERROR, "Unknown weather '" + weather + "'! Use 'rain' or 'thunder'");
         }
     }
 
@@ -198,6 +237,18 @@ public class SpawnRule {
         }
     }
 
+    private void addMinAdditionalDifficultyCheck(Builder builder) {
+        checks.add(event -> {
+            return event.getWorld().getDifficultyForLocation(new BlockPos(event.getX(), event.getY(), event.getZ())).getAdditionalDifficulty() >= builder.minAdditionalDifficulty;
+        });
+    }
+
+    private void addMaxAdditionalDifficultyCheck(Builder builder) {
+        checks.add(event -> {
+            return event.getWorld().getDifficultyForLocation(new BlockPos(event.getX(), event.getY(), event.getZ())).getAdditionalDifficulty() <= builder.maxAdditionalDifficulty;
+        });
+    }
+
     private void addMaxHeightCheck(Builder builder) {
         checks.add(event -> {
             return event.getY() <= builder.maxheight;
@@ -231,10 +282,18 @@ public class SpawnRule {
             JsonObject jsonObject = element.getAsJsonObject();
             builder.minheight(JSonTools.parseInt(jsonObject, "minheight"));
             builder.maxheight(JSonTools.parseInt(jsonObject, "maxheight"));
+            builder.minAdditionalDifficulty(JSonTools.parseFloat(jsonObject, "mindifficulty"));
+            builder.maxAdditionalDifficulty(JSonTools.parseFloat(jsonObject, "maxdifficulty"));
             builder.passive(JSonTools.parseBool(jsonObject, "passive"));
             builder.hostile(JSonTools.parseBool(jsonObject, "hostile"));
             if (jsonObject.has("result")) {
                 builder.result(jsonObject.get("result").getAsString());
+            }
+            if (jsonObject.has("weather")) {
+                builder.weather(jsonObject.get("weather").getAsString());
+            }
+            if (jsonObject.has("difficulty")) {
+                builder.difficulty(jsonObject.get("difficulty").getAsString());
             }
             JSonTools.getElement(jsonObject, "mob")
                     .ifPresent(e -> JSonTools.asArrayOrSingle(e)
@@ -252,10 +311,6 @@ public class SpawnRule {
                     .ifPresent(e -> JSonTools.asArrayOrSingle(e)
                             .map(JsonElement::getAsString)
                             .forEach(builder::biome));
-            JSonTools.getElement(jsonObject, "weather")
-                    .ifPresent(e -> JSonTools.asArrayOrSingle(e)
-                            .map(JsonElement::getAsString)
-                            .forEach(builder::weather));
             JSonTools.getElement(jsonObject, "dimension")
                     .ifPresent(e -> JSonTools.asArrayOrSingle(e)
                             .map(JsonElement::getAsInt)
@@ -266,11 +321,14 @@ public class SpawnRule {
     }
 
     public static class Builder {
-        private int minheight = -1;
-        private int maxheight = -1;
+        private Integer minheight = null;
+        private Integer maxheight = null;
         private Boolean passive = null;
         private Boolean hostile = null;
         private String weather = null;
+        private String difficulty = null;
+        private Float minAdditionalDifficulty = null;
+        private Float maxAdditionalDifficulty = null;
         private List<String> mobs = new ArrayList<>();
         private List<String> mods = new ArrayList<>();
         private List<String> blocks = new ArrayList<>();
@@ -280,12 +338,22 @@ public class SpawnRule {
         private String result = "default";
 
         public Builder minheight(Integer minheight) {
-            this.minheight = minheight == null ? -1 : minheight;
+            this.minheight = minheight;
             return this;
         }
 
         public Builder maxheight(Integer maxheight) {
-            this.maxheight = maxheight == null ? -1 : maxheight;
+            this.maxheight = maxheight;
+            return this;
+        }
+
+        public Builder minAdditionalDifficulty(Float minAdditionalDifficulty) {
+            this.minAdditionalDifficulty = minAdditionalDifficulty;
+            return this;
+        }
+
+        public Builder maxAdditionalDifficulty(Float maxAdditionalDifficulty) {
+            this.maxAdditionalDifficulty = maxAdditionalDifficulty;
             return this;
         }
 
@@ -326,6 +394,11 @@ public class SpawnRule {
 
         public Builder weather(String weather) {
             this.weather = weather;
+            return this;
+        }
+
+        public Builder difficulty(String difficulty) {
+            this.difficulty = difficulty;
             return this;
         }
 
