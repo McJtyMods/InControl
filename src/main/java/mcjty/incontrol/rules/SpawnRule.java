@@ -15,12 +15,16 @@ import net.minecraft.entity.monster.EntityPigZombie;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.passive.IAnimals;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.potion.Potion;
+import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import net.minecraftforge.fml.common.eventhandler.Event;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 
 import java.util.ArrayList;
@@ -120,6 +124,46 @@ public class SpawnRule {
         if (builder.angry != null) {
             addAngryAction(builder);
         }
+        if (!builder.potions.isEmpty()) {
+            addPotionsAction(builder);
+        }
+    }
+
+    private void addPotionsAction(Builder builder) {
+        List<PotionEffect> effects = new ArrayList<>();
+        for (String p : builder.potions) {
+            String[] splitted = StringUtils.split(p, ',');
+            if (splitted == null || splitted.length != 3) {
+                InControl.logger.log(Level.ERROR, "Bad potion specifier '" + p + "'! Use <potion>,<duration>,<amplifier>");
+                continue;
+            }
+            Potion potion = ForgeRegistries.POTIONS.getValue(new ResourceLocation(splitted[0]));
+            if (potion == null) {
+                InControl.logger.log(Level.ERROR, "Can't find potion '" + p + "'!");
+                continue;
+            }
+            int duration = 0;
+            int amplifier = 0;
+            try {
+                duration = Integer.parseInt(splitted[1]);
+                amplifier = Integer.parseInt(splitted[2]);
+            } catch (NumberFormatException e) {
+                InControl.logger.log(Level.ERROR, "Bad duration or amplifier integer for '" + p + "'!");
+                continue;
+            }
+            effects.add(new PotionEffect(potion, duration, amplifier));
+        }
+        if (!effects.isEmpty()) {
+            actions.add(event -> {
+                EntityLivingBase living = event.getEntityLiving();
+                if (living != null) {
+                    for (PotionEffect effect : effects) {
+                        PotionEffect neweffect = new PotionEffect(effect.getPotion(), effect.getDuration(), effect.getAmplifier());
+                        living.addPotionEffect(neweffect);
+                    }
+                }
+            });
+        }
     }
 
     private void addAngryAction(Builder builder) {
@@ -147,9 +191,11 @@ public class SpawnRule {
             EntityLivingBase entityLiving = event.getEntityLiving();
             if (entityLiving != null) {
                 IAttributeInstance entityAttribute = entityLiving.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH);
-                double newMax = entityAttribute.getBaseValue() * m + a;
-                entityAttribute.setBaseValue(newMax);
-                entityLiving.setHealth((float) newMax);
+                if (entityAttribute != null) {
+                    double newMax = entityAttribute.getBaseValue() * m + a;
+                    entityAttribute.setBaseValue(newMax);
+                    entityLiving.setHealth((float) newMax);
+                }
             }
         });
     }
@@ -161,8 +207,10 @@ public class SpawnRule {
             EntityLivingBase entityLiving = event.getEntityLiving();
             if (entityLiving != null) {
                 IAttributeInstance entityAttribute = entityLiving.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED);
-                double newMax = entityAttribute.getBaseValue() * m + a;
-                entityAttribute.setBaseValue(newMax);
+                if (entityAttribute != null) {
+                    double newMax = entityAttribute.getBaseValue() * m + a;
+                    entityAttribute.setBaseValue(newMax);
+                }
             }
         });
     }
@@ -174,8 +222,10 @@ public class SpawnRule {
             EntityLivingBase entityLiving = event.getEntityLiving();
             if (entityLiving != null) {
                 IAttributeInstance entityAttribute = entityLiving.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE);
-                double newMax = entityAttribute.getBaseValue() * m + a;
-                entityAttribute.setBaseValue(newMax);
+                if (entityAttribute != null) {
+                    double newMax = entityAttribute.getBaseValue() * m + a;
+                    entityAttribute.setBaseValue(newMax);
+                }
             }
         });
     }
@@ -470,6 +520,10 @@ public class SpawnRule {
             builder.damagemultiply(JSonTools.parseFloat(jsonObject, "damagemultiply"));
             builder.damageadd(JSonTools.parseFloat(jsonObject, "damageadd"));
             builder.angry(JSonTools.parseBool(jsonObject, "angry"));
+            JSonTools.getElement(jsonObject, "potion")
+                    .ifPresent(e -> JSonTools.asArrayOrSingle(e)
+                            .map(JsonElement::getAsString)
+                            .forEach(builder::potion));
             if (jsonObject.has("result")) {
                 builder.result(jsonObject.get("result").getAsString());
             }
@@ -548,7 +602,13 @@ public class SpawnRule {
         private Float speedadd = null;
         private Float damagemultiply = null;
         private Float damageadd = null;
+        private List<String> potions = new ArrayList<>();
         private Boolean angry = null;
+
+        public Builder potion(String potion) {
+            this.potions.add(potion);
+            return this;
+        }
 
         public Builder angry(Boolean angry) {
             this.angry = angry;
