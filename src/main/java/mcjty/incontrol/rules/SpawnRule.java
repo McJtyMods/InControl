@@ -69,6 +69,9 @@ public class SpawnRule {
         if (builder.weather != null) {
             addWeatherCheck(builder);
         }
+        if (builder.tempcategory != null) {
+            addTempCategoryCheck(builder);
+        }
         if (builder.difficulty != null) {
             addDifficultyCheck(builder);
         }
@@ -215,6 +218,29 @@ public class SpawnRule {
         } else {
             InControl.logger.log(Level.ERROR, "Unknown weather '" + weather + "'! Use 'rain' or 'thunder'");
         }
+    }
+
+    private void addTempCategoryCheck(Builder builder) {
+        String tempcategory = builder.tempcategory.toLowerCase();
+        Biome.TempCategory cat = null;
+        if ("cold".equals(tempcategory)) {
+            cat = Biome.TempCategory.COLD;
+        } else if ("medium".equals(tempcategory)) {
+            cat = Biome.TempCategory.MEDIUM;
+        } else if ("warm".equals(tempcategory)) {
+            cat = Biome.TempCategory.WARM;
+        } else if ("ocean".equals(tempcategory)) {
+            cat = Biome.TempCategory.OCEAN;
+        } else {
+            InControl.logger.log(Level.ERROR, "Unknown tempcategory '" + tempcategory + "'! Use one of 'cold', 'medium', 'warm',  or 'ocean'");
+            return;
+        }
+
+        Biome.TempCategory finalCat = cat;
+        checks.add(event -> {
+            Biome biome = event.getWorld().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ()));
+            return biome.getTempCategory() == finalCat;
+        });
     }
 
     private void addBiomesCheck(Builder builder) {
@@ -367,6 +393,9 @@ public class SpawnRule {
             if (jsonObject.has("weather")) {
                 builder.weather(jsonObject.get("weather").getAsString());
             }
+            if (jsonObject.has("tempcategory")) {
+                builder.tempcategory(jsonObject.get("tempcategory").getAsString());
+            }
             if (jsonObject.has("difficulty")) {
                 builder.difficulty(jsonObject.get("difficulty").getAsString());
             }
@@ -407,6 +436,7 @@ public class SpawnRule {
         private Boolean seesky = null;
         private String weather = null;
         private String difficulty = null;
+        private String tempcategory = null;
         private Float minAdditionalDifficulty = null;
         private Float maxAdditionalDifficulty = null;
         private List<String> mobs = new ArrayList<>();
@@ -499,6 +529,11 @@ public class SpawnRule {
 
         public Builder weather(String weather) {
             this.weather = weather;
+            return this;
+        }
+
+        public Builder tempcategory(String tempcategory) {
+            this.tempcategory = tempcategory;
             return this;
         }
 
