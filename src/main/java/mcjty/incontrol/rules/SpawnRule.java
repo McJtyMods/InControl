@@ -28,6 +28,13 @@ public class SpawnRule {
     private final List<Function<LivingSpawnEvent.CheckSpawn, Boolean>> checks = new ArrayList<>();
 
     private SpawnRule(Builder builder) {
+        if (builder.mintime != null) {
+            addMinTimeCheck(builder);
+        }
+        if (builder.maxtime != null) {
+            addMaxTimeCheck(builder);
+        }
+
         if (builder.minheight != null) {
             addMinHeightCheck(builder);
         }
@@ -263,6 +270,20 @@ public class SpawnRule {
         }
     }
 
+    private void addMinTimeCheck(Builder builder) {
+        checks.add(event -> {
+            int time = (int) event.getWorld().getWorldTime();
+            return time >= builder.mintime;
+        });
+    }
+
+    private void addMaxTimeCheck(Builder builder) {
+        checks.add(event -> {
+            int time = (int) event.getWorld().getWorldTime();
+            return time <= builder.maxtime;
+        });
+    }
+
     private void addMinLightCheck(Builder builder) {
         checks.add(event -> {
             BlockPos pos = new BlockPos(event.getX(), event.getY(), event.getZ());
@@ -320,6 +341,8 @@ public class SpawnRule {
         } else {
             Builder builder = new Builder();
             JsonObject jsonObject = element.getAsJsonObject();
+            builder.mintime(JSonTools.parseInt(jsonObject, "mintime"));
+            builder.maxtime(JSonTools.parseInt(jsonObject, "maxtime"));
             builder.minheight(JSonTools.parseInt(jsonObject, "minheight"));
             builder.maxheight(JSonTools.parseInt(jsonObject, "maxheight"));
             builder.minlight(JSonTools.parseInt(jsonObject, "minlight"));
@@ -364,6 +387,8 @@ public class SpawnRule {
     }
 
     public static class Builder {
+        private Integer mintime = null;
+        private Integer maxtime = null;
         private Integer minlight = null;
         private Integer maxlight = null;
         private Integer minheight = null;
@@ -382,6 +407,16 @@ public class SpawnRule {
         private List<Integer> dimensions = new ArrayList<>();
 
         private String result = "default";
+
+        public Builder mintime(Integer mintime) {
+            this.mintime = mintime;
+            return this;
+        }
+
+        public Builder maxtime(Integer maxtime) {
+            this.maxtime = maxtime;
+            return this;
+        }
 
         public Builder minheight(Integer minheight) {
             this.minheight = minheight;
