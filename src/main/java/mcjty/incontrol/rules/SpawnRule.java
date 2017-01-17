@@ -27,10 +27,7 @@ import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -108,6 +105,9 @@ public class SpawnRule {
         }
         if (!builder.dimensions.isEmpty()) {
             addDimensionCheck(builder);
+        }
+        if (builder.random != null) {
+            addRandomCheck(builder);
         }
 
         String br = builder.result.toLowerCase();
@@ -250,6 +250,15 @@ public class SpawnRule {
                     entityAttribute.setBaseValue(newMax);
                 }
             }
+        });
+    }
+
+    private static Random rnd = new Random();
+
+    private void addRandomCheck(Builder builder) {
+        float r = builder.random;
+        checks.add(event -> {
+            return rnd.nextFloat() < r;
         });
     }
 
@@ -581,6 +590,7 @@ public class SpawnRule {
             builder.maxlight(JSonTools.parseInt(jsonObject, "maxlight"));
             builder.minspawndist(JSonTools.parseFloat(jsonObject, "minspawndist"));
             builder.maxspawndist(JSonTools.parseFloat(jsonObject, "maxspawndist"));
+            builder.random(JSonTools.parseFloat(jsonObject, "random"));
             builder.minAdditionalDifficulty(JSonTools.parseFloat(jsonObject, "mindifficulty"));
             builder.maxAdditionalDifficulty(JSonTools.parseFloat(jsonObject, "maxdifficulty"));
             builder.passive(JSonTools.parseBool(jsonObject, "passive"));
@@ -629,6 +639,7 @@ public class SpawnRule {
         private Integer maxheight = null;
         private Float minspawndist = null;
         private Float maxspawndist = null;
+        private Float random = null;
         private Boolean passive = null;
         private Boolean hostile = null;
         private Boolean seesky = null;
@@ -662,6 +673,11 @@ public class SpawnRule {
 
         public Builder angry(Boolean angry) {
             this.angry = angry;
+            return this;
+        }
+
+        public Builder random(Float random) {
+            this.random = random;
             return this;
         }
 
