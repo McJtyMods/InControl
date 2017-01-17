@@ -11,7 +11,6 @@ import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.passive.IAnimals;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.EnumDifficulty;
-import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import net.minecraftforge.fml.common.eventhandler.Event;
@@ -56,6 +55,9 @@ public class SpawnRule {
         if (builder.passive != null) {
             addPassiveCheck(builder);
         }
+        if (builder.seesky != null) {
+            addSeeSkyCheck(builder);
+        }
         if (builder.weather != null) {
             addWeatherCheck(builder);
         }
@@ -85,6 +87,20 @@ public class SpawnRule {
             this.result = Event.Result.ALLOW;
         } else {
             this.result = Event.Result.DENY;
+        }
+    }
+
+    private void addSeeSkyCheck(Builder builder) {
+        if (builder.seesky) {
+            checks.add(event -> {
+                BlockPos pos = new BlockPos(event.getX(), event.getY(), event.getZ());
+                return event.getWorld().canBlockSeeSky(pos);
+            });
+        } else {
+            checks.add(event -> {
+                BlockPos pos = new BlockPos(event.getX(), event.getY(), event.getZ());
+                return !event.getWorld().canBlockSeeSky(pos);
+            });
         }
     }
 
@@ -312,6 +328,7 @@ public class SpawnRule {
             builder.maxAdditionalDifficulty(JSonTools.parseFloat(jsonObject, "maxdifficulty"));
             builder.passive(JSonTools.parseBool(jsonObject, "passive"));
             builder.hostile(JSonTools.parseBool(jsonObject, "hostile"));
+            builder.seesky(JSonTools.parseBool(jsonObject, "seesky"));
             if (jsonObject.has("result")) {
                 builder.result(jsonObject.get("result").getAsString());
             }
@@ -353,6 +370,7 @@ public class SpawnRule {
         private Integer maxheight = null;
         private Boolean passive = null;
         private Boolean hostile = null;
+        private Boolean seesky = null;
         private String weather = null;
         private String difficulty = null;
         private Float minAdditionalDifficulty = null;
@@ -402,6 +420,11 @@ public class SpawnRule {
 
         public Builder hostile(Boolean hostile) {
             this.hostile = hostile;
+            return this;
+        }
+
+        public Builder seesky(Boolean seesky) {
+            this.seesky = seesky;
             return this;
         }
 
