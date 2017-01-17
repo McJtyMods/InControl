@@ -108,6 +108,9 @@ public class SpawnRule {
         if (builder.healthmultiply != null || builder.healthadd != null) {
             addHealthAction(builder);
         }
+        if (builder.speedmultiply != null || builder.speedadd != null) {
+            addSpeedAction(builder);
+        }
     }
 
     private void addHealthAction(Builder builder) {
@@ -120,6 +123,20 @@ public class SpawnRule {
                 double newMax = entityAttribute.getBaseValue() * m + a;
                 entityAttribute.setBaseValue(newMax);
                 entityLiving.setHealth((float) newMax);
+            }
+        });
+    }
+
+    private void addSpeedAction(Builder builder) {
+        float m = builder.speedmultiply != null ? builder.speedmultiply : 1;
+        float a = builder.speedadd != null ? builder.speedadd : 0;
+        actions.add(event -> {
+            EntityLivingBase entityLiving = event.getEntityLiving();
+            if (entityLiving != null) {
+                IAttributeInstance entityAttribute = entityLiving.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED);
+                double newMax = entityAttribute.getBaseValue() * m + a;
+                entityAttribute.setBaseValue(newMax);
+//                entityLiving.setAIMoveSpeed((float) newMax);
             }
         });
     }
@@ -409,6 +426,8 @@ public class SpawnRule {
             // Outputs
             builder.healthmultiply(JSonTools.parseFloat(jsonObject, "healthmultiply"));
             builder.healthadd(JSonTools.parseFloat(jsonObject, "healthadd"));
+            builder.speedmultiply(JSonTools.parseFloat(jsonObject, "speedmultiply"));
+            builder.speedadd(JSonTools.parseFloat(jsonObject, "speedadd"));
             if (jsonObject.has("result")) {
                 builder.result(jsonObject.get("result").getAsString());
             }
@@ -483,6 +502,18 @@ public class SpawnRule {
         private String result = "default";
         private Float healthmultiply = null;
         private Float healthadd = null;
+        private Float speedmultiply = null;
+        private Float speedadd = null;
+
+        public Builder speedmultiply(Float speedmultiply) {
+            this.speedmultiply = speedmultiply;
+            return this;
+        }
+
+        public Builder speedadd(Float speedadd) {
+            this.speedadd = speedadd;
+            return this;
+        }
 
         public Builder healthmultiply(Float healthmultiply) {
             this.healthmultiply = healthmultiply;
