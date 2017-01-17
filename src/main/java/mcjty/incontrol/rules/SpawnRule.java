@@ -7,6 +7,9 @@ import mcjty.incontrol.varia.JSonTools;
 import mcjty.incontrol.varia.Tools;
 import mcjty.lib.tools.EntityTools;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.entity.ai.attributes.IAttributeInstance;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.passive.IAnimals;
 import net.minecraft.util.ResourceLocation;
@@ -21,12 +24,14 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 
 public class SpawnRule {
     private final Event.Result result;
     private final List<Function<LivingSpawnEvent.CheckSpawn, Boolean>> checks = new ArrayList<>();
+    private final List<Consumer<LivingSpawnEvent.CheckSpawn>> actions = new ArrayList<>();
 
     private SpawnRule(Builder builder) {
         if (builder.mintime != null) {
@@ -99,6 +104,24 @@ public class SpawnRule {
         } else {
             this.result = Event.Result.DENY;
         }
+
+        if (builder.healthmultiply != null || builder.healthadd != null) {
+            addHealthAction(builder);
+        }
+    }
+
+    private void addHealthAction(Builder builder) {
+        float m = builder.healthmultiply != null ? builder.healthmultiply : 1;
+        float a = builder.healthadd != null ? builder.healthadd : 0;
+        actions.add(event -> {
+            EntityLivingBase entityLiving = event.getEntityLiving();
+            if (entityLiving != null) {
+                IAttributeInstance entityAttribute = entityLiving.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH);
+                double newMax = entityAttribute.getBaseValue() * m + a;
+                entityAttribute.setBaseValue(newMax);
+                entityLiving.setHealth((float) newMax);
+            }
+        });
     }
 
     private void addSeeSkyCheck(Builder builder) {
@@ -366,6 +389,12 @@ public class SpawnRule {
         return true;
     }
 
+    public void action(LivingSpawnEvent.CheckSpawn event) {
+        for (Consumer<LivingSpawnEvent.CheckSpawn> action : actions) {
+            action.accept(event);
+        }
+    }
+
     public Event.Result getResult() {
         return result;
     }
@@ -376,6 +405,15 @@ public class SpawnRule {
         } else {
             Builder builder = new Builder();
             JsonObject jsonObject = element.getAsJsonObject();
+
+            // Outputs
+            builder.healthmultiply(JSonTools.parseFloat(jsonObject, "healthmultiply"));
+            builder.healthadd(JSonTools.parseFloat(jsonObject, "healthadd"));
+            if (jsonObject.has("result")) {
+                builder.result(jsonObject.get("result").getAsString());
+            }
+
+            // Inputs
             builder.mintime(JSonTools.parseInt(jsonObject, "mintime"));
             builder.maxtime(JSonTools.parseInt(jsonObject, "maxtime"));
             builder.minheight(JSonTools.parseInt(jsonObject, "minheight"));
@@ -387,9 +425,6 @@ public class SpawnRule {
             builder.passive(JSonTools.parseBool(jsonObject, "passive"));
             builder.hostile(JSonTools.parseBool(jsonObject, "hostile"));
             builder.seesky(JSonTools.parseBool(jsonObject, "seesky"));
-            if (jsonObject.has("result")) {
-                builder.result(jsonObject.get("result").getAsString());
-            }
             if (jsonObject.has("weather")) {
                 builder.weather(jsonObject.get("weather").getAsString());
             }
@@ -446,6 +481,18 @@ public class SpawnRule {
         private List<Integer> dimensions = new ArrayList<>();
 
         private String result = "default";
+        private Float healthmultiply = null;
+        private Float healthadd = null;
+
+        public Builder healthmultiply(Float healthmultiply) {
+            this.healthmultiply = healthmultiply;
+            return this;
+        }
+
+        public Builder healthadd(Float healthadd) {
+            this.healthadd = healthadd;
+            return this;
+        }
 
         public Builder mintime(Integer mintime) {
             this.mintime = mintime;
