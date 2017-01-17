@@ -9,6 +9,7 @@ import mcjty.lib.tools.EntityTools;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.passive.IAnimals;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.biome.Biome;
@@ -237,14 +238,22 @@ public class SpawnRule {
             String blockname = builder.blocks.get(0);
             checks.add(event -> {
                 BlockPos pos = new BlockPos(event.getX(), event.getY(), event.getZ());
-                String name = event.getWorld().getBlockState(pos.down()).getBlock().getRegistryName().toString();
+                ResourceLocation registryName = event.getWorld().getBlockState(pos.down()).getBlock().getRegistryName();
+                if (registryName == null) {
+                    return false;
+                }
+                String name = registryName.toString();
                 return blockname.equals(name);
             });
         } else {
             Set<String> blocknames = new HashSet<>(builder.blocks);
             checks.add(event -> {
                 BlockPos pos = new BlockPos(event.getX(), event.getY(), event.getZ());
-                String name = event.getWorld().getBlockState(pos.down()).getBlock().getRegistryName().toString();
+                ResourceLocation registryName = event.getWorld().getBlockState(pos.down()).getBlock().getRegistryName();
+                if (registryName == null) {
+                    return false;
+                }
+                String name = registryName.toString();
                 return blocknames.contains(name);
             });
         }
