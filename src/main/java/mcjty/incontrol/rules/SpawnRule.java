@@ -16,8 +16,11 @@ import net.minecraft.entity.monster.EntityPigZombie;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.passive.IAnimals;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.EnumDifficulty;
@@ -74,6 +77,7 @@ public class SpawnRule {
                 .attribute(Attribute.create(SIZEMULTIPLY))
                 .attribute(Attribute.create(SIZEADD))
                 .attribute(Attribute.create(ANGRY))
+                .attribute(Attribute.create(HELDITEM))
                 .attribute(Attribute.createMulti(POTION))
         ;
     }
@@ -183,6 +187,9 @@ public class SpawnRule {
         if (map.has(ANGRY)) {
             addAngryAction(map);
         }
+        if (map.has(HELDITEM)) {
+            addHeldItem(map);
+        }
         if (map.has(POTION)) {
             addPotionsAction(map);
         }
@@ -223,6 +230,21 @@ public class SpawnRule {
                 }
             });
         }
+    }
+
+    private void addHeldItem(AttributeMap map) {
+        String itemName = map.get(HELDITEM);
+        Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(itemName));
+        if (item == null) {
+            InControl.logger.log(Level.ERROR, "Unknown item '" + itemName + "'!");
+            return;
+        }
+        actions.add(event -> {
+            EntityLivingBase entityLiving = event.getEntityLiving();
+            if (entityLiving != null) {
+                entityLiving.setHeldItem(EnumHand.MAIN_HAND, new ItemStack(item));
+            }
+        });
     }
 
     private void addAngryAction(AttributeMap map) {

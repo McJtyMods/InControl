@@ -31,6 +31,7 @@ public interface RuleKeys {
     Key<Integer> DIMENSION = Key.create(Type.INTEGER, "dimension");
 
     // Outputs
+    Key<String> RESULT = Key.create(Type.STRING, "result");
     Key<Float> HEALTHMULTIPLY = Key.create(Type.FLOAT, "healthmultiply");
     Key<Float> HEALTHADD = Key.create(Type.FLOAT, "healthadd");
     Key<Float> SPEEDMULTIPLY = Key.create(Type.FLOAT, "speedmultiply");
@@ -41,7 +42,7 @@ public interface RuleKeys {
     Key<Float> SIZEADD = Key.create(Type.FLOAT, "sizeadd");
     Key<Boolean> ANGRY = Key.create(Type.BOOLEAN, "angry");
     Key<String> POTION = Key.create(Type.STRING, "potion");
-    Key<String> RESULT = Key.create(Type.STRING, "result");
+    Key<String> HELDITEM = Key.create(Type.STRING, "helditem");
 
     // Mob spawn entry
     Key<AttributeMap> MOBS = Key.create(Type.MAP, "mobs");
