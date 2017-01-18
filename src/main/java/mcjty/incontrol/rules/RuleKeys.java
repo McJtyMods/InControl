@@ -9,6 +9,8 @@ public interface RuleKeys {
     // Inputs
     Key<Integer> MINTIME = Key.create(Type.INTEGER, "mintime");
     Key<Integer> MAXTIME = Key.create(Type.INTEGER, "maxtime");
+    Key<String> MINCOUNT = Key.create(Type.STRING, "mincount");
+    Key<String> MAXCOUNT = Key.create(Type.STRING, "maxcount");
     Key<Integer> MINLIGHT = Key.create(Type.INTEGER, "minlight");
     Key<Integer> MAXLIGHT = Key.create(Type.INTEGER, "maxlight");
     Key<Integer> MINHEIGHT = Key.create(Type.INTEGER, "minheight");

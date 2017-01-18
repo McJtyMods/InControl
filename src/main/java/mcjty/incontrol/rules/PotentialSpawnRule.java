@@ -16,6 +16,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.event.world.WorldEvent;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 
 import java.util.*;
@@ -30,6 +31,8 @@ public class PotentialSpawnRule {
 
     static {
         FACTORY
+                .attribute(Attribute.create(MINCOUNT))
+                .attribute(Attribute.create(MAXCOUNT))
                 .attribute(Attribute.create(MINTIME))
                 .attribute(Attribute.create(MAXTIME))
                 .attribute(Attribute.create(MINLIGHT))
@@ -69,6 +72,13 @@ public class PotentialSpawnRule {
         }
         if (!makeSpawnEntries(map)) {
             return;
+        }
+
+        if (map.has(MINCOUNT)) {
+            addMinCountCheck(map);
+        }
+        if (map.has(MAXCOUNT)) {
+            addMaxCountCheck(map);
         }
 
         if (map.has(MINTIME)) {
@@ -162,6 +172,68 @@ public class PotentialSpawnRule {
         }
         return true;
     }
+
+    private void addMinCountCheck(AttributeMap map) {
+        final String mincount = map.get(MINCOUNT);
+        String[] splitted = StringUtils.split(mincount, ',');
+        Class<?> entityClass = null;
+        int amount;
+        try {
+            amount = Integer.parseInt(splitted[0]);
+        } catch (NumberFormatException e) {
+            InControl.logger.log(Level.ERROR, "Bad amount for mincount '" + splitted[0] + "'!");
+            return;
+        }
+        if (splitted.length > 1) {
+            String id = EntityTools.fixEntityId(splitted[1]);
+            entityClass = EntityTools.findClassById(id);
+            if (entityClass == null) {
+                InControl.logger.log(Level.ERROR, "Unknown mob '" + splitted[1] + "'!");
+                return;
+            }
+        } else {
+            InControl.logger.log(Level.ERROR, "A mob is required here!");
+            return;
+        }
+
+        Class<?> finalEntityClass = entityClass;
+        checks.add(event -> {
+            int count = event.getWorld().countEntities(finalEntityClass);
+            return count >= amount;
+        });
+    }
+
+    private void addMaxCountCheck(AttributeMap map) {
+        final String maxcount = map.get(MAXCOUNT);
+        String[] splitted = StringUtils.split(maxcount, ',');
+        Class<?> entityClass = null;
+        int amount;
+        try {
+            amount = Integer.parseInt(splitted[0]);
+        } catch (NumberFormatException e) {
+            InControl.logger.log(Level.ERROR, "Bad amount for maxcount '" + splitted[0] + "'!");
+            return;
+        }
+        if (splitted.length > 1) {
+            String id = EntityTools.fixEntityId(splitted[1]);
+            entityClass = EntityTools.findClassById(id);
+            if (entityClass == null) {
+                InControl.logger.log(Level.ERROR, "Unknown mob '" + splitted[1] + "'!");
+                return;
+            }
+        } else {
+            InControl.logger.log(Level.ERROR, "A mob is required here!");
+            return;
+        }
+
+        Class<?> finalEntityClass = entityClass;
+        checks.add(event -> {
+            int count = event.getWorld().countEntities(finalEntityClass);
+            return count <= amount;
+        });
+    }
+
+
 
     private void addStructureCheck(AttributeMap map) {
         String structure = map.get(STRUCTURE);

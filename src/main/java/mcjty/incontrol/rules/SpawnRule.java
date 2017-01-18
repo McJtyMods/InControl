@@ -49,6 +49,8 @@ public class SpawnRule {
         FACTORY
                 .attribute(Attribute.create(MINTIME))
                 .attribute(Attribute.create(MAXTIME))
+                .attribute(Attribute.create(MINCOUNT))
+                .attribute(Attribute.create(MAXCOUNT))
                 .attribute(Attribute.create(MINLIGHT))
                 .attribute(Attribute.create(MAXLIGHT))
                 .attribute(Attribute.create(MINHEIGHT))
@@ -95,6 +97,13 @@ public class SpawnRule {
     private final List<Consumer<LivingSpawnEvent.CheckSpawn>> actions = new ArrayList<>();
 
     private SpawnRule(AttributeMap map) {
+        if (map.has(MINCOUNT)) {
+            addMinCountCheck(map);
+        }
+        if (map.has(MAXCOUNT)) {
+            addMaxCountCheck(map);
+        }
+
         if (map.has(MINTIME)) {
             addMinTimeCheck(map);
         }
@@ -617,6 +626,60 @@ public class SpawnRule {
                 return modids.contains(id);
             });
         }
+    }
+
+    private void addMinCountCheck(AttributeMap map) {
+        final String mincount = map.get(MINCOUNT);
+        String[] splitted = StringUtils.split(mincount, ',');
+        Class<?> entityClass = null;
+        int amount;
+        try {
+            amount = Integer.parseInt(splitted[0]);
+        } catch (NumberFormatException e) {
+            InControl.logger.log(Level.ERROR, "Bad amount for mincount '" + splitted[0] + "'!");
+            return;
+        }
+        if (splitted.length > 1) {
+            String id = EntityTools.fixEntityId(splitted[1]);
+            entityClass = EntityTools.findClassById(id);
+            if (entityClass == null) {
+                InControl.logger.log(Level.ERROR, "Unknown mob '" + splitted[1] + "'!");
+                return;
+            }
+        }
+
+        Class<?> finalEntityClass = entityClass;
+        checks.add(event -> {
+            int count = event.getWorld().countEntities(finalEntityClass == null ? event.getEntity().getClass() : finalEntityClass);
+            return count >= amount;
+        });
+    }
+
+    private void addMaxCountCheck(AttributeMap map) {
+        final String maxcount = map.get(MAXCOUNT);
+        String[] splitted = StringUtils.split(maxcount, ',');
+        Class<?> entityClass = null;
+        int amount;
+        try {
+            amount = Integer.parseInt(splitted[0]);
+        } catch (NumberFormatException e) {
+            InControl.logger.log(Level.ERROR, "Bad amount for maxcount '" + splitted[0] + "'!");
+            return;
+        }
+        if (splitted.length > 1) {
+            String id = EntityTools.fixEntityId(splitted[1]);
+            entityClass = EntityTools.findClassById(id);
+            if (entityClass == null) {
+                InControl.logger.log(Level.ERROR, "Unknown mob '" + splitted[1] + "'!");
+                return;
+            }
+        }
+
+        Class<?> finalEntityClass = entityClass;
+        checks.add(event -> {
+            int count = event.getWorld().countEntities(finalEntityClass == null ? event.getEntity().getClass() : finalEntityClass);
+            return count <= amount;
+        });
     }
 
     private void addMinTimeCheck(AttributeMap map) {
