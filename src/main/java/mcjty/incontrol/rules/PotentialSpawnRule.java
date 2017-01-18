@@ -4,7 +4,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import mcjty.incontrol.InControl;
-import mcjty.incontrol.varia.JSonTools;
+import mcjty.incontrol.typed.Attribute;
+import mcjty.incontrol.typed.AttributeMap;
+import mcjty.incontrol.typed.GenericAttributeMapFactory;
 import mcjty.lib.tools.EntityTools;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
@@ -18,101 +20,156 @@ import org.apache.logging.log4j.Level;
 import java.util.*;
 import java.util.function.Function;
 
+import static mcjty.incontrol.rules.RuleKeys.*;
+
 public class PotentialSpawnRule {
+
+    private static final GenericAttributeMapFactory FACTORY = new GenericAttributeMapFactory();
+    private static final GenericAttributeMapFactory MOB_FACTORY = new GenericAttributeMapFactory();
+
+    static {
+        FACTORY
+                .attribute(Attribute.create(MINTIME))
+                .attribute(Attribute.create(MAXTIME))
+                .attribute(Attribute.create(MINLIGHT))
+                .attribute(Attribute.create(MAXLIGHT))
+                .attribute(Attribute.create(MINHEIGHT))
+                .attribute(Attribute.create(MAXHEIGHT))
+                .attribute(Attribute.create(MINDIFFICULTY))
+                .attribute(Attribute.create(MAXDIFFICULTY))
+                .attribute(Attribute.create(MINSPAWNDIST))
+                .attribute(Attribute.create(MAXSPAWNDIST))
+                .attribute(Attribute.create(RANDOM))
+                .attribute(Attribute.create(SEESKY))
+                .attribute(Attribute.create(WEATHER))
+                .attribute(Attribute.create(TEMPCATEGORY))
+                .attribute(Attribute.create(DIFFICULTY))
+                .attribute(Attribute.createMulti(BLOCK))
+                .attribute(Attribute.createMulti(BIOME))
+                .attribute(Attribute.createMulti(DIMENSION))
+        ;
+
+        MOB_FACTORY
+                .attribute(Attribute.create(MOB))
+                .attribute(Attribute.create(WEIGHT))
+                .attribute(Attribute.create(GROUPCOUNTMIN))
+                .attribute(Attribute.create(GROUPCOUNTMAX))
+        ;
+    }
 
     private final List<Function<WorldEvent.PotentialSpawns, Boolean>> checks = new ArrayList<>();
     private List<Biome.SpawnListEntry> spawnEntries = new ArrayList<>();
 
-    private PotentialSpawnRule(Builder builder) {
-        if (builder.spawnEntryBuilders.isEmpty()) {
+    private PotentialSpawnRule(AttributeMap map) {
+        if (!map.has(MOBS)) {
             InControl.logger.log(Level.ERROR, "No mobs specified!");
             return;
         }
-        for (SpawnEntryBuilder entryBuilder : builder.spawnEntryBuilders) {
-            String id = EntityTools.fixEntityId(entryBuilder.mob);
-            Class<? extends Entity> clazz = EntityTools.findClassById(id);
-            if (clazz == null) {
-                InControl.logger.log(Level.ERROR, "Cannot find mob '" + entryBuilder.mob + "'!");
-                return;
-            }
-
-            Biome.SpawnListEntry entry = new Biome.SpawnListEntry((Class<? extends EntityLiving>) clazz, entryBuilder.weight, entryBuilder.groupCountMin, entryBuilder.groupCountMax);
-            spawnEntries.add(entry);
+        if (!makeSpawnEntries(map)) {
+            return;
         }
 
-        if (builder.mintime != null) {
-            addMinTimeCheck(builder);
+        if (map.has(MINTIME)) {
+            addMinTimeCheck(map);
         }
-        if (builder.maxtime != null) {
-            addMaxTimeCheck(builder);
-        }
-
-        if (builder.minheight != null) {
-            addMinHeightCheck(builder);
-        }
-        if (builder.maxheight != null) {
-            addMaxHeightCheck(builder);
+        if (map.has(MAXTIME)) {
+            addMaxTimeCheck(map);
         }
 
-        if (builder.minlight != null) {
-            addMinLightCheck(builder);
+        if (map.has(MINHEIGHT)) {
+            addMinHeightCheck(map);
         }
-        if (builder.maxlight != null) {
-            addMaxLightCheck(builder);
-        }
-
-        if (builder.minspawndist != null) {
-            addMinSpawnDistCheck(builder);
-        }
-        if (builder.maxspawndist != null) {
-            addMaxSpawnDistCheck(builder);
+        if (map.has(MAXHEIGHT)) {
+            addMaxHeightCheck(map);
         }
 
-        if (builder.minAdditionalDifficulty != null) {
-            addMinAdditionalDifficultyCheck(builder);
+        if (map.has(MINLIGHT)) {
+            addMinLightCheck(map);
         }
-        if (builder.maxAdditionalDifficulty != null) {
-            addMaxAdditionalDifficultyCheck(builder);
+        if (map.has(MAXLIGHT)) {
+            addMaxLightCheck(map);
         }
 
-        if (builder.seesky != null) {
-            addSeeSkyCheck(builder);
+        if (map.has(MINSPAWNDIST)) {
+            addMinSpawnDistCheck(map);
         }
-        if (builder.weather != null) {
-            addWeatherCheck(builder);
+        if (map.has(MAXSPAWNDIST)) {
+            addMaxSpawnDistCheck(map);
         }
-        if (builder.tempcategory != null) {
-            addTempCategoryCheck(builder);
+
+        if (map.has(MINDIFFICULTY)) {
+            addMinAdditionalDifficultyCheck(map);
         }
-        if (builder.difficulty != null) {
-            addDifficultyCheck(builder);
+        if (map.has(MAXDIFFICULTY)) {
+            addMaxAdditionalDifficultyCheck(map);
         }
-        if (!builder.blocks.isEmpty()) {
-            addBlocksCheck(builder);
+
+        if (map.has(SEESKY)) {
+            addSeeSkyCheck(map);
         }
-        if (!builder.biomes.isEmpty()) {
-            addBiomesCheck(builder);
+        if (map.has(WEATHER)) {
+            addWeatherCheck(map);
         }
-        if (!builder.dimensions.isEmpty()) {
-            addDimensionCheck(builder);
+        if (map.has(TEMPCATEGORY)) {
+            addTempCategoryCheck(map);
         }
-        if (builder.random != null) {
-            addRandomCheck(builder);
+        if (map.has(DIFFICULTY)) {
+            addDifficultyCheck(map);
+        }
+        if (map.has(BLOCK)) {
+            addBlocksCheck(map);
+        }
+        if (map.has(BIOME)) {
+            addBiomesCheck(map);
+        }
+        if (map.has(DIMENSION)) {
+            addDimensionCheck(map);
+        }
+        if (map.has(RANDOM)) {
+            addRandomCheck(map);
         }
 
     }
 
+    private boolean makeSpawnEntries(AttributeMap map) {
+        for (AttributeMap mobMap : map.getList(MOBS)) {
+            String id = EntityTools.fixEntityId(mobMap.get(MOB));
+            Class<? extends Entity> clazz = EntityTools.findClassById(id);
+            if (clazz == null) {
+                InControl.logger.log(Level.ERROR, "Cannot find mob '" + mobMap.get(MOB) + "'!");
+                return false;
+            }
+
+            Integer weight = mobMap.get(WEIGHT);
+            if (weight == null) {
+                weight = 1;
+            }
+            Integer groupCountMin = mobMap.get(GROUPCOUNTMIN);
+            if (groupCountMin == null) {
+                groupCountMin = 1;
+            }
+            Integer groupCountMax = mobMap.get(GROUPCOUNTMAX);
+            if (groupCountMax == null) {
+                groupCountMax = Math.max(groupCountMin, 1);
+            }
+            Biome.SpawnListEntry entry = new Biome.SpawnListEntry((Class<? extends EntityLiving>) clazz,
+                    weight, groupCountMin, groupCountMax);
+            spawnEntries.add(entry);
+        }
+        return true;
+    }
+
     private static Random rnd = new Random();
 
-    private void addRandomCheck(Builder builder) {
-        float r = builder.random;
+    private void addRandomCheck(AttributeMap map) {
+        final float r = map.get(RANDOM);
         checks.add(event -> {
             return rnd.nextFloat() < r;
         });
     }
 
-    private void addSeeSkyCheck(Builder builder) {
-        if (builder.seesky) {
+    private void addSeeSkyCheck(AttributeMap map) {
+        if (map.get(SEESKY)) {
             checks.add(event -> {
                 BlockPos pos = event.getPos();
                 return event.getWorld().canBlockSeeSky(pos);
@@ -126,22 +183,23 @@ public class PotentialSpawnRule {
     }
 
 
-    private void addDimensionCheck(Builder builder) {
-        if (builder.dimensions.size() == 1) {
-            Integer dim = builder.dimensions.get(0);
+    private void addDimensionCheck(AttributeMap map) {
+        List<Integer> dimensions = map.getList(DIMENSION);
+        if (dimensions.size() == 1) {
+            Integer dim = dimensions.get(0);
             checks.add(event -> {
                 return event.getWorld().provider.getDimension() == dim;
             });
         } else {
-            Set<Integer> dimensions = new HashSet<>(builder.dimensions);
+            Set<Integer> dims = new HashSet<>(dimensions);
             checks.add(event -> {
-                return dimensions.contains(event.getWorld().provider.getDimension());
+                return dims.contains(event.getWorld().provider.getDimension());
             });
         }
     }
 
-    private void addDifficultyCheck(Builder builder) {
-        String difficulty = builder.difficulty.toLowerCase();
+    private void addDifficultyCheck(AttributeMap map) {
+        String difficulty = map.get(DIFFICULTY).toLowerCase();
         EnumDifficulty diff = null;
         for (EnumDifficulty d : EnumDifficulty.values()) {
             if (d.getDifficultyResourceKey().endsWith("." + difficulty)) {
@@ -159,10 +217,10 @@ public class PotentialSpawnRule {
         }
     }
 
-    private void addWeatherCheck(Builder builder) {
-        String weather = builder.weather;
-        boolean raining = weather.toLowerCase().startsWith("rain");
-        boolean thunder = weather.toLowerCase().startsWith("thunder");
+    private void addWeatherCheck(AttributeMap map) {
+        String weather = map.get(WEATHER).toLowerCase();
+        boolean raining = weather.startsWith("rain");
+        boolean thunder = weather.startsWith("thunder");
         if (raining) {
             checks.add(event -> {
                 return event.getWorld().isRaining();
@@ -176,8 +234,8 @@ public class PotentialSpawnRule {
         }
     }
 
-    private void addTempCategoryCheck(Builder builder) {
-        String tempcategory = builder.tempcategory.toLowerCase();
+    private void addTempCategoryCheck(AttributeMap map) {
+        String tempcategory = map.get(TEMPCATEGORY).toLowerCase();
         Biome.TempCategory cat = null;
         if ("cold".equals(tempcategory)) {
             cat = Biome.TempCategory.COLD;
@@ -199,15 +257,16 @@ public class PotentialSpawnRule {
         });
     }
 
-    private void addBiomesCheck(Builder builder) {
-        if (builder.biomes.size() == 1) {
-            String biomename = builder.biomes.get(0);
+    private void addBiomesCheck(AttributeMap map) {
+        List<String> biomes = map.getList(BIOME);
+        if (biomes.size() == 1) {
+            String biomename = biomes.get(0);
             checks.add(event -> {
                 Biome biome = event.getWorld().getBiome(event.getPos());
                 return biomename.equals(biome.getBiomeName());
             });
         } else {
-            Set<String> biomenames = new HashSet<>(builder.biomes);
+            Set<String> biomenames = new HashSet<>(biomes);
             checks.add(event -> {
                 Biome biome = event.getWorld().getBiome(event.getPos());
                 return biomenames.contains(biome.getBiomeName());
@@ -215,9 +274,10 @@ public class PotentialSpawnRule {
         }
     }
 
-    private void addBlocksCheck(Builder builder) {
-        if (builder.blocks.size() == 1) {
-            String blockname = builder.blocks.get(0);
+    private void addBlocksCheck(AttributeMap map) {
+        List<String> blocks = map.getList(BLOCK);
+        if (blocks.size() == 1) {
+            String blockname = blocks.get(0);
             checks.add(event -> {
                 BlockPos pos = event.getPos();
                 ResourceLocation registryName = event.getWorld().getBlockState(pos.down()).getBlock().getRegistryName();
@@ -228,7 +288,7 @@ public class PotentialSpawnRule {
                 return blockname.equals(name);
             });
         } else {
-            Set<String> blocknames = new HashSet<>(builder.blocks);
+            Set<String> blocknames = new HashSet<>(blocks);
             checks.add(event -> {
                 BlockPos pos = event.getPos();
                 ResourceLocation registryName = event.getWorld().getBlockState(pos.down()).getBlock().getRegistryName();
@@ -242,22 +302,24 @@ public class PotentialSpawnRule {
     }
 
 
-    private void addMinTimeCheck(Builder builder) {
+    private void addMinTimeCheck(AttributeMap map) {
+        final int mintime = map.get(MINTIME);
         checks.add(event -> {
             int time = (int) event.getWorld().getWorldTime();
-            return time >= builder.mintime;
+            return time >= mintime;
         });
     }
 
-    private void addMaxTimeCheck(Builder builder) {
+    private void addMaxTimeCheck(AttributeMap map) {
+        final int maxtime = map.get(MAXTIME);
         checks.add(event -> {
             int time = (int) event.getWorld().getWorldTime();
-            return time <= builder.maxtime;
+            return time <= maxtime;
         });
     }
 
-    private void addMinSpawnDistCheck(Builder builder) {
-        Float d = builder.minspawndist * builder.minspawndist;
+    private void addMinSpawnDistCheck(AttributeMap map) {
+        Float d = map.get(MINSPAWNDIST) * map.get(MINSPAWNDIST);
         checks.add(event -> {
             BlockPos pos = event.getPos();
             double sqdist = pos.distanceSqToCenter(0, 0, 0);
@@ -265,8 +327,8 @@ public class PotentialSpawnRule {
         });
     }
 
-    private void addMaxSpawnDistCheck(Builder builder) {
-        Float d = builder.maxspawndist * builder.maxspawndist;
+    private void addMaxSpawnDistCheck(AttributeMap map) {
+        Float d = map.get(MAXSPAWNDIST) * map.get(MAXSPAWNDIST);
         checks.add(event -> {
             BlockPos pos = event.getPos();
             double sqdist = pos.distanceSqToCenter(0, 0, 0);
@@ -275,41 +337,47 @@ public class PotentialSpawnRule {
     }
 
 
-    private void addMinLightCheck(Builder builder) {
+    private void addMinLightCheck(AttributeMap map) {
+        final int minlight = map.get(MINLIGHT);
         checks.add(event -> {
             BlockPos pos = event.getPos();
-            return event.getWorld().getLight(pos, true) >= builder.minlight;
+            return event.getWorld().getLight(pos, true) >= minlight;
         });
     }
 
-    private void addMaxLightCheck(Builder builder) {
+    private void addMaxLightCheck(AttributeMap map) {
+        final int maxlight = map.get(MAXLIGHT);
         checks.add(event -> {
             BlockPos pos = event.getPos();
-            return event.getWorld().getLight(pos, true) <= builder.maxlight;
+            return event.getWorld().getLight(pos, true) <= maxlight;
         });
     }
 
-    private void addMinAdditionalDifficultyCheck(Builder builder) {
+    private void addMinAdditionalDifficultyCheck(AttributeMap map) {
+        final float mindifficulty = map.get(MINDIFFICULTY);
         checks.add(event -> {
-            return event.getWorld().getDifficultyForLocation(event.getPos()).getAdditionalDifficulty() >= builder.minAdditionalDifficulty;
+            return event.getWorld().getDifficultyForLocation(event.getPos()).getAdditionalDifficulty() >= mindifficulty;
         });
     }
 
-    private void addMaxAdditionalDifficultyCheck(Builder builder) {
+    private void addMaxAdditionalDifficultyCheck(AttributeMap map) {
+        final float maxdifficulty = map.get(MAXDIFFICULTY);
         checks.add(event -> {
-            return event.getWorld().getDifficultyForLocation(event.getPos()).getAdditionalDifficulty() <= builder.maxAdditionalDifficulty;
+            return event.getWorld().getDifficultyForLocation(event.getPos()).getAdditionalDifficulty() <= maxdifficulty;
         });
     }
 
-    private void addMaxHeightCheck(Builder builder) {
+    private void addMaxHeightCheck(AttributeMap map) {
+        final int maxheight = map.get(MAXHEIGHT);
         checks.add(event -> {
-            return event.getPos().getY() <= builder.maxheight;
+            return event.getPos().getY() <= maxheight;
         });
     }
 
-    private void addMinHeightCheck(Builder builder) {
+    private void addMinHeightCheck(AttributeMap map) {
+        final int minheight = map.get(MINHEIGHT);
         checks.add(event -> {
-            return event.getPos().getY() >= builder.minheight;
+            return event.getPos().getY() >= minheight;
         });
     }
 
@@ -330,59 +398,19 @@ public class PotentialSpawnRule {
         if (element == null) {
             return null;
         } else {
-            Builder builder = new Builder();
             JsonObject jsonObject = element.getAsJsonObject();
             if (!jsonObject.has("mobs")) {
                 return null;
             }
+
+            AttributeMap map = FACTORY.parse(element);
+
             JsonArray mobs = jsonObject.get("mobs").getAsJsonArray();
             for (JsonElement mob : mobs) {
-                JsonObject mobObject = mob.getAsJsonObject();
-                SpawnEntryBuilder mobBuilder = new SpawnEntryBuilder();
-                mobBuilder.mob(mobObject.get("mob").getAsString());
-                mobBuilder.groupCountMin(JSonTools.parseInt(mobObject, "groupcountmin"));
-                mobBuilder.groupCountMax(JSonTools.parseInt(mobObject, "groupcountmax"));
-                mobBuilder.weight(JSonTools.parseInt(mobObject, "weight"));
-                builder.spawnEntryBuilder(mobBuilder);
+                AttributeMap mobMap = MOB_FACTORY.parse(mob);
+                map.addList(MOBS, mobMap);
             }
-
-            // Inputs
-            builder.mintime(JSonTools.parseInt(jsonObject, "mintime"));
-            builder.maxtime(JSonTools.parseInt(jsonObject, "maxtime"));
-            builder.minheight(JSonTools.parseInt(jsonObject, "minheight"));
-            builder.maxheight(JSonTools.parseInt(jsonObject, "maxheight"));
-            builder.minlight(JSonTools.parseInt(jsonObject, "minlight"));
-            builder.maxlight(JSonTools.parseInt(jsonObject, "maxlight"));
-            builder.minspawndist(JSonTools.parseFloat(jsonObject, "minspawndist"));
-            builder.maxspawndist(JSonTools.parseFloat(jsonObject, "maxspawndist"));
-            builder.random(JSonTools.parseFloat(jsonObject, "random"));
-            builder.minAdditionalDifficulty(JSonTools.parseFloat(jsonObject, "mindifficulty"));
-            builder.maxAdditionalDifficulty(JSonTools.parseFloat(jsonObject, "maxdifficulty"));
-            builder.seesky(JSonTools.parseBool(jsonObject, "seesky"));
-            if (jsonObject.has("weather")) {
-                builder.weather(jsonObject.get("weather").getAsString());
-            }
-            if (jsonObject.has("tempcategory")) {
-                builder.tempcategory(jsonObject.get("tempcategory").getAsString());
-            }
-            if (jsonObject.has("difficulty")) {
-                builder.difficulty(jsonObject.get("difficulty").getAsString());
-            }
-            JSonTools.getElement(jsonObject, "block")
-                    .ifPresent(e -> JSonTools.asArrayOrSingle(e)
-                            .map(JsonElement::getAsString)
-                            .forEach(builder::block));
-            JSonTools.getElement(jsonObject, "biome")
-                    .ifPresent(e -> JSonTools.asArrayOrSingle(e)
-                            .map(JsonElement::getAsString)
-                            .forEach(builder::biome));
-            JSonTools.getElement(jsonObject, "dimension")
-                    .ifPresent(e -> JSonTools.asArrayOrSingle(e)
-                            .map(JsonElement::getAsInt)
-                            .forEach(builder::dimension));
-
-
-            return builder.build();
+            return new PotentialSpawnRule(map);
         }
     }
 
@@ -413,127 +441,6 @@ public class PotentialSpawnRule {
         }
 
 
-    }
-
-    public static class Builder {
-        private Integer mintime = null;
-        private Integer maxtime = null;
-        private Integer minlight = null;
-        private Integer maxlight = null;
-        private Integer minheight = null;
-        private Integer maxheight = null;
-        private Float minspawndist = null;
-        private Float maxspawndist = null;
-        private Float random = null;
-        private Boolean seesky = null;
-        private String weather = null;
-        private String difficulty = null;
-        private String tempcategory = null;
-        private Float minAdditionalDifficulty = null;
-        private Float maxAdditionalDifficulty = null;
-        private List<String> blocks = new ArrayList<>();
-        private List<String> biomes = new ArrayList<>();
-        private List<Integer> dimensions = new ArrayList<>();
-        private List<SpawnEntryBuilder> spawnEntryBuilders = new ArrayList<>();
-
-        public Builder spawnEntryBuilder(SpawnEntryBuilder spawnEntryBuilder) {
-            spawnEntryBuilders.add(spawnEntryBuilder);
-            return this;
-        }
-
-        public Builder random(Float random) {
-            this.random = random;
-            return this;
-        }
-
-        public Builder minspawndist(Float minspawndist) {
-            this.minspawndist = minspawndist;
-            return this;
-        }
-
-        public Builder maxspawndist(Float maxspawndist) {
-            this.maxspawndist = maxspawndist;
-            return this;
-        }
-
-        public Builder mintime(Integer mintime) {
-            this.mintime = mintime;
-            return this;
-        }
-
-        public Builder maxtime(Integer maxtime) {
-            this.maxtime = maxtime;
-            return this;
-        }
-
-        public Builder minheight(Integer minheight) {
-            this.minheight = minheight;
-            return this;
-        }
-
-        public Builder maxheight(Integer maxheight) {
-            this.maxheight = maxheight;
-            return this;
-        }
-
-        public Builder minlight(Integer minlight) {
-            this.minlight = minlight;
-            return this;
-        }
-
-        public Builder maxlight(Integer maxlight) {
-            this.maxlight = maxlight;
-            return this;
-        }
-
-        public Builder minAdditionalDifficulty(Float minAdditionalDifficulty) {
-            this.minAdditionalDifficulty = minAdditionalDifficulty;
-            return this;
-        }
-
-        public Builder maxAdditionalDifficulty(Float maxAdditionalDifficulty) {
-            this.maxAdditionalDifficulty = maxAdditionalDifficulty;
-            return this;
-        }
-
-        public Builder seesky(Boolean seesky) {
-            this.seesky = seesky;
-            return this;
-        }
-
-        public Builder block(String block) {
-            this.blocks.add(block);
-            return this;
-        }
-
-        public Builder biome(String biome) {
-            this.biomes.add(biome);
-            return this;
-        }
-
-        public Builder weather(String weather) {
-            this.weather = weather;
-            return this;
-        }
-
-        public Builder tempcategory(String tempcategory) {
-            this.tempcategory = tempcategory;
-            return this;
-        }
-
-        public Builder difficulty(String difficulty) {
-            this.difficulty = difficulty;
-            return this;
-        }
-
-        public Builder dimension(Integer dimension) {
-            this.dimensions.add(dimension);
-            return this;
-        }
-
-        public PotentialSpawnRule build() {
-            return new PotentialSpawnRule(this);
-        }
     }
 }
 

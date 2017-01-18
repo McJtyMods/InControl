@@ -1,9 +1,10 @@
 package mcjty.incontrol.rules;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import mcjty.incontrol.InControl;
-import mcjty.incontrol.varia.JSonTools;
+import mcjty.incontrol.typed.Attribute;
+import mcjty.incontrol.typed.AttributeMap;
+import mcjty.incontrol.typed.GenericAttributeMapFactory;
 import mcjty.incontrol.varia.Tools;
 import mcjty.lib.tools.EntityTools;
 import net.minecraft.entity.Entity;
@@ -31,117 +32,165 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import static mcjty.incontrol.rules.RuleKeys.*;
+
 
 public class SpawnRule {
+
+    private static final GenericAttributeMapFactory FACTORY = new GenericAttributeMapFactory();
+
+    static {
+        FACTORY
+                .attribute(Attribute.create(MINTIME))
+                .attribute(Attribute.create(MAXTIME))
+                .attribute(Attribute.create(MINLIGHT))
+                .attribute(Attribute.create(MAXLIGHT))
+                .attribute(Attribute.create(MINHEIGHT))
+                .attribute(Attribute.create(MAXHEIGHT))
+                .attribute(Attribute.create(MINDIFFICULTY))
+                .attribute(Attribute.create(MAXDIFFICULTY))
+                .attribute(Attribute.create(MINSPAWNDIST))
+                .attribute(Attribute.create(MAXSPAWNDIST))
+                .attribute(Attribute.create(RANDOM))
+                .attribute(Attribute.create(PASSIVE))
+                .attribute(Attribute.create(HOSTILE))
+                .attribute(Attribute.create(SEESKY))
+                .attribute(Attribute.create(WEATHER))
+                .attribute(Attribute.create(TEMPCATEGORY))
+                .attribute(Attribute.create(DIFFICULTY))
+                .attribute(Attribute.createMulti(MOB))
+                .attribute(Attribute.createMulti(MOD))
+                .attribute(Attribute.createMulti(BLOCK))
+                .attribute(Attribute.createMulti(BIOME))
+                .attribute(Attribute.createMulti(DIMENSION))
+
+                .attribute(Attribute.create(RESULT))
+                .attribute(Attribute.create(HEALTHMULTIPLY))
+                .attribute(Attribute.create(HEALTHADD))
+                .attribute(Attribute.create(SPEEDMULTIPLY))
+                .attribute(Attribute.create(SPEEDADD))
+                .attribute(Attribute.create(DAMAGEMULTIPLY))
+                .attribute(Attribute.create(DAMAGEADD))
+                .attribute(Attribute.create(SIZEMULTIPLY))
+                .attribute(Attribute.create(SIZEADD))
+                .attribute(Attribute.create(ANGRY))
+                .attribute(Attribute.createMulti(POTION))
+        ;
+    }
+
     private final Event.Result result;
     private final List<Function<LivingSpawnEvent.CheckSpawn, Boolean>> checks = new ArrayList<>();
     private final List<Consumer<LivingSpawnEvent.CheckSpawn>> actions = new ArrayList<>();
 
-    private SpawnRule(Builder builder) {
-        if (builder.mintime != null) {
-            addMinTimeCheck(builder);
+    private SpawnRule(AttributeMap map) {
+        if (map.has(MINTIME)) {
+            addMinTimeCheck(map);
         }
-        if (builder.maxtime != null) {
-            addMaxTimeCheck(builder);
-        }
-
-        if (builder.minheight != null) {
-            addMinHeightCheck(builder);
-        }
-        if (builder.maxheight != null) {
-            addMaxHeightCheck(builder);
+        if (map.has(MAXTIME)) {
+            addMaxTimeCheck(map);
         }
 
-        if (builder.minlight != null) {
-            addMinLightCheck(builder);
+        if (map.has(MINHEIGHT)) {
+            addMinHeightCheck(map);
         }
-        if (builder.maxlight != null) {
-            addMaxLightCheck(builder);
-        }
-
-        if (builder.minspawndist != null) {
-            addMinSpawnDistCheck(builder);
-        }
-        if (builder.maxspawndist != null) {
-            addMaxSpawnDistCheck(builder);
+        if (map.has(MAXHEIGHT)) {
+            addMaxHeightCheck(map);
         }
 
-        if (builder.minAdditionalDifficulty != null) {
-            addMinAdditionalDifficultyCheck(builder);
+        if (map.has(MINLIGHT)) {
+            addMinLightCheck(map);
         }
-        if (builder.maxAdditionalDifficulty != null) {
-            addMaxAdditionalDifficultyCheck(builder);
-        }
-
-        if (builder.hostile != null) {
-            addHostileCheck(builder);
-        }
-        if (builder.passive != null) {
-            addPassiveCheck(builder);
-        }
-        if (builder.seesky != null) {
-            addSeeSkyCheck(builder);
-        }
-        if (builder.weather != null) {
-            addWeatherCheck(builder);
-        }
-        if (builder.tempcategory != null) {
-            addTempCategoryCheck(builder);
-        }
-        if (builder.difficulty != null) {
-            addDifficultyCheck(builder);
-        }
-        if (!builder.mobs.isEmpty()) {
-            addMobsCheck(builder);
-        }
-        if (!builder.mods.isEmpty()) {
-            addModsCheck(builder);
-        }
-        if (!builder.blocks.isEmpty()) {
-            addBlocksCheck(builder);
-        }
-        if (!builder.biomes.isEmpty()) {
-            addBiomesCheck(builder);
-        }
-        if (!builder.dimensions.isEmpty()) {
-            addDimensionCheck(builder);
-        }
-        if (builder.random != null) {
-            addRandomCheck(builder);
+        if (map.has(MAXLIGHT)) {
+            addMaxLightCheck(map);
         }
 
-        String br = builder.result.toLowerCase();
-        if ("default".equals(br) || br.startsWith("def")) {
-            this.result = Event.Result.DEFAULT;
-        } else if ("allow".equals(br) || "true".equals(br)) {
-            this.result = Event.Result.ALLOW;
+        if (map.has(MINSPAWNDIST)) {
+            addMinSpawnDistCheck(map);
+        }
+        if (map.has(MAXSPAWNDIST)) {
+            addMaxSpawnDistCheck(map);
+        }
+
+        if (map.has(MINDIFFICULTY)) {
+            addMinAdditionalDifficultyCheck(map);
+        }
+        if (map.has(MAXDIFFICULTY)) {
+            addMaxAdditionalDifficultyCheck(map);
+        }
+
+        if (map.has(HOSTILE)) {
+            addHostileCheck(map);
+        }
+        if (map.has(PASSIVE)) {
+            addPassiveCheck(map);
+        }
+        if (map.has(SEESKY)) {
+            addSeeSkyCheck(map);
+        }
+        if (map.has(WEATHER)) {
+            addWeatherCheck(map);
+        }
+        if (map.has(TEMPCATEGORY)) {
+            addTempCategoryCheck(map);
+        }
+        if (map.has(DIFFICULTY)) {
+            addDifficultyCheck(map);
+        }
+        if (map.has(MOB)) {
+            addMobsCheck(map);
+        }
+        if (map.has(MOD)) {
+            addModsCheck(map);
+        }
+        if (map.has(BLOCK)) {
+            addBlocksCheck(map);
+        }
+        if (map.has(BIOME)) {
+            addBiomesCheck(map);
+        }
+        if (map.has(DIMENSION)) {
+            addDimensionCheck(map);
+        }
+        if (map.has(RANDOM)) {
+            addRandomCheck(map);
+        }
+
+        if (map.has(RESULT)) {
+            String br = map.get(RESULT);
+            if ("default".equals(br) || br.startsWith("def")) {
+                this.result = Event.Result.DEFAULT;
+            } else if ("allow".equals(br) || "true".equals(br)) {
+                this.result = Event.Result.ALLOW;
+            } else {
+                this.result = Event.Result.DENY;
+            }
         } else {
-            this.result = Event.Result.DENY;
+            this.result = Event.Result.DEFAULT;
         }
 
-        if (builder.healthmultiply != null || builder.healthadd != null) {
-            addHealthAction(builder);
+        if (map.has(HEALTHMULTIPLY) || map.has(HEALTHADD)) {
+            addHealthAction(map);
         }
-        if (builder.speedmultiply != null || builder.speedadd != null) {
-            addSpeedAction(builder);
+        if (map.has(SPEEDMULTIPLY) || map.has(SPEEDADD)) {
+            addSpeedAction(map);
         }
-        if (builder.damagemultiply != null || builder.damageadd != null) {
-            addDamageAction(builder);
+        if (map.has(DAMAGEMULTIPLY) || map.has(DAMAGEADD)) {
+            addDamageAction(map);
         }
-        if (builder.sizemultiply != null || builder.sizeadd != null) {
-            addSizeActions(builder);
+        if (map.has(SIZEMULTIPLY) || map.has(SIZEADD)) {
+            addSizeActions(map);
         }
-        if (builder.angry != null) {
-            addAngryAction(builder);
+        if (map.has(ANGRY)) {
+            addAngryAction(map);
         }
-        if (!builder.potions.isEmpty()) {
-            addPotionsAction(builder);
+        if (map.has(POTION)) {
+            addPotionsAction(map);
         }
     }
 
-    private void addPotionsAction(Builder builder) {
+    private void addPotionsAction(AttributeMap map) {
         List<PotionEffect> effects = new ArrayList<>();
-        for (String p : builder.potions) {
+        for (String p : map.getList(POTION)) {
             String[] splitted = StringUtils.split(p, ',');
             if (splitted == null || splitted.length != 3) {
                 InControl.logger.log(Level.ERROR, "Bad potion specifier '" + p + "'! Use <potion>,<duration>,<amplifier>");
@@ -176,27 +225,29 @@ public class SpawnRule {
         }
     }
 
-    private void addAngryAction(Builder builder) {
-        actions.add(event -> {
-            EntityLivingBase entityLiving = event.getEntityLiving();
-            if (entityLiving instanceof EntityPigZombie) {
-                EntityPigZombie pigZombie = (EntityPigZombie) entityLiving;
-                EntityPlayer player = event.getWorld().getClosestPlayerToEntity(entityLiving, 50);
-                if (player != null) {
-                    pigZombie.becomeAngryAt(player);
+    private void addAngryAction(AttributeMap map) {
+        if (map.get(ANGRY)) {
+            actions.add(event -> {
+                EntityLivingBase entityLiving = event.getEntityLiving();
+                if (entityLiving instanceof EntityPigZombie) {
+                    EntityPigZombie pigZombie = (EntityPigZombie) entityLiving;
+                    EntityPlayer player = event.getWorld().getClosestPlayerToEntity(entityLiving, 50);
+                    if (player != null) {
+                        pigZombie.becomeAngryAt(player);
+                    }
+                } else if (entityLiving instanceof EntityLiving) {
+                    EntityPlayer player = event.getWorld().getClosestPlayerToEntity(entityLiving, 50);
+                    if (player != null) {
+                        ((EntityLiving) entityLiving).setAttackTarget(player);
+                    }
                 }
-            } else if (entityLiving instanceof EntityLiving) {
-                EntityPlayer player = event.getWorld().getClosestPlayerToEntity(entityLiving, 50);
-                if (player != null) {
-                    ((EntityLiving) entityLiving).setAttackTarget(player);
-                }
-            }
-        });
+            });
+        }
     }
 
-    private void addHealthAction(Builder builder) {
-        float m = builder.healthmultiply != null ? builder.healthmultiply : 1;
-        float a = builder.healthadd != null ? builder.healthadd : 0;
+    private void addHealthAction(AttributeMap map) {
+        float m = map.has(HEALTHMULTIPLY) ? map.get(HEALTHMULTIPLY) : 1;
+        float a = map.has(HEALTHADD) ? map.get(HEALTHADD) : 0;
         actions.add(event -> {
             EntityLivingBase entityLiving = event.getEntityLiving();
             if (entityLiving != null) {
@@ -210,9 +261,9 @@ public class SpawnRule {
         });
     }
 
-    private void addSpeedAction(Builder builder) {
-        float m = builder.speedmultiply != null ? builder.speedmultiply : 1;
-        float a = builder.speedadd != null ? builder.speedadd : 0;
+    private void addSpeedAction(AttributeMap map) {
+        float m = map.has(SPEEDMULTIPLY) ? map.get(SPEEDMULTIPLY) : 1;
+        float a = map.has(SPEEDADD) ? map.get(SPEEDADD) : 0;
         actions.add(event -> {
             EntityLivingBase entityLiving = event.getEntityLiving();
             if (entityLiving != null) {
@@ -225,10 +276,10 @@ public class SpawnRule {
         });
     }
 
-    private void addSizeActions(Builder builder) {
+    private void addSizeActions(AttributeMap map) {
         InControl.logger.log(Level.WARN, "Mob resizing not implemented yet!");
-        float m = builder.sizemultiply != null ? builder.sizemultiply : 1;
-        float a = builder.sizeadd != null ? builder.sizeadd : 0;
+        float m = map.has(SIZEMULTIPLY) ? map.get(SIZEMULTIPLY) : 1;
+        float a = map.has(SIZEADD) ? map.get(SIZEADD) : 0;
         actions.add(event -> {
             EntityLivingBase entityLiving = event.getEntityLiving();
             if (entityLiving != null) {
@@ -238,9 +289,9 @@ public class SpawnRule {
         });
     }
 
-    private void addDamageAction(Builder builder) {
-        float m = builder.damagemultiply != null ? builder.damagemultiply : 1;
-        float a = builder.damageadd != null ? builder.damageadd : 0;
+    private void addDamageAction(AttributeMap map) {
+        float m = map.has(DAMAGEMULTIPLY) ? map.get(DAMAGEMULTIPLY) : 1;
+        float a = map.has(DAMAGEADD) ? map.get(DAMAGEADD) : 0;
         actions.add(event -> {
             EntityLivingBase entityLiving = event.getEntityLiving();
             if (entityLiving != null) {
@@ -255,15 +306,15 @@ public class SpawnRule {
 
     private static Random rnd = new Random();
 
-    private void addRandomCheck(Builder builder) {
-        float r = builder.random;
+    private void addRandomCheck(AttributeMap map) {
+        final float r = map.get(RANDOM);
         checks.add(event -> {
             return rnd.nextFloat() < r;
         });
     }
 
-    private void addSeeSkyCheck(Builder builder) {
-        if (builder.seesky) {
+    private void addSeeSkyCheck(AttributeMap map) {
+        if (map.get(SEESKY)) {
             checks.add(event -> {
                 BlockPos pos = new BlockPos(event.getX(), event.getY(), event.getZ());
                 return event.getWorld().canBlockSeeSky(pos);
@@ -276,8 +327,8 @@ public class SpawnRule {
         }
     }
 
-    private void addHostileCheck(Builder builder) {
-        if (builder.hostile) {
+    private void addHostileCheck(AttributeMap map) {
+        if (map.get(HOSTILE)) {
             checks.add(event -> {
                 return event.getEntity() instanceof IMob;
             });
@@ -288,8 +339,8 @@ public class SpawnRule {
         }
     }
 
-    private void addPassiveCheck(Builder builder) {
-        if (builder.passive) {
+    private void addPassiveCheck(AttributeMap map) {
+        if (map.get(PASSIVE)) {
             checks.add(event -> {
                 return (event.getEntity() instanceof IAnimals && !(event.getEntity() instanceof IMob));
             });
@@ -300,9 +351,10 @@ public class SpawnRule {
         }
     }
 
-    private void addMobsCheck(Builder builder) {
-        if (builder.mobs.size() == 1) {
-            String name = builder.mobs.get(0);
+    private void addMobsCheck(AttributeMap map) {
+        List<String> mobs = map.getList(MOB);
+        if (mobs.size() == 1) {
+            String name = mobs.get(0);
             String id = EntityTools.fixEntityId(name);
             Class<? extends Entity> clazz = EntityTools.findClassById(id);
             if (clazz != null) {
@@ -314,7 +366,7 @@ public class SpawnRule {
             }
         } else {
             Set<Class> classes = new HashSet<>();
-            for (String name : builder.mobs) {
+            for (String name : mobs) {
                 String id = EntityTools.fixEntityId(name);
                 Class<? extends Entity> clazz = EntityTools.findClassById(id);
                 if (clazz != null) {
@@ -331,22 +383,23 @@ public class SpawnRule {
         }
     }
 
-    private void addDimensionCheck(Builder builder) {
-        if (builder.dimensions.size() == 1) {
-            Integer dim = builder.dimensions.get(0);
+    private void addDimensionCheck(AttributeMap map) {
+        List<Integer> dimensions = map.getList(DIMENSION);
+        if (dimensions.size() == 1) {
+            Integer dim = dimensions.get(0);
             checks.add(event -> {
                 return event.getWorld().provider.getDimension() == dim;
             });
         } else {
-            Set<Integer> dimensions = new HashSet<>(builder.dimensions);
+            Set<Integer> dims = new HashSet<>(dimensions);
             checks.add(event -> {
-                return dimensions.contains(event.getWorld().provider.getDimension());
+                return dims.contains(event.getWorld().provider.getDimension());
             });
         }
     }
 
-    private void addDifficultyCheck(Builder builder) {
-        String difficulty = builder.difficulty.toLowerCase();
+    private void addDifficultyCheck(AttributeMap map) {
+        String difficulty = map.get(DIFFICULTY).toLowerCase();
         EnumDifficulty diff = null;
         for (EnumDifficulty d : EnumDifficulty.values()) {
             if (d.getDifficultyResourceKey().endsWith("." + difficulty)) {
@@ -364,8 +417,8 @@ public class SpawnRule {
         }
     }
 
-    private void addWeatherCheck(Builder builder) {
-        String weather = builder.weather;
+    private void addWeatherCheck(AttributeMap map) {
+        String weather = map.get(WEATHER);
         boolean raining = weather.toLowerCase().startsWith("rain");
         boolean thunder = weather.toLowerCase().startsWith("thunder");
         if (raining) {
@@ -381,8 +434,8 @@ public class SpawnRule {
         }
     }
 
-    private void addTempCategoryCheck(Builder builder) {
-        String tempcategory = builder.tempcategory.toLowerCase();
+    private void addTempCategoryCheck(AttributeMap map) {
+        String tempcategory = map.get(TEMPCATEGORY).toLowerCase();
         Biome.TempCategory cat = null;
         if ("cold".equals(tempcategory)) {
             cat = Biome.TempCategory.COLD;
@@ -404,15 +457,16 @@ public class SpawnRule {
         });
     }
 
-    private void addBiomesCheck(Builder builder) {
-        if (builder.biomes.size() == 1) {
-            String biomename = builder.biomes.get(0);
+    private void addBiomesCheck(AttributeMap map) {
+        List<String> biomes = map.getList(BIOME);
+        if (biomes.size() == 1) {
+            String biomename = biomes.get(0);
             checks.add(event -> {
                 Biome biome = event.getWorld().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ()));
                 return biomename.equals(biome.getBiomeName());
             });
         } else {
-            Set<String> biomenames = new HashSet<>(builder.biomes);
+            Set<String> biomenames = new HashSet<>(biomes);
             checks.add(event -> {
                 Biome biome = event.getWorld().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ()));
                 return biomenames.contains(biome.getBiomeName());
@@ -420,9 +474,10 @@ public class SpawnRule {
         }
     }
 
-    private void addBlocksCheck(Builder builder) {
-        if (builder.blocks.size() == 1) {
-            String blockname = builder.blocks.get(0);
+    private void addBlocksCheck(AttributeMap map) {
+        List<String> blocks = map.getList(BLOCK);
+        if (blocks.size() == 1) {
+            String blockname = blocks.get(0);
             checks.add(event -> {
                 BlockPos pos = new BlockPos(event.getX(), event.getY(), event.getZ());
                 ResourceLocation registryName = event.getWorld().getBlockState(pos.down()).getBlock().getRegistryName();
@@ -433,7 +488,7 @@ public class SpawnRule {
                 return blockname.equals(name);
             });
         } else {
-            Set<String> blocknames = new HashSet<>(builder.blocks);
+            Set<String> blocknames = new HashSet<>(blocks);
             checks.add(event -> {
                 BlockPos pos = new BlockPos(event.getX(), event.getY(), event.getZ());
                 ResourceLocation registryName = event.getWorld().getBlockState(pos.down()).getBlock().getRegistryName();
@@ -447,16 +502,17 @@ public class SpawnRule {
     }
 
 
-    private void addModsCheck(Builder builder) {
-        if (builder.mods.size() == 1) {
-            String modid = builder.mods.get(0);
+    private void addModsCheck(AttributeMap map) {
+        List<String> mods = map.getList(MOD);
+        if (mods.size() == 1) {
+            String modid = mods.get(0);
             checks.add(event -> {
                 String id = Tools.findModID(event.getEntity());
                 return modid.equals(id);
             });
         } else {
             Set<String> modids = new HashSet<>();
-            for (String modid : builder.mods) {
+            for (String modid : mods) {
                 modids.add(modid);
             }
             checks.add(event -> {
@@ -466,22 +522,24 @@ public class SpawnRule {
         }
     }
 
-    private void addMinTimeCheck(Builder builder) {
+    private void addMinTimeCheck(AttributeMap map) {
+        final int mintime = map.get(MINTIME);
         checks.add(event -> {
             int time = (int) event.getWorld().getWorldTime();
-            return time >= builder.mintime;
+            return time >= mintime;
         });
     }
 
-    private void addMaxTimeCheck(Builder builder) {
+    private void addMaxTimeCheck(AttributeMap map) {
+        final int maxtime = map.get(MAXTIME);
         checks.add(event -> {
             int time = (int) event.getWorld().getWorldTime();
-            return time <= builder.maxtime;
+            return time <= maxtime;
         });
     }
 
-    private void addMinSpawnDistCheck(Builder builder) {
-        Float d = builder.minspawndist * builder.minspawndist;
+    private void addMinSpawnDistCheck(AttributeMap map) {
+        final Float d = map.get(MINSPAWNDIST) * map.get(MINSPAWNDIST);
         checks.add(event -> {
             BlockPos pos = new BlockPos(event.getX(), event.getY(), event.getZ());
             double sqdist = pos.distanceSqToCenter(0, 0, 0);
@@ -489,8 +547,8 @@ public class SpawnRule {
         });
     }
 
-    private void addMaxSpawnDistCheck(Builder builder) {
-        Float d = builder.maxspawndist * builder.maxspawndist;
+    private void addMaxSpawnDistCheck(AttributeMap map) {
+        final Float d = map.get(MAXSPAWNDIST) * map.get(MAXSPAWNDIST);
         checks.add(event -> {
             BlockPos pos = new BlockPos(event.getX(), event.getY(), event.getZ());
             double sqdist = pos.distanceSqToCenter(0, 0, 0);
@@ -499,41 +557,47 @@ public class SpawnRule {
     }
 
 
-    private void addMinLightCheck(Builder builder) {
+    private void addMinLightCheck(AttributeMap map) {
+        final int minlight = map.get(MINLIGHT);
         checks.add(event -> {
             BlockPos pos = new BlockPos(event.getX(), event.getY(), event.getZ());
-            return event.getWorld().getLight(pos, true) >= builder.minlight;
+            return event.getWorld().getLight(pos, true) >= minlight;
         });
     }
 
-    private void addMaxLightCheck(Builder builder) {
+    private void addMaxLightCheck(AttributeMap map) {
+        final int maxlight = map.get(MAXLIGHT);
         checks.add(event -> {
             BlockPos pos = new BlockPos(event.getX(), event.getY(), event.getZ());
-            return event.getWorld().getLight(pos, true) <= builder.maxlight;
+            return event.getWorld().getLight(pos, true) <= maxlight;
         });
     }
 
-    private void addMinAdditionalDifficultyCheck(Builder builder) {
+    private void addMinAdditionalDifficultyCheck(AttributeMap map) {
+        final Float mindifficulty = map.get(MINDIFFICULTY);
         checks.add(event -> {
-            return event.getWorld().getDifficultyForLocation(new BlockPos(event.getX(), event.getY(), event.getZ())).getAdditionalDifficulty() >= builder.minAdditionalDifficulty;
+            return event.getWorld().getDifficultyForLocation(new BlockPos(event.getX(), event.getY(), event.getZ())).getAdditionalDifficulty() >= mindifficulty;
         });
     }
 
-    private void addMaxAdditionalDifficultyCheck(Builder builder) {
+    private void addMaxAdditionalDifficultyCheck(AttributeMap map) {
+        final Float maxdifficulty = map.get(MAXDIFFICULTY);
         checks.add(event -> {
-            return event.getWorld().getDifficultyForLocation(new BlockPos(event.getX(), event.getY(), event.getZ())).getAdditionalDifficulty() <= builder.maxAdditionalDifficulty;
+            return event.getWorld().getDifficultyForLocation(new BlockPos(event.getX(), event.getY(), event.getZ())).getAdditionalDifficulty() <= maxdifficulty;
         });
     }
 
-    private void addMaxHeightCheck(Builder builder) {
+    private void addMaxHeightCheck(AttributeMap map) {
+        final int maxheight = map.get(MAXHEIGHT);
         checks.add(event -> {
-            return event.getY() <= builder.maxheight;
+            return event.getY() <= maxheight;
         });
     }
 
-    private void addMinHeightCheck(Builder builder) {
+    private void addMinHeightCheck(AttributeMap map) {
+        final int minheight = map.get(MINHEIGHT);
         checks.add(event -> {
-            return event.getY() >= builder.minheight;
+            return event.getY() >= minheight;
         });
     }
 
@@ -560,279 +624,8 @@ public class SpawnRule {
         if (element == null) {
             return null;
         } else {
-            Builder builder = new Builder();
-            JsonObject jsonObject = element.getAsJsonObject();
-
-            // Outputs
-            builder.healthmultiply(JSonTools.parseFloat(jsonObject, "healthmultiply"));
-            builder.healthadd(JSonTools.parseFloat(jsonObject, "healthadd"));
-            builder.speedmultiply(JSonTools.parseFloat(jsonObject, "speedmultiply"));
-            builder.speedadd(JSonTools.parseFloat(jsonObject, "speedadd"));
-            builder.damagemultiply(JSonTools.parseFloat(jsonObject, "damagemultiply"));
-            builder.damageadd(JSonTools.parseFloat(jsonObject, "damageadd"));
-            builder.sizemultiply(JSonTools.parseFloat(jsonObject, "sizemultiply"));
-            builder.sizeadd(JSonTools.parseFloat(jsonObject, "sizeadd"));
-            builder.angry(JSonTools.parseBool(jsonObject, "angry"));
-            JSonTools.getElement(jsonObject, "potion")
-                    .ifPresent(e -> JSonTools.asArrayOrSingle(e)
-                            .map(JsonElement::getAsString)
-                            .forEach(builder::potion));
-            if (jsonObject.has("result")) {
-                builder.result(jsonObject.get("result").getAsString());
-            }
-
-            // Inputs
-            builder.mintime(JSonTools.parseInt(jsonObject, "mintime"));
-            builder.maxtime(JSonTools.parseInt(jsonObject, "maxtime"));
-            builder.minheight(JSonTools.parseInt(jsonObject, "minheight"));
-            builder.maxheight(JSonTools.parseInt(jsonObject, "maxheight"));
-            builder.minlight(JSonTools.parseInt(jsonObject, "minlight"));
-            builder.maxlight(JSonTools.parseInt(jsonObject, "maxlight"));
-            builder.minspawndist(JSonTools.parseFloat(jsonObject, "minspawndist"));
-            builder.maxspawndist(JSonTools.parseFloat(jsonObject, "maxspawndist"));
-            builder.random(JSonTools.parseFloat(jsonObject, "random"));
-            builder.minAdditionalDifficulty(JSonTools.parseFloat(jsonObject, "mindifficulty"));
-            builder.maxAdditionalDifficulty(JSonTools.parseFloat(jsonObject, "maxdifficulty"));
-            builder.passive(JSonTools.parseBool(jsonObject, "passive"));
-            builder.hostile(JSonTools.parseBool(jsonObject, "hostile"));
-            builder.seesky(JSonTools.parseBool(jsonObject, "seesky"));
-            if (jsonObject.has("weather")) {
-                builder.weather(jsonObject.get("weather").getAsString());
-            }
-            if (jsonObject.has("tempcategory")) {
-                builder.tempcategory(jsonObject.get("tempcategory").getAsString());
-            }
-            if (jsonObject.has("difficulty")) {
-                builder.difficulty(jsonObject.get("difficulty").getAsString());
-            }
-            JSonTools.getElement(jsonObject, "mob")
-                    .ifPresent(e -> JSonTools.asArrayOrSingle(e)
-                            .map(JsonElement::getAsString)
-                            .forEach(builder::mob));
-            JSonTools.getElement(jsonObject, "mod")
-                    .ifPresent(e -> JSonTools.asArrayOrSingle(e)
-                            .map(JsonElement::getAsString)
-                            .forEach(builder::mod));
-            JSonTools.getElement(jsonObject, "block")
-                    .ifPresent(e -> JSonTools.asArrayOrSingle(e)
-                            .map(JsonElement::getAsString)
-                            .forEach(builder::block));
-            JSonTools.getElement(jsonObject, "biome")
-                    .ifPresent(e -> JSonTools.asArrayOrSingle(e)
-                            .map(JsonElement::getAsString)
-                            .forEach(builder::biome));
-            JSonTools.getElement(jsonObject, "dimension")
-                    .ifPresent(e -> JSonTools.asArrayOrSingle(e)
-                            .map(JsonElement::getAsInt)
-                            .forEach(builder::dimension));
-
-            return builder.build();
-        }
-    }
-
-    public static class Builder {
-        private Integer mintime = null;
-        private Integer maxtime = null;
-        private Integer minlight = null;
-        private Integer maxlight = null;
-        private Integer minheight = null;
-        private Integer maxheight = null;
-        private Float minspawndist = null;
-        private Float maxspawndist = null;
-        private Float random = null;
-        private Boolean passive = null;
-        private Boolean hostile = null;
-        private Boolean seesky = null;
-        private String weather = null;
-        private String difficulty = null;
-        private String tempcategory = null;
-        private Float minAdditionalDifficulty = null;
-        private Float maxAdditionalDifficulty = null;
-        private List<String> mobs = new ArrayList<>();
-        private List<String> mods = new ArrayList<>();
-        private List<String> blocks = new ArrayList<>();
-        private List<String> biomes = new ArrayList<>();
-        private List<Integer> dimensions = new ArrayList<>();
-
-        private String result = "default";
-        private Float healthmultiply = null;
-        private Float healthadd = null;
-        private Float speedmultiply = null;
-        private Float speedadd = null;
-        private Float damagemultiply = null;
-        private Float damageadd = null;
-        private Float sizemultiply = null;
-        private Float sizeadd = null;
-        private List<String> potions = new ArrayList<>();
-        private Boolean angry = null;
-
-        public Builder potion(String potion) {
-            this.potions.add(potion);
-            return this;
-        }
-
-        public Builder angry(Boolean angry) {
-            this.angry = angry;
-            return this;
-        }
-
-        public Builder random(Float random) {
-            this.random = random;
-            return this;
-        }
-
-        public Builder sizemultiply(Float sizemultiply) {
-            this.sizemultiply = sizemultiply;
-            return this;
-        }
-
-        public Builder sizeadd(Float sizeadd) {
-            this.sizeadd = sizeadd;
-            return this;
-        }
-
-        public Builder damagemultiply(Float damagemultiply) {
-            this.damagemultiply = damagemultiply;
-            return this;
-        }
-
-        public Builder damageadd(Float damageadd) {
-            this.damageadd = damageadd;
-            return this;
-        }
-
-        public Builder speedmultiply(Float speedmultiply) {
-            this.speedmultiply = speedmultiply;
-            return this;
-        }
-
-        public Builder speedadd(Float speedadd) {
-            this.speedadd = speedadd;
-            return this;
-        }
-
-        public Builder healthmultiply(Float healthmultiply) {
-            this.healthmultiply = healthmultiply;
-            return this;
-        }
-
-        public Builder healthadd(Float healthadd) {
-            this.healthadd = healthadd;
-            return this;
-        }
-
-        public Builder minspawndist(Float minspawndist) {
-            this.minspawndist = minspawndist;
-            return this;
-        }
-
-        public Builder maxspawndist(Float maxspawndist) {
-            this.maxspawndist = maxspawndist;
-            return this;
-        }
-
-        public Builder mintime(Integer mintime) {
-            this.mintime = mintime;
-            return this;
-        }
-
-        public Builder maxtime(Integer maxtime) {
-            this.maxtime = maxtime;
-            return this;
-        }
-
-        public Builder minheight(Integer minheight) {
-            this.minheight = minheight;
-            return this;
-        }
-
-        public Builder maxheight(Integer maxheight) {
-            this.maxheight = maxheight;
-            return this;
-        }
-
-        public Builder minlight(Integer minlight) {
-            this.minlight = minlight;
-            return this;
-        }
-
-        public Builder maxlight(Integer maxlight) {
-            this.maxlight = maxlight;
-            return this;
-        }
-
-        public Builder minAdditionalDifficulty(Float minAdditionalDifficulty) {
-            this.minAdditionalDifficulty = minAdditionalDifficulty;
-            return this;
-        }
-
-        public Builder maxAdditionalDifficulty(Float maxAdditionalDifficulty) {
-            this.maxAdditionalDifficulty = maxAdditionalDifficulty;
-            return this;
-        }
-
-        public Builder passive(Boolean passive) {
-            this.passive = passive;
-            return this;
-        }
-
-        public Builder hostile(Boolean hostile) {
-            this.hostile = hostile;
-            return this;
-        }
-
-        public Builder seesky(Boolean seesky) {
-            this.seesky = seesky;
-            return this;
-        }
-
-        public Builder result(String result) {
-            this.result = result;
-            return this;
-        }
-
-        public Builder mob(String mob) {
-            this.mobs.add(mob);
-            return this;
-        }
-
-        public Builder mod(String mod) {
-            this.mods.add(mod);
-            return this;
-        }
-
-        public Builder block(String block) {
-            this.blocks.add(block);
-            return this;
-        }
-
-        public Builder biome(String biome) {
-            this.biomes.add(biome);
-            return this;
-        }
-
-        public Builder weather(String weather) {
-            this.weather = weather;
-            return this;
-        }
-
-        public Builder tempcategory(String tempcategory) {
-            this.tempcategory = tempcategory;
-            return this;
-        }
-
-        public Builder difficulty(String difficulty) {
-            this.difficulty = difficulty;
-            return this;
-        }
-
-        public Builder dimension(Integer dimension) {
-            this.dimensions.add(dimension);
-            return this;
-        }
-
-        public SpawnRule build() {
-            return new SpawnRule(this);
+            AttributeMap map = FACTORY.parse(element);
+            return new SpawnRule(map);
         }
     }
 }
