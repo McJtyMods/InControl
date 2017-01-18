@@ -1,13 +1,11 @@
 package mcjty.incontrol;
 
 
+import mcjty.incontrol.cache.StructureCache;
 import mcjty.incontrol.proxy.CommonProxy;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
+import net.minecraftforge.fml.common.event.*;
 import org.apache.logging.log4j.Logger;
 
 @Mod(modid = InControl.MODID, name = InControl.MODNAME,
@@ -54,5 +52,10 @@ public class InControl {
     public void serverLoad(FMLServerStartingEvent event) {
         event.registerServerCommand(new CmdReload());
         event.registerServerCommand(new CmdDebug());
+    }
+
+    @Mod.EventHandler
+    public void serverStopped(FMLServerStoppedEvent event) {
+        StructureCache.CACHE.clean();
     }
 }

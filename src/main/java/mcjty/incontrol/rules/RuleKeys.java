@@ -28,6 +28,7 @@ public interface RuleKeys {
     Key<String> MOD = Key.create(Type.STRING, "mod");
     Key<String> BLOCK = Key.create(Type.STRING, "block");
     Key<String> BIOME = Key.create(Type.STRING, "biome");
+    Key<String> STRUCTURE = Key.create(Type.STRING, "structure");
     Key<Integer> DIMENSION = Key.create(Type.INTEGER, "dimension");
 
     // Outputs

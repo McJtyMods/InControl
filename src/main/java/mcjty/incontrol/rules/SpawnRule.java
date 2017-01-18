@@ -2,6 +2,7 @@ package mcjty.incontrol.rules;
 
 import com.google.gson.JsonElement;
 import mcjty.incontrol.InControl;
+import mcjty.incontrol.cache.StructureCache;
 import mcjty.incontrol.typed.Attribute;
 import mcjty.incontrol.typed.AttributeMap;
 import mcjty.incontrol.typed.GenericAttributeMapFactory;
@@ -63,6 +64,7 @@ public class SpawnRule {
                 .attribute(Attribute.create(WEATHER))
                 .attribute(Attribute.create(TEMPCATEGORY))
                 .attribute(Attribute.create(DIFFICULTY))
+                .attribute(Attribute.create(STRUCTURE))
                 .attribute(Attribute.createMulti(MOB))
                 .attribute(Attribute.createMulti(MOD))
                 .attribute(Attribute.createMulti(BLOCK))
@@ -160,6 +162,9 @@ public class SpawnRule {
         }
         if (map.has(DIMENSION)) {
             addDimensionCheck(map);
+        }
+        if (map.has(STRUCTURE)) {
+            addStructureCheck(map);
         }
         if (map.has(RANDOM)) {
             addRandomCheck(map);
@@ -538,6 +543,14 @@ public class SpawnRule {
         checks.add(event -> {
             Biome biome = event.getWorld().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ()));
             return biome.getTempCategory() == finalCat;
+        });
+    }
+
+    private void addStructureCheck(AttributeMap map) {
+        String structure = map.get(STRUCTURE);
+        checks.add(event -> {
+            BlockPos pos = new BlockPos(event.getX(), event.getY(), event.getZ());
+            return StructureCache.CACHE.isInStructure(event.getWorld(), structure, pos);
         });
     }
 

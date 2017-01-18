@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import mcjty.incontrol.InControl;
+import mcjty.incontrol.cache.StructureCache;
 import mcjty.incontrol.typed.Attribute;
 import mcjty.incontrol.typed.AttributeMap;
 import mcjty.incontrol.typed.GenericAttributeMapFactory;
@@ -44,6 +45,7 @@ public class PotentialSpawnRule {
                 .attribute(Attribute.create(WEATHER))
                 .attribute(Attribute.create(TEMPCATEGORY))
                 .attribute(Attribute.create(DIFFICULTY))
+                .attribute(Attribute.create(STRUCTURE))
                 .attribute(Attribute.createMulti(BLOCK))
                 .attribute(Attribute.createMulti(BIOME))
                 .attribute(Attribute.createMulti(DIMENSION))
@@ -128,7 +130,9 @@ public class PotentialSpawnRule {
         if (map.has(RANDOM)) {
             addRandomCheck(map);
         }
-
+        if (map.has(STRUCTURE)) {
+            addStructureCheck(map);
+        }
     }
 
     private boolean makeSpawnEntries(AttributeMap map) {
@@ -158,6 +162,14 @@ public class PotentialSpawnRule {
         }
         return true;
     }
+
+    private void addStructureCheck(AttributeMap map) {
+        String structure = map.get(STRUCTURE);
+        checks.add(event -> {
+            return StructureCache.CACHE.isInStructure(event.getWorld(), structure, event.getPos());
+        });
+    }
+
 
     private static Random rnd = new Random();
 
