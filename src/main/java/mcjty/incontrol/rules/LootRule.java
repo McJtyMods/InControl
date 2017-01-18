@@ -237,9 +237,7 @@ public class LootRule {
 
     private void addRandomCheck(AttributeMap map) {
         final float r = map.get(RANDOM);
-        checks.add(event -> {
-            return rnd.nextFloat() < r;
-        });
+        checks.add(event -> rnd.nextFloat() < r);
     }
 
     private void addSeeSkyCheck(AttributeMap map) {
@@ -258,25 +256,17 @@ public class LootRule {
 
     private void addHostileCheck(AttributeMap map) {
         if (map.get(HOSTILE)) {
-            checks.add(event -> {
-                return event.getEntity() instanceof IMob;
-            });
+            checks.add(event -> event.getEntity() instanceof IMob);
         } else {
-            checks.add(event -> {
-                return !(event.getEntity() instanceof IMob);
-            });
+            checks.add(event -> !(event.getEntity() instanceof IMob));
         }
     }
 
     private void addPassiveCheck(AttributeMap map) {
         if (map.get(PASSIVE)) {
-            checks.add(event -> {
-                return (event.getEntity() instanceof IAnimals && !(event.getEntity() instanceof IMob));
-            });
+            checks.add(event -> (event.getEntity() instanceof IAnimals && !(event.getEntity() instanceof IMob)));
         } else {
-            checks.add(event -> {
-                return !(event.getEntity() instanceof IAnimals && !(event.getEntity() instanceof IMob));
-            });
+            checks.add(event -> !(event.getEntity() instanceof IAnimals && !(event.getEntity() instanceof IMob)));
         }
     }
 
@@ -287,9 +277,7 @@ public class LootRule {
             String id = EntityTools.fixEntityId(name);
             Class<? extends Entity> clazz = EntityTools.findClassById(id);
             if (clazz != null) {
-                checks.add(event -> {
-                    return clazz.equals(event.getEntity().getClass());
-                });
+                checks.add(event -> clazz.equals(event.getEntity().getClass()));
             } else {
                 InControl.logger.log(Level.ERROR, "Unknown mob '" + name + "'!");
             }
@@ -305,9 +293,7 @@ public class LootRule {
                 }
             }
             if (!classes.isEmpty()) {
-                checks.add(event -> {
-                    return classes.contains(event.getEntity().getClass());
-                });
+                checks.add(event -> classes.contains(event.getEntity().getClass()));
             }
         }
     }
@@ -395,65 +381,45 @@ public class LootRule {
     private void addPlayerCheck(AttributeMap map) {
         boolean asPlayer = map.get(PLAYER);
         if (asPlayer) {
-            checks.add(event -> {
-                return event.getEntity() instanceof EntityPlayer;
-            });
+            checks.add(event -> event.getEntity() instanceof EntityPlayer);
         } else {
-            checks.add(event -> {
-                return !(event.getEntity() instanceof EntityPlayer);
-            });
+            checks.add(event -> !(event.getEntity() instanceof EntityPlayer));
         }
     }
 
     private void addExplosionCheck(AttributeMap map) {
         boolean explosion = map.get(EXPLOSION);
         if (explosion) {
-            checks.add(event -> {
-                return event.getSource() == null ? false : event.getSource().isExplosion();
-            });
+            checks.add(event -> event.getSource() == null ? false : event.getSource().isExplosion());
         } else {
-            checks.add(event -> {
-                return event.getSource() == null ? false : !event.getSource().isExplosion();
-            });
+            checks.add(event -> event.getSource() == null ? false : !event.getSource().isExplosion());
         }
     }
 
     private void addProjectileCheck(AttributeMap map) {
         boolean projectile = map.get(PROJECTILE);
         if (projectile) {
-            checks.add(event -> {
-                return event.getSource() == null ? false : event.getSource().isProjectile();
-            });
+            checks.add(event -> event.getSource() == null ? false : event.getSource().isProjectile());
         } else {
-            checks.add(event -> {
-                return event.getSource() == null ? false : !event.getSource().isProjectile();
-            });
+            checks.add(event -> event.getSource() == null ? false : !event.getSource().isProjectile());
         }
     }
 
     private void addFireCheck(AttributeMap map) {
         boolean fire = map.get(FIRE);
         if (fire) {
-            checks.add(event -> {
-                return event.getSource() == null ? false : event.getSource().isFireDamage();
-            });
+            checks.add(event -> event.getSource() == null ? false : event.getSource().isFireDamage());
         } else {
-            checks.add(event -> {
-                return event.getSource() == null ? false : !event.getSource().isFireDamage();
-            });
+            checks.add(event -> event.getSource() == null ? false : !event.getSource().isFireDamage());
         }
     }
 
     private void addMagicCheck(AttributeMap map) {
         boolean magic = map.get(MAGIC);
         if (magic) {
-            checks.add(event -> {
-                return event.getSource() == null ? false : event.getSource().isMagicDamage();
-            });
+            checks.add(event -> event.getSource() == null ? false : event.getSource().isMagicDamage());
         } else {
-            checks.add(event -> {
-                return event.getSource() == null ? false : !event.getSource().isMagicDamage();
-            });
+            checks.add(event -> event.getSource() == null ? false : !event.getSource().isMagicDamage());
         }
     }
 
@@ -627,16 +593,12 @@ public class LootRule {
 
     private void addMaxHeightCheck(AttributeMap map) {
         final int maxheight = map.get(MAXHEIGHT);
-        checks.add(event -> {
-            return event.getEntity().getPosition().getY() <= maxheight;
-        });
+        checks.add(event -> event.getEntity().getPosition().getY() <= maxheight);
     }
 
     private void addMinHeightCheck(AttributeMap map) {
         final int minheight = map.get(MINHEIGHT);
-        checks.add(event -> {
-            return event.getEntity().getPosition().getY() >= minheight;
-        });
+        checks.add(event -> event.getEntity().getPosition().getY() >= minheight);
     }
 
     public boolean match(LivingDropsEvent event) {

@@ -406,9 +406,7 @@ public class SpawnRule {
 
     private void addRandomCheck(AttributeMap map) {
         final float r = map.get(RANDOM);
-        checks.add(event -> {
-            return rnd.nextFloat() < r;
-        });
+        checks.add(event -> rnd.nextFloat() < r);
     }
 
     private void addSeeSkyCheck(AttributeMap map) {
@@ -427,25 +425,17 @@ public class SpawnRule {
 
     private void addHostileCheck(AttributeMap map) {
         if (map.get(HOSTILE)) {
-            checks.add(event -> {
-                return event.getEntity() instanceof IMob;
-            });
+            checks.add(event -> event.getEntity() instanceof IMob);
         } else {
-            checks.add(event -> {
-                return !(event.getEntity() instanceof IMob);
-            });
+            checks.add(event -> !(event.getEntity() instanceof IMob));
         }
     }
 
     private void addPassiveCheck(AttributeMap map) {
         if (map.get(PASSIVE)) {
-            checks.add(event -> {
-                return (event.getEntity() instanceof IAnimals && !(event.getEntity() instanceof IMob));
-            });
+            checks.add(event -> (event.getEntity() instanceof IAnimals && !(event.getEntity() instanceof IMob)));
         } else {
-            checks.add(event -> {
-                return !(event.getEntity() instanceof IAnimals && !(event.getEntity() instanceof IMob));
-            });
+            checks.add(event -> !(event.getEntity() instanceof IAnimals && !(event.getEntity() instanceof IMob)));
         }
     }
 
@@ -456,9 +446,7 @@ public class SpawnRule {
             String id = EntityTools.fixEntityId(name);
             Class<? extends Entity> clazz = EntityTools.findClassById(id);
             if (clazz != null) {
-                checks.add(event -> {
-                    return clazz.equals(event.getEntity().getClass());
-                });
+                checks.add(event -> clazz.equals(event.getEntity().getClass()));
             } else {
                 InControl.logger.log(Level.ERROR, "Unknown mob '" + name + "'!");
             }
@@ -474,9 +462,7 @@ public class SpawnRule {
                 }
             }
             if (!classes.isEmpty()) {
-                checks.add(event -> {
-                    return classes.contains(event.getEntity().getClass());
-                });
+                checks.add(event -> classes.contains(event.getEntity().getClass()));
             }
         }
     }
@@ -485,14 +471,10 @@ public class SpawnRule {
         List<Integer> dimensions = map.getList(DIMENSION);
         if (dimensions.size() == 1) {
             Integer dim = dimensions.get(0);
-            checks.add(event -> {
-                return event.getWorld().provider.getDimension() == dim;
-            });
+            checks.add(event -> event.getWorld().provider.getDimension() == dim);
         } else {
             Set<Integer> dims = new HashSet<>(dimensions);
-            checks.add(event -> {
-                return dims.contains(event.getWorld().provider.getDimension());
-            });
+            checks.add(event -> dims.contains(event.getWorld().provider.getDimension()));
         }
     }
 
@@ -507,9 +489,7 @@ public class SpawnRule {
         }
         if (diff != null) {
             EnumDifficulty finalDiff = diff;
-            checks.add(event -> {
-                return event.getWorld().getDifficulty() == finalDiff;
-            });
+            checks.add(event -> event.getWorld().getDifficulty() == finalDiff);
         } else {
             InControl.logger.log(Level.ERROR, "Unknown difficulty '" + difficulty + "'! Use one of 'easy', 'normal', 'hard',  or 'peaceful'");
         }
@@ -520,13 +500,9 @@ public class SpawnRule {
         boolean raining = weather.toLowerCase().startsWith("rain");
         boolean thunder = weather.toLowerCase().startsWith("thunder");
         if (raining) {
-            checks.add(event -> {
-                return event.getWorld().isRaining();
-            });
+            checks.add(event -> event.getWorld().isRaining());
         } else if (thunder) {
-            checks.add(event -> {
-                return event.getWorld().isThundering();
-            });
+            checks.add(event -> event.getWorld().isThundering());
         } else {
             InControl.logger.log(Level.ERROR, "Unknown weather '" + weather + "'! Use 'rain' or 'thunder'");
         }
@@ -735,30 +711,22 @@ public class SpawnRule {
 
     private void addMinAdditionalDifficultyCheck(AttributeMap map) {
         final Float mindifficulty = map.get(MINDIFFICULTY);
-        checks.add(event -> {
-            return event.getWorld().getDifficultyForLocation(new BlockPos(event.getX(), event.getY(), event.getZ())).getAdditionalDifficulty() >= mindifficulty;
-        });
+        checks.add(event -> event.getWorld().getDifficultyForLocation(new BlockPos(event.getX(), event.getY(), event.getZ())).getAdditionalDifficulty() >= mindifficulty);
     }
 
     private void addMaxAdditionalDifficultyCheck(AttributeMap map) {
         final Float maxdifficulty = map.get(MAXDIFFICULTY);
-        checks.add(event -> {
-            return event.getWorld().getDifficultyForLocation(new BlockPos(event.getX(), event.getY(), event.getZ())).getAdditionalDifficulty() <= maxdifficulty;
-        });
+        checks.add(event -> event.getWorld().getDifficultyForLocation(new BlockPos(event.getX(), event.getY(), event.getZ())).getAdditionalDifficulty() <= maxdifficulty);
     }
 
     private void addMaxHeightCheck(AttributeMap map) {
         final int maxheight = map.get(MAXHEIGHT);
-        checks.add(event -> {
-            return event.getY() <= maxheight;
-        });
+        checks.add(event -> event.getY() <= maxheight);
     }
 
     private void addMinHeightCheck(AttributeMap map) {
         final int minheight = map.get(MINHEIGHT);
-        checks.add(event -> {
-            return event.getY() >= minheight;
-        });
+        checks.add(event -> event.getY() >= minheight);
     }
 
     public boolean match(LivingSpawnEvent.CheckSpawn event) {

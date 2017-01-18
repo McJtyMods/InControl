@@ -254,9 +254,7 @@ public class PotentialSpawnRule {
 
     private void addStructureCheck(AttributeMap map) {
         String structure = map.get(STRUCTURE);
-        checks.add(event -> {
-            return StructureCache.CACHE.isInStructure(event.getWorld(), structure, event.getPos());
-        });
+        checks.add(event -> StructureCache.CACHE.isInStructure(event.getWorld(), structure, event.getPos()));
     }
 
 
@@ -264,9 +262,7 @@ public class PotentialSpawnRule {
 
     private void addRandomCheck(AttributeMap map) {
         final float r = map.get(RANDOM);
-        checks.add(event -> {
-            return rnd.nextFloat() < r;
-        });
+        checks.add(event -> rnd.nextFloat() < r);
     }
 
     private void addSeeSkyCheck(AttributeMap map) {
@@ -288,14 +284,10 @@ public class PotentialSpawnRule {
         List<Integer> dimensions = map.getList(DIMENSION);
         if (dimensions.size() == 1) {
             Integer dim = dimensions.get(0);
-            checks.add(event -> {
-                return event.getWorld().provider.getDimension() == dim;
-            });
+            checks.add(event -> event.getWorld().provider.getDimension() == dim);
         } else {
             Set<Integer> dims = new HashSet<>(dimensions);
-            checks.add(event -> {
-                return dims.contains(event.getWorld().provider.getDimension());
-            });
+            checks.add(event -> dims.contains(event.getWorld().provider.getDimension()));
         }
     }
 
@@ -310,9 +302,7 @@ public class PotentialSpawnRule {
         }
         if (diff != null) {
             EnumDifficulty finalDiff = diff;
-            checks.add(event -> {
-                return event.getWorld().getDifficulty() == finalDiff;
-            });
+            checks.add(event -> event.getWorld().getDifficulty() == finalDiff);
         } else {
             InControl.logger.log(Level.ERROR, "Unknown difficulty '" + difficulty + "'! Use one of 'easy', 'normal', 'hard',  or 'peaceful'");
         }
@@ -323,13 +313,9 @@ public class PotentialSpawnRule {
         boolean raining = weather.startsWith("rain");
         boolean thunder = weather.startsWith("thunder");
         if (raining) {
-            checks.add(event -> {
-                return event.getWorld().isRaining();
-            });
+            checks.add(event -> event.getWorld().isRaining());
         } else if (thunder) {
-            checks.add(event -> {
-                return event.getWorld().isThundering();
-            });
+            checks.add(event -> event.getWorld().isThundering());
         } else {
             InControl.logger.log(Level.ERROR, "Unknown weather '" + weather + "'! Use 'rain' or 'thunder'");
         }
@@ -456,30 +442,22 @@ public class PotentialSpawnRule {
 
     private void addMinAdditionalDifficultyCheck(AttributeMap map) {
         final float mindifficulty = map.get(MINDIFFICULTY);
-        checks.add(event -> {
-            return event.getWorld().getDifficultyForLocation(event.getPos()).getAdditionalDifficulty() >= mindifficulty;
-        });
+        checks.add(event -> event.getWorld().getDifficultyForLocation(event.getPos()).getAdditionalDifficulty() >= mindifficulty);
     }
 
     private void addMaxAdditionalDifficultyCheck(AttributeMap map) {
         final float maxdifficulty = map.get(MAXDIFFICULTY);
-        checks.add(event -> {
-            return event.getWorld().getDifficultyForLocation(event.getPos()).getAdditionalDifficulty() <= maxdifficulty;
-        });
+        checks.add(event -> event.getWorld().getDifficultyForLocation(event.getPos()).getAdditionalDifficulty() <= maxdifficulty);
     }
 
     private void addMaxHeightCheck(AttributeMap map) {
         final int maxheight = map.get(MAXHEIGHT);
-        checks.add(event -> {
-            return event.getPos().getY() <= maxheight;
-        });
+        checks.add(event -> event.getPos().getY() <= maxheight);
     }
 
     private void addMinHeightCheck(AttributeMap map) {
         final int minheight = map.get(MINHEIGHT);
-        checks.add(event -> {
-            return event.getPos().getY() >= minheight;
-        });
+        checks.add(event -> event.getPos().getY() >= minheight);
     }
 
     public boolean match(WorldEvent.PotentialSpawns event) {
@@ -519,35 +497,6 @@ public class PotentialSpawnRule {
             }
             return new PotentialSpawnRule(map);
         }
-    }
-
-    public static class SpawnEntryBuilder {
-        private String mob;
-        private Integer weight = 5;
-        private Integer groupCountMin = 2;
-        private Integer groupCountMax = 3;
-
-        public SpawnEntryBuilder mob(String mob) {
-            this.mob = mob;
-            return this;
-        }
-
-        public SpawnEntryBuilder weight(Integer weight) {
-            this.weight = weight;
-            return this;
-        }
-
-        public SpawnEntryBuilder groupCountMin(Integer groupCountMin) {
-            this.groupCountMin = groupCountMin;
-            return this;
-        }
-
-        public SpawnEntryBuilder groupCountMax(Integer groupCountMax) {
-            this.groupCountMax = groupCountMax;
-            return this;
-        }
-
-
     }
 }
 
