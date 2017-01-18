@@ -59,6 +59,7 @@ public interface RuleKeys {
     Key<Boolean> FIRE = Key.create(Type.BOOLEAN, "fire");
     Key<Boolean> MAGIC = Key.create(Type.BOOLEAN, "magic");
     Key<String> ITEM = Key.create(Type.STRING, "item");
+    Key<Boolean> REMOVEALL = Key.create(Type.BOOLEAN, "removeall");
 
     // Mob spawn entry
     Key<AttributeMap> MOBS = Key.create(Type.MAP, "mobs");

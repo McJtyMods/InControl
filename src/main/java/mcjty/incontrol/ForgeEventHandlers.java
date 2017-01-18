@@ -82,11 +82,15 @@ public class ForgeEventHandlers {
                             + " entity: " + event.getEntity().getName());
                 }
 
-                for (Item item : rule.getToRemoveItems()) {
-                    for (int idx = event.getDrops().size()-1 ; idx >= 0 ; idx--) {
-                        ItemStack stack = event.getDrops().get(idx).getEntityItem();
-                        if (ItemStackTools.isValid(stack) && stack.getItem() == item) {
-                            event.getDrops().remove(idx);
+                if (rule.isRemoveAll()) {
+                    event.getDrops().clear();
+                } else {
+                    for (Item item : rule.getToRemoveItems()) {
+                        for (int idx = event.getDrops().size() - 1; idx >= 0; idx--) {
+                            ItemStack stack = event.getDrops().get(idx).getEntityItem();
+                            if (ItemStackTools.isValid(stack) && stack.getItem() == item) {
+                                event.getDrops().remove(idx);
+                            }
                         }
                     }
                 }

@@ -68,12 +68,14 @@ public class LootRule {
 
                 .attribute(Attribute.createMulti(ITEM))
                 .attribute(Attribute.createMulti(REMOVE))
+                .attribute(Attribute.create(REMOVEALL))
         ;
     }
 
     private final List<Function<LivingDropsEvent, Boolean>> checks = new ArrayList<>();
     private List<Item> toRemoveItems = new ArrayList<>();
     private List<Item> toAddItems = new ArrayList<>();
+    private boolean removeAll = false;
 
     private LootRule(AttributeMap map) {
         if (map.has(MINTIME)) {
@@ -179,10 +181,17 @@ public class LootRule {
         if (map.has(REMOVE)) {
             removeItem(map);
         }
+        if (map.has(REMOVEALL)) {
+            removeAll = map.get(REMOVEALL);
+        }
     }
 
     public List<Item> getToRemoveItems() {
         return toRemoveItems;
+    }
+
+    public boolean isRemoveAll() {
+        return removeAll;
     }
 
     public List<Item> getToAddItems() {
