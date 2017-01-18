@@ -5,6 +5,7 @@ import mcjty.incontrol.InControl;
 import mcjty.incontrol.typed.Attribute;
 import mcjty.incontrol.typed.AttributeMap;
 import mcjty.incontrol.typed.GenericAttributeMapFactory;
+import mcjty.incontrol.typed.Key;
 import mcjty.incontrol.varia.Tools;
 import mcjty.lib.tools.EntityTools;
 import net.minecraft.entity.Entity;
@@ -16,6 +17,7 @@ import net.minecraft.entity.monster.EntityPigZombie;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.passive.IAnimals;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.Potion;
@@ -77,7 +79,11 @@ public class SpawnRule {
                 .attribute(Attribute.create(SIZEMULTIPLY))
                 .attribute(Attribute.create(SIZEADD))
                 .attribute(Attribute.create(ANGRY))
-                .attribute(Attribute.create(HELDITEM))
+                .attribute(Attribute.createMulti(HELDITEM))
+                .attribute(Attribute.createMulti(ARMORBOOTS))
+                .attribute(Attribute.createMulti(ARMORLEGS))
+                .attribute(Attribute.createMulti(ARMORCHEST))
+                .attribute(Attribute.createMulti(ARMORHELMET))
                 .attribute(Attribute.createMulti(POTION))
         ;
     }
@@ -190,6 +196,18 @@ public class SpawnRule {
         if (map.has(HELDITEM)) {
             addHeldItem(map);
         }
+        if (map.has(ARMORBOOTS)) {
+            addArmorItem(map, ARMORBOOTS, EntityEquipmentSlot.FEET);
+        }
+        if (map.has(ARMORLEGS)) {
+            addArmorItem(map, ARMORLEGS, EntityEquipmentSlot.LEGS);
+        }
+        if (map.has(ARMORHELMET)) {
+            addArmorItem(map, ARMORHELMET, EntityEquipmentSlot.HEAD);
+        }
+        if (map.has(ARMORCHEST)) {
+            addArmorItem(map, ARMORCHEST, EntityEquipmentSlot.CHEST);
+        }
         if (map.has(POTION)) {
             addPotionsAction(map);
         }
@@ -232,19 +250,63 @@ public class SpawnRule {
         }
     }
 
-    private void addHeldItem(AttributeMap map) {
-        String itemName = map.get(HELDITEM);
-        Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(itemName));
-        if (item == null) {
-            InControl.logger.log(Level.ERROR, "Unknown item '" + itemName + "'!");
+    private List<Item> getItems(List<String> itemNames) {
+        List<Item> items = new ArrayList<>();
+        for (String name : itemNames) {
+            Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(name));
+            if (item == null) {
+                InControl.logger.log(Level.ERROR, "Unknown item '" + name + "'!");
+            } else {
+                items.add(item);
+            }
+        }
+        return items;
+    }
+
+    private void addArmorItem(AttributeMap map, Key<String> itemKey, EntityEquipmentSlot slot) {
+        final List<Item> items = getItems(map.getList(itemKey));
+        if (items.isEmpty()) {
             return;
         }
-        actions.add(event -> {
-            EntityLivingBase entityLiving = event.getEntityLiving();
-            if (entityLiving != null) {
-                entityLiving.setHeldItem(EnumHand.MAIN_HAND, new ItemStack(item));
-            }
-        });
+        if (items.size() == 1) {
+            Item item = items.get(0);
+            actions.add(event -> {
+                EntityLivingBase entityLiving = event.getEntityLiving();
+                if (entityLiving != null) {
+                    entityLiving.setItemStackToSlot(slot, new ItemStack(item));
+                }
+            });
+        } else {
+            actions.add(event -> {
+                EntityLivingBase entityLiving = event.getEntityLiving();
+                if (entityLiving != null) {
+                    entityLiving.setItemStackToSlot(slot, new ItemStack(items.get(rnd.nextInt(items.size()))));
+                }
+            });
+        }
+    }
+
+    private void addHeldItem(AttributeMap map) {
+        final List<Item> items = getItems(map.getList(HELDITEM));
+        if (items.isEmpty()) {
+            return;
+        }
+        if (items.size() == 1) {
+            Item item = items.get(0);
+            actions.add(event -> {
+                EntityLivingBase entityLiving = event.getEntityLiving();
+                if (entityLiving != null) {
+                    entityLiving.setHeldItem(EnumHand.MAIN_HAND, new ItemStack(item));
+                }
+            });
+        } else {
+            actions.add(event -> {
+                EntityLivingBase entityLiving = event.getEntityLiving();
+                if (entityLiving != null) {
+                    entityLiving.setHeldItem(EnumHand.MAIN_HAND, new ItemStack(items.get(rnd.nextInt(items.size()))));
+                }
+            });
+        }
     }
 
     private void addAngryAction(AttributeMap map) {

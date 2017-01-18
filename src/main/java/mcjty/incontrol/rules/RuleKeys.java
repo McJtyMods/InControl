@@ -43,6 +43,10 @@ public interface RuleKeys {
     Key<Boolean> ANGRY = Key.create(Type.BOOLEAN, "angry");
     Key<String> POTION = Key.create(Type.STRING, "potion");
     Key<String> HELDITEM = Key.create(Type.STRING, "helditem");
+    Key<String> ARMORCHEST = Key.create(Type.STRING, "armorchest");
+    Key<String> ARMORHELMET = Key.create(Type.STRING, "armorhelmet");
+    Key<String> ARMORLEGS = Key.create(Type.STRING, "armorlegs");
+    Key<String> ARMORBOOTS = Key.create(Type.STRING, "armorboots");
 
     // Mob spawn entry
     Key<AttributeMap> MOBS = Key.create(Type.MAP, "mobs");
