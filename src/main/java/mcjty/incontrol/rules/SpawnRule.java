@@ -626,7 +626,7 @@ public class SpawnRule {
         final Float d = map.get(MINSPAWNDIST) * map.get(MINSPAWNDIST);
         checks.add(event -> {
             BlockPos pos = new BlockPos(event.getX(), event.getY(), event.getZ());
-            double sqdist = pos.distanceSqToCenter(0, 0, 0);
+            double sqdist = pos.distanceSq(event.getWorld().getSpawnPoint());
             return sqdist >= d;
         });
     }
@@ -635,7 +635,7 @@ public class SpawnRule {
         final Float d = map.get(MAXSPAWNDIST) * map.get(MAXSPAWNDIST);
         checks.add(event -> {
             BlockPos pos = new BlockPos(event.getX(), event.getY(), event.getZ());
-            double sqdist = pos.distanceSqToCenter(0, 0, 0);
+            double sqdist = pos.distanceSq(event.getWorld().getSpawnPoint());
             return sqdist <= d;
         });
     }
