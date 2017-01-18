@@ -52,6 +52,8 @@ public class PotentialSpawnRule {
                 .attribute(Attribute.createMulti(BLOCK))
                 .attribute(Attribute.createMulti(BIOME))
                 .attribute(Attribute.createMulti(DIMENSION))
+
+                .attribute(Attribute.createMulti(REMOVE))
         ;
 
         MOB_FACTORY
@@ -64,15 +66,14 @@ public class PotentialSpawnRule {
 
     private final List<Function<WorldEvent.PotentialSpawns, Boolean>> checks = new ArrayList<>();
     private List<Biome.SpawnListEntry> spawnEntries = new ArrayList<>();
+    private List<Class> toRemoveMobs = new ArrayList<>();
 
     private PotentialSpawnRule(AttributeMap map) {
-        if (!map.has(MOBS)) {
-            InControl.logger.log(Level.ERROR, "No mobs specified!");
+        if ((!map.has(MOBS)) && (!map.has(REMOVE))) {
+            InControl.logger.log(Level.ERROR, "No 'mobs' or 'remove' specified!");
             return;
         }
-        if (!makeSpawnEntries(map)) {
-            return;
-        }
+        makeSpawnEntries(map);
 
         if (map.has(MINCOUNT)) {
             addMinCountCheck(map);
@@ -143,15 +144,32 @@ public class PotentialSpawnRule {
         if (map.has(STRUCTURE)) {
             addStructureCheck(map);
         }
+
+        if (map.has(REMOVE)) {
+            addToRemoveAction(map);
+        }
     }
 
-    private boolean makeSpawnEntries(AttributeMap map) {
+    private void addToRemoveAction(AttributeMap map) {
+        List<String> toremove = map.getList(REMOVE);
+        for (String s : toremove) {
+            String id = EntityTools.fixEntityId(s);
+            Class<? extends Entity> clazz = EntityTools.findClassById(id);
+            if (clazz == null) {
+                InControl.logger.log(Level.ERROR, "Cannot find mob '" + s + "'!");
+                return;
+            }
+            toRemoveMobs.add(clazz);
+        }
+    }
+
+    private void makeSpawnEntries(AttributeMap map) {
         for (AttributeMap mobMap : map.getList(MOBS)) {
             String id = EntityTools.fixEntityId(mobMap.get(MOB));
             Class<? extends Entity> clazz = EntityTools.findClassById(id);
             if (clazz == null) {
                 InControl.logger.log(Level.ERROR, "Cannot find mob '" + mobMap.get(MOB) + "'!");
-                return false;
+                return;
             }
 
             Integer weight = mobMap.get(WEIGHT);
@@ -170,7 +188,6 @@ public class PotentialSpawnRule {
                     weight, groupCountMin, groupCountMax);
             spawnEntries.add(entry);
         }
-        return true;
     }
 
     private void addMinCountCheck(AttributeMap map) {
@@ -478,21 +495,27 @@ public class PotentialSpawnRule {
         return spawnEntries;
     }
 
+    public List<Class> getToRemoveMobs() {
+        return toRemoveMobs;
+    }
+
     public static PotentialSpawnRule parse(JsonElement element) {
         if (element == null) {
             return null;
         } else {
             JsonObject jsonObject = element.getAsJsonObject();
-            if (!jsonObject.has("mobs")) {
+            if ((!jsonObject.has("mobs")) && (!jsonObject.has("remove"))) {
                 return null;
             }
 
             AttributeMap map = FACTORY.parse(element);
 
-            JsonArray mobs = jsonObject.get("mobs").getAsJsonArray();
-            for (JsonElement mob : mobs) {
-                AttributeMap mobMap = MOB_FACTORY.parse(mob);
-                map.addList(MOBS, mobMap);
+            if (jsonObject.has("mobs")) {
+                JsonArray mobs = jsonObject.get("mobs").getAsJsonArray();
+                for (JsonElement mob : mobs) {
+                    AttributeMap mobMap = MOB_FACTORY.parse(mob);
+                    map.addList(MOBS, mobMap);
+                }
             }
             return new PotentialSpawnRule(map);
         }

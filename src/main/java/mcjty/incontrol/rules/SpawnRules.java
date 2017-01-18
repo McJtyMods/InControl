@@ -57,9 +57,15 @@ public class SpawnRules {
         }
         JsonParser parser = new JsonParser();
         JsonElement element = parser.parse(br);
+        int i = 0;
         for (JsonElement entry : element.getAsJsonArray()) {
             PotentialSpawnRule rule = PotentialSpawnRule.parse(entry);
-            potentialSpawnRules.add(rule);
+            if (rule != null) {
+                potentialSpawnRules.add(rule);
+            } else {
+                InControl.logger.log(Level.ERROR, "Rule " + i + " in potentialspawn.json is invalid, skipping!");
+            }
+            i++;
         }
     }
 
@@ -107,9 +113,15 @@ public class SpawnRules {
         }
         JsonParser parser = new JsonParser();
         JsonElement element = parser.parse(br);
+        int i = 0;
         for (JsonElement entry : element.getAsJsonArray()) {
             SpawnRule rule = SpawnRule.parse(entry);
-            rules.add(rule);
+            if (rule != null) {
+                rules.add(rule);
+            } else {
+                InControl.logger.log(Level.ERROR, "Rule " + i + " in spawn.json is invalid, skipping!");
+            }
+            i++;
         }
     }
 

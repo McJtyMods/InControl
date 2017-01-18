@@ -53,6 +53,7 @@ public interface RuleKeys {
 
     // Mob spawn entry
     Key<AttributeMap> MOBS = Key.create(Type.MAP, "mobs");
+    Key<String> REMOVE = Key.create(Type.STRING, "remove");
 
     Key<Integer> WEIGHT = Key.create(Type.INTEGER, "weight");
     Key<Integer> GROUPCOUNTMIN = Key.create(Type.INTEGER, "groupcountmin");

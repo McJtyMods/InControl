@@ -44,6 +44,16 @@ public class ForgeEventHandlers {
         int i = 0;
         for (PotentialSpawnRule rule : SpawnRules.potentialSpawnRules) {
             if (rule.match(event)) {
+
+                // First remove mob entries if needed
+                for (Class clazz : rule.getToRemoveMobs()) {
+                    for (int idx = event.getList().size()-1 ; idx >= 0 ; idx--) {
+                        if (event.getList().get(idx).entityClass == clazz) {
+                            event.getList().remove(idx);
+                        }
+                    }
+                }
+
                 List<Biome.SpawnListEntry> spawnEntries = rule.getSpawnEntries();
                 for (Biome.SpawnListEntry entry : spawnEntries) {
                     if (debug) {
