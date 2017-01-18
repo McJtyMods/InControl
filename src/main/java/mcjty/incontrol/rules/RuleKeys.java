@@ -51,10 +51,18 @@ public interface RuleKeys {
     Key<String> ARMORLEGS = Key.create(Type.STRING, "armorlegs");
     Key<String> ARMORBOOTS = Key.create(Type.STRING, "armorboots");
 
+    // Foor loot rules
+    Key<String> SOURCE = Key.create(Type.STRING, "source");
+    Key<Boolean> PLAYER = Key.create(Type.BOOLEAN, "player");
+    Key<Boolean> PROJECTILE = Key.create(Type.BOOLEAN, "projectile");
+    Key<Boolean> EXPLOSION = Key.create(Type.BOOLEAN, "explosion");
+    Key<Boolean> FIRE = Key.create(Type.BOOLEAN, "fire");
+    Key<Boolean> MAGIC = Key.create(Type.BOOLEAN, "magic");
+    Key<String> ITEM = Key.create(Type.STRING, "item");
+
     // Mob spawn entry
     Key<AttributeMap> MOBS = Key.create(Type.MAP, "mobs");
     Key<String> REMOVE = Key.create(Type.STRING, "remove");
-
     Key<Integer> WEIGHT = Key.create(Type.INTEGER, "weight");
     Key<Integer> GROUPCOUNTMIN = Key.create(Type.INTEGER, "groupcountmin");
     Key<Integer> GROUPCOUNTMAX = Key.create(Type.INTEGER, "groupcountmax");

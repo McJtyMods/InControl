@@ -8,24 +8,71 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SpawnRules {
+public class RulesManager {
 
     private static String path;
     public static List<SpawnRule> rules = new ArrayList<>();
     public static List<PotentialSpawnRule> potentialSpawnRules = new ArrayList<>();
+    public static List<LootRule> lootRules = new ArrayList<>();
 
     public static void reloadRules() {
         rules.clear();
         potentialSpawnRules.clear();
+        lootRules.clear();
         readRules();
         readPotentialSpawnRules();
+        readLootRules();
     }
 
     public static void readRules(File directory) {
         path = directory.getPath();
         readRules();
         readPotentialSpawnRules();
+        readLootRules();
     }
+
+    private static void readLootRules() {
+        File file = new File(path + File.separator + "incontrol", "loot.json");
+        if (!file.exists()) {
+            // Create an empty rule file
+            makeEmptyRuleFile(file);
+            return;
+        }
+
+        InControl.logger.log(Level.INFO, "Reading loot rules from loot.json");
+        InputStream inputstream = null;
+        try {
+            inputstream = new FileInputStream(file);
+        } catch (FileNotFoundException e) {
+            InControl.logger.log(Level.ERROR, "Error reading loot.json!");
+            return;
+        }
+
+        readLootRulesFromFile(inputstream);
+    }
+
+    private static void readLootRulesFromFile(InputStream inputstream) {
+        BufferedReader br;
+        try {
+            br = new BufferedReader(new InputStreamReader(inputstream, "UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            InControl.logger.log(Level.ERROR, "Error reading loot.json!");
+            return;
+        }
+        JsonParser parser = new JsonParser();
+        JsonElement element = parser.parse(br);
+        int i = 0;
+        for (JsonElement entry : element.getAsJsonArray()) {
+            LootRule rule = LootRule.parse(entry);
+            if (rule != null) {
+                lootRules.add(rule);
+            } else {
+                InControl.logger.log(Level.ERROR, "Rule " + i + " in loot.json is invalid, skipping!");
+            }
+            i++;
+        }
+    }
+
 
     private static void readPotentialSpawnRules() {
         File file = new File(path + File.separator + "incontrol", "potentialspawn.json");

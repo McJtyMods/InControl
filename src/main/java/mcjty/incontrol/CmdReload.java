@@ -1,6 +1,6 @@
 package mcjty.incontrol;
 
-import mcjty.incontrol.rules.SpawnRules;
+import mcjty.incontrol.rules.RulesManager;
 import mcjty.lib.compat.CompatCommandBase;
 import mcjty.lib.tools.ChatTools;
 import net.minecraft.command.CommandException;
@@ -22,6 +22,6 @@ public class CmdReload extends CompatCommandBase {
     @Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
         ChatTools.addChatMessage(sender, new TextComponentString("Reloaded InControl rules"));
-        SpawnRules.reloadRules();
+        RulesManager.reloadRules();
     }
 }
