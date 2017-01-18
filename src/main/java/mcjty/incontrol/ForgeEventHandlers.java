@@ -1,10 +1,16 @@
 package mcjty.incontrol;
 
+import mcjty.incontrol.rules.LootRule;
 import mcjty.incontrol.rules.PotentialSpawnRule;
+import mcjty.incontrol.rules.RulesManager;
 import mcjty.incontrol.rules.SpawnRule;
-import mcjty.incontrol.rules.SpawnRules;
+import mcjty.lib.tools.ItemStackTools;
+import net.minecraft.entity.item.EntityItem;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.biome.Biome;
+import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.Event;
@@ -20,7 +26,7 @@ public class ForgeEventHandlers {
     @SubscribeEvent
     public void onEntitySpawnEvent(LivingSpawnEvent.CheckSpawn event) {
         int i = 0;
-        for (SpawnRule rule : SpawnRules.rules) {
+        for (SpawnRule rule : RulesManager.rules) {
             if (rule.match(event)) {
                 Event.Result result = rule.getResult();
                 if (debug) {
@@ -42,8 +48,18 @@ public class ForgeEventHandlers {
     @SubscribeEvent
     public void onPotentialSpawns(WorldEvent.PotentialSpawns event) {
         int i = 0;
-        for (PotentialSpawnRule rule : SpawnRules.potentialSpawnRules) {
+        for (PotentialSpawnRule rule : RulesManager.potentialSpawnRules) {
             if (rule.match(event)) {
+
+                // First remove mob entries if needed
+                for (Class clazz : rule.getToRemoveMobs()) {
+                    for (int idx = event.getList().size()-1 ; idx >= 0 ; idx--) {
+                        if (event.getList().get(idx).entityClass == clazz) {
+                            event.getList().remove(idx);
+                        }
+                    }
+                }
+
                 List<Biome.SpawnListEntry> spawnEntries = rule.getSpawnEntries();
                 for (Biome.SpawnListEntry entry : spawnEntries) {
                     if (debug) {
@@ -54,6 +70,35 @@ public class ForgeEventHandlers {
             }
             i++;
         }
-
     }
+
+    @SubscribeEvent
+    public void onLivingDrops(LivingDropsEvent event) {
+        int i = 0;
+        for (LootRule rule : RulesManager.lootRules) {
+            if (rule.match(event)) {
+                if (debug) {
+                    InControl.logger.log(Level.INFO, "Loot " + i + ": "
+                            + " entity: " + event.getEntity().getName());
+                }
+
+                for (Item item : rule.getToRemoveItems()) {
+                    for (int idx = event.getDrops().size()-1 ; idx >= 0 ; idx--) {
+                        ItemStack stack = event.getDrops().get(idx).getEntityItem();
+                        if (ItemStackTools.isValid(stack) && stack.getItem() == item) {
+                            event.getDrops().remove(idx);
+                        }
+                    }
+                }
+
+                for (Item item : rule.getToAddItems()) {
+                    BlockPos pos = event.getEntity().getPosition();
+                    event.getDrops().add(new EntityItem(event.getEntity().getEntityWorld(), pos.getX(), pos.getY(), pos.getZ(),
+                            new ItemStack(item)));
+                }
+            }
+            i++;
+        }
+    }
+
 }
