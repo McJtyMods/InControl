@@ -74,14 +74,17 @@ public class PotentialSpawnRule {
             return;
         }
         makeSpawnEntries(map);
-
-        if (map.has(MINCOUNT)) {
-            addMinCountCheck(map);
-        }
-        if (map.has(MAXCOUNT)) {
-            addMaxCountCheck(map);
+        if (map.has(REMOVE)) {
+            addToRemoveAction(map);
         }
 
+        addChecks(map);
+    }
+
+    private void addChecks(AttributeMap map) {
+        if (map.has(RANDOM)) {
+            addRandomCheck(map);
+        }
         if (map.has(MINTIME)) {
             addMinTimeCheck(map);
         }
@@ -138,15 +141,15 @@ public class PotentialSpawnRule {
         if (map.has(DIMENSION)) {
             addDimensionCheck(map);
         }
-        if (map.has(RANDOM)) {
-            addRandomCheck(map);
-        }
+
         if (map.has(STRUCTURE)) {
             addStructureCheck(map);
         }
-
-        if (map.has(REMOVE)) {
-            addToRemoveAction(map);
+        if (map.has(MINCOUNT)) {
+            addMinCountCheck(map);
+        }
+        if (map.has(MAXCOUNT)) {
+            addMaxCountCheck(map);
         }
     }
 
