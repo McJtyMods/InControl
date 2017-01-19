@@ -34,7 +34,7 @@ public class ForgeEventHandlers {
                             + " biome: " + event.getWorld().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ())).getBiomeName());
                 }
                 event.setResult(result);
-                if (result == Event.Result.ALLOW) {
+                if (result != Event.Result.DENY) {
                     rule.action(event);
                 }
                 return;
@@ -56,7 +56,7 @@ public class ForgeEventHandlers {
                             + " biome: " + event.getWorld().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ())).getBiomeName());
                 }
                 event.setResult(result);
-                if (result == Event.Result.ALLOW) {
+                if (result != Event.Result.DENY) {
                     rule.action(event);
                 }
                 return;
