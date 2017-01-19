@@ -548,7 +548,7 @@ public class GenericRuleEvaluator {
     }
 
     public void addHeldItemCheck(AttributeMap map) {
-        List<Item> items = getItems(map.getList(ACTION_HELDITEM));
+        List<Item> items = getItems(map.getList(HELDITEM));
         checks.add((event,query) -> {
             DamageSource source = query.getSource(event);
             if (source == null) {
