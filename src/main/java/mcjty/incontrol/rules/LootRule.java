@@ -66,9 +66,9 @@ public class LootRule {
                 .attribute(Attribute.createMulti(SOURCE))
                 .attribute(Attribute.createMulti(HELDITEM))
 
-                .attribute(Attribute.createMulti(ITEM))
-                .attribute(Attribute.createMulti(REMOVE))
-                .attribute(Attribute.create(REMOVEALL))
+                .attribute(Attribute.createMulti(ACTION_ITEM))
+                .attribute(Attribute.createMulti(ACTION_REMOVE))
+                .attribute(Attribute.create(ACTION_REMOVEALL))
         ;
     }
 
@@ -83,14 +83,14 @@ public class LootRule {
     }
 
     private void addActions(AttributeMap map) {
-        if (map.has(ITEM)) {
+        if (map.has(ACTION_ITEM)) {
             addItem(map);
         }
-        if (map.has(REMOVE)) {
+        if (map.has(ACTION_REMOVE)) {
             removeItem(map);
         }
-        if (map.has(REMOVEALL)) {
-            removeAll = map.get(REMOVEALL);
+        if (map.has(ACTION_REMOVEALL)) {
+            removeAll = map.get(ACTION_REMOVEALL);
         }
     }
 
@@ -185,7 +185,7 @@ public class LootRule {
         if (map.has(BIOME)) {
             addBiomesCheck(map);
         }
-        if (map.has(HELDITEM)) {
+        if (map.has(ACTION_HELDITEM)) {
             addHeldItemCheck(map);
         }
         if (map.has(STRUCTURE)) {
@@ -219,15 +219,15 @@ public class LootRule {
     }
 
     private void addItem(AttributeMap map) {
-        toAddItems.addAll(getItems(map.getList(ITEM)));
+        toAddItems.addAll(getItems(map.getList(ACTION_ITEM)));
     }
 
     private void removeItem(AttributeMap map) {
-        toRemoveItems.addAll(getItems(map.getList(REMOVE)));
+        toRemoveItems.addAll(getItems(map.getList(ACTION_REMOVE)));
     }
 
     private void addHeldItemCheck(AttributeMap map) {
-        List<Item> items = getItems(map.getList(HELDITEM));
+        List<Item> items = getItems(map.getList(ACTION_HELDITEM));
         checks.add(event -> {
             if (event.getSource() == null) {
                 return false;

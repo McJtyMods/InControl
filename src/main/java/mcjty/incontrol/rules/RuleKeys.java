@@ -34,22 +34,22 @@ public interface RuleKeys {
     Key<Integer> DIMENSION = Key.create(Type.INTEGER, "dimension");
 
     // Outputs
-    Key<String> RESULT = Key.create(Type.STRING, "result");
-    Key<Float> HEALTHMULTIPLY = Key.create(Type.FLOAT, "healthmultiply");
-    Key<Float> HEALTHADD = Key.create(Type.FLOAT, "healthadd");
-    Key<Float> SPEEDMULTIPLY = Key.create(Type.FLOAT, "speedmultiply");
-    Key<Float> SPEEDADD = Key.create(Type.FLOAT, "speedadd");
-    Key<Float> DAMAGEMULTIPLY = Key.create(Type.FLOAT, "damagemultiply");
-    Key<Float> DAMAGEADD = Key.create(Type.FLOAT, "damageadd");
-    Key<Float> SIZEMULTIPLY = Key.create(Type.FLOAT, "sizemultiply");
-    Key<Float> SIZEADD = Key.create(Type.FLOAT, "sizeadd");
-    Key<Boolean> ANGRY = Key.create(Type.BOOLEAN, "angry");
-    Key<String> POTION = Key.create(Type.STRING, "potion");
-    Key<String> HELDITEM = Key.create(Type.STRING, "helditem");
-    Key<String> ARMORCHEST = Key.create(Type.STRING, "armorchest");
-    Key<String> ARMORHELMET = Key.create(Type.STRING, "armorhelmet");
-    Key<String> ARMORLEGS = Key.create(Type.STRING, "armorlegs");
-    Key<String> ARMORBOOTS = Key.create(Type.STRING, "armorboots");
+    Key<String> ACTION_RESULT = Key.create(Type.STRING, "result");
+    Key<Float> ACTION_HEALTHMULTIPLY = Key.create(Type.FLOAT, "healthmultiply");
+    Key<Float> ACTION_HEALTHADD = Key.create(Type.FLOAT, "healthadd");
+    Key<Float> ACTION_SPEEDMULTIPLY = Key.create(Type.FLOAT, "speedmultiply");
+    Key<Float> ACTION_SPEEDADD = Key.create(Type.FLOAT, "speedadd");
+    Key<Float> ACTION_DAMAGEMULTIPLY = Key.create(Type.FLOAT, "damagemultiply");
+    Key<Float> ACTION_DAMAGEADD = Key.create(Type.FLOAT, "damageadd");
+    Key<Float> ACTION_SIZEMULTIPLY = Key.create(Type.FLOAT, "sizemultiply");
+    Key<Float> ACTION_SIZEADD = Key.create(Type.FLOAT, "sizeadd");
+    Key<Boolean> ACTION_ANGRY = Key.create(Type.BOOLEAN, "angry");
+    Key<String> ACTION_POTION = Key.create(Type.STRING, "potion");
+    Key<String> ACTION_HELDITEM = Key.create(Type.STRING, "helditem");
+    Key<String> ACTION_ARMORCHEST = Key.create(Type.STRING, "armorchest");
+    Key<String> ACTION_ARMORHELMET = Key.create(Type.STRING, "armorhelmet");
+    Key<String> ACTION_ARMORLEGS = Key.create(Type.STRING, "armorlegs");
+    Key<String> ACTION_ARMORBOOTS = Key.create(Type.STRING, "armorboots");
 
     // Foor loot rules
     Key<String> SOURCE = Key.create(Type.STRING, "source");
@@ -58,14 +58,17 @@ public interface RuleKeys {
     Key<Boolean> EXPLOSION = Key.create(Type.BOOLEAN, "explosion");
     Key<Boolean> FIRE = Key.create(Type.BOOLEAN, "fire");
     Key<Boolean> MAGIC = Key.create(Type.BOOLEAN, "magic");
-    Key<String> ITEM = Key.create(Type.STRING, "item");
-    Key<Boolean> REMOVEALL = Key.create(Type.BOOLEAN, "removeall");
+    Key<String> HELDITEM = Key.create(Type.STRING, "helditem");
+
+    Key<String> ACTION_ITEM = Key.create(Type.STRING, "item");
+    Key<Boolean> ACTION_REMOVEALL = Key.create(Type.BOOLEAN, "removeall");
 
     // Mob spawn entry
-    Key<AttributeMap> MOBS = Key.create(Type.MAP, "mobs");
-    Key<String> REMOVE = Key.create(Type.STRING, "remove");
-    Key<Integer> WEIGHT = Key.create(Type.INTEGER, "weight");
-    Key<Integer> GROUPCOUNTMIN = Key.create(Type.INTEGER, "groupcountmin");
-    Key<Integer> GROUPCOUNTMAX = Key.create(Type.INTEGER, "groupcountmax");
+    Key<AttributeMap> ACTION_MOBS = Key.create(Type.MAP, "mobs");
+    Key<String> ACTION_REMOVE = Key.create(Type.STRING, "remove");
+    Key<String> MOB_NAME = Key.create(Type.STRING, "mob");
+    Key<Integer> MOB_WEIGHT = Key.create(Type.INTEGER, "weight");
+    Key<Integer> MOB_GROUPCOUNTMIN = Key.create(Type.INTEGER, "groupcountmin");
+    Key<Integer> MOB_GROUPCOUNTMAX = Key.create(Type.INTEGER, "groupcountmax");
 
 }

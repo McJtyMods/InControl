@@ -89,22 +89,22 @@ public class SummonAidRule {
                 .attribute(Attribute.createMulti(BIOME))
                 .attribute(Attribute.createMulti(DIMENSION))
 
-                .attribute(Attribute.create(RESULT))
-                .attribute(Attribute.create(HEALTHMULTIPLY))
-                .attribute(Attribute.create(HEALTHADD))
-                .attribute(Attribute.create(SPEEDMULTIPLY))
-                .attribute(Attribute.create(SPEEDADD))
-                .attribute(Attribute.create(DAMAGEMULTIPLY))
-                .attribute(Attribute.create(DAMAGEADD))
-                .attribute(Attribute.create(SIZEMULTIPLY))
-                .attribute(Attribute.create(SIZEADD))
-                .attribute(Attribute.create(ANGRY))
-                .attribute(Attribute.createMulti(HELDITEM))
-                .attribute(Attribute.createMulti(ARMORBOOTS))
-                .attribute(Attribute.createMulti(ARMORLEGS))
-                .attribute(Attribute.createMulti(ARMORCHEST))
-                .attribute(Attribute.createMulti(ARMORHELMET))
-                .attribute(Attribute.createMulti(POTION))
+                .attribute(Attribute.create(ACTION_RESULT))
+                .attribute(Attribute.create(ACTION_HEALTHMULTIPLY))
+                .attribute(Attribute.create(ACTION_HEALTHADD))
+                .attribute(Attribute.create(ACTION_SPEEDMULTIPLY))
+                .attribute(Attribute.create(ACTION_SPEEDADD))
+                .attribute(Attribute.create(ACTION_DAMAGEMULTIPLY))
+                .attribute(Attribute.create(ACTION_DAMAGEADD))
+                .attribute(Attribute.create(ACTION_SIZEMULTIPLY))
+                .attribute(Attribute.create(ACTION_SIZEADD))
+                .attribute(Attribute.create(ACTION_ANGRY))
+                .attribute(Attribute.createMulti(ACTION_HELDITEM))
+                .attribute(Attribute.createMulti(ACTION_ARMORBOOTS))
+                .attribute(Attribute.createMulti(ACTION_ARMORLEGS))
+                .attribute(Attribute.createMulti(ACTION_ARMORCHEST))
+                .attribute(Attribute.createMulti(ACTION_ARMORHELMET))
+                .attribute(Attribute.createMulti(ACTION_POTION))
         ;
     }
 
@@ -118,8 +118,8 @@ public class SummonAidRule {
     }
 
     private void addActions(AttributeMap map) {
-        if (map.has(RESULT)) {
-            String br = map.get(RESULT);
+        if (map.has(ACTION_RESULT)) {
+            String br = map.get(ACTION_RESULT);
             if ("default".equals(br) || br.startsWith("def")) {
                 this.result = Event.Result.DEFAULT;
             } else if ("allow".equals(br) || "true".equals(br)) {
@@ -131,37 +131,37 @@ public class SummonAidRule {
             this.result = Event.Result.DEFAULT;
         }
 
-        if (map.has(HEALTHMULTIPLY) || map.has(HEALTHADD)) {
+        if (map.has(ACTION_HEALTHMULTIPLY) || map.has(ACTION_HEALTHADD)) {
             addHealthAction(map);
         }
-        if (map.has(SPEEDMULTIPLY) || map.has(SPEEDADD)) {
+        if (map.has(ACTION_SPEEDMULTIPLY) || map.has(ACTION_SPEEDADD)) {
             addSpeedAction(map);
         }
-        if (map.has(DAMAGEMULTIPLY) || map.has(DAMAGEADD)) {
+        if (map.has(ACTION_DAMAGEMULTIPLY) || map.has(ACTION_DAMAGEADD)) {
             addDamageAction(map);
         }
-        if (map.has(SIZEMULTIPLY) || map.has(SIZEADD)) {
+        if (map.has(ACTION_SIZEMULTIPLY) || map.has(ACTION_SIZEADD)) {
             addSizeActions(map);
         }
-        if (map.has(ANGRY)) {
+        if (map.has(ACTION_ANGRY)) {
             addAngryAction(map);
         }
-        if (map.has(HELDITEM)) {
+        if (map.has(ACTION_HELDITEM)) {
             addHeldItem(map);
         }
-        if (map.has(ARMORBOOTS)) {
-            addArmorItem(map, ARMORBOOTS, EntityEquipmentSlot.FEET);
+        if (map.has(ACTION_ARMORBOOTS)) {
+            addArmorItem(map, ACTION_ARMORBOOTS, EntityEquipmentSlot.FEET);
         }
-        if (map.has(ARMORLEGS)) {
-            addArmorItem(map, ARMORLEGS, EntityEquipmentSlot.LEGS);
+        if (map.has(ACTION_ARMORLEGS)) {
+            addArmorItem(map, ACTION_ARMORLEGS, EntityEquipmentSlot.LEGS);
         }
-        if (map.has(ARMORHELMET)) {
-            addArmorItem(map, ARMORHELMET, EntityEquipmentSlot.HEAD);
+        if (map.has(ACTION_ARMORHELMET)) {
+            addArmorItem(map, ACTION_ARMORHELMET, EntityEquipmentSlot.HEAD);
         }
-        if (map.has(ARMORCHEST)) {
-            addArmorItem(map, ARMORCHEST, EntityEquipmentSlot.CHEST);
+        if (map.has(ACTION_ARMORCHEST)) {
+            addArmorItem(map, ACTION_ARMORCHEST, EntityEquipmentSlot.CHEST);
         }
-        if (map.has(POTION)) {
+        if (map.has(ACTION_POTION)) {
             addPotionsAction(map);
         }
     }
@@ -177,7 +177,7 @@ public class SummonAidRule {
 
     private void addPotionsAction(AttributeMap map) {
         List<PotionEffect> effects = new ArrayList<>();
-        for (String p : map.getList(POTION)) {
+        for (String p : map.getList(ACTION_POTION)) {
             String[] splitted = StringUtils.split(p, ',');
             if (splitted == null || splitted.length != 3) {
                 InControl.logger.log(Level.ERROR, "Bad potion specifier '" + p + "'! Use <potion>,<duration>,<amplifier>");
@@ -243,7 +243,7 @@ public class SummonAidRule {
     }
 
     private void addHeldItem(AttributeMap map) {
-        final List<Item> items = getItems(map.getList(HELDITEM));
+        final List<Item> items = getItems(map.getList(ACTION_HELDITEM));
         if (items.isEmpty()) {
             return;
         }
@@ -262,7 +262,7 @@ public class SummonAidRule {
     }
 
     private void addAngryAction(AttributeMap map) {
-        if (map.get(ANGRY)) {
+        if (map.get(ACTION_ANGRY)) {
             actions.add(event -> {
                 EntityZombie helper = getHelper(event);
                 EntityPlayer player = event.getWorld().getClosestPlayerToEntity(helper, 50);
@@ -274,8 +274,8 @@ public class SummonAidRule {
     }
 
     private void addHealthAction(AttributeMap map) {
-        float m = map.has(HEALTHMULTIPLY) ? map.get(HEALTHMULTIPLY) : 1;
-        float a = map.has(HEALTHADD) ? map.get(HEALTHADD) : 0;
+        float m = map.has(ACTION_HEALTHMULTIPLY) ? map.get(ACTION_HEALTHMULTIPLY) : 1;
+        float a = map.has(ACTION_HEALTHADD) ? map.get(ACTION_HEALTHADD) : 0;
         actions.add(event -> {
             EntityZombie helper = getHelper(event);
             IAttributeInstance entityAttribute = helper.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH);
@@ -288,8 +288,8 @@ public class SummonAidRule {
     }
 
     private void addSpeedAction(AttributeMap map) {
-        float m = map.has(SPEEDMULTIPLY) ? map.get(SPEEDMULTIPLY) : 1;
-        float a = map.has(SPEEDADD) ? map.get(SPEEDADD) : 0;
+        float m = map.has(ACTION_SPEEDMULTIPLY) ? map.get(ACTION_SPEEDMULTIPLY) : 1;
+        float a = map.has(ACTION_SPEEDADD) ? map.get(ACTION_SPEEDADD) : 0;
         actions.add(event -> {
             EntityZombie helper = getHelper(event);
             IAttributeInstance entityAttribute = helper.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED);
@@ -302,8 +302,8 @@ public class SummonAidRule {
 
     private void addSizeActions(AttributeMap map) {
         InControl.logger.log(Level.WARN, "Mob resizing not implemented yet!");
-        float m = map.has(SIZEMULTIPLY) ? map.get(SIZEMULTIPLY) : 1;
-        float a = map.has(SIZEADD) ? map.get(SIZEADD) : 0;
+        float m = map.has(ACTION_SIZEMULTIPLY) ? map.get(ACTION_SIZEMULTIPLY) : 1;
+        float a = map.has(ACTION_SIZEADD) ? map.get(ACTION_SIZEADD) : 0;
         actions.add(event -> {
             EntityZombie helper = getHelper(event);
             // Not implemented yet
@@ -312,8 +312,8 @@ public class SummonAidRule {
     }
 
     private void addDamageAction(AttributeMap map) {
-        float m = map.has(DAMAGEMULTIPLY) ? map.get(DAMAGEMULTIPLY) : 1;
-        float a = map.has(DAMAGEADD) ? map.get(DAMAGEADD) : 0;
+        float m = map.has(ACTION_DAMAGEMULTIPLY) ? map.get(ACTION_DAMAGEMULTIPLY) : 1;
+        float a = map.has(ACTION_DAMAGEADD) ? map.get(ACTION_DAMAGEADD) : 0;
         actions.add(event -> {
             EntityZombie helper = getHelper(event);
             IAttributeInstance entityAttribute = helper.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE);
