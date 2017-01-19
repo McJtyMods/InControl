@@ -5,14 +5,20 @@ import mcjty.incontrol.cache.StructureCache;
 import mcjty.incontrol.typed.AttributeMap;
 import mcjty.incontrol.varia.Tools;
 import mcjty.lib.tools.EntityTools;
+import mcjty.lib.tools.ItemStackTools;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.passive.IAnimals;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.fml.common.eventhandler.Event;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 
@@ -90,6 +96,25 @@ public class GenericRuleEvaluator {
             addMaxAdditionalDifficultyCheck(map);
         }
 
+        if (map.has(PLAYER)) {
+            addPlayerCheck(map);
+        }
+        if (map.has(EXPLOSION)) {
+            addExplosionCheck(map);
+        }
+        if (map.has(PROJECTILE)) {
+            addProjectileCheck(map);
+        }
+        if (map.has(FIRE)) {
+            addFireCheck(map);
+        }
+        if (map.has(MAGIC)) {
+            addMagicCheck(map);
+        }
+
+        if (map.has(SOURCE)) {
+            addSourceCheck(map);
+        }
         if (map.has(SEESKY)) {
             addSeeSkyCheck(map);
         }
@@ -101,6 +126,9 @@ public class GenericRuleEvaluator {
         }
         if (map.has(BIOME)) {
             addBiomesCheck(map);
+        }
+        if (map.has(HELDITEM)) {
+            addHeldItemCheck(map);
         }
 
         if (map.has(STRUCTURE)) {
@@ -439,6 +467,64 @@ public class GenericRuleEvaluator {
         checks.add((event,query) -> query.getY(event) >= minheight);
     }
 
+
+    private void addPlayerCheck(AttributeMap map) {
+        boolean asPlayer = map.get(PLAYER);
+        if (asPlayer) {
+            checks.add((event,query) -> query.getSource(event) == null ? false : query.getSource(event).getEntity() instanceof EntityPlayer);
+        } else {
+            checks.add((event,query) -> query.getSource(event) == null ? true : !(query.getSource(event).getEntity() instanceof EntityPlayer));
+        }
+    }
+
+    private void addExplosionCheck(AttributeMap map) {
+        boolean explosion = map.get(EXPLOSION);
+        if (explosion) {
+            checks.add((event,query) -> query.getSource(event) == null ? false : query.getSource(event).isExplosion());
+        } else {
+            checks.add((event,query) -> query.getSource(event) == null ? false : !query.getSource(event).isExplosion());
+        }
+    }
+
+    private void addProjectileCheck(AttributeMap map) {
+        boolean projectile = map.get(PROJECTILE);
+        if (projectile) {
+            checks.add((event,query) -> query.getSource(event) == null ? false : query.getSource(event).isProjectile());
+        } else {
+            checks.add((event,query) -> query.getSource(event) == null ? false : !query.getSource(event).isProjectile());
+        }
+    }
+
+    private void addFireCheck(AttributeMap map) {
+        boolean fire = map.get(FIRE);
+        if (fire) {
+            checks.add((event,query) -> query.getSource(event) == null ? false : query.getSource(event).isFireDamage());
+        } else {
+            checks.add((event,query) -> query.getSource(event) == null ? false : !query.getSource(event).isFireDamage());
+        }
+    }
+
+    private void addMagicCheck(AttributeMap map) {
+        boolean magic = map.get(MAGIC);
+        if (magic) {
+            checks.add((event,query) -> query.getSource(event) == null ? false : query.getSource(event).isMagicDamage());
+        } else {
+            checks.add((event,query) -> query.getSource(event) == null ? false : !query.getSource(event).isMagicDamage());
+        }
+    }
+
+    private void addSourceCheck(AttributeMap map) {
+        List<String> sources = map.getList(SOURCE);
+        Set<String> sourceSet = new HashSet<>(sources);
+        checks.add((event,query) -> {
+            if (query.getSource(event) == null) {
+                return false;
+            }
+            return sourceSet.contains(query.getSource(event).getDamageType());
+        });
+    }
+
+
     public boolean match(Event event, IEventQuery query) {
         for (BiFunction<Event, IEventQuery, Boolean> rule : checks) {
             if (!rule.apply(event, query)) {
@@ -447,5 +533,42 @@ public class GenericRuleEvaluator {
         }
         return true;
     }
+
+    private List<Item> getItems(List<String> itemNames) {
+        List<Item> items = new ArrayList<>();
+        for (String name : itemNames) {
+            Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(name));
+            if (item == null) {
+                InControl.logger.log(Level.ERROR, "Unknown item '" + name + "'!");
+            } else {
+                items.add(item);
+            }
+        }
+        return items;
+    }
+
+    public void addHeldItemCheck(AttributeMap map) {
+        List<Item> items = getItems(map.getList(ACTION_HELDITEM));
+        checks.add((event,query) -> {
+            DamageSource source = query.getSource(event);
+            if (source == null) {
+                return false;
+            }
+            Entity entity = source.getEntity();
+            if (entity instanceof EntityPlayer) {
+                EntityPlayer player = (EntityPlayer) entity;
+                ItemStack mainhand = player.getHeldItemMainhand();
+                if (ItemStackTools.isValid(mainhand)) {
+                    for (Item item : items) {
+                        if (mainhand.getItem() == item) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        });
+    }
+
 
 }

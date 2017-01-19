@@ -10,6 +10,7 @@ import mcjty.incontrol.typed.GenericAttributeMapFactory;
 import mcjty.lib.tools.EntityTools;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
@@ -43,6 +44,11 @@ public class PotentialSpawnRule {
 
         @Override
         public Entity getEntity(Object o) {
+            return null;
+        }
+
+        @Override
+        public DamageSource getSource(Object o) {
             return null;
         }
     };

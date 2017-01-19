@@ -18,6 +18,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
@@ -59,6 +60,11 @@ public class SpawnRule {
         @Override
         public Entity getEntity(Object o) {
             return ((LivingSpawnEvent.CheckSpawn) o).getEntity();
+        }
+
+        @Override
+        public DamageSource getSource(Object o) {
+            return null;
         }
     };
 
