@@ -482,7 +482,7 @@ public class GenericRuleEvaluator {
         if (explosion) {
             checks.add((event,query) -> query.getSource(event) == null ? false : query.getSource(event).isExplosion());
         } else {
-            checks.add((event,query) -> query.getSource(event) == null ? false : !query.getSource(event).isExplosion());
+            checks.add((event,query) -> query.getSource(event) == null ? true : !query.getSource(event).isExplosion());
         }
     }
 
@@ -491,7 +491,7 @@ public class GenericRuleEvaluator {
         if (projectile) {
             checks.add((event,query) -> query.getSource(event) == null ? false : query.getSource(event).isProjectile());
         } else {
-            checks.add((event,query) -> query.getSource(event) == null ? false : !query.getSource(event).isProjectile());
+            checks.add((event,query) -> query.getSource(event) == null ? true : !query.getSource(event).isProjectile());
         }
     }
 
@@ -500,7 +500,7 @@ public class GenericRuleEvaluator {
         if (fire) {
             checks.add((event,query) -> query.getSource(event) == null ? false : query.getSource(event).isFireDamage());
         } else {
-            checks.add((event,query) -> query.getSource(event) == null ? false : !query.getSource(event).isFireDamage());
+            checks.add((event,query) -> query.getSource(event) == null ? true : !query.getSource(event).isFireDamage());
         }
     }
 
@@ -509,7 +509,7 @@ public class GenericRuleEvaluator {
         if (magic) {
             checks.add((event,query) -> query.getSource(event) == null ? false : query.getSource(event).isMagicDamage());
         } else {
-            checks.add((event,query) -> query.getSource(event) == null ? false : !query.getSource(event).isMagicDamage());
+            checks.add((event,query) -> query.getSource(event) == null ? true : !query.getSource(event).isMagicDamage());
         }
     }
 
