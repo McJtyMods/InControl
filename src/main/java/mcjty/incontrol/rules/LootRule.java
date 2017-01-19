@@ -78,6 +78,26 @@ public class LootRule {
     private boolean removeAll = false;
 
     private LootRule(AttributeMap map) {
+        addChecks(map);
+        addActions(map);
+    }
+
+    private void addActions(AttributeMap map) {
+        if (map.has(ITEM)) {
+            addItem(map);
+        }
+        if (map.has(REMOVE)) {
+            removeItem(map);
+        }
+        if (map.has(REMOVEALL)) {
+            removeAll = map.get(REMOVEALL);
+        }
+    }
+
+    private void addChecks(AttributeMap map) {
+        if (map.has(RANDOM)) {
+            addRandomCheck(map);
+        }
         if (map.has(MINTIME)) {
             addMinTimeCheck(map);
         }
@@ -91,36 +111,11 @@ public class LootRule {
         if (map.has(MAXHEIGHT)) {
             addMaxHeightCheck(map);
         }
-
-        if (map.has(MINLIGHT)) {
-            addMinLightCheck(map);
-        }
-        if (map.has(MAXLIGHT)) {
-            addMaxLightCheck(map);
-        }
-
-        if (map.has(MINSPAWNDIST)) {
-            addMinSpawnDistCheck(map);
-        }
-        if (map.has(MAXSPAWNDIST)) {
-            addMaxSpawnDistCheck(map);
-        }
-
-        if (map.has(MINDIFFICULTY)) {
-            addMinAdditionalDifficultyCheck(map);
-        }
-        if (map.has(MAXDIFFICULTY)) {
-            addMaxAdditionalDifficultyCheck(map);
-        }
-
         if (map.has(HOSTILE)) {
             addHostileCheck(map);
         }
         if (map.has(PASSIVE)) {
             addPassiveCheck(map);
-        }
-        if (map.has(SEESKY)) {
-            addSeeSkyCheck(map);
         }
         if (map.has(WEATHER)) {
             addWeatherCheck(map);
@@ -146,6 +141,38 @@ public class LootRule {
         if (map.has(MAGIC)) {
             addMagicCheck(map);
         }
+
+        if (map.has(MINLIGHT)) {
+            addMinLightCheck(map);
+        }
+        if (map.has(MAXLIGHT)) {
+            addMaxLightCheck(map);
+        }
+
+        if (map.has(DIMENSION)) {
+            addDimensionCheck(map);
+        }
+
+        if (map.has(MINSPAWNDIST)) {
+            addMinSpawnDistCheck(map);
+        }
+        if (map.has(MAXSPAWNDIST)) {
+            addMaxSpawnDistCheck(map);
+        }
+
+        if (map.has(MINDIFFICULTY)) {
+            addMinAdditionalDifficultyCheck(map);
+        }
+        if (map.has(MAXDIFFICULTY)) {
+            addMaxAdditionalDifficultyCheck(map);
+        }
+
+        if (map.has(SOURCE)) {
+            addSourceCheck(map);
+        }
+        if (map.has(SEESKY)) {
+            addSeeSkyCheck(map);
+        }
         if (map.has(MOB)) {
             addMobsCheck(map);
         }
@@ -158,31 +185,11 @@ public class LootRule {
         if (map.has(BIOME)) {
             addBiomesCheck(map);
         }
-        if (map.has(DIMENSION)) {
-            addDimensionCheck(map);
-        }
-        if (map.has(STRUCTURE)) {
-            addStructureCheck(map);
-        }
-        if (map.has(SOURCE)) {
-            addSourceCheck(map);
-        }
-
-        if (map.has(RANDOM)) {
-            addRandomCheck(map);
-        }
         if (map.has(HELDITEM)) {
             addHeldItemCheck(map);
         }
-
-        if (map.has(ITEM)) {
-            addItem(map);
-        }
-        if (map.has(REMOVE)) {
-            removeItem(map);
-        }
-        if (map.has(REMOVEALL)) {
-            removeAll = map.get(REMOVEALL);
+        if (map.has(STRUCTURE)) {
+            addStructureCheck(map);
         }
     }
 
