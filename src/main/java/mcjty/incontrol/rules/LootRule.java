@@ -2,6 +2,8 @@ package mcjty.incontrol.rules;
 
 import com.google.gson.JsonElement;
 import mcjty.incontrol.InControl;
+import mcjty.incontrol.rules.support.GenericRuleEvaluator;
+import mcjty.incontrol.rules.support.IEventQuery;
 import mcjty.incontrol.typed.Attribute;
 import mcjty.incontrol.typed.AttributeMap;
 import mcjty.incontrol.typed.GenericAttributeMapFactory;
@@ -19,36 +21,36 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import static mcjty.incontrol.rules.RuleKeys.*;
+import static mcjty.incontrol.rules.support.RuleKeys.*;
 
 public class LootRule {
 
     private static final GenericAttributeMapFactory FACTORY = new GenericAttributeMapFactory();
-    public static final IEventQuery EVENT_QUERY = new IEventQuery() {
+    public static final IEventQuery<LivingDropsEvent> EVENT_QUERY = new IEventQuery<LivingDropsEvent>() {
         @Override
-        public World getWorld(Object o) {
-            return ((LivingDropsEvent) o).getEntity().getEntityWorld();
+        public World getWorld(LivingDropsEvent o) {
+            return o.getEntity().getEntityWorld();
         }
 
         @Override
-        public BlockPos getPos(Object o) {
-            LivingDropsEvent s = (LivingDropsEvent) o;
+        public BlockPos getPos(LivingDropsEvent o) {
+            LivingDropsEvent s = o;
             return s.getEntity().getPosition();
         }
 
         @Override
-        public int getY(Object o) {
-            return ((LivingDropsEvent) o).getEntity().getPosition().getY();
+        public int getY(LivingDropsEvent o) {
+            return o.getEntity().getPosition().getY();
         }
 
         @Override
-        public Entity getEntity(Object o) {
-            return ((LivingDropsEvent) o).getEntity();
+        public Entity getEntity(LivingDropsEvent o) {
+            return o.getEntity();
         }
 
         @Override
-        public DamageSource getSource(Object o) {
-            return ((LivingDropsEvent) o).getSource();
+        public DamageSource getSource(LivingDropsEvent o) {
+            return o.getSource();
         }
     };
 

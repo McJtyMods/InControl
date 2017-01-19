@@ -2,6 +2,8 @@ package mcjty.incontrol.rules;
 
 import com.google.gson.JsonElement;
 import mcjty.incontrol.InControl;
+import mcjty.incontrol.rules.support.GenericRuleEvaluator;
+import mcjty.incontrol.rules.support.IEventQuery;
 import mcjty.incontrol.typed.Attribute;
 import mcjty.incontrol.typed.AttributeMap;
 import mcjty.incontrol.typed.GenericAttributeMapFactory;
@@ -33,36 +35,36 @@ import java.util.List;
 import java.util.Random;
 import java.util.function.Consumer;
 
-import static mcjty.incontrol.rules.RuleKeys.*;
+import static mcjty.incontrol.rules.support.RuleKeys.*;
 
 
 public class SummonAidRule {
 
     private static final GenericAttributeMapFactory FACTORY = new GenericAttributeMapFactory();
-    public static final IEventQuery EVENT_QUERY = new IEventQuery() {
+    public static final IEventQuery<ZombieEvent.SummonAidEvent> EVENT_QUERY = new IEventQuery<ZombieEvent.SummonAidEvent>() {
         @Override
-        public World getWorld(Object o) {
-            return ((ZombieEvent.SummonAidEvent) o).getWorld();
+        public World getWorld(ZombieEvent.SummonAidEvent o) {
+            return o.getWorld();
         }
 
         @Override
-        public BlockPos getPos(Object o) {
-            ZombieEvent.SummonAidEvent s = (ZombieEvent.SummonAidEvent) o;
+        public BlockPos getPos(ZombieEvent.SummonAidEvent o) {
+            ZombieEvent.SummonAidEvent s = o;
             return new BlockPos(s.getX(), s.getY(), s.getZ());
         }
 
         @Override
-        public int getY(Object o) {
-            return ((ZombieEvent.SummonAidEvent) o).getY();
+        public int getY(ZombieEvent.SummonAidEvent o) {
+            return o.getY();
         }
 
         @Override
-        public Entity getEntity(Object o) {
-            return ((ZombieEvent.SummonAidEvent) o).getEntity();
+        public Entity getEntity(ZombieEvent.SummonAidEvent o) {
+            return o.getEntity();
         }
 
         @Override
-        public DamageSource getSource(Object o) {
+        public DamageSource getSource(ZombieEvent.SummonAidEvent o) {
             return null;
         }
     };

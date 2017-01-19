@@ -2,6 +2,8 @@ package mcjty.incontrol.rules;
 
 import com.google.gson.JsonElement;
 import mcjty.incontrol.InControl;
+import mcjty.incontrol.rules.support.GenericRuleEvaluator;
+import mcjty.incontrol.rules.support.IEventQuery;
 import mcjty.incontrol.typed.Attribute;
 import mcjty.incontrol.typed.AttributeMap;
 import mcjty.incontrol.typed.GenericAttributeMapFactory;
@@ -34,36 +36,36 @@ import java.util.List;
 import java.util.Random;
 import java.util.function.Consumer;
 
-import static mcjty.incontrol.rules.RuleKeys.*;
+import static mcjty.incontrol.rules.support.RuleKeys.*;
 
 
 public class SpawnRule {
 
     private static final GenericAttributeMapFactory FACTORY = new GenericAttributeMapFactory();
-    public static final IEventQuery EVENT_QUERY = new IEventQuery() {
+    public static final IEventQuery<LivingSpawnEvent.CheckSpawn> EVENT_QUERY = new IEventQuery<LivingSpawnEvent.CheckSpawn>() {
         @Override
-        public World getWorld(Object o) {
-            return ((LivingSpawnEvent.CheckSpawn) o).getWorld();
+        public World getWorld(LivingSpawnEvent.CheckSpawn o) {
+            return o.getWorld();
         }
 
         @Override
-        public BlockPos getPos(Object o) {
-            LivingSpawnEvent.CheckSpawn s = (LivingSpawnEvent.CheckSpawn) o;
+        public BlockPos getPos(LivingSpawnEvent.CheckSpawn o) {
+            LivingSpawnEvent.CheckSpawn s = o;
             return new BlockPos(s.getX(), s.getY(), s.getZ());
         }
 
         @Override
-        public int getY(Object o) {
-            return (int) ((LivingSpawnEvent.CheckSpawn) o).getY();
+        public int getY(LivingSpawnEvent.CheckSpawn o) {
+            return (int) o.getY();
         }
 
         @Override
-        public Entity getEntity(Object o) {
-            return ((LivingSpawnEvent.CheckSpawn) o).getEntity();
+        public Entity getEntity(LivingSpawnEvent.CheckSpawn o) {
+            return o.getEntity();
         }
 
         @Override
-        public DamageSource getSource(Object o) {
+        public DamageSource getSource(LivingSpawnEvent.CheckSpawn o) {
             return null;
         }
     };

@@ -4,6 +4,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import mcjty.incontrol.InControl;
+import mcjty.incontrol.rules.support.GenericRuleEvaluator;
+import mcjty.incontrol.rules.support.IEventQuery;
 import mcjty.incontrol.typed.Attribute;
 import mcjty.incontrol.typed.AttributeMap;
 import mcjty.incontrol.typed.GenericAttributeMapFactory;
@@ -20,35 +22,35 @@ import org.apache.logging.log4j.Level;
 import java.util.ArrayList;
 import java.util.List;
 
-import static mcjty.incontrol.rules.RuleKeys.*;
+import static mcjty.incontrol.rules.support.RuleKeys.*;
 
 public class PotentialSpawnRule {
 
     private static final GenericAttributeMapFactory FACTORY = new GenericAttributeMapFactory();
     private static final GenericAttributeMapFactory MOB_FACTORY = new GenericAttributeMapFactory();
-    public static final IEventQuery EVENT_QUERY = new IEventQuery() {
+    public static final IEventQuery<WorldEvent.PotentialSpawns> EVENT_QUERY = new IEventQuery<WorldEvent.PotentialSpawns>() {
         @Override
-        public World getWorld(Object o) {
-            return ((WorldEvent.PotentialSpawns) o).getWorld();
+        public World getWorld(WorldEvent.PotentialSpawns o) {
+            return o.getWorld();
         }
 
         @Override
-        public BlockPos getPos(Object o) {
-            return ((WorldEvent.PotentialSpawns) o).getPos();
+        public BlockPos getPos(WorldEvent.PotentialSpawns o) {
+            return o.getPos();
         }
 
         @Override
-        public int getY(Object o) {
-            return ((WorldEvent.PotentialSpawns) o).getPos().getY();
+        public int getY(WorldEvent.PotentialSpawns o) {
+            return o.getPos().getY();
         }
 
         @Override
-        public Entity getEntity(Object o) {
+        public Entity getEntity(WorldEvent.PotentialSpawns o) {
             return null;
         }
 
         @Override
-        public DamageSource getSource(Object o) {
+        public DamageSource getSource(WorldEvent.PotentialSpawns o) {
             return null;
         }
     };

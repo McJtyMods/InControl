@@ -1,4 +1,4 @@
-package mcjty.incontrol.rules;
+package mcjty.incontrol.rules.support;
 
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.cache.StructureCache;
@@ -25,7 +25,7 @@ import org.apache.logging.log4j.Level;
 import java.util.*;
 import java.util.function.BiFunction;
 
-import static mcjty.incontrol.rules.RuleKeys.*;
+import static mcjty.incontrol.rules.support.RuleKeys.*;
 
 
 public class GenericRuleEvaluator {

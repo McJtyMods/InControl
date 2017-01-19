@@ -1,4 +1,4 @@
-package mcjty.incontrol.rules;
+package mcjty.incontrol.rules.support;
 
 import mcjty.incontrol.typed.AttributeMap;
 import mcjty.incontrol.typed.Key;
