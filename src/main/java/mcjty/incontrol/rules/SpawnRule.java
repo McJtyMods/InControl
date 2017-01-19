@@ -85,6 +85,8 @@ public class SpawnRule {
                 .attribute(Attribute.create(MINSPAWNDIST))
                 .attribute(Attribute.create(MAXSPAWNDIST))
                 .attribute(Attribute.create(RANDOM))
+                .attribute(Attribute.create(CANSPAWNHERE))
+                .attribute(Attribute.create(NOTCOLLIDING))
                 .attribute(Attribute.create(PASSIVE))
                 .attribute(Attribute.create(HOSTILE))
                 .attribute(Attribute.create(SEESKY))

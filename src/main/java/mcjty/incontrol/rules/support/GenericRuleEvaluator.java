@@ -7,6 +7,7 @@ import mcjty.incontrol.varia.Tools;
 import mcjty.lib.tools.EntityTools;
 import mcjty.lib.tools.ItemStackTools;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.passive.IAnimals;
 import net.minecraft.entity.player.EntityPlayer;
@@ -86,6 +87,13 @@ public class GenericRuleEvaluator {
             addMaxLightCheck(map);
         }
 
+        if (map.has(CANSPAWNHERE)) {
+            addCanSpawnHereCheck(map);
+        }
+        if (map.has(NOTCOLLIDING)) {
+            addNotCollidingCheck(map);
+        }
+
         if (map.has(MOB)) {
             addMobsCheck(map);
         }
@@ -140,6 +148,52 @@ public class GenericRuleEvaluator {
         }
         if (map.has(MAXCOUNT)) {
             addMaxCountCheck(map);
+        }
+    }
+
+    private void addCanSpawnHereCheck(AttributeMap map) {
+        boolean c = map.get(CANSPAWNHERE);
+        if (c) {
+            checks.add((event, query) -> {
+                Entity entity = query.getEntity(event);
+                if (entity instanceof EntityLiving) {
+                    return ((EntityLiving) entity).getCanSpawnHere();
+                } else {
+                    return false;
+                }
+            });
+        } else {
+            checks.add((event, query) -> {
+                Entity entity = query.getEntity(event);
+                if (entity instanceof EntityLiving) {
+                    return !((EntityLiving) entity).getCanSpawnHere();
+                } else {
+                    return true;
+                }
+            });
+        }
+    }
+
+    private void addNotCollidingCheck(AttributeMap map) {
+        boolean c = map.get(NOTCOLLIDING);
+        if (c) {
+            checks.add((event, query) -> {
+                Entity entity = query.getEntity(event);
+                if (entity instanceof EntityLiving) {
+                    return ((EntityLiving) entity).isNotColliding();
+                } else {
+                    return false;
+                }
+            });
+        } else {
+            checks.add((event, query) -> {
+                Entity entity = query.getEntity(event);
+                if (entity instanceof EntityLiving) {
+                    return !((EntityLiving) entity).isNotColliding();
+                } else {
+                    return true;
+                }
+            });
         }
     }
 

@@ -20,6 +20,8 @@ public interface RuleKeys {
     Key<Float> MINSPAWNDIST = Key.create(Type.FLOAT, "minspawndist");
     Key<Float> MAXSPAWNDIST = Key.create(Type.FLOAT, "maxspawndist");
     Key<Float> RANDOM = Key.create(Type.FLOAT, "random");
+    Key<Boolean> CANSPAWNHERE = Key.create(Type.BOOLEAN, "canspawnhere");
+    Key<Boolean> NOTCOLLIDING = Key.create(Type.BOOLEAN, "notcolliding");
     Key<Boolean> PASSIVE = Key.create(Type.BOOLEAN, "passive");
     Key<Boolean> HOSTILE = Key.create(Type.BOOLEAN, "hostile");
     Key<Boolean> SEESKY = Key.create(Type.BOOLEAN, "seesky");
