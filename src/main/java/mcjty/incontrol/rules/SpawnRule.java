@@ -92,93 +92,16 @@ public class SpawnRule {
         ;
     }
 
-    private final Event.Result result;
+    private Event.Result result;
     private final List<Function<LivingSpawnEvent.CheckSpawn, Boolean>> checks = new ArrayList<>();
     private final List<Consumer<LivingSpawnEvent.CheckSpawn>> actions = new ArrayList<>();
 
     private SpawnRule(AttributeMap map) {
-        if (map.has(MINCOUNT)) {
-            addMinCountCheck(map);
-        }
-        if (map.has(MAXCOUNT)) {
-            addMaxCountCheck(map);
-        }
+        addChecks(map);
+        addActions(map);
+    }
 
-        if (map.has(MINTIME)) {
-            addMinTimeCheck(map);
-        }
-        if (map.has(MAXTIME)) {
-            addMaxTimeCheck(map);
-        }
-
-        if (map.has(MINHEIGHT)) {
-            addMinHeightCheck(map);
-        }
-        if (map.has(MAXHEIGHT)) {
-            addMaxHeightCheck(map);
-        }
-
-        if (map.has(MINLIGHT)) {
-            addMinLightCheck(map);
-        }
-        if (map.has(MAXLIGHT)) {
-            addMaxLightCheck(map);
-        }
-
-        if (map.has(MINSPAWNDIST)) {
-            addMinSpawnDistCheck(map);
-        }
-        if (map.has(MAXSPAWNDIST)) {
-            addMaxSpawnDistCheck(map);
-        }
-
-        if (map.has(MINDIFFICULTY)) {
-            addMinAdditionalDifficultyCheck(map);
-        }
-        if (map.has(MAXDIFFICULTY)) {
-            addMaxAdditionalDifficultyCheck(map);
-        }
-
-        if (map.has(HOSTILE)) {
-            addHostileCheck(map);
-        }
-        if (map.has(PASSIVE)) {
-            addPassiveCheck(map);
-        }
-        if (map.has(SEESKY)) {
-            addSeeSkyCheck(map);
-        }
-        if (map.has(WEATHER)) {
-            addWeatherCheck(map);
-        }
-        if (map.has(TEMPCATEGORY)) {
-            addTempCategoryCheck(map);
-        }
-        if (map.has(DIFFICULTY)) {
-            addDifficultyCheck(map);
-        }
-        if (map.has(MOB)) {
-            addMobsCheck(map);
-        }
-        if (map.has(MOD)) {
-            addModsCheck(map);
-        }
-        if (map.has(BLOCK)) {
-            addBlocksCheck(map);
-        }
-        if (map.has(BIOME)) {
-            addBiomesCheck(map);
-        }
-        if (map.has(DIMENSION)) {
-            addDimensionCheck(map);
-        }
-        if (map.has(STRUCTURE)) {
-            addStructureCheck(map);
-        }
-        if (map.has(RANDOM)) {
-            addRandomCheck(map);
-        }
-
+    private void addActions(AttributeMap map) {
         if (map.has(RESULT)) {
             String br = map.get(RESULT);
             if ("default".equals(br) || br.startsWith("def")) {
@@ -224,6 +147,91 @@ public class SpawnRule {
         }
         if (map.has(POTION)) {
             addPotionsAction(map);
+        }
+    }
+
+    private void addChecks(AttributeMap map) {
+        if (map.has(RANDOM)) {
+            addRandomCheck(map);
+        }
+        if (map.has(MINTIME)) {
+            addMinTimeCheck(map);
+        }
+        if (map.has(MAXTIME)) {
+            addMaxTimeCheck(map);
+        }
+
+        if (map.has(MINHEIGHT)) {
+            addMinHeightCheck(map);
+        }
+        if (map.has(MAXHEIGHT)) {
+            addMaxHeightCheck(map);
+        }
+        if (map.has(HOSTILE)) {
+            addHostileCheck(map);
+        }
+        if (map.has(PASSIVE)) {
+            addPassiveCheck(map);
+        }
+        if (map.has(WEATHER)) {
+            addWeatherCheck(map);
+        }
+        if (map.has(TEMPCATEGORY)) {
+            addTempCategoryCheck(map);
+        }
+        if (map.has(DIFFICULTY)) {
+            addDifficultyCheck(map);
+        }
+        if (map.has(DIMENSION)) {
+            addDimensionCheck(map);
+        }
+
+        if (map.has(MINSPAWNDIST)) {
+            addMinSpawnDistCheck(map);
+        }
+        if (map.has(MAXSPAWNDIST)) {
+            addMaxSpawnDistCheck(map);
+        }
+
+        if (map.has(MINLIGHT)) {
+            addMinLightCheck(map);
+        }
+        if (map.has(MAXLIGHT)) {
+            addMaxLightCheck(map);
+        }
+
+        if (map.has(MOB)) {
+            addMobsCheck(map);
+        }
+        if (map.has(MINDIFFICULTY)) {
+            addMinAdditionalDifficultyCheck(map);
+        }
+        if (map.has(MAXDIFFICULTY)) {
+            addMaxAdditionalDifficultyCheck(map);
+        }
+
+        if (map.has(SEESKY)) {
+            addSeeSkyCheck(map);
+        }
+        if (map.has(MOD)) {
+            addModsCheck(map);
+        }
+        if (map.has(BLOCK)) {
+            addBlocksCheck(map);
+        }
+        if (map.has(BIOME)) {
+            addBiomesCheck(map);
+        }
+
+        if (map.has(STRUCTURE)) {
+            addStructureCheck(map);
+        }
+
+        if (map.has(MINCOUNT)) {
+            addMinCountCheck(map);
+        }
+        if (map.has(MAXCOUNT)) {
+            addMaxCountCheck(map);
         }
     }
 
