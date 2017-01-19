@@ -7,133 +7,83 @@ import org.apache.logging.log4j.Level;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 public class RulesManager {
 
     private static String path;
     public static List<SpawnRule> rules = new ArrayList<>();
+    public static List<SummonAidRule> summonAidRules = new ArrayList<>();
     public static List<PotentialSpawnRule> potentialSpawnRules = new ArrayList<>();
     public static List<LootRule> lootRules = new ArrayList<>();
 
     public static void reloadRules() {
         rules.clear();
+        summonAidRules.clear();
         potentialSpawnRules.clear();
         lootRules.clear();
-        readRules();
-        readPotentialSpawnRules();
-        readLootRules();
+        readAllRules();
     }
 
     public static void readRules(File directory) {
         path = directory.getPath();
-        readRules();
-        readPotentialSpawnRules();
-        readLootRules();
+        readAllRules();
     }
 
-    private static void readLootRules() {
-        File file = new File(path + File.separator + "incontrol", "loot.json");
-        if (!file.exists()) {
-            // Create an empty rule file
-            makeEmptyRuleFile(file);
-            return;
-        }
-
-        InControl.logger.log(Level.INFO, "Reading loot rules from loot.json");
-        InputStream inputstream = null;
-        try {
-            inputstream = new FileInputStream(file);
-        } catch (FileNotFoundException e) {
-            InControl.logger.log(Level.ERROR, "Error reading loot.json!");
-            return;
-        }
-
-        readLootRulesFromFile(inputstream);
+    private static void readAllRules() {
+        readRules("spawn.json", SpawnRule::parse, rules);
+        readRules("summonaid.json", SummonAidRule::parse, summonAidRules);
+        readRules("potentialspawn.json", PotentialSpawnRule::parse, potentialSpawnRules);
+        readRules("loot.json", LootRule::parse, lootRules);
     }
 
-    private static void readLootRulesFromFile(InputStream inputstream) {
-        BufferedReader br;
-        try {
-            br = new BufferedReader(new InputStreamReader(inputstream, "UTF-8"));
-        } catch (UnsupportedEncodingException e) {
-            InControl.logger.log(Level.ERROR, "Error reading loot.json!");
+    private static <T> void readRules(String filename, Function<JsonElement, T> parser, List<T> rules) {
+        JsonElement element = getRootElement(filename);
+        if (element == null) {
             return;
         }
-        JsonParser parser = new JsonParser();
-        JsonElement element = parser.parse(br);
         int i = 0;
         for (JsonElement entry : element.getAsJsonArray()) {
-            LootRule rule = LootRule.parse(entry);
+            T rule = parser.apply(entry);
             if (rule != null) {
-                lootRules.add(rule);
+                rules.add(rule);
             } else {
-                InControl.logger.log(Level.ERROR, "Rule " + i + " in loot.json is invalid, skipping!");
+                InControl.logger.log(Level.ERROR, "Rule " + i + " in " + filename + " is invalid, skipping!");
             }
             i++;
         }
     }
 
 
-    private static void readPotentialSpawnRules() {
-        File file = new File(path + File.separator + "incontrol", "potentialspawn.json");
+    private static JsonElement getRootElement(String filename) {
+        File file = new File(path + File.separator + "incontrol", filename);
         if (!file.exists()) {
             // Create an empty rule file
             makeEmptyRuleFile(file);
-            return;
+            return null;
         }
 
-        InControl.logger.log(Level.INFO, "Reading spawn rules from potentialspawn.json");
+        InControl.logger.log(Level.INFO, "Reading spawn rules from " + filename);
         InputStream inputstream = null;
         try {
             inputstream = new FileInputStream(file);
         } catch (FileNotFoundException e) {
-            InControl.logger.log(Level.ERROR, "Error reading potentialspawn.json!");
-            return;
+            InControl.logger.log(Level.ERROR, "Error reading " + filename + "!");
+            return null;
         }
 
-        readPotentialSpawnRulesFromFile(inputstream);
-    }
-
-    private static void readPotentialSpawnRulesFromFile(InputStream inputstream) {
         BufferedReader br;
         try {
             br = new BufferedReader(new InputStreamReader(inputstream, "UTF-8"));
         } catch (UnsupportedEncodingException e) {
-            InControl.logger.log(Level.ERROR, "Error reading potentialspawn.json!");
-            return;
+            InControl.logger.log(Level.ERROR, "Error reading " + filename + "!");
+            return null;
         }
+
         JsonParser parser = new JsonParser();
         JsonElement element = parser.parse(br);
-        int i = 0;
-        for (JsonElement entry : element.getAsJsonArray()) {
-            PotentialSpawnRule rule = PotentialSpawnRule.parse(entry);
-            if (rule != null) {
-                potentialSpawnRules.add(rule);
-            } else {
-                InControl.logger.log(Level.ERROR, "Rule " + i + " in potentialspawn.json is invalid, skipping!");
-            }
-            i++;
-        }
-    }
 
-    private static void readRules() {
-        File file = new File(path + File.separator + "incontrol", "spawn.json");
-        if (!file.exists()) {
-            // Create an empty rule file
-            makeEmptyRuleFile(file);
-            return;
-        }
-
-        InControl.logger.log(Level.INFO, "Reading spawn rules from spawn.json");
-        InputStream inputstream = null;
-        try {
-            inputstream = new FileInputStream(file);
-        } catch (FileNotFoundException e) {
-            InControl.logger.log(Level.ERROR, "Error reading spawn.json!");
-            return;
-        }
-
-        readRulesFromFile(inputstream);
+        return element;
     }
 
     private static void makeEmptyRuleFile(File file) {
@@ -141,7 +91,7 @@ public class RulesManager {
         try {
             writer = new PrintWriter(file);
         } catch (FileNotFoundException e) {
-            InControl.logger.log(Level.ERROR, "Error writing spawn.json!");
+            InControl.logger.log(Level.ERROR, "Error writing " + file.getName() + "!");
             return;
         }
         JsonArray array = new JsonArray();
@@ -150,26 +100,5 @@ public class RulesManager {
         writer.close();
     }
 
-    private static void readRulesFromFile(InputStream inputstream) {
-        BufferedReader br;
-        try {
-            br = new BufferedReader(new InputStreamReader(inputstream, "UTF-8"));
-        } catch (UnsupportedEncodingException e) {
-            InControl.logger.log(Level.ERROR, "Error reading spawn.json!");
-            return;
-        }
-        JsonParser parser = new JsonParser();
-        JsonElement element = parser.parse(br);
-        int i = 0;
-        for (JsonElement entry : element.getAsJsonArray()) {
-            SpawnRule rule = SpawnRule.parse(entry);
-            if (rule != null) {
-                rules.add(rule);
-            } else {
-                InControl.logger.log(Level.ERROR, "Rule " + i + " in spawn.json is invalid, skipping!");
-            }
-            i++;
-        }
-    }
 
 }
