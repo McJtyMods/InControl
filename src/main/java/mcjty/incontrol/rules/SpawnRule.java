@@ -8,13 +8,16 @@ import mcjty.incontrol.typed.Attribute;
 import mcjty.incontrol.typed.AttributeMap;
 import mcjty.incontrol.typed.GenericAttributeMapFactory;
 import mcjty.incontrol.typed.Key;
+import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.IAttributeInstance;
+import net.minecraft.entity.monster.EntityEnderman;
 import net.minecraft.entity.monster.EntityPigZombie;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -260,14 +263,29 @@ public class SpawnRule {
             actions.add(event -> {
                 EntityLivingBase entityLiving = event.getEntityLiving();
                 if (entityLiving != null) {
-                    entityLiving.setHeldItem(EnumHand.MAIN_HAND, new ItemStack(item));
+                    if (entityLiving instanceof EntityEnderman) {
+                        Block block = Block.getBlockFromItem(item);
+                        if (block != null && block != Blocks.AIR) {
+                            ((EntityEnderman) entityLiving).setHeldBlockState(block.getDefaultState());
+                        }
+                    } else {
+                        entityLiving.setHeldItem(EnumHand.MAIN_HAND, new ItemStack(item));
+                    }
                 }
             });
         } else {
             actions.add(event -> {
                 EntityLivingBase entityLiving = event.getEntityLiving();
                 if (entityLiving != null) {
-                    entityLiving.setHeldItem(EnumHand.MAIN_HAND, new ItemStack(items.get(rnd.nextInt(items.size()))));
+                    Item item = items.get(rnd.nextInt(items.size()));
+                    if (entityLiving instanceof EntityEnderman) {
+                        Block block = Block.getBlockFromItem(item);
+                        if (block != null && block != Blocks.AIR) {
+                            ((EntityEnderman) entityLiving).setHeldBlockState(block.getDefaultState());
+                        }
+                    } else {
+                        entityLiving.setHeldItem(EnumHand.MAIN_HAND, new ItemStack(item));
+                    }
                 }
             });
         }
