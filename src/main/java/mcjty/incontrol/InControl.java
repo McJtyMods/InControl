@@ -52,6 +52,10 @@ public class InControl {
     public void serverLoad(FMLServerStartingEvent event) {
         event.registerServerCommand(new CmdReload());
         event.registerServerCommand(new CmdDebug());
+        event.registerServerCommand(new CmdLoadSpawn());
+        event.registerServerCommand(new CmdLoadPotentialSpawn());
+        event.registerServerCommand(new CmdLoadSummonAid());
+        event.registerServerCommand(new CmdLoadLoot());
     }
 
     @Mod.EventHandler

@@ -30,15 +30,57 @@ public class RulesManager {
         readAllRules();
     }
 
-    private static void readAllRules() {
-        readRules("spawn.json", SpawnRule::parse, rules);
-        readRules("summonaid.json", SummonAidRule::parse, summonAidRules);
-        readRules("potentialspawn.json", PotentialSpawnRule::parse, potentialSpawnRules);
-        readRules("loot.json", LootRule::parse, lootRules);
+    private static boolean exists(String file) {
+        File f = new File(file);
+        return f.exists() && !f.isDirectory();
     }
 
-    private static <T> void readRules(String filename, Function<JsonElement, T> parser, List<T> rules) {
-        JsonElement element = getRootElement(filename);
+    public static boolean readCustomSpawn(String file) {
+        System.out.println("file = " + file);
+        if (!exists(file)) {
+            return false;
+        }
+        rules.clear();
+        readRules(null, file, SpawnRule::parse, rules);
+        return true;
+    }
+
+    public static boolean readCustomSummonAid(String file) {
+        if (!exists(file)) {
+            return false;
+        }
+        summonAidRules.clear();
+        readRules(null, file, SummonAidRule::parse, summonAidRules);
+        return true;
+    }
+
+    public static boolean readCustomPotentialSpawn(String file) {
+        if (!exists(file)) {
+            return false;
+        }
+        potentialSpawnRules.clear();
+        readRules(null, file, PotentialSpawnRule::parse, potentialSpawnRules);
+        return true;
+    }
+
+    public static boolean readCustomLoot(String file) {
+        if (!exists(file)) {
+            return false;
+        }
+        lootRules.clear();
+        readRules(null, file, LootRule::parse, lootRules);
+        return true;
+    }
+
+    private static void readAllRules() {
+        readRules(path, "spawn.json", SpawnRule::parse, rules);
+        readRules(path, "summonaid.json", SummonAidRule::parse, summonAidRules);
+        readRules(path, "potentialspawn.json", PotentialSpawnRule::parse, potentialSpawnRules);
+        readRules(path, "loot.json", LootRule::parse, lootRules);
+    }
+
+    private static <T> void readRules(String path, String filename, Function<JsonElement, T> parser, List<T> rules) {
+        JsonElement element = getRootElement(path, filename);
         if (element == null) {
             return;
         }
@@ -54,9 +96,13 @@ public class RulesManager {
         }
     }
 
-
-    private static JsonElement getRootElement(String filename) {
-        File file = new File(path + File.separator + "incontrol", filename);
+    private static JsonElement getRootElement(String path, String filename) {
+        File file;
+        if (path == null) {
+            file = new File(filename);
+        } else {
+            file = new File(path + File.separator + "incontrol", filename);
+        }
         if (!file.exists()) {
             // Create an empty rule file
             makeEmptyRuleFile(file);
