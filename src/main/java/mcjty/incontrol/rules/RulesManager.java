@@ -25,8 +25,11 @@ public class RulesManager {
         readAllRules();
     }
 
-    public static void readRules(File directory) {
+    public static void setRulePath(File directory) {
         path = directory.getPath();
+    }
+
+    public static void readRules() {
         readAllRules();
     }
 

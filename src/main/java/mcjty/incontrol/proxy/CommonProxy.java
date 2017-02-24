@@ -17,7 +17,7 @@ public class CommonProxy {
     public void preInit(FMLPreInitializationEvent e) {
         //PacketHandler.registerMessages("incontrol");
         ConfigSetup.preInit(e);
-        RulesManager.readRules(e.getModConfigurationDirectory());
+        RulesManager.setRulePath(e.getModConfigurationDirectory());
     }
 
     public void init(FMLInitializationEvent e) {
@@ -26,6 +26,7 @@ public class CommonProxy {
 
     public void postInit(FMLPostInitializationEvent e) {
         ConfigSetup.postInit();
+        RulesManager.readRules();
     }
 
     public World getClientWorld() {
