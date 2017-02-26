@@ -8,7 +8,8 @@ import mcjty.incontrol.typed.Attribute;
 import mcjty.incontrol.typed.AttributeMap;
 import mcjty.incontrol.typed.GenericAttributeMapFactory;
 import mcjty.incontrol.typed.Key;
-import net.minecraft.block.Block;
+import mcjty.incontrol.varia.Tools;
+import mcjty.lib.tools.ItemStackTools;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
@@ -17,9 +18,8 @@ import net.minecraft.entity.ai.attributes.IAttributeInstance;
 import net.minecraft.entity.monster.EntityEnderman;
 import net.minecraft.entity.monster.EntityPigZombie;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
 import net.minecraft.inventory.EntityEquipmentSlot;
-import net.minecraft.item.Item;
+import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
@@ -217,59 +217,59 @@ public class SpawnRule {
         }
     }
 
-    private List<Item> getItems(List<String> itemNames) {
-        List<Item> items = new ArrayList<>();
+    private List<ItemStack> getItems(List<String> itemNames) {
+        List<ItemStack> items = new ArrayList<>();
         for (String name : itemNames) {
-            Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(name));
-            if (item == null) {
+            ItemStack stack = Tools.parseStack(name);
+            if (ItemStackTools.isEmpty(stack)) {
                 InControl.logger.log(Level.ERROR, "Unknown item '" + name + "'!");
             } else {
-                items.add(item);
+                items.add(stack);
             }
         }
         return items;
     }
 
     private void addArmorItem(AttributeMap map, Key<String> itemKey, EntityEquipmentSlot slot) {
-        final List<Item> items = getItems(map.getList(itemKey));
+        final List<ItemStack> items = getItems(map.getList(itemKey));
         if (items.isEmpty()) {
             return;
         }
         if (items.size() == 1) {
-            Item item = items.get(0);
+            ItemStack item = items.get(0);
             actions.add(event -> {
                 EntityLivingBase entityLiving = event.getEntityLiving();
                 if (entityLiving != null) {
-                    entityLiving.setItemStackToSlot(slot, new ItemStack(item));
+                    entityLiving.setItemStackToSlot(slot, item);
                 }
             });
         } else {
             actions.add(event -> {
                 EntityLivingBase entityLiving = event.getEntityLiving();
                 if (entityLiving != null) {
-                    entityLiving.setItemStackToSlot(slot, new ItemStack(items.get(rnd.nextInt(items.size()))));
+                    entityLiving.setItemStackToSlot(slot, items.get(rnd.nextInt(items.size())));
                 }
             });
         }
     }
 
     private void addHeldItem(AttributeMap map) {
-        final List<Item> items = getItems(map.getList(ACTION_HELDITEM));
+        final List<ItemStack> items = getItems(map.getList(ACTION_HELDITEM));
         if (items.isEmpty()) {
             return;
         }
         if (items.size() == 1) {
-            Item item = items.get(0);
+            ItemStack item = items.get(0);
             actions.add(event -> {
                 EntityLivingBase entityLiving = event.getEntityLiving();
                 if (entityLiving != null) {
                     if (entityLiving instanceof EntityEnderman) {
-                        Block block = Block.getBlockFromItem(item);
-                        if (block != null && block != Blocks.AIR) {
-                            ((EntityEnderman) entityLiving).setHeldBlockState(block.getDefaultState());
+                        if (item.getItem() instanceof ItemBlock) {
+                            ItemBlock b = (ItemBlock) item.getItem();
+                            ((EntityEnderman) entityLiving).setHeldBlockState(b.getBlock().getStateFromMeta(b.getMetadata(item.getItemDamage())));
                         }
                     } else {
-                        entityLiving.setHeldItem(EnumHand.MAIN_HAND, new ItemStack(item));
+                        entityLiving.setHeldItem(EnumHand.MAIN_HAND, item);
                     }
                 }
             });
@@ -277,14 +277,14 @@ public class SpawnRule {
             actions.add(event -> {
                 EntityLivingBase entityLiving = event.getEntityLiving();
                 if (entityLiving != null) {
-                    Item item = items.get(rnd.nextInt(items.size()));
+                    ItemStack item = items.get(rnd.nextInt(items.size()));
                     if (entityLiving instanceof EntityEnderman) {
-                        Block block = Block.getBlockFromItem(item);
-                        if (block != null && block != Blocks.AIR) {
-                            ((EntityEnderman) entityLiving).setHeldBlockState(block.getDefaultState());
+                        if (item.getItem() instanceof ItemBlock) {
+                            ItemBlock b = (ItemBlock) item.getItem();
+                            ((EntityEnderman) entityLiving).setHeldBlockState(b.getBlock().getStateFromMeta(b.getMetadata(item.getItemDamage())));
                         }
                     } else {
-                        entityLiving.setHeldItem(EnumHand.MAIN_HAND, new ItemStack(item));
+                        entityLiving.setHeldItem(EnumHand.MAIN_HAND, item);
                     }
                 }
             });
