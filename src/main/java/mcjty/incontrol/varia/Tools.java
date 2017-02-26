@@ -4,6 +4,9 @@ import mcjty.incontrol.InControl;
 import mcjty.lib.tools.ItemStackTools;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.JsonToNBT;
+import net.minecraft.nbt.NBTException;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.ModContainer;
@@ -66,6 +69,27 @@ public class Tools {
     }
 
     public static ItemStack parseStack(String name) {
+        if (name.contains("/")) {
+            String[] split = StringUtils.split(name, "/");
+            ItemStack stack = parseStackNoNBT(split[0]);
+            if (ItemStackTools.isEmpty(stack)) {
+                return stack;
+            }
+            NBTTagCompound nbt;
+            try {
+                nbt = JsonToNBT.getTagFromJson(split[1]);
+            } catch (NBTException e) {
+                InControl.logger.log(Level.ERROR, "Error parsing NBT in '" + name + "'!");
+                return ItemStackTools.getEmptyStack();
+            }
+            stack.setTagCompound(nbt);
+            return stack;
+        } else {
+            return parseStackNoNBT(name);
+        }
+    }
+
+    private static ItemStack parseStackNoNBT(String name) {
         if (name.contains("@")) {
             String[] split = StringUtils.split(name, "@");
             Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(split[0]));

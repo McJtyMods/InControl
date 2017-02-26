@@ -108,8 +108,14 @@ public class ForgeEventHandlers {
                     for (ItemStack item : rule.getToRemoveItems()) {
                         for (int idx = event.getDrops().size() - 1; idx >= 0; idx--) {
                             ItemStack stack = event.getDrops().get(idx).getEntityItem();
-                            if (ItemStackTools.isValid(stack) && stack.isItemEqual(item)) {
-                                event.getDrops().remove(idx);
+                            if (item.hasTagCompound()) {
+                                if (ItemStackTools.isValid(stack) && stack.isItemEqual(item) && ItemStack.areItemStackTagsEqual(stack, item)) {
+                                    event.getDrops().remove(idx);
+                                }
+                            } else {
+                                if (ItemStackTools.isValid(stack) && stack.isItemEqual(item)) {
+                                    event.getDrops().remove(idx);
+                                }
                             }
                         }
                     }
