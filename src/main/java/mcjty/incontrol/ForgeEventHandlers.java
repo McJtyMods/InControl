@@ -3,7 +3,6 @@ package mcjty.incontrol;
 import mcjty.incontrol.rules.*;
 import mcjty.lib.tools.ItemStackTools;
 import net.minecraft.entity.item.EntityItem;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.biome.Biome;
@@ -106,20 +105,20 @@ public class ForgeEventHandlers {
                 if (rule.isRemoveAll()) {
                     event.getDrops().clear();
                 } else {
-                    for (Item item : rule.getToRemoveItems()) {
+                    for (ItemStack item : rule.getToRemoveItems()) {
                         for (int idx = event.getDrops().size() - 1; idx >= 0; idx--) {
                             ItemStack stack = event.getDrops().get(idx).getEntityItem();
-                            if (ItemStackTools.isValid(stack) && stack.getItem() == item) {
+                            if (ItemStackTools.isValid(stack) && stack.isItemEqual(item)) {
                                 event.getDrops().remove(idx);
                             }
                         }
                     }
                 }
 
-                for (Item item : rule.getToAddItems()) {
+                for (ItemStack item : rule.getToAddItems()) {
                     BlockPos pos = event.getEntity().getPosition();
                     event.getDrops().add(new EntityItem(event.getEntity().getEntityWorld(), pos.getX(), pos.getY(), pos.getZ(),
-                            new ItemStack(item)));
+                            item));
                 }
             }
             i++;

@@ -7,14 +7,14 @@ import mcjty.incontrol.rules.support.IEventQuery;
 import mcjty.incontrol.typed.Attribute;
 import mcjty.incontrol.typed.AttributeMap;
 import mcjty.incontrol.typed.GenericAttributeMapFactory;
+import mcjty.incontrol.varia.Tools;
+import mcjty.lib.tools.ItemStackTools;
 import net.minecraft.entity.Entity;
-import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import org.apache.logging.log4j.Level;
 
 import java.util.ArrayList;
@@ -94,8 +94,8 @@ public class LootRule {
     }
 
     private final GenericRuleEvaluator ruleEvaluator;
-    private List<Item> toRemoveItems = new ArrayList<>();
-    private List<Item> toAddItems = new ArrayList<>();
+    private List<ItemStack> toRemoveItems = new ArrayList<>();
+    private List<ItemStack> toAddItems = new ArrayList<>();
     private boolean removeAll = false;
 
     private LootRule(AttributeMap map) {
@@ -115,7 +115,7 @@ public class LootRule {
         }
     }
 
-    public List<Item> getToRemoveItems() {
+    public List<ItemStack> getToRemoveItems() {
         return toRemoveItems;
     }
 
@@ -123,18 +123,18 @@ public class LootRule {
         return removeAll;
     }
 
-    public List<Item> getToAddItems() {
+    public List<ItemStack> getToAddItems() {
         return toAddItems;
     }
 
-    private List<Item> getItems(List<String> itemNames) {
-        List<Item> items = new ArrayList<>();
+    private List<ItemStack> getItems(List<String> itemNames) {
+        List<ItemStack> items = new ArrayList<>();
         for (String name : itemNames) {
-            Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(name));
-            if (item == null) {
+            ItemStack stack = Tools.parseStack(name);
+            if (ItemStackTools.isEmpty(stack)) {
                 InControl.logger.log(Level.ERROR, "Unknown item '" + name + "'!");
             } else {
-                items.add(item);
+                items.add(stack);
             }
         }
         return items;

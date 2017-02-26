@@ -1,7 +1,15 @@
 package mcjty.incontrol.varia;
 
+import mcjty.incontrol.InControl;
+import mcjty.lib.tools.ItemStackTools;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.ModContainer;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Level;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -55,5 +63,29 @@ public class Tools {
         }
 
         return modName;
+    }
+
+    public static ItemStack parseStack(String name) {
+        if (name.contains("@")) {
+            String[] split = StringUtils.split(name, "@");
+            Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(split[0]));
+            if (item == null) {
+                return ItemStackTools.getEmptyStack();
+            }
+            int meta = 0;
+            try {
+                meta = Integer.parseInt(split[1]);
+            } catch (NumberFormatException e) {
+                InControl.logger.log(Level.ERROR, "Unknown item '" + name + "'!");
+                return ItemStackTools.getEmptyStack();
+            }
+            return new ItemStack(item, 1, meta);
+        } else {
+            Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(name));
+            if (item == null) {
+                return ItemStackTools.getEmptyStack();
+            }
+            return new ItemStack(item);
+        }
     }
 }
