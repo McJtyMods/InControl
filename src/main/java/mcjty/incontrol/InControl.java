@@ -22,7 +22,7 @@ public class InControl {
     public static final String VERSION = "3.5.4";
     public static final String MIN_FORGE10_VER = "12.18.1.2082";
     public static final String MIN_FORGE11_VER = "13.19.0.2176";
-    public static final String COMPATLAYER_VER = "0.1.7";
+    public static final String COMPATLAYER_VER = "0.2.5";
 
     @SidedProxy(clientSide = "mcjty.incontrol.proxy.ClientProxy", serverSide = "mcjty.incontrol.proxy.ServerProxy")
     public static CommonProxy proxy;
@@ -56,6 +56,7 @@ public class InControl {
         event.registerServerCommand(new CmdLoadPotentialSpawn());
         event.registerServerCommand(new CmdLoadSummonAid());
         event.registerServerCommand(new CmdLoadLoot());
+        event.registerServerCommand(new CmdShowMobs());
     }
 
     @Mod.EventHandler
