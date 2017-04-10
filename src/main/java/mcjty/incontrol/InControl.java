@@ -57,6 +57,7 @@ public class InControl {
         event.registerServerCommand(new CmdLoadSummonAid());
         event.registerServerCommand(new CmdLoadLoot());
         event.registerServerCommand(new CmdShowMobs());
+        event.registerServerCommand(new CmdKillMobs());
     }
 
     @Mod.EventHandler
