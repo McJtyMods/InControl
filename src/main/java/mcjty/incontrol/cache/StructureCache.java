@@ -28,7 +28,7 @@ public class StructureCache {
     public boolean isInStructure(World world, String structure, BlockPos pos) {
         int dimension = world.provider.getDimension();
         ChunkPos cp = new ChunkPos(pos);
-        long cplong = ChunkPos.asLong(cp.chunkXPos, cp.chunkZPos);
+        long cplong = ChunkPos.asLong(cp.x, cp.z);
         StructureCacheEntry entry = new StructureCacheEntry(structure, dimension, cplong);
         if (structureCache.containsKey(entry)) {
             return structureCache.get(entry);

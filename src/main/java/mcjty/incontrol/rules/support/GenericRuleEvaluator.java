@@ -2,10 +2,9 @@ package mcjty.incontrol.rules.support;
 
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.cache.StructureCache;
+import mcjty.incontrol.rules.PotentialSpawnRule;
 import mcjty.incontrol.typed.AttributeMap;
 import mcjty.incontrol.varia.Tools;
-import mcjty.lib.tools.EntityTools;
-import mcjty.lib.tools.ItemStackTools;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.monster.IMob;
@@ -19,6 +18,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.fml.common.eventhandler.Event;
+import net.minecraftforge.fml.common.registry.EntityEntry;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
@@ -236,8 +236,9 @@ public class GenericRuleEvaluator {
         List<String> mobs = map.getList(MOB);
         if (mobs.size() == 1) {
             String name = mobs.get(0);
-            String id = EntityTools.fixEntityId(name);
-            Class<? extends Entity> clazz = EntityTools.findClassById(id);
+            String id = PotentialSpawnRule.fixEntityId(name);
+            EntityEntry ee = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(id));
+            Class<? extends Entity> clazz = ee == null ? null : ee.getEntityClass();
             if (clazz != null) {
                 checks.add((event,query) -> clazz.equals(query.getEntity(event).getClass()));
             } else {
@@ -246,8 +247,9 @@ public class GenericRuleEvaluator {
         } else {
             Set<Class> classes = new HashSet<>();
             for (String name : mobs) {
-                String id = EntityTools.fixEntityId(name);
-                Class<? extends Entity> clazz = EntityTools.findClassById(id);
+                String id = PotentialSpawnRule.fixEntityId(name);
+                EntityEntry ee = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(id));
+                Class<? extends Entity> clazz = ee == null ? null : ee.getEntityClass();
                 if (clazz != null) {
                     classes.add(clazz);
                 } else {
@@ -408,8 +410,9 @@ public class GenericRuleEvaluator {
             return;
         }
         if (splitted.length > 1) {
-            String id = EntityTools.fixEntityId(splitted[1]);
-            entityClass = EntityTools.findClassById(id);
+            String id = PotentialSpawnRule.fixEntityId(splitted[1]);
+            EntityEntry ee = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(id));
+            entityClass = ee == null ? null : ee.getEntityClass();
             if (entityClass == null) {
                 InControl.logger.log(Level.ERROR, "Unknown mob '" + splitted[1] + "'!");
                 return;
@@ -435,8 +438,9 @@ public class GenericRuleEvaluator {
             return;
         }
         if (splitted.length > 1) {
-            String id = EntityTools.fixEntityId(splitted[1]);
-            entityClass = EntityTools.findClassById(id);
+            String id = PotentialSpawnRule.fixEntityId(splitted[1]);
+            EntityEntry ee = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(id));
+            entityClass = ee == null ? null : ee.getEntityClass();
             if (entityClass == null) {
                 InControl.logger.log(Level.ERROR, "Unknown mob '" + splitted[1] + "'!");
                 return;
@@ -525,9 +529,9 @@ public class GenericRuleEvaluator {
     private void addPlayerCheck(AttributeMap map) {
         boolean asPlayer = map.get(PLAYER);
         if (asPlayer) {
-            checks.add((event,query) -> query.getSource(event) == null ? false : query.getSource(event).getEntity() instanceof EntityPlayer);
+            checks.add((event,query) -> query.getSource(event) == null ? false : query.getSource(event).getTrueSource() instanceof EntityPlayer);
         } else {
-            checks.add((event,query) -> query.getSource(event) == null ? true : !(query.getSource(event).getEntity() instanceof EntityPlayer));
+            checks.add((event,query) -> query.getSource(event) == null ? true : !(query.getSource(event).getTrueSource() instanceof EntityPlayer));
         }
     }
 
@@ -608,11 +612,11 @@ public class GenericRuleEvaluator {
             if (source == null) {
                 return false;
             }
-            Entity entity = source.getEntity();
+            Entity entity = source.getTrueSource();
             if (entity instanceof EntityPlayer) {
                 EntityPlayer player = (EntityPlayer) entity;
                 ItemStack mainhand = player.getHeldItemMainhand();
-                if (ItemStackTools.isValid(mainhand)) {
+                if (!mainhand.isEmpty()) {
                     for (Item item : items) {
                         if (mainhand.getItem() == item) {
                             return true;

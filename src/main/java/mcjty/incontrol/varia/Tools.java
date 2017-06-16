@@ -1,7 +1,6 @@
 package mcjty.incontrol.varia;
 
 import mcjty.incontrol.InControl;
-import mcjty.lib.tools.ItemStackTools;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.JsonToNBT;
@@ -72,7 +71,7 @@ public class Tools {
         if (name.contains("/")) {
             String[] split = StringUtils.split(name, "/");
             ItemStack stack = parseStackNoNBT(split[0]);
-            if (ItemStackTools.isEmpty(stack)) {
+            if (stack.isEmpty()) {
                 return stack;
             }
             NBTTagCompound nbt;
@@ -80,7 +79,7 @@ public class Tools {
                 nbt = JsonToNBT.getTagFromJson(split[1]);
             } catch (NBTException e) {
                 InControl.logger.log(Level.ERROR, "Error parsing NBT in '" + name + "'!");
-                return ItemStackTools.getEmptyStack();
+                return ItemStack.EMPTY;
             }
             stack.setTagCompound(nbt);
             return stack;
@@ -94,20 +93,20 @@ public class Tools {
             String[] split = StringUtils.split(name, "@");
             Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(split[0]));
             if (item == null) {
-                return ItemStackTools.getEmptyStack();
+                return ItemStack.EMPTY;
             }
             int meta = 0;
             try {
                 meta = Integer.parseInt(split[1]);
             } catch (NumberFormatException e) {
                 InControl.logger.log(Level.ERROR, "Unknown item '" + name + "'!");
-                return ItemStackTools.getEmptyStack();
+                return ItemStack.EMPTY;
             }
             return new ItemStack(item, 1, meta);
         } else {
             Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(name));
             if (item == null) {
-                return ItemStackTools.getEmptyStack();
+                return ItemStack.EMPTY;
             }
             return new ItemStack(item);
         }

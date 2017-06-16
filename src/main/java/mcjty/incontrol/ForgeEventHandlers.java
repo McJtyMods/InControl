@@ -1,7 +1,6 @@
 package mcjty.incontrol;
 
 import mcjty.incontrol.rules.*;
-import mcjty.lib.tools.ItemStackTools;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
@@ -107,13 +106,13 @@ public class ForgeEventHandlers {
                 } else {
                     for (ItemStack item : rule.getToRemoveItems()) {
                         for (int idx = event.getDrops().size() - 1; idx >= 0; idx--) {
-                            ItemStack stack = event.getDrops().get(idx).getEntityItem();
+                            ItemStack stack = event.getDrops().get(idx).getItem();
                             if (item.hasTagCompound()) {
-                                if (ItemStackTools.isValid(stack) && stack.isItemEqual(item) && ItemStack.areItemStackTagsEqual(stack, item)) {
+                                if (!stack.isEmpty() && stack.isItemEqual(item) && ItemStack.areItemStackTagsEqual(stack, item)) {
                                     event.getDrops().remove(idx);
                                 }
                             } else {
-                                if (ItemStackTools.isValid(stack) && stack.isItemEqual(item)) {
+                                if (!stack.isEmpty() && stack.isItemEqual(item)) {
                                     event.getDrops().remove(idx);
                                 }
                             }

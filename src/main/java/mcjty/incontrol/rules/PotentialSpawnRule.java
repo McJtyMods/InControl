@@ -9,14 +9,18 @@ import mcjty.incontrol.rules.support.IEventQuery;
 import mcjty.incontrol.typed.Attribute;
 import mcjty.incontrol.typed.AttributeMap;
 import mcjty.incontrol.typed.GenericAttributeMapFactory;
-import mcjty.lib.tools.EntityTools;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.datafix.fixes.EntityId;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.event.world.WorldEvent;
+import net.minecraftforge.fml.common.registry.EntityEntry;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import org.apache.logging.log4j.Level;
 
 import java.util.ArrayList;
@@ -107,11 +111,21 @@ public class PotentialSpawnRule {
         }
     }
 
+    public static final EntityId FIXER = new EntityId();
+
+    public static String fixEntityId(String id) {
+        NBTTagCompound nbt = new NBTTagCompound();
+        nbt.setString("id", id);
+        nbt = FIXER.fixTagCompound(nbt);
+        return nbt.getString("id");
+    }
+
     private void addToRemoveAction(AttributeMap map) {
         List<String> toremove = map.getList(ACTION_REMOVE);
         for (String s : toremove) {
-            String id = EntityTools.fixEntityId(s);
-            Class<? extends Entity> clazz = EntityTools.findClassById(id);
+            String id = fixEntityId(s);
+            EntityEntry entry = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(id));
+            Class<? extends Entity> clazz = entry == null ? null : entry.getEntityClass();
             if (clazz == null) {
                 InControl.logger.log(Level.ERROR, "Cannot find mob '" + s + "'!");
                 return;
@@ -122,8 +136,9 @@ public class PotentialSpawnRule {
 
     private void makeSpawnEntries(AttributeMap map) {
         for (AttributeMap mobMap : map.getList(ACTION_MOBS)) {
-            String id = EntityTools.fixEntityId(mobMap.get(MOB_NAME));
-            Class<? extends Entity> clazz = EntityTools.findClassById(id);
+            String id = fixEntityId(mobMap.get(MOB_NAME));
+            EntityEntry ee = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(id));
+            Class<? extends Entity> clazz = ee == null ? null : ee.getEntityClass();
             if (clazz == null) {
                 InControl.logger.log(Level.ERROR, "Cannot find mob '" + mobMap.get(MOB_NAME) + "'!");
                 return;

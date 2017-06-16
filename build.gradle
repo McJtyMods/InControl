@@ -11,7 +11,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
     }
 }
 
@@ -35,7 +35,7 @@ repositories {
     }
 }
 
-version = "3.5.5"
+version = "1.12-3.5.5"
 group= "com.github.mcjty"
 archivesBaseName = "incontrol"
 
@@ -43,17 +43,20 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 minecraft {
-    version = "1.11.2-13.20.0.2201"
+    version = "1.12-14.21.0.2331"
     runDir = "run"
-    mappings = "snapshot_20161227"
+    //mappings = "snapshot_20161220"
+    mappings = "snapshot_20170616"
     useDepAts = true
 }
 
 dependencies {
-    deobfCompile "mcp.mobius.waila:Hwyla:1.8.3-B15_1.11"
-    deobfCompile "mezz.jei:jei_1.11.2:4.2.0.210"
-    deobfCompile "mcjty.theoneprobe:TheOneProbe:1.1x-1.4.4-55"
-    deobfCompile "com.github.mcjty:compatlayer:1.11.2-0.2.5"
+    deobfCompile "mezz.jei:jei_1.12:4.6.0.58"
+    //deobfCompile "mcp.mobius.waila:Hwyla:1.8.10-B23_1.11:api"
+    //deobfCompile "mezz.jei:jei_1.11.2:4.2.5.234"
+    //deobfCompile "mcjty.theoneprobe:TheOneProbe:1.1x-1.4.6-56"
+    //deobfCompile "com.github.mcjty:compatlayer:1.11.2-0.2.6"
+
 }
 
 jar {

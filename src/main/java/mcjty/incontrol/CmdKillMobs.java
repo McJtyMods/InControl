@@ -1,22 +1,22 @@
 package mcjty.incontrol;
 
-import mcjty.lib.compat.CompatCommandBase;
-import mcjty.lib.tools.ChatTools;
-import mcjty.lib.tools.EntityTools;
+import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityList;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.passive.IAnimals;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.WorldServer;
 
 import java.util.List;
 
-public class CmdKillMobs extends CompatCommandBase {
+public class CmdKillMobs extends CommandBase {
     @Override
     public String getName() {
         return "ctrlkill";
@@ -27,10 +27,15 @@ public class CmdKillMobs extends CompatCommandBase {
         return "ctrlkill";
     }
 
+    public static String findEntityIdByClass(Class<? extends Entity> clazz) {
+        ResourceLocation key = EntityList.getKey(clazz);
+        return key == null ? null : key.toString();
+    }
+
     @Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
         if (args.length <= 0) {
-            ChatTools.addChatMessage(sender, new TextComponentString(TextFormatting.RED + "Use 'all', 'passive', 'hostile' or name of the mob followed by optional dimension id"));
+            sender.sendMessage(new TextComponentString(TextFormatting.RED + "Use 'all', 'passive', 'hostile' or name of the mob followed by optional dimension id"));
             InControl.logger.error("Use 'all', 'passive', 'hostile', 'entity' or name of the mob followed by optional dimension id");
             return;
         }
@@ -44,7 +49,7 @@ public class CmdKillMobs extends CompatCommandBase {
         boolean hostile = "hostile".equals(arg0);
         boolean entity = "entity".equals(arg0);
 
-        WorldServer worldServer = server.worldServerForDimension(dimension);
+        WorldServer worldServer = server.getWorld(dimension);
         List<Entity> entities = worldServer.getEntities(Entity.class, input -> {
             if (all) {
                 return !(input instanceof EntityPlayer);
@@ -55,13 +60,13 @@ public class CmdKillMobs extends CompatCommandBase {
             } else if (entity) {
                 return !(input instanceof IAnimals) && !(input instanceof EntityPlayer);
             } else {
-                String id = EntityTools.findEntityIdByClass(input.getClass());
+                String id = findEntityIdByClass(input.getClass());
                 return arg0.equals(id);
             }
         });
         for (Entity e : entities) {
             worldServer.removeEntity(e);
         }
-        ChatTools.addChatMessage(sender, new TextComponentString(TextFormatting.YELLOW + "Removed " + entities.size() + " entities!"));
+        sender.sendMessage(new TextComponentString(TextFormatting.YELLOW + "Removed " + entities.size() + " entities!"));
     }
 }
