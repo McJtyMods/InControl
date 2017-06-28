@@ -2,6 +2,7 @@ package mcjty.incontrol.rules.support;
 
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.cache.StructureCache;
+import mcjty.incontrol.compat.LostCitySupport;
 import mcjty.incontrol.typed.AttributeMap;
 import mcjty.incontrol.varia.Tools;
 import mcjty.lib.tools.EntityTools;
@@ -57,6 +58,17 @@ public class GenericRuleEvaluator {
         if (map.has(HOSTILE)) {
             addHostileCheck(map);
         }
+
+        if (map.has(INCITY)) {
+            addInCityCheck(map);
+        }
+        if (map.has(INSTREET)) {
+            addInStreetCheck(map);
+        }
+        if (map.has(INBUILDING)) {
+            addInBuildingCheck(map);
+        }
+
         if (map.has(PASSIVE)) {
             addPassiveCheck(map);
         }
@@ -229,6 +241,30 @@ public class GenericRuleEvaluator {
             checks.add((event,query) -> (query.getEntity(event) instanceof IAnimals && !(query.getEntity(event) instanceof IMob)));
         } else {
             checks.add((event,query) -> !(query.getEntity(event) instanceof IAnimals && !(query.getEntity(event) instanceof IMob)));
+        }
+    }
+
+    private void addInCityCheck(AttributeMap map) {
+        if (map.get(INCITY)) {
+            checks.add((event,query) -> InControl.lostcities && LostCitySupport.isCity(query, event));
+        } else {
+            checks.add((event,query) -> InControl.lostcities && !LostCitySupport.isCity(query, event));
+        }
+    }
+
+    private void addInStreetCheck(AttributeMap map) {
+        if (map.get(INSTREET)) {
+            checks.add((event,query) -> InControl.lostcities && LostCitySupport.isStreet(query, event));
+        } else {
+            checks.add((event,query) -> InControl.lostcities && !LostCitySupport.isStreet(query, event));
+        }
+    }
+
+    private void addInBuildingCheck(AttributeMap map) {
+        if (map.get(INBUILDING)) {
+            checks.add((event,query) -> InControl.lostcities && LostCitySupport.isBuilding(query, event));
+        } else {
+            checks.add((event,query) -> InControl.lostcities && !LostCitySupport.isBuilding(query, event));
         }
     }
 

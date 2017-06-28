@@ -3,6 +3,7 @@ package mcjty.incontrol;
 
 import mcjty.incontrol.cache.StructureCache;
 import mcjty.incontrol.proxy.CommonProxy;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.*;
@@ -32,6 +33,8 @@ public class InControl {
 
     public static Logger logger;
 
+    public static boolean lostcities = false;
+
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event){
         logger = event.getModLog();
@@ -41,6 +44,7 @@ public class InControl {
     @Mod.EventHandler
     public void init(FMLInitializationEvent e) {
         proxy.init(e);
+        lostcities = Loader.isModLoaded("lostcities");
     }
 
     @Mod.EventHandler

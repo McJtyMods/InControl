@@ -34,6 +34,9 @@ public interface RuleKeys {
     Key<String> BIOME = Key.create(Type.STRING, "biome");
     Key<String> STRUCTURE = Key.create(Type.STRING, "structure");
     Key<Integer> DIMENSION = Key.create(Type.INTEGER, "dimension");
+    Key<Boolean> INCITY = Key.create(Type.BOOLEAN, "incity");
+    Key<Boolean> INBUILDING = Key.create(Type.BOOLEAN, "inbuilding");
+    Key<Boolean> INSTREET = Key.create(Type.BOOLEAN, "instreet");
 
     // Outputs
     Key<String> ACTION_RESULT = Key.create(Type.STRING, "result");
