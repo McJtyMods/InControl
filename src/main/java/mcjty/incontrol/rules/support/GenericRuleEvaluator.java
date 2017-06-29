@@ -3,6 +3,7 @@ package mcjty.incontrol.rules.support;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.cache.StructureCache;
 import mcjty.incontrol.rules.PotentialSpawnRule;
+import mcjty.incontrol.compat.LostCitySupport;
 import mcjty.incontrol.typed.AttributeMap;
 import mcjty.incontrol.varia.Tools;
 import net.minecraft.entity.Entity;
@@ -57,6 +58,29 @@ public class GenericRuleEvaluator {
         if (map.has(HOSTILE)) {
             addHostileCheck(map);
         }
+
+        if (map.has(INCITY)) {
+            if (InControl.lostcities) {
+                addInCityCheck(map);
+            } else {
+                InControl.logger.warn("The Lost Cities is missing: the 'incity' test cannot work!");
+            }
+        }
+        if (map.has(INSTREET)) {
+            if (InControl.lostcities) {
+                addInStreetCheck(map);
+            } else {
+                InControl.logger.warn("The Lost Cities is missing: the 'instreet' test cannot work!");
+            }
+        }
+        if (map.has(INBUILDING)) {
+            if (InControl.lostcities) {
+                addInBuildingCheck(map);
+            } else {
+                InControl.logger.warn("The Lost Cities is missing: the 'inbuilding' test cannot work!");
+            }
+        }
+
         if (map.has(PASSIVE)) {
             addPassiveCheck(map);
         }
@@ -229,6 +253,30 @@ public class GenericRuleEvaluator {
             checks.add((event,query) -> (query.getEntity(event) instanceof IAnimals && !(query.getEntity(event) instanceof IMob)));
         } else {
             checks.add((event,query) -> !(query.getEntity(event) instanceof IAnimals && !(query.getEntity(event) instanceof IMob)));
+        }
+    }
+
+    private void addInCityCheck(AttributeMap map) {
+        if (map.get(INCITY)) {
+            checks.add((event,query) -> InControl.lostcities && LostCitySupport.isCity(query, event));
+        } else {
+            checks.add((event,query) -> InControl.lostcities && !LostCitySupport.isCity(query, event));
+        }
+    }
+
+    private void addInStreetCheck(AttributeMap map) {
+        if (map.get(INSTREET)) {
+            checks.add((event,query) -> InControl.lostcities && LostCitySupport.isStreet(query, event));
+        } else {
+            checks.add((event,query) -> InControl.lostcities && !LostCitySupport.isStreet(query, event));
+        }
+    }
+
+    private void addInBuildingCheck(AttributeMap map) {
+        if (map.get(INBUILDING)) {
+            checks.add((event,query) -> InControl.lostcities && LostCitySupport.isBuilding(query, event));
+        } else {
+            checks.add((event,query) -> InControl.lostcities && !LostCitySupport.isBuilding(query, event));
         }
     }
 

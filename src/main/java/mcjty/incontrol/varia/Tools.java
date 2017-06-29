@@ -11,6 +11,7 @@ import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Level;
 
 import java.io.UnsupportedEncodingException;
@@ -65,6 +66,25 @@ public class Tools {
         }
 
         return modName;
+    }
+
+    public static Pair<Float, ItemStack> parseStackWithFactor(String name) {
+        int i = 0;
+        while (i < name.length() && (Character.isDigit(name.charAt(i)) || name.charAt(i) == '.')) {
+            i++;
+        }
+        if (i < name.length() && name.charAt(i) == '=') {
+            String f = name.substring(0, i);
+            float v;
+            try {
+                v = Float.parseFloat(f);
+            } catch (NumberFormatException e) {
+                v = 1.0f;
+            }
+            return Pair.of(v, parseStack(name.substring(i+1)));
+        }
+
+        return Pair.of(1.0f, parseStack(name));
     }
 
     public static ItemStack parseStack(String name) {

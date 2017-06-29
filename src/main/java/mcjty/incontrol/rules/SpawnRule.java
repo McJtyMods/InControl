@@ -31,6 +31,7 @@ import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Level;
 
 import java.util.ArrayList;
@@ -89,6 +90,9 @@ public class SpawnRule {
                 .attribute(Attribute.create(RANDOM))
                 .attribute(Attribute.create(CANSPAWNHERE))
                 .attribute(Attribute.create(NOTCOLLIDING))
+                .attribute(Attribute.create(INBUILDING))
+                .attribute(Attribute.create(INCITY))
+                .attribute(Attribute.create(INSTREET))
                 .attribute(Attribute.create(PASSIVE))
                 .attribute(Attribute.create(HOSTILE))
                 .attribute(Attribute.create(SEESKY))
@@ -216,26 +220,37 @@ public class SpawnRule {
         }
     }
 
-    private List<ItemStack> getItems(List<String> itemNames) {
-        List<ItemStack> items = new ArrayList<>();
+    private List<Pair<Float, ItemStack>> getItems(List<String> itemNames) {
+        List<Pair<Float, ItemStack>> items = new ArrayList<>();
         for (String name : itemNames) {
-            ItemStack stack = Tools.parseStack(name);
-            if (stack.isEmpty()) {
+            Pair<Float, ItemStack> pair = Tools.parseStackWithFactor(name);
+            if (ItemStackTools.isEmpty(pair.getValue())) {
                 InControl.logger.log(Level.ERROR, "Unknown item '" + name + "'!");
             } else {
-                items.add(stack);
+                items.add(pair);
             }
         }
         return items;
     }
 
+    private ItemStack getRandomItem(List<Pair<Float, ItemStack>> items, float total) {
+        float r = rnd.nextFloat() * total;
+        for (Pair<Float, ItemStack> pair : items) {
+            if (r <= pair.getLeft()) {
+                return pair.getRight();
+            }
+            r -= pair.getLeft();
+        }
+        return ItemStackTools.getEmptyStack();
+    }
+
     private void addArmorItem(AttributeMap map, Key<String> itemKey, EntityEquipmentSlot slot) {
-        final List<ItemStack> items = getItems(map.getList(itemKey));
+        final List<Pair<Float, ItemStack>> items = getItems(map.getList(itemKey));
         if (items.isEmpty()) {
             return;
         }
         if (items.size() == 1) {
-            ItemStack item = items.get(0);
+            ItemStack item = items.get(0).getRight();
             actions.add(event -> {
                 EntityLivingBase entityLiving = event.getEntityLiving();
                 if (entityLiving != null) {
@@ -243,22 +258,31 @@ public class SpawnRule {
                 }
             });
         } else {
+            final float total = getTotal(items);
             actions.add(event -> {
                 EntityLivingBase entityLiving = event.getEntityLiving();
                 if (entityLiving != null) {
-                    entityLiving.setItemStackToSlot(slot, items.get(rnd.nextInt(items.size())));
+                    entityLiving.setItemStackToSlot(slot, getRandomItem(items, total));
                 }
             });
         }
     }
 
+    private float getTotal(List<Pair<Float, ItemStack>> items) {
+        float total = 0.0f;
+        for (Pair<Float, ItemStack> pair : items) {
+            total += pair.getLeft();
+        }
+        return total;
+    }
+
     private void addHeldItem(AttributeMap map) {
-        final List<ItemStack> items = getItems(map.getList(ACTION_HELDITEM));
+        final List<Pair<Float, ItemStack>> items = getItems(map.getList(ACTION_HELDITEM));
         if (items.isEmpty()) {
             return;
         }
         if (items.size() == 1) {
-            ItemStack item = items.get(0);
+            ItemStack item = items.get(0).getRight();
             actions.add(event -> {
                 EntityLivingBase entityLiving = event.getEntityLiving();
                 if (entityLiving != null) {
@@ -273,10 +297,11 @@ public class SpawnRule {
                 }
             });
         } else {
+            final float total = getTotal(items);
             actions.add(event -> {
                 EntityLivingBase entityLiving = event.getEntityLiving();
                 if (entityLiving != null) {
-                    ItemStack item = items.get(rnd.nextInt(items.size()));
+                    ItemStack item = getRandomItem(items, total);
                     if (entityLiving instanceof EntityEnderman) {
                         if (item.getItem() instanceof ItemBlock) {
                             ItemBlock b = (ItemBlock) item.getItem();
