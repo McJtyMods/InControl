@@ -60,13 +60,25 @@ public class GenericRuleEvaluator {
         }
 
         if (map.has(INCITY)) {
-            addInCityCheck(map);
+            if (InControl.lostcities) {
+                addInCityCheck(map);
+            } else {
+                InControl.logger.warn("The Lost Cities is missing: the 'incity' test cannot work!");
+            }
         }
         if (map.has(INSTREET)) {
-            addInStreetCheck(map);
+            if (InControl.lostcities) {
+                addInStreetCheck(map);
+            } else {
+                InControl.logger.warn("The Lost Cities is missing: the 'instreet' test cannot work!");
+            }
         }
         if (map.has(INBUILDING)) {
-            addInBuildingCheck(map);
+            if (InControl.lostcities) {
+                addInBuildingCheck(map);
+            } else {
+                InControl.logger.warn("The Lost Cities is missing: the 'inbuilding' test cannot work!");
+            }
         }
 
         if (map.has(PASSIVE)) {
