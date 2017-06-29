@@ -224,7 +224,7 @@ public class SpawnRule {
         List<Pair<Float, ItemStack>> items = new ArrayList<>();
         for (String name : itemNames) {
             Pair<Float, ItemStack> pair = Tools.parseStackWithFactor(name);
-            if (ItemStackTools.isEmpty(pair.getValue())) {
+            if (pair.getValue().isEmpty()) {
                 InControl.logger.log(Level.ERROR, "Unknown item '" + name + "'!");
             } else {
                 items.add(pair);
@@ -241,7 +241,7 @@ public class SpawnRule {
             }
             r -= pair.getLeft();
         }
-        return ItemStackTools.getEmptyStack();
+        return ItemStack.EMPTY;
     }
 
     private void addArmorItem(AttributeMap map, Key<String> itemKey, EntityEquipmentSlot slot) {
