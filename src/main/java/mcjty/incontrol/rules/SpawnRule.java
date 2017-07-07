@@ -27,6 +27,7 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
@@ -69,6 +70,34 @@ public class SpawnRule {
 
         @Override
         public DamageSource getSource(LivingSpawnEvent.CheckSpawn o) {
+            return null;
+        }
+    };
+
+    public static final IEventQuery<EntityJoinWorldEvent> EVENT_QUERY_JOIN = new IEventQuery<EntityJoinWorldEvent>() {
+        @Override
+        public World getWorld(EntityJoinWorldEvent o) {
+            return o.getWorld();
+        }
+
+        @Override
+        public BlockPos getPos(EntityJoinWorldEvent o) {
+            EntityJoinWorldEvent s = o;
+            return s.getEntity().getPosition();
+        }
+
+        @Override
+        public int getY(EntityJoinWorldEvent o) {
+            return (int) o.getEntity().getPosition().getY();
+        }
+
+        @Override
+        public Entity getEntity(EntityJoinWorldEvent o) {
+            return o.getEntity();
+        }
+
+        @Override
+        public DamageSource getSource(EntityJoinWorldEvent o) {
             return null;
         }
     };
@@ -128,6 +157,7 @@ public class SpawnRule {
     private Event.Result result;
     private final GenericRuleEvaluator ruleEvaluator;
     private final List<Consumer<LivingSpawnEvent.CheckSpawn>> actions = new ArrayList<>();
+    private final List<Consumer<EntityJoinWorldEvent>> actions_join = new ArrayList<>();
 
     private SpawnRule(AttributeMap map) {
         ruleEvaluator = new GenericRuleEvaluator(map);
@@ -211,6 +241,16 @@ public class SpawnRule {
             actions.add(event -> {
                 EntityLivingBase living = event.getEntityLiving();
                 if (living != null) {
+                    for (PotionEffect effect : effects) {
+                        PotionEffect neweffect = new PotionEffect(effect.getPotion(), effect.getDuration(), effect.getAmplifier());
+                        living.addPotionEffect(neweffect);
+                    }
+                }
+            });
+            actions_join.add(event -> {
+                Entity entity = event.getEntity();
+                if (entity instanceof EntityLivingBase) {
+                    EntityLivingBase living = (EntityLivingBase) entity;
                     for (PotionEffect effect : effects) {
                         PotionEffect neweffect = new PotionEffect(effect.getPotion(), effect.getDuration(), effect.getAmplifier());
                         living.addPotionEffect(neweffect);
@@ -400,11 +440,22 @@ public class SpawnRule {
         return ruleEvaluator.match(event, EVENT_QUERY);
     }
 
+    public boolean match(EntityJoinWorldEvent event) {
+        return ruleEvaluator.match(event, EVENT_QUERY_JOIN);
+    }
+
     public void action(LivingSpawnEvent.CheckSpawn event) {
         for (Consumer<LivingSpawnEvent.CheckSpawn> action : actions) {
             action.accept(event);
         }
     }
+
+    public void action(EntityJoinWorldEvent event) {
+        for (Consumer<EntityJoinWorldEvent> action : actions_join) {
+            action.accept(event);
+        }
+    }
+
 
     public Event.Result getResult() {
         return result;
