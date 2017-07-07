@@ -155,11 +155,17 @@ public class SpawnRule {
     }
 
     private Event.Result result;
+    private final boolean onJoin;
     private final GenericRuleEvaluator ruleEvaluator;
-    private final List<Consumer<LivingSpawnEvent.CheckSpawn>> actions = new ArrayList<>();
-    private final List<Consumer<EntityJoinWorldEvent>> actions_join = new ArrayList<>();
+    private final List<Consumer<EventGetter>> actions = new ArrayList<>();
 
-    private SpawnRule(AttributeMap map) {
+    private static interface EventGetter {
+        EntityLivingBase getEntityLiving();
+        World getWorld();
+    }
+
+    private SpawnRule(AttributeMap map, boolean onJoin) {
+        this.onJoin = onJoin;
         ruleEvaluator = new GenericRuleEvaluator(map);
         addActions(map);
     }
@@ -241,16 +247,6 @@ public class SpawnRule {
             actions.add(event -> {
                 EntityLivingBase living = event.getEntityLiving();
                 if (living != null) {
-                    for (PotionEffect effect : effects) {
-                        PotionEffect neweffect = new PotionEffect(effect.getPotion(), effect.getDuration(), effect.getAmplifier());
-                        living.addPotionEffect(neweffect);
-                    }
-                }
-            });
-            actions_join.add(event -> {
-                Entity entity = event.getEntity();
-                if (entity instanceof EntityLivingBase) {
-                    EntityLivingBase living = (EntityLivingBase) entity;
                     for (PotionEffect effect : effects) {
                         PotionEffect neweffect = new PotionEffect(effect.getPotion(), effect.getDuration(), effect.getAmplifier());
                         living.addPotionEffect(neweffect);
@@ -445,14 +441,36 @@ public class SpawnRule {
     }
 
     public void action(LivingSpawnEvent.CheckSpawn event) {
-        for (Consumer<LivingSpawnEvent.CheckSpawn> action : actions) {
-            action.accept(event);
+        EventGetter getter = new EventGetter() {
+            @Override
+            public EntityLivingBase getEntityLiving() {
+                return event.getEntityLiving();
+            }
+
+            @Override
+            public World getWorld() {
+                return event.getWorld();
+            }
+        };
+        for (Consumer<EventGetter> action : actions) {
+            action.accept(getter);
         }
     }
 
     public void action(EntityJoinWorldEvent event) {
-        for (Consumer<EntityJoinWorldEvent> action : actions_join) {
-            action.accept(event);
+        EventGetter getter = new EventGetter() {
+            @Override
+            public EntityLivingBase getEntityLiving() {
+                return event.getEntity() instanceof EntityLivingBase ? (EntityLivingBase) event.getEntity() : null;
+            }
+
+            @Override
+            public World getWorld() {
+                return event.getWorld();
+            }
+        };
+        for (Consumer<EventGetter> action : actions) {
+            action.accept(getter);
         }
     }
 
@@ -461,12 +479,17 @@ public class SpawnRule {
         return result;
     }
 
+    public boolean isOnJoin() {
+        return onJoin;
+    }
+
     public static SpawnRule parse(JsonElement element) {
         if (element == null) {
             return null;
         } else {
             AttributeMap map = FACTORY.parse(element);
-            return new SpawnRule(map);
+            boolean onJoin = element.getAsJsonObject().has("onjoin") && element.getAsJsonObject().get("onjoin").getAsBoolean();
+            return new SpawnRule(map, onJoin);
         }
     }
 }

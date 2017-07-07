@@ -24,7 +24,7 @@ public class ForgeEventHandlers {
     public void onEntityJoinWorld(EntityJoinWorldEvent event) {
         int i = 0;
         for (SpawnRule rule : RulesManager.rules) {
-            if (rule.match(event)) {
+            if (rule.isOnJoin() && rule.match(event)) {
                 Event.Result result = rule.getResult();
                 if (debug) {
                     InControl.logger.log(Level.INFO, "Join Rule " + i + ": "+ result
