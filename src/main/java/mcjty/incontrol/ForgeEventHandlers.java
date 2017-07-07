@@ -6,6 +6,7 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.biome.Biome;
+import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import net.minecraftforge.event.entity.living.ZombieEvent;
@@ -19,6 +20,28 @@ import java.util.List;
 public class ForgeEventHandlers {
 
     public static boolean debug = false;
+
+    @SubscribeEvent
+    public void onEntityJoinWorld(EntityJoinWorldEvent event) {
+        int i = 0;
+        for (SpawnRule rule : RulesManager.rules) {
+            if (rule.isOnJoin() && rule.match(event)) {
+                Event.Result result = rule.getResult();
+                if (debug) {
+                    InControl.logger.log(Level.INFO, "Join Rule " + i + ": "+ result
+                            + " entity: " + event.getEntity().getName()
+                            + " y: " + event.getEntity().getPosition().getY());
+                }
+                if (result != Event.Result.DENY) {
+                    rule.action(event);
+                } else {
+                    event.setCanceled(true);
+                }
+                return;
+            }
+            i++;
+        }
+    }
 
     @SubscribeEvent
     public void onEntitySpawnEvent(LivingSpawnEvent.CheckSpawn event) {
