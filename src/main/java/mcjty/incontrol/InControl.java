@@ -12,10 +12,8 @@ import org.apache.logging.log4j.Logger;
 @Mod(modid = InControl.MODID, name = InControl.MODNAME,
         dependencies =
                 "after:forge@[" + InControl.MIN_FORGE11_VER + ",)",
-        version = InControl.VERSION)
         version = InControl.VERSION,
-        acceptableRemoteVersions = "*",
-        acceptedMinecraftVersions = "[1.10,1.12)")
+        acceptableRemoteVersions = "*")
 public class InControl {
 
     public static final String MODID = "incontrol";
