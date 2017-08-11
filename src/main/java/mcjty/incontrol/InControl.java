@@ -13,6 +13,7 @@ import org.apache.logging.log4j.Logger;
         dependencies =
                 "after:forge@[" + InControl.MIN_FORGE11_VER + ",)",
         version = InControl.VERSION,
+        acceptedMinecraftVersions = "[1.12,1.13)",
         acceptableRemoteVersions = "*")
 public class InControl {
 
