@@ -387,13 +387,13 @@ public class GenericRuleEvaluator {
             String biomename = biomes.get(0);
             checks.add((event,query) -> {
                 Biome biome = query.getWorld(event).getBiome(query.getPos(event));
-                return biomename.equals(biome.getBiomeName());
+                return biomename.equals(biome.biomeName);
             });
         } else {
             Set<String> biomenames = new HashSet<>(biomes);
             checks.add((event,query) -> {
                 Biome biome = query.getWorld(event).getBiome(query.getPos(event));
-                return biomenames.contains(biome.getBiomeName());
+                return biomenames.contains(biome.biomeName);
             });
         }
     }

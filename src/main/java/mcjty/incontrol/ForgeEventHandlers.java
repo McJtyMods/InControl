@@ -52,7 +52,7 @@ public class ForgeEventHandlers {
                     InControl.logger.log(Level.INFO, "Rule " + i + ": "+ result
                             + " entity: " + event.getEntity().getName()
                             + " y: " + event.getY()
-                            + " biome: " + event.getWorld().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ())).getBiomeName());
+                            + " biome: " + event.getWorld().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ())).biomeName);
                 }
                 event.setResult(result);
                 if (result != Event.Result.DENY) {
@@ -74,7 +74,7 @@ public class ForgeEventHandlers {
                     InControl.logger.log(Level.INFO, "SummonAid " + i + ": "+ result
                             + " entity: " + event.getEntity().getName()
                             + " y: " + event.getY()
-                            + " biome: " + event.getWorld().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ())).getBiomeName());
+                            + " biome: " + event.getWorld().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ())).biomeName);
                 }
                 event.setResult(result);
                 if (result != Event.Result.DENY) {
