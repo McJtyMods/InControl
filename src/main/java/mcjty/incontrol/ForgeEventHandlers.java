@@ -146,7 +146,7 @@ public class ForgeEventHandlers {
                 for (ItemStack item : rule.getToAddItems()) {
                     BlockPos pos = event.getEntity().getPosition();
                     event.getDrops().add(new EntityItem(event.getEntity().getEntityWorld(), pos.getX(), pos.getY(), pos.getZ(),
-                            item));
+                            item.copy()));
                 }
             }
             i++;
