@@ -12,13 +12,17 @@ import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.passive.IAnimals;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.server.management.PlayerList;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.biome.Biome;
+import net.minecraftforge.common.DimensionManager;
+import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
@@ -130,6 +134,12 @@ public class GenericRuleEvaluator {
 
         if (map.has(PLAYER)) {
             addPlayerCheck(map);
+        }
+        if (map.has(REALPLAYER)) {
+            addRealPlayerCheck(map);
+        }
+        if (map.has(FAKEPLAYER)) {
+            addFakePlayerCheck(map);
         }
         if (map.has(EXPLOSION)) {
             addExplosionCheck(map);
@@ -576,6 +586,53 @@ public class GenericRuleEvaluator {
             checks.add((event,query) -> query.getSource(event) == null ? false : query.getSource(event).getEntity() instanceof EntityPlayer);
         } else {
             checks.add((event,query) -> query.getSource(event) == null ? true : !(query.getSource(event).getEntity() instanceof EntityPlayer));
+        }
+    }
+
+
+    private boolean isFakePlayer(Entity entity) {
+        if (!(entity instanceof EntityPlayer)) {
+            return false;
+        }
+
+        if (entity instanceof FakePlayer) {
+            return true;
+        }
+
+        // If this returns false it is still possible we have a fake player. Try to find the player in the list of online players
+        PlayerList playerList = DimensionManager.getWorld(0).getMinecraftServer().getPlayerList();
+        EntityPlayerMP playerByUUID = playerList.getPlayerByUUID(((EntityPlayer) entity).getGameProfile().getId());
+        if (playerByUUID == null) {
+            // The player isn't online. Then it can't be real
+            return true;
+        }
+
+        // The player is in the list. But is it this player?
+        return entity != playerByUUID;
+    }
+
+    private boolean isRealPlayer(Entity entity) {
+        if (!(entity instanceof EntityPlayer)) {
+            return false;
+        }
+        return !isFakePlayer(entity);
+    }
+
+    private void addRealPlayerCheck(AttributeMap map) {
+        boolean asPlayer = map.get(REALPLAYER);
+        if (asPlayer) {
+            checks.add((event,query) -> query.getSource(event) == null ? false : isRealPlayer(query.getSource(event).getEntity()));
+        } else {
+            checks.add((event,query) -> query.getSource(event) == null ? true : !isRealPlayer(query.getSource(event).getEntity()));
+        }
+    }
+
+    private void addFakePlayerCheck(AttributeMap map) {
+        boolean asPlayer = map.get(FAKEPLAYER);
+        if (asPlayer) {
+            checks.add((event,query) -> query.getSource(event) == null ? false : isFakePlayer(query.getSource(event).getEntity()));
+        } else {
+            checks.add((event,query) -> query.getSource(event) == null ? true : !isFakePlayer(query.getSource(event).getEntity()));
         }
     }
 
