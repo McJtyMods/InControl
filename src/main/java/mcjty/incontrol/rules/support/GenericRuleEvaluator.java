@@ -625,18 +625,18 @@ public class GenericRuleEvaluator {
     private void addRealPlayerCheck(AttributeMap map) {
         boolean asPlayer = map.get(REALPLAYER);
         if (asPlayer) {
-            checks.add((event,query) -> query.getSource(event) == null ? false : isRealPlayer(query.getSource(event).getEntity()));
+            checks.add((event,query) -> query.getSource(event) == null ? false : isRealPlayer(query.getSource(event).getTrueSource()));
         } else {
-            checks.add((event,query) -> query.getSource(event) == null ? true : !isRealPlayer(query.getSource(event).getEntity()));
+            checks.add((event,query) -> query.getSource(event) == null ? true : !isRealPlayer(query.getSource(event).getTrueSource()));
         }
     }
 
     private void addFakePlayerCheck(AttributeMap map) {
         boolean asPlayer = map.get(FAKEPLAYER);
         if (asPlayer) {
-            checks.add((event,query) -> query.getSource(event) == null ? false : isFakePlayer(query.getSource(event).getEntity()));
+            checks.add((event,query) -> query.getSource(event) == null ? false : isFakePlayer(query.getSource(event).getTrueSource()));
         } else {
-            checks.add((event,query) -> query.getSource(event) == null ? true : !isFakePlayer(query.getSource(event).getEntity()));
+            checks.add((event,query) -> query.getSource(event) == null ? true : !isFakePlayer(query.getSource(event).getTrueSource()));
         }
     }
 
