@@ -59,6 +59,8 @@ public interface RuleKeys {
     // Foor loot rules
     Key<String> SOURCE = Key.create(Type.STRING, "source");
     Key<Boolean> PLAYER = Key.create(Type.BOOLEAN, "player");
+    Key<Boolean> REALPLAYER = Key.create(Type.BOOLEAN, "realplayer");
+    Key<Boolean> FAKEPLAYER = Key.create(Type.BOOLEAN, "fakeplayer");
     Key<Boolean> PROJECTILE = Key.create(Type.BOOLEAN, "projectile");
     Key<Boolean> EXPLOSION = Key.create(Type.BOOLEAN, "explosion");
     Key<Boolean> FIRE = Key.create(Type.BOOLEAN, "fire");

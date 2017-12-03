@@ -77,6 +77,8 @@ public class LootRule {
                 .attribute(Attribute.create(DIFFICULTY))
                 .attribute(Attribute.create(STRUCTURE))
                 .attribute(Attribute.create(PLAYER))
+                .attribute(Attribute.create(REALPLAYER))
+                .attribute(Attribute.create(FAKEPLAYER))
                 .attribute(Attribute.create(PROJECTILE))
                 .attribute(Attribute.create(EXPLOSION))
                 .attribute(Attribute.create(FIRE))
