@@ -11,8 +11,10 @@ import mcjty.incontrol.varia.Tools;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.storage.loot.LootTable;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import org.apache.logging.log4j.Level;
 
@@ -102,7 +104,7 @@ public class LootRule {
     private List<ItemStack> toRemoveItems = new ArrayList<>();
     private List<ItemStack> toAddItems = new ArrayList<>();
     private boolean removeAll = false;
-    private String lootTable;
+    private LootTable lootTable;
     
     private LootRule(AttributeMap map) {
         ruleEvaluator = new GenericRuleEvaluator(map);
@@ -114,7 +116,7 @@ public class LootRule {
             addItem(map);
         }
         if (map.has(ACTION_LOOTTABLE)) {
-            lootTable = map.get(ACTION_LOOTTABLE);
+            lootTable = RulesManager.lootManager.getLootTableFromLocation(new ResourceLocation(map.get(ACTION_LOOTTABLE)));
         }
         if (map.has(ACTION_REMOVE)) {
             removeItem(map);
@@ -136,7 +138,7 @@ public class LootRule {
         return toAddItems;
     }
     
-    public String getLootTable() {
+    public LootTable getLootTable() {
         return lootTable;
     }
     

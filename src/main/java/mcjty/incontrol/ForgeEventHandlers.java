@@ -149,7 +149,8 @@ public class ForgeEventHandlers {
                 }
 
                 if (rule.getLootTable() != null) {
-                	LootTable table = event.getEntity().world.getLootTableManager().getLootTableFromLocation(new ResourceLocation(rule.getLootTable()));
+                	LootTable table = rule.getLootTable();
+                	
                 	LootContext.Builder builder = (new LootContext.Builder((WorldServer)event.getEntity().world))
                 			.withLootedEntity(event.getEntity()).withDamageSource(event.getSource());
                 	if (event.isRecentlyHit() && event.getEntityLiving().getAttackingEntity() instanceof EntityPlayer) {
