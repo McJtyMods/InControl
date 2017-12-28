@@ -68,6 +68,7 @@ public interface RuleKeys {
     Key<String> HELDITEM = Key.create(Type.STRING, "helditem");
 
     Key<String> ACTION_ITEM = Key.create(Type.STRING, "item");
+    Key<String> ACTION_LOOTTABLE = Key.create(Type.STRING, "loottable");
     Key<Boolean> ACTION_REMOVEALL = Key.create(Type.BOOLEAN, "removeall");
 
     // Mob spawn entry

@@ -8,6 +8,8 @@ import mcjty.incontrol.typed.AttributeMap;
 import mcjty.incontrol.varia.Tools;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.IEntityOwnable;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.passive.IAnimals;
 import net.minecraft.entity.player.EntityPlayer;
@@ -252,9 +254,9 @@ public class GenericRuleEvaluator {
 
     private void addHostileCheck(AttributeMap map) {
         if (map.get(HOSTILE)) {
-            checks.add((event,query) -> query.getEntity(event) instanceof IMob);
+            checks.add((event,query) -> this.isHostile(query.getEntity(event), query.getSource(event) != null ? query.getSource(event).getTrueSource() : null));
         } else {
-            checks.add((event,query) -> !(query.getEntity(event) instanceof IMob));
+            checks.add((event,query) -> !this.isHostile(query.getEntity(event), query.getSource(event) != null ? query.getSource(event).getTrueSource() : null));
         }
     }
 
@@ -622,6 +624,10 @@ public class GenericRuleEvaluator {
         return !isFakePlayer(entity);
     }
 
+    private boolean isHostile(Entity entity, Entity attacker) {
+        return entity instanceof IMob && !(attacker != null && (entity.isOnSameTeam(attacker) || (entity instanceof IEntityOwnable && ((IEntityOwnable) entity).getOwner() == attacker)));
+    }
+    
     private void addRealPlayerCheck(AttributeMap map) {
         boolean asPlayer = map.get(REALPLAYER);
         if (asPlayer) {

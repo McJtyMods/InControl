@@ -92,6 +92,7 @@ public class LootRule {
                 .attribute(Attribute.createMulti(HELDITEM))
 
                 .attribute(Attribute.createMulti(ACTION_ITEM))
+                .attribute(Attribute.create(ACTION_LOOTTABLE))
                 .attribute(Attribute.createMulti(ACTION_REMOVE))
                 .attribute(Attribute.create(ACTION_REMOVEALL))
         ;
@@ -101,7 +102,8 @@ public class LootRule {
     private List<ItemStack> toRemoveItems = new ArrayList<>();
     private List<ItemStack> toAddItems = new ArrayList<>();
     private boolean removeAll = false;
-
+    private String lootTable;
+    
     private LootRule(AttributeMap map) {
         ruleEvaluator = new GenericRuleEvaluator(map);
         addActions(map);
@@ -110,6 +112,9 @@ public class LootRule {
     private void addActions(AttributeMap map) {
         if (map.has(ACTION_ITEM)) {
             addItem(map);
+        }
+        if (map.has(ACTION_LOOTTABLE)) {
+            lootTable = map.get(ACTION_LOOTTABLE);
         }
         if (map.has(ACTION_REMOVE)) {
             removeItem(map);
@@ -130,7 +135,11 @@ public class LootRule {
     public List<ItemStack> getToAddItems() {
         return toAddItems;
     }
-
+    
+    public String getLootTable() {
+        return lootTable;
+    }
+    
     private List<ItemStack> getItems(List<String> itemNames) {
         List<ItemStack> items = new ArrayList<>();
         for (String name : itemNames) {
