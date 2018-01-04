@@ -1,6 +1,7 @@
 package mcjty.incontrol.rules;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.rules.support.GenericRuleEvaluator;
 import mcjty.incontrol.rules.support.IEventQuery;
@@ -10,12 +11,15 @@ import mcjty.incontrol.typed.GenericAttributeMapFactory;
 import mcjty.incontrol.varia.Tools;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.JsonToNBT;
+import net.minecraft.nbt.NBTException;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import org.apache.logging.log4j.Level;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -92,6 +96,7 @@ public class LootRule {
                 .attribute(Attribute.createMulti(SOURCE))
                 .attribute(Attribute.createMulti(HELDITEM))
 
+                .attribute(Attribute.create(ACTION_ITEMNBT))
                 .attribute(Attribute.createMulti(ACTION_ITEM))
                 .attribute(Attribute.createMulti(ACTION_REMOVE))
                 .attribute(Attribute.create(ACTION_REMOVEALL))
@@ -132,13 +137,20 @@ public class LootRule {
         return toAddItems;
     }
 
-    private List<ItemStack> getItems(List<String> itemNames) {
+    private List<ItemStack> getItems(List<String> itemNames, @Nullable String nbtJson) {
         List<ItemStack> items = new ArrayList<>();
         for (String name : itemNames) {
             ItemStack stack = Tools.parseStack(name);
             if (stack.isEmpty()) {
                 InControl.logger.log(Level.ERROR, "Unknown item '" + name + "'!");
             } else {
+                if (nbtJson != null) {
+                    try {
+                        stack.setTagCompound(JsonToNBT.getTagFromJson(nbtJson));
+                    } catch (NBTException e) {
+                        InControl.logger.log(Level.ERROR, "Bad nbt for '" + name + "'!");
+                    }
+                }
                 items.add(stack);
             }
         }
@@ -146,11 +158,12 @@ public class LootRule {
     }
 
     private void addItem(AttributeMap map) {
-        toAddItems.addAll(getItems(map.getList(ACTION_ITEM)));
+        String nbt = map.get(ACTION_ITEMNBT);
+        toAddItems.addAll(getItems(map.getList(ACTION_ITEM), nbt));
     }
 
     private void removeItem(AttributeMap map) {
-        toRemoveItems.addAll(getItems(map.getList(ACTION_REMOVE)));
+        toRemoveItems.addAll(getItems(map.getList(ACTION_REMOVE), null));
     }
 
     private static Random rnd = new Random();

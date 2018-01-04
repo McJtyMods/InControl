@@ -18,6 +18,7 @@ public final class Type<V> {
     public static final Type<Long> LONG = create(Long.class);
     public static final Type<String> STRING = create(String.class);
     public static final Type<Boolean> BOOLEAN = create(Boolean.class);
+    public static final Type<String> JSON = create(String.class);
 
     // Map
     public static final Type<AttributeMap> MAP = create(AttributeMap.class);

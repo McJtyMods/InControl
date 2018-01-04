@@ -1,5 +1,6 @@
 package mcjty.incontrol.rules.support;
 
+import com.google.gson.JsonObject;
 import mcjty.incontrol.typed.AttributeMap;
 import mcjty.incontrol.typed.Key;
 import mcjty.incontrol.typed.Type;
@@ -34,7 +35,6 @@ public interface RuleKeys {
     Key<String> BIOME = Key.create(Type.STRING, "biome");
     Key<String> STRUCTURE = Key.create(Type.STRING, "structure");
     Key<Integer> DIMENSION = Key.create(Type.INTEGER, "dimension");
-    Key<String> GAMESTAGE = Key.create(Type.STRING, "gamestage");
     Key<Boolean> INCITY = Key.create(Type.BOOLEAN, "incity");
     Key<Boolean> INBUILDING = Key.create(Type.BOOLEAN, "inbuilding");
     Key<Boolean> INSTREET = Key.create(Type.BOOLEAN, "instreet");
@@ -67,13 +67,16 @@ public interface RuleKeys {
     Key<Boolean> FIRE = Key.create(Type.BOOLEAN, "fire");
     Key<Boolean> MAGIC = Key.create(Type.BOOLEAN, "magic");
     Key<String> HELDITEM = Key.create(Type.STRING, "helditem");
+    Key<String> GAMESTAGE = Key.create(Type.STRING, "gamestage");
 
+    Key<String> ACTION_ITEMNBT = Key.create(Type.JSON, "nbt");
     Key<String> ACTION_ITEM = Key.create(Type.STRING, "item");
     Key<Boolean> ACTION_REMOVEALL = Key.create(Type.BOOLEAN, "removeall");
 
     // Mob spawn entry
     Key<AttributeMap> ACTION_MOBS = Key.create(Type.MAP, "mobs");
     Key<String> ACTION_REMOVE = Key.create(Type.STRING, "remove");
+    Key<String> ACTION_MOBNBT = Key.create(Type.JSON, "nbt");
     Key<String> MOB_NAME = Key.create(Type.STRING, "mob");
     Key<Integer> MOB_WEIGHT = Key.create(Type.INTEGER, "weight");
     Key<Integer> MOB_GROUPCOUNTMIN = Key.create(Type.INTEGER, "groupcountmin");

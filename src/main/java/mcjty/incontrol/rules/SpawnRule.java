@@ -20,6 +20,9 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.JsonToNBT;
+import net.minecraft.nbt.NBTException;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
@@ -145,6 +148,7 @@ public class SpawnRule {
                 .attribute(Attribute.create(ACTION_SIZEMULTIPLY))
                 .attribute(Attribute.create(ACTION_SIZEADD))
                 .attribute(Attribute.create(ACTION_ANGRY))
+                .attribute(Attribute.create(ACTION_MOBNBT))
                 .attribute(Attribute.createMulti(ACTION_HELDITEM))
                 .attribute(Attribute.createMulti(ACTION_ARMORBOOTS))
                 .attribute(Attribute.createMulti(ACTION_ARMORLEGS))
@@ -198,6 +202,9 @@ public class SpawnRule {
         }
         if (map.has(ACTION_ANGRY)) {
             addAngryAction(map);
+        }
+        if (map.has(ACTION_MOBNBT)) {
+            addMobNBT(map);
         }
         if (map.has(ACTION_HELDITEM)) {
             addHeldItem(map);
@@ -347,6 +354,23 @@ public class SpawnRule {
                         entityLiving.setHeldItem(EnumHand.MAIN_HAND, item);
                     }
                 }
+            });
+        }
+    }
+
+    private void addMobNBT(AttributeMap map) {
+        String mobnbt = map.get(ACTION_MOBNBT);
+        if (mobnbt != null) {
+            NBTTagCompound tagCompound;
+            try {
+                tagCompound = JsonToNBT.getTagFromJson(mobnbt);
+            } catch (NBTException e) {
+                InControl.logger.log(Level.ERROR, "Bad NBT for mob!");
+                return;
+            }
+            actions.add(event -> {
+                EntityLivingBase entityLiving = event.getEntityLiving();
+                entityLiving.readEntityFromNBT(tagCompound);
             });
         }
     }
