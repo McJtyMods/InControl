@@ -19,7 +19,7 @@ public class InControl {
 
     public static final String MODID = "incontrol";
     public static final String MODNAME = "InControl";
-    public static final String VERSION = "3.6.3";
+    public static final String VERSION = "3.6.4";
     public static final String MIN_FORGE11_VER = "13.19.0.2176";
 
     @SidedProxy(clientSide = "mcjty.incontrol.proxy.ClientProxy", serverSide = "mcjty.incontrol.proxy.ServerProxy")
