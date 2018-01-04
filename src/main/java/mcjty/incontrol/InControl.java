@@ -31,6 +31,7 @@ public class InControl {
     public static Logger logger;
 
     public static boolean lostcities = false;
+    public static boolean gamestages = false;
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event){
@@ -42,6 +43,7 @@ public class InControl {
     public void init(FMLInitializationEvent e) {
         proxy.init(e);
         lostcities = Loader.isModLoaded("lostcities");
+        gamestages = Loader.isModLoaded("gamestages");
     }
 
     @Mod.EventHandler

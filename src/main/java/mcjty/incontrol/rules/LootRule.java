@@ -68,6 +68,7 @@ public class LootRule {
                 .attribute(Attribute.create(RANDOM))
                 .attribute(Attribute.create(INBUILDING))
                 .attribute(Attribute.create(INCITY))
+                .attribute(Attribute.create(GAMESTAGE))
                 .attribute(Attribute.create(INSTREET))
                 .attribute(Attribute.create(PASSIVE))
                 .attribute(Attribute.create(HOSTILE))
