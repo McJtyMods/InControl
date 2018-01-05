@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import javax.annotation.Nullable;
+
 import static mcjty.incontrol.rules.support.RuleKeys.*;
 
 public class LootRule {
@@ -142,7 +144,7 @@ public class LootRule {
         return lootTable;
     }
     
-    private List<ItemStack> getItems(List<String> itemNames) {
+    private List<ItemStack> getItems(List<String> itemNames, @Nullable String nbtJson) {
         List<ItemStack> items = new ArrayList<>();
         for (String name : itemNames) {
             ItemStack stack = Tools.parseStack(name);
