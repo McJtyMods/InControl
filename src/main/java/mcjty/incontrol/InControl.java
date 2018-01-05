@@ -19,7 +19,7 @@ public class InControl {
 
     public static final String MODID = "incontrol";
     public static final String MODNAME = "InControl";
-    public static final String VERSION = "3.6.3";
+    public static final String VERSION = "3.6.5";
     public static final String MIN_FORGE11_VER = "13.19.0.2176";
 
     @SidedProxy(clientSide = "mcjty.incontrol.proxy.ClientProxy", serverSide = "mcjty.incontrol.proxy.ServerProxy")
@@ -31,6 +31,7 @@ public class InControl {
     public static Logger logger;
 
     public static boolean lostcities = false;
+    public static boolean gamestages = false;
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event){
@@ -42,6 +43,7 @@ public class InControl {
     public void init(FMLInitializationEvent e) {
         proxy.init(e);
         lostcities = Loader.isModLoaded("lostcities");
+        gamestages = Loader.isModLoaded("gamestages");
     }
 
     @Mod.EventHandler

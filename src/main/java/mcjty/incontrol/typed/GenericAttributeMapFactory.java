@@ -37,6 +37,8 @@ public class GenericAttributeMapFactory {
                     transformer = JsonElement::getAsBoolean;
                 } else if (type == Type.STRING) {
                     transformer = JsonElement::getAsString;
+                } else if (type == Type.JSON) {
+                    transformer = e -> e.toString();
                 } else {
                     transformer = e -> "INVALID";
                 }
@@ -59,6 +61,11 @@ public class GenericAttributeMapFactory {
                 } else if (type == Type.STRING) {
                     if (jsonObject.has(key.getName())) {
                         map.setNonnull(key, jsonObject.get(key.getName()).getAsString());
+                    }
+                } else if (type == Type.JSON) {
+                    if (jsonObject.has(key.getName())) {
+                        JsonObject obj = jsonObject.get(key.getName()).getAsJsonObject();
+                        map.setNonnull(key, obj.toString());
                     }
                 }
             }

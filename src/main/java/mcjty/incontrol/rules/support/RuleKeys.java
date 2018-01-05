@@ -1,5 +1,6 @@
 package mcjty.incontrol.rules.support;
 
+import com.google.gson.JsonObject;
 import mcjty.incontrol.typed.AttributeMap;
 import mcjty.incontrol.typed.Key;
 import mcjty.incontrol.typed.Type;
@@ -66,7 +67,9 @@ public interface RuleKeys {
     Key<Boolean> FIRE = Key.create(Type.BOOLEAN, "fire");
     Key<Boolean> MAGIC = Key.create(Type.BOOLEAN, "magic");
     Key<String> HELDITEM = Key.create(Type.STRING, "helditem");
+    Key<String> GAMESTAGE = Key.create(Type.STRING, "gamestage");
 
+    Key<String> ACTION_ITEMNBT = Key.create(Type.JSON, "nbt");
     Key<String> ACTION_ITEM = Key.create(Type.STRING, "item");
     Key<String> ACTION_LOOTTABLE = Key.create(Type.STRING, "loottable");
     Key<Boolean> ACTION_REMOVEALL = Key.create(Type.BOOLEAN, "removeall");
@@ -74,6 +77,7 @@ public interface RuleKeys {
     // Mob spawn entry
     Key<AttributeMap> ACTION_MOBS = Key.create(Type.MAP, "mobs");
     Key<String> ACTION_REMOVE = Key.create(Type.STRING, "remove");
+    Key<String> ACTION_MOBNBT = Key.create(Type.JSON, "nbt");
     Key<String> MOB_NAME = Key.create(Type.STRING, "mob");
     Key<Integer> MOB_WEIGHT = Key.create(Type.INTEGER, "weight");
     Key<Integer> MOB_GROUPCOUNTMIN = Key.create(Type.INTEGER, "groupcountmin");

@@ -2,8 +2,9 @@ package mcjty.incontrol.rules.support;
 
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.cache.StructureCache;
-import mcjty.incontrol.rules.PotentialSpawnRule;
+import mcjty.incontrol.compat.GameStageSupport;
 import mcjty.incontrol.compat.LostCitySupport;
+import mcjty.incontrol.rules.PotentialSpawnRule;
 import mcjty.incontrol.typed.AttributeMap;
 import mcjty.incontrol.varia.Tools;
 import net.minecraft.entity.Entity;
@@ -65,6 +66,13 @@ public class GenericRuleEvaluator {
             addHostileCheck(map);
         }
 
+        if (map.has(GAMESTAGE)) {
+            if (InControl.gamestages) {
+                addGameStageCheck(map);
+            } else {
+                InControl.logger.warn("Game Stages is missing: the 'gamestage' test cannot work!");
+            }
+        }
         if (map.has(INCITY)) {
             if (InControl.lostcities) {
                 addInCityCheck(map);
@@ -266,6 +274,11 @@ public class GenericRuleEvaluator {
         } else {
             checks.add((event,query) -> !(query.getEntity(event) instanceof IAnimals && !(query.getEntity(event) instanceof IMob)));
         }
+    }
+
+    private void addGameStageCheck(AttributeMap map) {
+        String stage = map.get(GAMESTAGE);
+        checks.add((event, query) -> InControl.gamestages && GameStageSupport.hasGameStage(query.getSource(event), stage));
     }
 
     private void addInCityCheck(AttributeMap map) {
