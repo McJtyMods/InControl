@@ -2,6 +2,8 @@ package mcjty.incontrol.rules;
 
 import com.google.gson.*;
 import mcjty.incontrol.InControl;
+import net.minecraft.world.storage.loot.LootTableManager;
+
 import org.apache.logging.log4j.Level;
 
 import java.io.*;
@@ -12,6 +14,7 @@ import java.util.function.Function;
 public class RulesManager {
 
     private static String path;
+    public static LootTableManager lootManager;
     public static List<SpawnRule> rules = new ArrayList<>();
     public static List<SummonAidRule> summonAidRules = new ArrayList<>();
     public static List<PotentialSpawnRule> potentialSpawnRules = new ArrayList<>();
@@ -27,6 +30,7 @@ public class RulesManager {
 
     public static void setRulePath(File directory) {
         path = directory.getPath();
+        lootManager = new LootTableManager(new File(directory, "incontrol/loot_tables"));
     }
 
     public static void readRules() {
@@ -80,6 +84,7 @@ public class RulesManager {
         readRules(path, "summonaid.json", SummonAidRule::parse, summonAidRules);
         readRules(path, "potentialspawn.json", PotentialSpawnRule::parse, potentialSpawnRules);
         readRules(path, "loot.json", LootRule::parse, lootRules);
+        lootManager.reloadLootTables();
     }
 
     private static <T> void readRules(String path, String filename, Function<JsonElement, T> parser, List<T> rules) {

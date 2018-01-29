@@ -14,8 +14,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.nbt.NBTException;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.storage.loot.LootTable;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import org.apache.logging.log4j.Level;
 
@@ -98,6 +100,7 @@ public class LootRule {
 
                 .attribute(Attribute.create(ACTION_ITEMNBT))
                 .attribute(Attribute.createMulti(ACTION_ITEM))
+                .attribute(Attribute.create(ACTION_LOOTTABLE))
                 .attribute(Attribute.createMulti(ACTION_REMOVE))
                 .attribute(Attribute.create(ACTION_REMOVEALL))
         ;
@@ -107,7 +110,8 @@ public class LootRule {
     private List<ItemStack> toRemoveItems = new ArrayList<>();
     private List<ItemStack> toAddItems = new ArrayList<>();
     private boolean removeAll = false;
-
+    private LootTable lootTable;
+    
     private LootRule(AttributeMap map) {
         ruleEvaluator = new GenericRuleEvaluator(map);
         addActions(map);
@@ -116,6 +120,9 @@ public class LootRule {
     private void addActions(AttributeMap map) {
         if (map.has(ACTION_ITEM)) {
             addItem(map);
+        }
+        if (map.has(ACTION_LOOTTABLE)) {
+            lootTable = RulesManager.lootManager.getLootTableFromLocation(new ResourceLocation(map.get(ACTION_LOOTTABLE)));
         }
         if (map.has(ACTION_REMOVE)) {
             removeItem(map);
@@ -135,6 +142,9 @@ public class LootRule {
 
     public List<ItemStack> getToAddItems() {
         return toAddItems;
+    }
+    public LootTable getLootTable() {
+        return lootTable;
     }
 
     private List<ItemStack> getItems(List<String> itemNames, @Nullable String nbtJson) {

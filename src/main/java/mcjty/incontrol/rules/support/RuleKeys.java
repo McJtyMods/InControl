@@ -71,6 +71,7 @@ public interface RuleKeys {
 
     Key<String> ACTION_ITEMNBT = Key.create(Type.JSON, "nbt");
     Key<String> ACTION_ITEM = Key.create(Type.STRING, "item");
+    Key<String> ACTION_LOOTTABLE = Key.create(Type.STRING, "loottable");
     Key<Boolean> ACTION_REMOVEALL = Key.create(Type.BOOLEAN, "removeall");
 
     // Mob spawn entry

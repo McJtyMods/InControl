@@ -2,9 +2,14 @@ package mcjty.incontrol;
 
 import mcjty.incontrol.rules.*;
 import net.minecraft.entity.item.EntityItem;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.WorldServer;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.storage.loot.LootContext;
+import net.minecraft.world.storage.loot.LootTable;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
@@ -143,6 +148,21 @@ public class ForgeEventHandlers {
                     }
                 }
 
+                if (rule.getLootTable() != null) {
+                	LootTable table = rule.getLootTable();
+                	
+                	LootContext.Builder builder = (new LootContext.Builder((WorldServer)event.getEntity().world))
+                			.withLootedEntity(event.getEntity()).withDamageSource(event.getSource());
+                	if (event.isRecentlyHit() && event.getEntityLiving().getAttackingEntity() instanceof EntityPlayer) {
+                		EntityPlayer attacker = (EntityPlayer) event.getEntityLiving().getAttackingEntity();
+                		builder.withPlayer(attacker).withLuck(attacker.getLuck());
+                	}
+                	for (ItemStack item : table.generateLootForPools(event.getEntityLiving().getRNG(), builder.build())) {
+                        BlockPos pos = event.getEntity().getPosition();
+                        event.getDrops().add(new EntityItem(event.getEntity().getEntityWorld(), pos.getX(), pos.getY(), pos.getZ(),
+                                item));
+                    }
+                }
                 for (ItemStack item : rule.getToAddItems()) {
                     BlockPos pos = event.getEntity().getPosition();
                     event.getDrops().add(new EntityItem(event.getEntity().getEntityWorld(), pos.getX(), pos.getY(), pos.getZ(),
