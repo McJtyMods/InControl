@@ -280,7 +280,7 @@ public class SpawnRule {
         float r = rnd.nextFloat() * total;
         for (Pair<Float, ItemStack> pair : items) {
             if (r <= pair.getLeft()) {
-                return pair.getRight();
+                return pair.getRight().copy();
             }
             r -= pair.getLeft();
         }
@@ -297,7 +297,7 @@ public class SpawnRule {
             actions.add(event -> {
                 EntityLivingBase entityLiving = event.getEntityLiving();
                 if (entityLiving != null) {
-                    entityLiving.setItemStackToSlot(slot, item);
+                    entityLiving.setItemStackToSlot(slot, item.copy());
                 }
             });
         } else {
@@ -335,7 +335,7 @@ public class SpawnRule {
                             ((EntityEnderman) entityLiving).setHeldBlockState(b.getBlock().getStateFromMeta(b.getMetadata(item.getItemDamage())));
                         }
                     } else {
-                        entityLiving.setHeldItem(EnumHand.MAIN_HAND, item);
+                        entityLiving.setHeldItem(EnumHand.MAIN_HAND, item.copy());
                     }
                 }
             });
@@ -351,7 +351,7 @@ public class SpawnRule {
                             ((EntityEnderman) entityLiving).setHeldBlockState(b.getBlock().getStateFromMeta(b.getMetadata(item.getItemDamage())));
                         }
                     } else {
-                        entityLiving.setHeldItem(EnumHand.MAIN_HAND, item);
+                        entityLiving.setHeldItem(EnumHand.MAIN_HAND, item.copy());
                     }
                 }
             });
