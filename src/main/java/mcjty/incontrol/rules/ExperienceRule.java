@@ -1,28 +1,17 @@
 package mcjty.incontrol.rules;
 
 import com.google.gson.JsonElement;
-import mcjty.incontrol.InControl;
 import mcjty.incontrol.rules.support.GenericRuleEvaluator;
 import mcjty.incontrol.rules.support.IEventQuery;
 import mcjty.incontrol.typed.Attribute;
 import mcjty.incontrol.typed.AttributeMap;
 import mcjty.incontrol.typed.GenericAttributeMapFactory;
-import mcjty.incontrol.varia.Tools;
 import net.minecraft.entity.Entity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.JsonToNBT;
-import net.minecraft.nbt.NBTException;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.living.LivingExperienceDropEvent;
-import org.apache.logging.log4j.Level;
-
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import net.minecraftforge.fml.common.eventhandler.Event;
 
 import static mcjty.incontrol.rules.support.RuleKeys.*;
 
@@ -96,79 +85,63 @@ public class ExperienceRule {
                 .attribute(Attribute.createMulti(HELDITEM))
 
                 .attribute(Attribute.create(ACTION_RESULT))
-                .attribute(Attribute.createMulti(ACTION_REMOVE))
-                .attribute(Attribute.create(ACTION_REMOVEALL))
+                .attribute(Attribute.create(ACTION_SETXP))
+                .attribute(Attribute.create(ACTION_ADDXP))
+                .attribute(Attribute.create(ACTION_MULTXP))
         ;
     }
 
     private final GenericRuleEvaluator ruleEvaluator;
-    private List<ItemStack> toRemoveItems = new ArrayList<>();
-    private List<ItemStack> toAddItems = new ArrayList<>();
-    private boolean removeAll = false;
+    private Event.Result result;
+    private Integer xp = null;
+    private float multxp = 1.0f;
+    private float addxp = 0.0f;
 
     private ExperienceRule(AttributeMap map) {
         ruleEvaluator = new GenericRuleEvaluator(map);
         addActions(map);
     }
 
+    public int modifyXp(int xpIn) {
+        if (xp != null) {
+            xpIn = xp;
+        }
+        return (int) (xpIn * multxp + addxp);
+    }
+
     private void addActions(AttributeMap map) {
-        if (map.has(ACTION_ITEM)) {
-            addItem(map);
-        }
-        if (map.has(ACTION_REMOVE)) {
-            removeItem(map);
-        }
-        if (map.has(ACTION_REMOVEALL)) {
-            removeAll = map.get(ACTION_REMOVEALL);
-        }
-    }
-
-    public List<ItemStack> getToRemoveItems() {
-        return toRemoveItems;
-    }
-
-    public boolean isRemoveAll() {
-        return removeAll;
-    }
-
-    public List<ItemStack> getToAddItems() {
-        return toAddItems;
-    }
-
-    private List<ItemStack> getItems(List<String> itemNames, @Nullable String nbtJson) {
-        List<ItemStack> items = new ArrayList<>();
-        for (String name : itemNames) {
-            ItemStack stack = Tools.parseStack(name);
-            if (stack.isEmpty()) {
-                InControl.logger.log(Level.ERROR, "Unknown item '" + name + "'!");
+        if (map.has(ACTION_RESULT)) {
+            String br = map.get(ACTION_RESULT);
+            if ("default".equals(br) || br.startsWith("def")) {
+                this.result = Event.Result.DEFAULT;
+            } else if ("allow".equals(br) || "true".equals(br)) {
+                this.result = Event.Result.ALLOW;
             } else {
-                if (nbtJson != null) {
-                    try {
-                        stack.setTagCompound(JsonToNBT.getTagFromJson(nbtJson));
-                    } catch (NBTException e) {
-                        InControl.logger.log(Level.ERROR, "Bad nbt for '" + name + "'!");
-                    }
-                }
-                items.add(stack);
+                this.result = Event.Result.DENY;
             }
+        } else {
+            this.result = Event.Result.DEFAULT;
         }
-        return items;
+        if (map.has(ACTION_SETXP)) {
+            xp = map.get(ACTION_SETXP);
+        }
+        if (map.has(ACTION_ADDXP)) {
+            addxp = map.get(ACTION_ADDXP);
+        }
+        if (map.has(ACTION_MULTXP)) {
+            multxp = map.get(ACTION_MULTXP);
+        }
+
     }
 
-    private void addItem(AttributeMap map) {
-        String nbt = map.get(ACTION_ITEMNBT);
-        toAddItems.addAll(getItems(map.getList(ACTION_ITEM), nbt));
-    }
-
-    private void removeItem(AttributeMap map) {
-        toRemoveItems.addAll(getItems(map.getList(ACTION_REMOVE), null));
-    }
-
-    private static Random rnd = new Random();
-
-    public boolean match(LivingDropsEvent event) {
+    public boolean match(LivingExperienceDropEvent event) {
         return ruleEvaluator.match(event, EVENT_QUERY);
     }
+
+    public Event.Result getResult() {
+        return result;
+    }
+
 
     public static ExperienceRule parse(JsonElement element) {
         if (element == null) {

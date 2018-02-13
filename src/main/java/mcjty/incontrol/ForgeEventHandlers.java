@@ -12,6 +12,7 @@ import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import net.minecraftforge.event.entity.living.ZombieEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.Event;
+import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.apache.logging.log4j.Level;
 
@@ -115,9 +116,27 @@ public class ForgeEventHandlers {
         }
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onLivingExperienceDrop(LivingExperienceDropEvent event) {
-
+        int i = 0;
+        for (ExperienceRule rule : RulesManager.experienceRules) {
+            if (rule.match(event)) {
+                Event.Result result = rule.getResult();
+                if (debug) {
+                    InControl.logger.log(Level.INFO, "Experience Rule " + i + ": "+ result
+                            + " entity: " + event.getEntity().getName()
+                            + " y: " + event.getEntity().getPosition().getY());
+                }
+                if (result != Event.Result.DENY) {
+                    int newxp = rule.modifyXp(event.getDroppedExperience());
+                    event.setDroppedExperience(newxp);
+                } else {
+                    event.setCanceled(true);
+                }
+                return;
+            }
+            i++;
+        }
     }
 
     @SubscribeEvent

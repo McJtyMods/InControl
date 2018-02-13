@@ -616,7 +616,7 @@ public class GenericRuleEvaluator {
         if (asPlayer) {
             checks.add((event,query) -> query.getAttacker(event) instanceof EntityPlayer);
         } else {
-            checks.add((event,query) -> query.getAttacker(event) instanceof EntityPlayer));
+            checks.add((event,query) -> query.getAttacker(event) instanceof EntityPlayer);
         }
     }
 

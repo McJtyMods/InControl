@@ -39,8 +39,7 @@ public class LostCitySupport {
             ILostChunkGenerator gen = (ILostChunkGenerator) ws.getChunkProvider().chunkGenerator;
             BlockPos pos = query.getPos(event);
             ILostChunkInfo chunkInfo = gen.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
-            return false; //@ todo
-//            return chunkInfo.isCity() && chunkInfo.getBuildingType() == null;
+            return chunkInfo.getSphere() != null;
         }
         return false;
     }

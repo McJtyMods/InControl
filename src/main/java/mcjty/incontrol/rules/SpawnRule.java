@@ -174,7 +174,7 @@ public class SpawnRule {
     private final GenericRuleEvaluator ruleEvaluator;
     private final List<Consumer<EventGetter>> actions = new ArrayList<>();
 
-    private static interface EventGetter {
+    private interface EventGetter {
         EntityLivingBase getEntityLiving();
         World getWorld();
     }
