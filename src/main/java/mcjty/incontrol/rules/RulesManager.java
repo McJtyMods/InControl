@@ -16,6 +16,7 @@ public class RulesManager {
     public static List<SummonAidRule> summonAidRules = new ArrayList<>();
     public static List<PotentialSpawnRule> potentialSpawnRules = new ArrayList<>();
     public static List<LootRule> lootRules = new ArrayList<>();
+    public static List<ExperienceRule> experienceRules = new ArrayList<>();
 
     public static void reloadRules() {
         rules.clear();
@@ -80,6 +81,7 @@ public class RulesManager {
         readRules(path, "summonaid.json", SummonAidRule::parse, summonAidRules);
         readRules(path, "potentialspawn.json", PotentialSpawnRule::parse, potentialSpawnRules);
         readRules(path, "loot.json", LootRule::parse, lootRules);
+        readRules(path, "experience.json", ExperienceRule::parse, experienceRules);
     }
 
     private static <T> void readRules(String path, String filename, Function<JsonElement, T> parser, List<T> rules) {

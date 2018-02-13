@@ -67,6 +67,11 @@ public class SummonAidRule {
         public DamageSource getSource(ZombieEvent.SummonAidEvent o) {
             return null;
         }
+
+        @Override
+        public Entity getAttacker(ZombieEvent.SummonAidEvent o) {
+            return null;
+        }
     };
 
     static {
@@ -89,6 +94,7 @@ public class SummonAidRule {
                 .attribute(Attribute.create(INBUILDING))
                 .attribute(Attribute.create(INCITY))
                 .attribute(Attribute.create(INSTREET))
+                .attribute(Attribute.create(INSPHERE))
                 .attribute(Attribute.create(PASSIVE))
                 .attribute(Attribute.create(HOSTILE))
                 .attribute(Attribute.create(SEESKY))

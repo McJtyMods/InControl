@@ -1,6 +1,5 @@
 package mcjty.incontrol.rules.support;
 
-import com.google.gson.JsonObject;
 import mcjty.incontrol.typed.AttributeMap;
 import mcjty.incontrol.typed.Key;
 import mcjty.incontrol.typed.Type;
@@ -38,6 +37,7 @@ public interface RuleKeys {
     Key<Boolean> INCITY = Key.create(Type.BOOLEAN, "incity");
     Key<Boolean> INBUILDING = Key.create(Type.BOOLEAN, "inbuilding");
     Key<Boolean> INSTREET = Key.create(Type.BOOLEAN, "instreet");
+    Key<Boolean> INSPHERE = Key.create(Type.BOOLEAN, "insphere");
 
     // Outputs
     Key<String> ACTION_RESULT = Key.create(Type.STRING, "result");

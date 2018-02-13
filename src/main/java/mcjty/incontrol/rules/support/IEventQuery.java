@@ -16,4 +16,6 @@ public interface IEventQuery<T> {
     Entity getEntity(T o);
 
     DamageSource getSource(T o);
+
+    Entity getAttacker(T o);
 }

@@ -75,6 +75,11 @@ public class SpawnRule {
         public DamageSource getSource(LivingSpawnEvent.CheckSpawn o) {
             return null;
         }
+
+        @Override
+        public Entity getAttacker(LivingSpawnEvent.CheckSpawn o) {
+            return null;
+        }
     };
 
     public static final IEventQuery<EntityJoinWorldEvent> EVENT_QUERY_JOIN = new IEventQuery<EntityJoinWorldEvent>() {
@@ -103,6 +108,11 @@ public class SpawnRule {
         public DamageSource getSource(EntityJoinWorldEvent o) {
             return null;
         }
+
+        @Override
+        public Entity getAttacker(EntityJoinWorldEvent o) {
+            return null;
+        }
     };
 
     static {
@@ -125,6 +135,7 @@ public class SpawnRule {
                 .attribute(Attribute.create(INBUILDING))
                 .attribute(Attribute.create(INCITY))
                 .attribute(Attribute.create(INSTREET))
+                .attribute(Attribute.create(INSPHERE))
                 .attribute(Attribute.create(PASSIVE))
                 .attribute(Attribute.create(HOSTILE))
                 .attribute(Attribute.create(SEESKY))

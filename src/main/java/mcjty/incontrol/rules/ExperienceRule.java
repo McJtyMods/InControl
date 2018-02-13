@@ -1,7 +1,6 @@
 package mcjty.incontrol.rules;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.rules.support.GenericRuleEvaluator;
 import mcjty.incontrol.rules.support.IEventQuery;
@@ -17,6 +16,7 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
+import net.minecraftforge.event.entity.living.LivingExperienceDropEvent;
 import org.apache.logging.log4j.Level;
 
 import javax.annotation.Nullable;
@@ -26,39 +26,38 @@ import java.util.Random;
 
 import static mcjty.incontrol.rules.support.RuleKeys.*;
 
-public class LootRule {
+public class ExperienceRule {
 
     private static final GenericAttributeMapFactory FACTORY = new GenericAttributeMapFactory();
-    public static final IEventQuery<LivingDropsEvent> EVENT_QUERY = new IEventQuery<LivingDropsEvent>() {
+    public static final IEventQuery<LivingExperienceDropEvent> EVENT_QUERY = new IEventQuery<LivingExperienceDropEvent>() {
         @Override
-        public World getWorld(LivingDropsEvent o) {
+        public World getWorld(LivingExperienceDropEvent o) {
             return o.getEntity().getEntityWorld();
         }
 
         @Override
-        public BlockPos getPos(LivingDropsEvent o) {
-            LivingDropsEvent s = o;
-            return s.getEntity().getPosition();
+        public BlockPos getPos(LivingExperienceDropEvent o) {
+            return o.getEntity().getPosition();
         }
 
         @Override
-        public int getY(LivingDropsEvent o) {
+        public int getY(LivingExperienceDropEvent o) {
             return o.getEntity().getPosition().getY();
         }
 
         @Override
-        public Entity getEntity(LivingDropsEvent o) {
+        public Entity getEntity(LivingExperienceDropEvent o) {
             return o.getEntity();
         }
 
         @Override
-        public DamageSource getSource(LivingDropsEvent o) {
-            return o.getSource();
+        public DamageSource getSource(LivingExperienceDropEvent o) {
+            return null;
         }
 
         @Override
-        public Entity getAttacker(LivingDropsEvent o) {
-            return o.getSource().getTrueSource();
+        public Entity getAttacker(LivingExperienceDropEvent o) {
+            return o.getAttackingPlayer();
         }
     };
 
@@ -77,7 +76,6 @@ public class LootRule {
                 .attribute(Attribute.create(RANDOM))
                 .attribute(Attribute.create(INBUILDING))
                 .attribute(Attribute.create(INCITY))
-                .attribute(Attribute.create(GAMESTAGE))
                 .attribute(Attribute.create(INSTREET))
                 .attribute(Attribute.create(INSPHERE))
                 .attribute(Attribute.create(PASSIVE))
@@ -90,20 +88,14 @@ public class LootRule {
                 .attribute(Attribute.create(PLAYER))
                 .attribute(Attribute.create(REALPLAYER))
                 .attribute(Attribute.create(FAKEPLAYER))
-                .attribute(Attribute.create(PROJECTILE))
-                .attribute(Attribute.create(EXPLOSION))
-                .attribute(Attribute.create(FIRE))
-                .attribute(Attribute.create(MAGIC))
                 .attribute(Attribute.createMulti(MOB))
                 .attribute(Attribute.createMulti(MOD))
                 .attribute(Attribute.createMulti(BLOCK))
                 .attribute(Attribute.createMulti(BIOME))
                 .attribute(Attribute.createMulti(DIMENSION))
-                .attribute(Attribute.createMulti(SOURCE))
                 .attribute(Attribute.createMulti(HELDITEM))
 
-                .attribute(Attribute.create(ACTION_ITEMNBT))
-                .attribute(Attribute.createMulti(ACTION_ITEM))
+                .attribute(Attribute.create(ACTION_RESULT))
                 .attribute(Attribute.createMulti(ACTION_REMOVE))
                 .attribute(Attribute.create(ACTION_REMOVEALL))
         ;
@@ -114,7 +106,7 @@ public class LootRule {
     private List<ItemStack> toAddItems = new ArrayList<>();
     private boolean removeAll = false;
 
-    private LootRule(AttributeMap map) {
+    private ExperienceRule(AttributeMap map) {
         ruleEvaluator = new GenericRuleEvaluator(map);
         addActions(map);
     }
@@ -178,11 +170,11 @@ public class LootRule {
         return ruleEvaluator.match(event, EVENT_QUERY);
     }
 
-    public static LootRule parse(JsonElement element) {
+    public static ExperienceRule parse(JsonElement element) {
         if (element == null) {
             return null;
         } else {
             AttributeMap map = FACTORY.parse(element);
-            return new LootRule(map);
+            return new ExperienceRule(map);
         }
     }}

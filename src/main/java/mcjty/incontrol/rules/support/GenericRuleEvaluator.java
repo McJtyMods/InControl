@@ -16,7 +16,6 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.management.PlayerList;
-import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.EnumDifficulty;
@@ -83,6 +82,13 @@ public class GenericRuleEvaluator {
                 addInStreetCheck(map);
             } else {
                 InControl.logger.warn("The Lost Cities is missing: the 'instreet' test cannot work!");
+            }
+        }
+        if (map.has(INSPHERE)) {
+            if (InControl.lostcities) {
+                addInSphereCheck(map);
+            } else {
+                InControl.logger.warn("The Lost Cities is missing: the 'insphere' test cannot work!");
             }
         }
         if (map.has(INBUILDING)) {
@@ -292,6 +298,14 @@ public class GenericRuleEvaluator {
             checks.add((event,query) -> InControl.lostcities && LostCitySupport.isStreet(query, event));
         } else {
             checks.add((event,query) -> InControl.lostcities && !LostCitySupport.isStreet(query, event));
+        }
+    }
+
+    private void addInSphereCheck(AttributeMap map) {
+        if (map.get(INSPHERE)) {
+            checks.add((event,query) -> InControl.lostcities && LostCitySupport.inSphere(query, event));
+        } else {
+            checks.add((event,query) -> InControl.lostcities && !LostCitySupport.inSphere(query, event));
         }
     }
 
@@ -600,9 +614,9 @@ public class GenericRuleEvaluator {
     private void addPlayerCheck(AttributeMap map) {
         boolean asPlayer = map.get(PLAYER);
         if (asPlayer) {
-            checks.add((event,query) -> query.getSource(event) == null ? false : query.getSource(event).getTrueSource() instanceof EntityPlayer);
+            checks.add((event,query) -> query.getAttacker(event) instanceof EntityPlayer);
         } else {
-            checks.add((event,query) -> query.getSource(event) == null ? true : !(query.getSource(event).getTrueSource() instanceof EntityPlayer));
+            checks.add((event,query) -> query.getAttacker(event) instanceof EntityPlayer));
         }
     }
 
@@ -638,18 +652,18 @@ public class GenericRuleEvaluator {
     private void addRealPlayerCheck(AttributeMap map) {
         boolean asPlayer = map.get(REALPLAYER);
         if (asPlayer) {
-            checks.add((event,query) -> query.getSource(event) == null ? false : isRealPlayer(query.getSource(event).getTrueSource()));
+            checks.add((event,query) -> query.getAttacker(event) == null ? false : isRealPlayer(query.getAttacker(event)));
         } else {
-            checks.add((event,query) -> query.getSource(event) == null ? true : !isRealPlayer(query.getSource(event).getTrueSource()));
+            checks.add((event,query) -> query.getAttacker(event) == null ? true : !isRealPlayer(query.getAttacker(event)));
         }
     }
 
     private void addFakePlayerCheck(AttributeMap map) {
         boolean asPlayer = map.get(FAKEPLAYER);
         if (asPlayer) {
-            checks.add((event,query) -> query.getSource(event) == null ? false : isFakePlayer(query.getSource(event).getTrueSource()));
+            checks.add((event,query) -> query.getAttacker(event) == null ? false : isFakePlayer(query.getAttacker(event)));
         } else {
-            checks.add((event,query) -> query.getSource(event) == null ? true : !isFakePlayer(query.getSource(event).getTrueSource()));
+            checks.add((event,query) -> query.getAttacker(event) == null ? true : !isFakePlayer(query.getAttacker(event)));
         }
     }
 
@@ -726,11 +740,7 @@ public class GenericRuleEvaluator {
     public void addHeldItemCheck(AttributeMap map) {
         List<Item> items = getItems(map.getList(HELDITEM));
         checks.add((event,query) -> {
-            DamageSource source = query.getSource(event);
-            if (source == null) {
-                return false;
-            }
-            Entity entity = source.getTrueSource();
+            Entity entity = query.getAttacker(event);
             if (entity instanceof EntityPlayer) {
                 EntityPlayer player = (EntityPlayer) entity;
                 ItemStack mainhand = player.getHeldItemMainhand();

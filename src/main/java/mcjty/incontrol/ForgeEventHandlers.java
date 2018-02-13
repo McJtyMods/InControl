@@ -7,6 +7,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
+import net.minecraftforge.event.entity.living.LivingExperienceDropEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import net.minecraftforge.event.entity.living.ZombieEvent;
 import net.minecraftforge.event.world.WorldEvent;
@@ -112,6 +113,11 @@ public class ForgeEventHandlers {
             }
             i++;
         }
+    }
+
+    @SubscribeEvent
+    public void onLivingExperienceDrop(LivingExperienceDropEvent event) {
+
     }
 
     @SubscribeEvent

@@ -57,6 +57,11 @@ public class PotentialSpawnRule {
         public DamageSource getSource(WorldEvent.PotentialSpawns o) {
             return null;
         }
+
+        @Override
+        public Entity getAttacker(WorldEvent.PotentialSpawns o) {
+            return null;
+        }
     };
 
     static {

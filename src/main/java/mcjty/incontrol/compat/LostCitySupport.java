@@ -32,6 +32,19 @@ public class LostCitySupport {
         return false;
     }
 
+    public static <T> boolean inSphere(IEventQuery<T> query, T event) {
+        World world = query.getWorld(event);
+        WorldServer ws = (WorldServer) world;
+        if (ws.getChunkProvider().chunkGenerator instanceof ILostChunkGenerator) {
+            ILostChunkGenerator gen = (ILostChunkGenerator) ws.getChunkProvider().chunkGenerator;
+            BlockPos pos = query.getPos(event);
+            ILostChunkInfo chunkInfo = gen.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
+            return false; //@ todo
+//            return chunkInfo.isCity() && chunkInfo.getBuildingType() == null;
+        }
+        return false;
+    }
+
     public static <T> boolean isBuilding(IEventQuery<T> query, T event) {
         World world = query.getWorld(event);
         WorldServer ws = (WorldServer) world;
