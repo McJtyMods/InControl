@@ -23,6 +23,7 @@ public class RulesManager {
         summonAidRules.clear();
         potentialSpawnRules.clear();
         lootRules.clear();
+        experienceRules.clear();
         readAllRules();
     }
 
