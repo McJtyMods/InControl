@@ -10,6 +10,9 @@ import net.minecraft.world.WorldServer;
 public class LostCitySupport {
     public static <T> boolean isCity(IEventQuery<T> query, T event) {
         World world = query.getWorld(event);
+        if (!(world instanceof WorldServer)) {
+            return false;
+        }
         WorldServer ws = (WorldServer) world;
         if (ws.getChunkProvider().chunkGenerator instanceof ILostChunkGenerator) {
             ILostChunkGenerator gen = (ILostChunkGenerator) ws.getChunkProvider().chunkGenerator;
@@ -22,6 +25,9 @@ public class LostCitySupport {
 
     public static <T> boolean isStreet(IEventQuery<T> query, T event) {
         World world = query.getWorld(event);
+        if (!(world instanceof WorldServer)) {
+            return false;
+        }
         WorldServer ws = (WorldServer) world;
         if (ws.getChunkProvider().chunkGenerator instanceof ILostChunkGenerator) {
             ILostChunkGenerator gen = (ILostChunkGenerator) ws.getChunkProvider().chunkGenerator;
@@ -34,6 +40,9 @@ public class LostCitySupport {
 
     public static <T> boolean inSphere(IEventQuery<T> query, T event) {
         World world = query.getWorld(event);
+        if (!(world instanceof WorldServer)) {
+            return false;
+        }
         WorldServer ws = (WorldServer) world;
         if (ws.getChunkProvider().chunkGenerator instanceof ILostChunkGenerator) {
             ILostChunkGenerator gen = (ILostChunkGenerator) ws.getChunkProvider().chunkGenerator;
@@ -46,6 +55,9 @@ public class LostCitySupport {
 
     public static <T> boolean isBuilding(IEventQuery<T> query, T event) {
         World world = query.getWorld(event);
+        if (!(world instanceof WorldServer)) {
+            return false;
+        }
         WorldServer ws = (WorldServer) world;
         if (ws.getChunkProvider().chunkGenerator instanceof ILostChunkGenerator) {
             ILostChunkGenerator gen = (ILostChunkGenerator) ws.getChunkProvider().chunkGenerator;
