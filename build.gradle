@@ -38,7 +38,7 @@ repositories {
     }
 }
 
-version = "1.12-3.7.0"
+version = "1.12-3.7.1"
 group= "com.github.mcjty"
 archivesBaseName = "incontrol"
 
