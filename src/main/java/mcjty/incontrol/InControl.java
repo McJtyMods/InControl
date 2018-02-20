@@ -2,6 +2,7 @@ package mcjty.incontrol;
 
 
 import mcjty.incontrol.cache.StructureCache;
+import mcjty.incontrol.compat.LostCitySupport;
 import mcjty.incontrol.proxy.CommonProxy;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
@@ -37,13 +38,18 @@ public class InControl {
     public void preInit(FMLPreInitializationEvent event){
         logger = event.getModLog();
         proxy.preInit(event);
+
+        lostcities = Loader.isModLoaded("lostcities");
+        gamestages = Loader.isModLoaded("gamestages");
+
+        if (lostcities) {
+            LostCitySupport.register();
+        }
     }
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent e) {
         proxy.init(e);
-        lostcities = Loader.isModLoaded("lostcities");
-        gamestages = Loader.isModLoaded("gamestages");
     }
 
     @Mod.EventHandler
