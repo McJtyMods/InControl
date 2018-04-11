@@ -7,6 +7,7 @@ import mcjty.incontrol.compat.LostCitySupport;
 import mcjty.incontrol.rules.PotentialSpawnRule;
 import mcjty.incontrol.typed.AttributeMap;
 import mcjty.incontrol.varia.Tools;
+import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.monster.IMob;
@@ -25,6 +26,7 @@ import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.registry.EntityEntry;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraftforge.oredict.OreDictionary;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 
@@ -435,31 +437,74 @@ public class GenericRuleEvaluator {
         }
     }
 
+    private static final int[] EMPTYINTS = new int[0];
+
     private void addBlocksCheck(AttributeMap map) {
         List<String> blocks = map.getList(BLOCK);
         if (blocks.size() == 1) {
             String blockname = blocks.get(0);
-            checks.add((event,query) -> {
-                BlockPos pos = query.getPos(event);
-                ResourceLocation registryName = query.getWorld(event).getBlockState(pos.down()).getBlock().getRegistryName();
-                if (registryName == null) {
+            if (blockname.startsWith("ore:")) {
+                int oreId = OreDictionary.getOreID(blockname.substring(4));
+                checks.add((event, query) -> {
+                    BlockPos pos = query.getPos(event);
+                    Block block = query.getWorld(event).getBlockState(pos.down()).getBlock();
+                    ItemStack stack = new ItemStack(block);
+                    int[] oreIDs = stack.isEmpty() ? EMPTYINTS : OreDictionary.getOreIDs(stack);
+                    if (isMatchingOreId(oreIDs, oreId)) {
+                        return true;
+                    }
                     return false;
-                }
-                String name = registryName.toString();
-                return blockname.equals(name);
-            });
+                });
+            } else {
+                checks.add((event, query) -> {
+                    BlockPos pos = query.getPos(event);
+                    ResourceLocation registryName = query.getWorld(event).getBlockState(pos.down()).getBlock().getRegistryName();
+                    if (registryName == null) {
+                        return false;
+                    }
+                    String name = registryName.toString();
+                    return blockname.equals(name);
+                });
+            }
         } else {
             Set<String> blocknames = new HashSet<>(blocks);
             checks.add((event,query) -> {
                 BlockPos pos = query.getPos(event);
-                ResourceLocation registryName = query.getWorld(event).getBlockState(pos.down()).getBlock().getRegistryName();
+                Block block = query.getWorld(event).getBlockState(pos.down()).getBlock();
+                ItemStack stack = new ItemStack(block);
+                int[] oreIDs = stack.isEmpty() ? EMPTYINTS : OreDictionary.getOreIDs(stack);
+                ResourceLocation registryName = block.getRegistryName();
                 if (registryName == null) {
                     return false;
                 }
                 String name = registryName.toString();
-                return blocknames.contains(name);
+                for (String blockname : blocknames) {
+                    if (blockname.startsWith("ore:")) {
+                        int oreId = OreDictionary.getOreID(blockname.substring(4));
+                        if (isMatchingOreId(oreIDs, oreId)) {
+                            return true;
+                        }
+                    } else {
+                        if (blockname.equals(name)) {
+                            return true;
+                        }
+                    }
+                }
+
+                return false;
             });
         }
+    }
+
+    private boolean isMatchingOreId(int[] oreIDs, int oreId) {
+        if (oreIDs.length > 0) {
+            for (int id : oreIDs) {
+                if (id == oreId) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
 
