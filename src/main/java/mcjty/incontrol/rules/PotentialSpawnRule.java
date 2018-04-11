@@ -86,6 +86,7 @@ public class PotentialSpawnRule {
                 .attribute(Attribute.create(STRUCTURE))
                 .attribute(Attribute.createMulti(BLOCK))
                 .attribute(Attribute.createMulti(BIOME))
+                .attribute(Attribute.createMulti(BIOMETYPE))
                 .attribute(Attribute.createMulti(DIMENSION))
 
                 .attribute(Attribute.createMulti(ACTION_REMOVE))

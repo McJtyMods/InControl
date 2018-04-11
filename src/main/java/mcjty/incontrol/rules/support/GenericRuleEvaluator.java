@@ -21,6 +21,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.biome.Biome;
+import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.fml.common.eventhandler.Event;
@@ -184,6 +185,9 @@ public class GenericRuleEvaluator {
         }
         if (map.has(BIOME)) {
             addBiomesCheck(map);
+        }
+        if (map.has(BIOMETYPE)) {
+            addBiomeTypesCheck(map);
         }
         if (map.has(HELDITEM)) {
             addHeldItemCheck(map);
@@ -433,6 +437,28 @@ public class GenericRuleEvaluator {
             checks.add((event,query) -> {
                 Biome biome = query.getWorld(event).getBiome(query.getPos(event));
                 return biomenames.contains(biome.biomeName);
+            });
+        }
+    }
+
+    private void addBiomeTypesCheck(AttributeMap map) {
+        List<String> biomeTypes = map.getList(BIOMETYPE);
+        if (biomeTypes.size() == 1) {
+            String biometype = biomeTypes.get(0);
+            BiomeDictionary.Type type = BiomeDictionary.Type.getType(biometype);
+            checks.add((event,query) -> {
+                Biome biome = query.getWorld(event).getBiome(query.getPos(event));
+                return BiomeDictionary.getTypes(biome).contains(type);
+            });
+        } else {
+            Set<BiomeDictionary.Type> types = new HashSet<>();
+            for (String s : biomeTypes) {
+                types.add(BiomeDictionary.Type.getType(s));
+            }
+
+            checks.add((event,query) -> {
+                Biome biome = query.getWorld(event).getBiome(query.getPos(event));
+                return BiomeDictionary.getTypes(biome).stream().anyMatch(s -> types.contains(s));
             });
         }
     }

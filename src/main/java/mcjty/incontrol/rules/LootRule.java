@@ -100,6 +100,7 @@ public class LootRule {
                 .attribute(Attribute.createMulti(MOD))
                 .attribute(Attribute.createMulti(BLOCK))
                 .attribute(Attribute.createMulti(BIOME))
+                .attribute(Attribute.createMulti(BIOMETYPE))
                 .attribute(Attribute.createMulti(DIMENSION))
                 .attribute(Attribute.createMulti(SOURCE))
                 .attribute(Attribute.createMulti(HELDITEM))
