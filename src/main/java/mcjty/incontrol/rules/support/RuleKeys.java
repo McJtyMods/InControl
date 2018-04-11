@@ -71,6 +71,7 @@ public interface RuleKeys {
 
     Key<String> ACTION_ITEMNBT = Key.create(Type.JSON, "nbt");
     Key<String> ACTION_ITEM = Key.create(Type.STRING, "item");
+    Key<String> ACTION_ITEMCOUNT = Key.create(Type.STRING, "itemcount");
     Key<Boolean> ACTION_REMOVEALL = Key.create(Type.BOOLEAN, "removeall");
 
     Key<Integer> ACTION_SETXP = Key.create(Type.INTEGER, "setxp");

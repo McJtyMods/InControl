@@ -14,9 +14,11 @@ import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Level;
 
 import java.util.List;
+import java.util.function.Function;
 
 public class ForgeEventHandlers {
 
@@ -152,7 +154,8 @@ public class ForgeEventHandlers {
                 if (rule.isRemoveAll()) {
                     event.getDrops().clear();
                 } else {
-                    for (ItemStack item : rule.getToRemoveItems()) {
+                    for (Pair<ItemStack, Function<Integer, Integer>> pair : rule.getToRemoveItems()) {
+                        ItemStack item = pair.getLeft();
                         for (int idx = event.getDrops().size() - 1; idx >= 0; idx--) {
                             ItemStack stack = event.getDrops().get(idx).getItem();
                             if (item.hasTagCompound()) {
@@ -168,10 +171,24 @@ public class ForgeEventHandlers {
                     }
                 }
 
-                for (ItemStack item : rule.getToAddItems()) {
+                for (Pair<ItemStack, Function<Integer, Integer>> pair : rule.getToAddItems()) {
+                    ItemStack item = pair.getLeft();
+                    int fortune = event.getLootingLevel();
+                    int amount = pair.getValue().apply(fortune);
                     BlockPos pos = event.getEntity().getPosition();
-                    event.getDrops().add(new EntityItem(event.getEntity().getEntityWorld(), pos.getX(), pos.getY(), pos.getZ(),
-                            item.copy()));
+                    while (amount > item.getMaxStackSize()) {
+                        ItemStack copy = item.copy();
+                        copy.setCount(item.getMaxStackSize());
+                        amount -= item.getMaxStackSize();
+                        event.getDrops().add(new EntityItem(event.getEntity().getEntityWorld(), pos.getX(), pos.getY(), pos.getZ(),
+                                copy));
+                    }
+                    if (amount > 0) {
+                        ItemStack copy = item.copy();
+                        copy.setCount(amount);
+                        event.getDrops().add(new EntityItem(event.getEntity().getEntityWorld(), pos.getX(), pos.getY(), pos.getZ(),
+                                copy));
+                    }
                 }
             }
             i++;

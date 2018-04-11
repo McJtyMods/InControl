@@ -1,7 +1,6 @@
 package mcjty.incontrol.rules;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.rules.support.GenericRuleEvaluator;
 import mcjty.incontrol.rules.support.IEventQuery;
@@ -17,12 +16,15 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Level;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.function.Function;
 
 import static mcjty.incontrol.rules.support.RuleKeys.*;
 
@@ -103,6 +105,7 @@ public class LootRule {
                 .attribute(Attribute.createMulti(HELDITEM))
 
                 .attribute(Attribute.create(ACTION_ITEMNBT))
+                .attribute(Attribute.create(ACTION_ITEMCOUNT))
                 .attribute(Attribute.createMulti(ACTION_ITEM))
                 .attribute(Attribute.createMulti(ACTION_REMOVE))
                 .attribute(Attribute.create(ACTION_REMOVEALL))
@@ -110,8 +113,8 @@ public class LootRule {
     }
 
     private final GenericRuleEvaluator ruleEvaluator;
-    private List<ItemStack> toRemoveItems = new ArrayList<>();
-    private List<ItemStack> toAddItems = new ArrayList<>();
+    private List<Pair<ItemStack, Function<Integer, Integer>>> toRemoveItems = new ArrayList<>();
+    private List<Pair<ItemStack, Function<Integer, Integer>>> toAddItems = new ArrayList<>();
     private boolean removeAll = false;
 
     private LootRule(AttributeMap map) {
@@ -131,7 +134,7 @@ public class LootRule {
         }
     }
 
-    public List<ItemStack> getToRemoveItems() {
+    public List<Pair<ItemStack, Function<Integer, Integer>>> getToRemoveItems() {
         return toRemoveItems;
     }
 
@@ -139,12 +142,65 @@ public class LootRule {
         return removeAll;
     }
 
-    public List<ItemStack> getToAddItems() {
+    public List<Pair<ItemStack, Function<Integer, Integer>>> getToAddItems() {
         return toAddItems;
     }
 
-    private List<ItemStack> getItems(List<String> itemNames, @Nullable String nbtJson) {
-        List<ItemStack> items = new ArrayList<>();
+    private Function<Integer, Integer> getCountFunction(@Nullable String itemcount) {
+        if (itemcount == null) {
+            return looting -> 1;
+        }
+        String[] loottable = StringUtils.split(itemcount, '/');
+        int[] min = new int[loottable.length];
+        int[] max = new int[loottable.length];
+        for (int i = 0 ; i < loottable.length ; i++) {
+            String[] minmax = StringUtils.split(loottable[i], '-');
+            if (minmax.length == 1) {
+                try {
+                    min[i] = max[i] = Integer.parseInt(minmax[0]);
+                } catch (NumberFormatException e) {
+                    InControl.logger.log(Level.ERROR, "Bad amount specified in loot rule: " + minmax);
+                    min[i] = max[i] = 1;
+                }
+            } else if (minmax.length == 2) {
+                try {
+                    min[i] = Integer.parseInt(minmax[0]);
+                    max[i] = Integer.parseInt(minmax[1]);
+                } catch (NumberFormatException e) {
+                    InControl.logger.log(Level.ERROR, "Bad amounts specified in loot rule: " + minmax);
+                    min[i] = max[i] = 1;
+                }
+            } else {
+                InControl.logger.log(Level.ERROR, "Bad amount range specified in loot rule: " + minmax);
+                min[i] = max[i] = 1;
+            }
+        }
+
+        if (loottable.length == 1) {
+            // Easy case
+            if (min[0] == max[0]) {
+                return looting -> min[0];
+            } else {
+                return looting -> rnd.nextInt(max[0]-min[0]+1) + min[0];
+            }
+        } else {
+            return looting -> {
+                if (looting >= min.length) {
+                    return rnd.nextInt(max[min.length-1] - min[min.length-1] + 1) + min[min.length-1];
+                } else if (looting >= 0) {
+                    return rnd.nextInt(max[looting] - min[looting] + 1) + min[looting];
+                } else {
+                    return rnd.nextInt(max[0] - min[0] + 1) + min[0];
+                }
+            };
+        }
+    }
+
+    private List<Pair<ItemStack, Function<Integer, Integer>>> getItems(List<String> itemNames, @Nullable String nbtJson,
+                                     @Nullable String itemcount) {
+        Function<Integer, Integer> countFunction = getCountFunction(itemcount);
+
+        List<Pair<ItemStack, Function<Integer, Integer>>> items = new ArrayList<>();
         for (String name : itemNames) {
             ItemStack stack = Tools.parseStack(name);
             if (stack.isEmpty()) {
@@ -157,7 +213,7 @@ public class LootRule {
                         InControl.logger.log(Level.ERROR, "Bad nbt for '" + name + "'!");
                     }
                 }
-                items.add(stack);
+                items.add(Pair.of(stack, countFunction));
             }
         }
         return items;
@@ -165,11 +221,12 @@ public class LootRule {
 
     private void addItem(AttributeMap map) {
         String nbt = map.get(ACTION_ITEMNBT);
-        toAddItems.addAll(getItems(map.getList(ACTION_ITEM), nbt));
+        String itemcount = map.get(ACTION_ITEMCOUNT);
+        toAddItems.addAll(getItems(map.getList(ACTION_ITEM), nbt, itemcount));
     }
 
     private void removeItem(AttributeMap map) {
-        toRemoveItems.addAll(getItems(map.getList(ACTION_REMOVE), null));
+        toRemoveItems.addAll(getItems(map.getList(ACTION_REMOVE), null, null));
     }
 
     private static Random rnd = new Random();
