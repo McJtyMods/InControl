@@ -395,7 +395,7 @@ public class SpawnRule {
                     EntityPigZombie pigZombie = (EntityPigZombie) entityLiving;
                     EntityPlayer player = event.getWorld().getClosestPlayerToEntity(entityLiving, 50);
                     if (player != null) {
-                        pigZombie.becomeAngryAt(player);
+                        pigZombie.setRevengeTarget(player);
                     }
                 } else if (entityLiving instanceof EntityLiving) {
                     EntityPlayer player = event.getWorld().getClosestPlayerToEntity(entityLiving, 50);
