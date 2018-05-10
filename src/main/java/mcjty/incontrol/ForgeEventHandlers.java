@@ -32,7 +32,7 @@ public class ForgeEventHandlers {
                 Event.Result result = rule.getResult();
                 if (debug) {
                     InControl.logger.log(Level.INFO, "Join Rule " + i + ": "+ result
-                            + " bindings: " + event.getEntity().getName()
+                            + " entity: " + event.getEntity().getName()
                             + " y: " + event.getEntity().getPosition().getY());
                 }
                 if (result != Event.Result.DENY) {
@@ -54,7 +54,7 @@ public class ForgeEventHandlers {
                 Event.Result result = rule.getResult();
                 if (debug) {
                     InControl.logger.log(Level.INFO, "Rule " + i + ": "+ result
-                            + " bindings: " + event.getEntity().getName()
+                            + " entity: " + event.getEntity().getName()
                             + " y: " + event.getY()
                             + " biome: " + event.getWorld().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ())).biomeName);
                 }
@@ -76,7 +76,7 @@ public class ForgeEventHandlers {
                 Event.Result result = rule.getResult();
                 if (debug) {
                     InControl.logger.log(Level.INFO, "SummonAid " + i + ": "+ result
-                            + " bindings: " + event.getEntity().getName()
+                            + " entity: " + event.getEntity().getName()
                             + " y: " + event.getY()
                             + " biome: " + event.getWorld().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ())).biomeName);
                 }
@@ -126,7 +126,7 @@ public class ForgeEventHandlers {
                 Event.Result result = rule.getResult();
                 if (debug) {
                     InControl.logger.log(Level.INFO, "Experience Rule " + i + ": "+ result
-                            + " bindings: " + event.getEntity().getName()
+                            + " entity: " + event.getEntity().getName()
                             + " y: " + event.getEntity().getPosition().getY());
                 }
                 if (result != Event.Result.DENY) {
@@ -148,7 +148,7 @@ public class ForgeEventHandlers {
             if (rule.match(event)) {
                 if (debug) {
                     InControl.logger.log(Level.INFO, "Loot " + i + ": "
-                            + " bindings: " + event.getEntity().getName());
+                            + " entity: " + event.getEntity().getName());
                 }
 
                 if (rule.isRemoveAll()) {
