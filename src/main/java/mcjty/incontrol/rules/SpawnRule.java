@@ -132,6 +132,7 @@ public class SpawnRule {
                 .attribute(Attribute.create(RANDOM))
                 .attribute(Attribute.create(CANSPAWNHERE))
                 .attribute(Attribute.create(NOTCOLLIDING))
+                .attribute(Attribute.create(SPAWNER))
                 .attribute(Attribute.create(INBUILDING))
                 .attribute(Attribute.create(INCITY))
                 .attribute(Attribute.create(INSTREET))

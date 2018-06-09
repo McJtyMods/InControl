@@ -24,6 +24,7 @@ import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.registry.EntityEntry;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
@@ -138,6 +139,9 @@ public class GenericRuleEvaluator {
         if (map.has(NOTCOLLIDING)) {
             addNotCollidingCheck(map);
         }
+        if (map.has(SPAWNER)) {
+            addSpawnerCheck(map);
+        }
 
         if (map.has(MOB)) {
             addMobsCheck(map);
@@ -246,6 +250,29 @@ public class GenericRuleEvaluator {
                     return !((EntityLiving) entity).isNotColliding();
                 } else {
                     return true;
+                }
+            });
+        }
+    }
+
+    private void addSpawnerCheck(AttributeMap map) {
+        boolean c = map.get(SPAWNER);
+        if (c) {
+            checks.add((event, query) -> {
+                if (event instanceof LivingSpawnEvent.CheckSpawn) {
+                    LivingSpawnEvent.CheckSpawn checkSpawn = (LivingSpawnEvent.CheckSpawn) event;
+                    return checkSpawn.isSpawner();
+                } else {
+                    return false;
+                }
+            });
+        } else {
+            checks.add((event, query) -> {
+                if (event instanceof LivingSpawnEvent.CheckSpawn) {
+                    LivingSpawnEvent.CheckSpawn checkSpawn = (LivingSpawnEvent.CheckSpawn) event;
+                    return !checkSpawn.isSpawner();
+                } else {
+                    return false;
                 }
             });
         }
