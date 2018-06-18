@@ -39,6 +39,7 @@ public interface RuleKeys {
     Key<Boolean> INBUILDING = Key.create(Type.BOOLEAN, "inbuilding");
     Key<Boolean> INSTREET = Key.create(Type.BOOLEAN, "instreet");
     Key<Boolean> INSPHERE = Key.create(Type.BOOLEAN, "insphere");
+    Key<Boolean> SPAWNER = Key.create(Type.BOOLEAN, "spawner");
 
     // Outputs
     Key<String> ACTION_RESULT = Key.create(Type.STRING, "result");
