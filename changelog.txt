@@ -1,2 +1,2 @@
-3.8.0:
-- xxx
+3.8.1:
+- Added a rule to check for spawns by mob spawners
