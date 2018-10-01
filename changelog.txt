@@ -1,2 +1,5 @@
+3.8.2:
+- Updated to 2.0 API of GameStages. This means that InControl is no longer compatible with the older GameStages
+
 3.8.1:
 - Added a rule to check for spawns by mob spawners
