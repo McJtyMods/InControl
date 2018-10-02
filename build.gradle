@@ -63,7 +63,7 @@ dependencies {
     //deobfCompile "mezz.jei:jei_1.11.2:4.2.5.234"
     //deobfCompile "mcjty.theoneprobe:TheOneProbe:1.1x-1.4.6-56"
     //deobfCompile "com.github.mcjty:compatlayer:1.11.2-0.2.6"
-    deobfCompile "net.darkhax.gamestages:GameStages-1.12.2:2.0.106"
+    deobfCompile "net.darkhax.gamestages:GameStages-1.12.2:2.0.105"
 
 }
 
