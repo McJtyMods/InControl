@@ -1,3 +1,6 @@
+3.8.3:
+- New 'offhanditem' and 'bothhandsitem' tags that are equivalent to 'helditem' but also work on the offhand (or both)
+
 3.8.2:
 - Updated to 2.0 API of GameStages. This means that InControl is no longer compatible with the older GameStages
 

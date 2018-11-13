@@ -84,6 +84,8 @@ public class ExperienceRule {
                 .attribute(Attribute.createMulti(BIOMETYPE))
                 .attribute(Attribute.createMulti(DIMENSION))
                 .attribute(Attribute.createMulti(HELDITEM))
+                .attribute(Attribute.createMulti(OFFHANDITEM))
+                .attribute(Attribute.createMulti(BOTHHANDSITEM))
 
                 .attribute(Attribute.create(ACTION_RESULT))
                 .attribute(Attribute.create(ACTION_SETXP))

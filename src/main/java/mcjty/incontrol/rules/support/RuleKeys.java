@@ -69,6 +69,8 @@ public interface RuleKeys {
     Key<Boolean> FIRE = Key.create(Type.BOOLEAN, "fire");
     Key<Boolean> MAGIC = Key.create(Type.BOOLEAN, "magic");
     Key<String> HELDITEM = Key.create(Type.STRING, "helditem");
+    Key<String> OFFHANDITEM = Key.create(Type.STRING, "offhanditem");
+    Key<String> BOTHHANDSITEM = Key.create(Type.STRING, "bothhandsitem");
     Key<String> GAMESTAGE = Key.create(Type.STRING, "gamestage");
 
     Key<String> ACTION_ITEMNBT = Key.create(Type.JSON, "nbt");

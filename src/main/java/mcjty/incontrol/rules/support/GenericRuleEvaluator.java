@@ -196,6 +196,12 @@ public class GenericRuleEvaluator {
         if (map.has(HELDITEM)) {
             addHeldItemCheck(map);
         }
+        if (map.has(OFFHANDITEM)) {
+            addOffHandItemCheck(map);
+        }
+        if (map.has(BOTHHANDSITEM)) {
+            addBothHandsItemCheck(map);
+        }
 
         if (map.has(STRUCTURE)) {
             addStructureCheck(map);
@@ -841,6 +847,52 @@ public class GenericRuleEvaluator {
             Entity entity = query.getAttacker(event);
             if (entity instanceof EntityPlayer) {
                 EntityPlayer player = (EntityPlayer) entity;
+                ItemStack mainhand = player.getHeldItemMainhand();
+                if (!mainhand.isEmpty()) {
+                    for (Item item : items) {
+                        if (mainhand.getItem() == item) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        });
+    }
+
+    public void addOffHandItemCheck(AttributeMap map) {
+        List<Item> items = getItems(map.getList(OFFHANDITEM));
+        checks.add((event,query) -> {
+            Entity entity = query.getAttacker(event);
+            if (entity instanceof EntityPlayer) {
+                EntityPlayer player = (EntityPlayer) entity;
+                ItemStack offhand = player.getHeldItemOffhand();
+                if (!offhand.isEmpty()) {
+                    for (Item item : items) {
+                        if (offhand.getItem() == item) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        });
+    }
+
+    public void addBothHandsItemCheck(AttributeMap map) {
+        List<Item> items = getItems(map.getList(BOTHHANDSITEM));
+        checks.add((event,query) -> {
+            Entity entity = query.getAttacker(event);
+            if (entity instanceof EntityPlayer) {
+                EntityPlayer player = (EntityPlayer) entity;
+                ItemStack offhand = player.getHeldItemOffhand();
+                if (!offhand.isEmpty()) {
+                    for (Item item : items) {
+                        if (offhand.getItem() == item) {
+                            return true;
+                        }
+                    }
+                }
                 ItemStack mainhand = player.getHeldItemMainhand();
                 if (!mainhand.isEmpty()) {
                     for (Item item : items) {

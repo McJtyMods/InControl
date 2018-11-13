@@ -104,6 +104,8 @@ public class LootRule {
                 .attribute(Attribute.createMulti(DIMENSION))
                 .attribute(Attribute.createMulti(SOURCE))
                 .attribute(Attribute.createMulti(HELDITEM))
+                .attribute(Attribute.createMulti(OFFHANDITEM))
+                .attribute(Attribute.createMulti(BOTHHANDSITEM))
 
                 .attribute(Attribute.create(ACTION_ITEMNBT))
                 .attribute(Attribute.create(ACTION_ITEMCOUNT))
