@@ -1,3 +1,6 @@
+Upcoming:
+- Added support for Serene Seasons with new 'winter', 'summer', 'spring', and 'autumn' boolean keywords
+
 3.8.3:
 - New 'offhanditem' and 'bothhandsitem' tags that are equivalent to 'helditem' but also work on the offhand (or both)
 

@@ -40,6 +40,10 @@ public interface RuleKeys {
     Key<Boolean> INSTREET = Key.create(Type.BOOLEAN, "instreet");
     Key<Boolean> INSPHERE = Key.create(Type.BOOLEAN, "insphere");
     Key<Boolean> SPAWNER = Key.create(Type.BOOLEAN, "spawner");
+    Key<Boolean> SUMMER = Key.create(Type.BOOLEAN, "summer");
+    Key<Boolean> WINTER = Key.create(Type.BOOLEAN, "winter");
+    Key<Boolean> SPRING = Key.create(Type.BOOLEAN, "spring");
+    Key<Boolean> AUTUMN = Key.create(Type.BOOLEAN, "autumn");
 
     // Outputs
     Key<String> ACTION_RESULT = Key.create(Type.STRING, "result");

@@ -4,6 +4,7 @@ import mcjty.incontrol.InControl;
 import mcjty.incontrol.cache.StructureCache;
 import mcjty.incontrol.compat.GameStageSupport;
 import mcjty.incontrol.compat.LostCitySupport;
+import mcjty.incontrol.compat.SereneSeasonsSupport;
 import mcjty.incontrol.rules.PotentialSpawnRule;
 import mcjty.incontrol.typed.AttributeMap;
 import mcjty.incontrol.varia.Tools;
@@ -67,6 +68,34 @@ public class GenericRuleEvaluator {
             addHostileCheck(map);
         }
 
+        if (map.has(SUMMER)) {
+            if (InControl.sereneSeasons) {
+                addSummerCheck(map);
+            } else {
+                InControl.logger.warn("Serene Seaons is missing: this test cannot work!");
+            }
+        }
+        if (map.has(WINTER)) {
+            if (InControl.sereneSeasons) {
+                addWinterCheck(map);
+            } else {
+                InControl.logger.warn("Serene Seaons is missing: this test cannot work!");
+            }
+        }
+        if (map.has(SPRING)) {
+            if (InControl.sereneSeasons) {
+                addSpringCheck(map);
+            } else {
+                InControl.logger.warn("Serene Seaons is missing: this test cannot work!");
+            }
+        }
+        if (map.has(AUTUMN)) {
+            if (InControl.sereneSeasons) {
+                addAutumnCheck(map);
+            } else {
+                InControl.logger.warn("Serene Seaons is missing: this test cannot work!");
+            }
+        }
         if (map.has(GAMESTAGE)) {
             if (InControl.gamestages) {
                 addGameStageCheck(map);
@@ -317,6 +346,26 @@ public class GenericRuleEvaluator {
         } else {
             checks.add((event,query) -> !(query.getEntity(event) instanceof IAnimals && !(query.getEntity(event) instanceof IMob)));
         }
+    }
+
+    private void addSummerCheck(AttributeMap map) {
+        Boolean s = map.get(SUMMER);
+        checks.add((event, query) -> s == InControl.sereneSeasons && SereneSeasonsSupport.isSummer(query.getWorld(event)));
+    }
+
+    private void addWinterCheck(AttributeMap map) {
+        Boolean s = map.get(WINTER);
+        checks.add((event, query) -> s == InControl.sereneSeasons && SereneSeasonsSupport.isWinter(query.getWorld(event)));
+    }
+
+    private void addSpringCheck(AttributeMap map) {
+        Boolean s = map.get(SPRING);
+        checks.add((event, query) -> s == InControl.sereneSeasons && SereneSeasonsSupport.isSpring(query.getWorld(event)));
+    }
+
+    private void addAutumnCheck(AttributeMap map) {
+        Boolean s = map.get(AUTUMN);
+        checks.add((event, query) -> s == InControl.sereneSeasons && SereneSeasonsSupport.isAutumn(query.getWorld(event)));
     }
 
     private void addGameStageCheck(AttributeMap map) {

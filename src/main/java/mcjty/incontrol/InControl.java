@@ -8,6 +8,7 @@ import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.*;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 
 @Mod(modid = InControl.MODID, name = InControl.MODNAME,
@@ -33,6 +34,7 @@ public class InControl {
 
     public static boolean lostcities = false;
     public static boolean gamestages = false;
+    public static boolean sereneSeasons = false;
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event){
@@ -41,9 +43,17 @@ public class InControl {
 
         lostcities = Loader.isModLoaded("lostcities");
         gamestages = Loader.isModLoaded("gamestages");
+        sereneSeasons = Loader.isModLoaded("sereneseasons");
 
         if (lostcities) {
             LostCitySupport.register();
+            logger.log(Level.INFO, "Enabling support for Lost Cities");
+        }
+        if (gamestages) {
+            logger.log(Level.INFO, "Enabling support for Game Stages");
+        }
+        if (sereneSeasons) {
+            logger.log(Level.INFO, "Enabling support for Serene Seasons");
         }
     }
 
