@@ -22,6 +22,11 @@ plugins {
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'maven'
 
+configurations {
+    // configuration that holds jars to embed inside the jar
+    embed
+}
+
 repositories {
     maven { // The repo from which to get waila
         name "Mobius Repo"
@@ -57,6 +62,8 @@ minecraft {
 }
 
 dependencies {
+    deobfCompile "com.github.mcjty:mcjtytools:${mcjtytools_version}"
+    embed "com.github.mcjty:mcjtytools:${mcjtytools_version}"
     deobfCompile "mezz.jei:jei_1.12:4.7.0.67"
     deobfCompile "com.github.mcjty:lostcities:1.12-2.0.3"
     //deobfCompile "mcp.mobius.waila:Hwyla:1.8.10-B23_1.11:api"
@@ -70,6 +77,21 @@ dependencies {
 jar {
     manifest {
         attributes 'FMLAT': 'incontrol_at.cfg'
+    }
+
+    into('/META-INF/libraries') {
+        from configurations.embed
+    }
+
+    doFirst {
+        manifest {
+            def contained = configurations.embed.collect { it.getName() };
+            if (!contained.isEmpty()) {
+                attributes([
+                        "ContainedDeps": contained.join(' ')
+                ])
+            }
+        }
     }
 }
 

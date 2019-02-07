@@ -4,11 +4,11 @@ import com.google.gson.JsonElement;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.rules.support.GenericRuleEvaluator;
 import mcjty.incontrol.rules.support.IEventQuery;
-import mcjty.incontrol.typed.Attribute;
-import mcjty.incontrol.typed.AttributeMap;
-import mcjty.incontrol.typed.GenericAttributeMapFactory;
-import mcjty.incontrol.typed.Key;
-import mcjty.incontrol.varia.Tools;
+import mcjty.typed.Attribute;
+import mcjty.typed.AttributeMap;
+import mcjty.typed.GenericAttributeMapFactory;
+import mcjty.typed.Key;
+import mcjty.varia.Tools;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
@@ -283,7 +283,7 @@ public class SpawnRule {
     private List<Pair<Float, ItemStack>> getItems(List<String> itemNames) {
         List<Pair<Float, ItemStack>> items = new ArrayList<>();
         for (String name : itemNames) {
-            Pair<Float, ItemStack> pair = Tools.parseStackWithFactor(name);
+            Pair<Float, ItemStack> pair = Tools.parseStackWithFactor(name, InControl.logger);
             if (pair.getValue().isEmpty()) {
                 InControl.logger.log(Level.ERROR, "Unknown item '" + name + "'!");
             } else {

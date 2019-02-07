@@ -4,10 +4,10 @@ import com.google.gson.JsonElement;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.rules.support.GenericRuleEvaluator;
 import mcjty.incontrol.rules.support.IEventQuery;
-import mcjty.incontrol.typed.Attribute;
-import mcjty.incontrol.typed.AttributeMap;
-import mcjty.incontrol.typed.GenericAttributeMapFactory;
-import mcjty.incontrol.varia.Tools;
+import mcjty.typed.Attribute;
+import mcjty.typed.AttributeMap;
+import mcjty.typed.GenericAttributeMapFactory;
+import mcjty.varia.Tools;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.JsonToNBT;
@@ -209,7 +209,7 @@ public class LootRule {
 
         List<Pair<ItemStack, Function<Integer, Integer>>> items = new ArrayList<>();
         for (String name : itemNames) {
-            ItemStack stack = Tools.parseStack(name);
+            ItemStack stack = Tools.parseStack(name, InControl.logger);
             if (stack.isEmpty()) {
                 InControl.logger.log(Level.ERROR, "Unknown item '" + name + "'!");
             } else {

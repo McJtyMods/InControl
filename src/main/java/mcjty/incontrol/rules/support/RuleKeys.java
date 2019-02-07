@@ -1,8 +1,8 @@
 package mcjty.incontrol.rules.support;
 
-import mcjty.incontrol.typed.AttributeMap;
-import mcjty.incontrol.typed.Key;
-import mcjty.incontrol.typed.Type;
+import mcjty.typed.AttributeMap;
+import mcjty.typed.Key;
+import mcjty.typed.Type;
 
 public interface RuleKeys {
 

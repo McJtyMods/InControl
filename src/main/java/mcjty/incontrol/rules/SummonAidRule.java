@@ -4,11 +4,11 @@ import com.google.gson.JsonElement;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.rules.support.GenericRuleEvaluator;
 import mcjty.incontrol.rules.support.IEventQuery;
-import mcjty.incontrol.typed.Attribute;
-import mcjty.incontrol.typed.AttributeMap;
-import mcjty.incontrol.typed.GenericAttributeMapFactory;
-import mcjty.incontrol.typed.Key;
-import mcjty.incontrol.varia.Tools;
+import mcjty.typed.Attribute;
+import mcjty.typed.AttributeMap;
+import mcjty.typed.GenericAttributeMapFactory;
+import mcjty.typed.Key;
+import mcjty.varia.Tools;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -237,7 +237,7 @@ public class SummonAidRule {
     private List<ItemStack> getItems(List<String> itemNames) {
         List<ItemStack> items = new ArrayList<>();
         for (String name : itemNames) {
-            ItemStack stack = Tools.parseStack(name);
+            ItemStack stack = Tools.parseStack(name, InControl.logger);
             if (stack.isEmpty()) {
                 InControl.logger.log(Level.ERROR, "Unknown item '" + name + "'!");
             } else {
