@@ -1,9 +1,9 @@
 package mcjty.incontrol.compat;
 
-import mcjty.incontrol.rules.support.IEventQuery;
 import mcjty.lostcities.api.ILostChunkGenerator;
 import mcjty.lostcities.api.ILostChunkInfo;
 import mcjty.lostcities.api.ILostCities;
+import mcjty.tools.rules.IEventQuery;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.event.FMLInterModComms;

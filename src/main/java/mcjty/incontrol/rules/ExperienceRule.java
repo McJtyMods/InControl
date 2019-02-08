@@ -2,10 +2,10 @@ package mcjty.incontrol.rules;
 
 import com.google.gson.JsonElement;
 import mcjty.incontrol.rules.support.GenericRuleEvaluator;
-import mcjty.incontrol.rules.support.IEventQuery;
-import mcjty.typed.Attribute;
-import mcjty.typed.AttributeMap;
-import mcjty.typed.GenericAttributeMapFactory;
+import mcjty.tools.rules.IEventQuery;
+import mcjty.tools.typed.Attribute;
+import mcjty.tools.typed.AttributeMap;
+import mcjty.tools.typed.GenericAttributeMapFactory;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.BlockPos;
