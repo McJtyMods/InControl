@@ -3,10 +3,10 @@ package mcjty.incontrol.compat;
 import mcjty.incontrol.InControl;
 import mcjty.tools.rules.IEventQuery;
 import mcjty.tools.rules.IModRuleCompatibilityLayer;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.Biome;
 
 public class ModRuleCompatibilityLayer implements IModRuleCompatibilityLayer {
 
@@ -113,5 +113,10 @@ public class ModRuleCompatibilityLayer implements IModRuleCompatibilityLayer {
     @Override
     public boolean isAutumn(World world) {
         return SereneSeasonsSupport.isAutumn(world);
+    }
+
+    @Override
+    public String getBiomeName(Biome biome) {
+        return biome.biomeName;
     }
 }
