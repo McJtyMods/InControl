@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.rules.support.GenericRuleEvaluator;
 import mcjty.tools.rules.IEventQuery;
+import mcjty.tools.rules.RuleBase;
 import mcjty.tools.typed.Attribute;
 import mcjty.tools.typed.AttributeMap;
 import mcjty.tools.typed.GenericAttributeMapFactory;
@@ -29,7 +30,7 @@ import java.util.function.Function;
 
 import static mcjty.incontrol.rules.support.RuleKeys.*;
 
-public class LootRule {
+public class LootRule extends RuleBase<RuleBase.EventGetter> {
 
     private static final GenericAttributeMapFactory FACTORY = new GenericAttributeMapFactory();
     public static final IEventQuery<LivingDropsEvent> EVENT_QUERY = new IEventQuery<LivingDropsEvent>() {
@@ -145,11 +146,15 @@ public class LootRule {
     private boolean removeAll = false;
 
     private LootRule(AttributeMap map) {
+        super(InControl.logger);
         ruleEvaluator = new GenericRuleEvaluator(map);
         addActions(map);
     }
 
-    private void addActions(AttributeMap map) {
+    @Override
+    protected void addActions(AttributeMap map) {
+        super.addActions(map);
+
         if (map.has(ACTION_ITEM)) {
             addItem(map);
         }

@@ -1,8 +1,10 @@
 package mcjty.incontrol.rules;
 
 import com.google.gson.JsonElement;
+import mcjty.incontrol.InControl;
 import mcjty.incontrol.rules.support.GenericRuleEvaluator;
 import mcjty.tools.rules.IEventQuery;
+import mcjty.tools.rules.RuleBase;
 import mcjty.tools.typed.Attribute;
 import mcjty.tools.typed.AttributeMap;
 import mcjty.tools.typed.GenericAttributeMapFactory;
@@ -16,7 +18,7 @@ import net.minecraftforge.fml.common.eventhandler.Event;
 
 import static mcjty.incontrol.rules.support.RuleKeys.*;
 
-public class ExperienceRule {
+public class ExperienceRule extends RuleBase<RuleBase.EventGetter> {
 
     private static final GenericAttributeMapFactory FACTORY = new GenericAttributeMapFactory();
     public static final IEventQuery<LivingExperienceDropEvent> EVENT_QUERY = new IEventQuery<LivingExperienceDropEvent>() {
@@ -111,6 +113,7 @@ public class ExperienceRule {
     private float addxp = 0.0f;
 
     private ExperienceRule(AttributeMap map) {
+        super(InControl.logger);
         ruleEvaluator = new GenericRuleEvaluator(map);
         addActions(map);
     }
@@ -122,7 +125,10 @@ public class ExperienceRule {
         return (int) (xpIn * multxp + addxp);
     }
 
-    private void addActions(AttributeMap map) {
+    @Override
+    protected void addActions(AttributeMap map) {
+        super.addActions(map);
+
         if (map.has(ACTION_RESULT)) {
             String br = map.get(ACTION_RESULT);
             if ("default".equals(br) || br.startsWith("def")) {

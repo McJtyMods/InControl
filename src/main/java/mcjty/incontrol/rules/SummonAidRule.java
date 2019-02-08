@@ -4,11 +4,11 @@ import com.google.gson.JsonElement;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.rules.support.GenericRuleEvaluator;
 import mcjty.tools.rules.IEventQuery;
+import mcjty.tools.rules.RuleBase;
 import mcjty.tools.typed.Attribute;
 import mcjty.tools.typed.AttributeMap;
 import mcjty.tools.typed.GenericAttributeMapFactory;
 import mcjty.tools.typed.Key;
-import mcjty.tools.varia.Tools;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -38,7 +38,7 @@ import java.util.function.Consumer;
 import static mcjty.incontrol.rules.support.RuleKeys.*;
 
 
-public class SummonAidRule {
+public class SummonAidRule extends RuleBase<SummonEventGetter> {
 
     private static final GenericAttributeMapFactory FACTORY = new GenericAttributeMapFactory();
     public static final IEventQuery<ZombieEvent.SummonAidEvent> EVENT_QUERY = new IEventQuery<ZombieEvent.SummonAidEvent>() {
@@ -139,14 +139,17 @@ public class SummonAidRule {
 
     private Event.Result result;
     private final GenericRuleEvaluator ruleEvaluator;
-    private final List<Consumer<ZombieEvent.SummonAidEvent>> actions = new ArrayList<>();
 
     private SummonAidRule(AttributeMap map) {
+        super(InControl.logger);
         ruleEvaluator = new GenericRuleEvaluator(map);
         addActions(map);
     }
 
-    private void addActions(AttributeMap map) {
+    @Override
+    protected void addActions(AttributeMap map) {
+        super.addActions(map);
+
         if (map.has(ACTION_RESULT)) {
             String br = map.get(ACTION_RESULT);
             if ("default".equals(br) || br.startsWith("def")) {
@@ -160,18 +163,6 @@ public class SummonAidRule {
             this.result = Event.Result.DEFAULT;
         }
 
-        if (map.has(ACTION_HEALTHMULTIPLY) || map.has(ACTION_HEALTHADD)) {
-            addHealthAction(map);
-        }
-        if (map.has(ACTION_SPEEDMULTIPLY) || map.has(ACTION_SPEEDADD)) {
-            addSpeedAction(map);
-        }
-        if (map.has(ACTION_DAMAGEMULTIPLY) || map.has(ACTION_DAMAGEADD)) {
-            addDamageAction(map);
-        }
-        if (map.has(ACTION_SIZEMULTIPLY) || map.has(ACTION_SIZEADD)) {
-            addSizeActions(map);
-        }
         if (map.has(ACTION_ANGRY)) {
             addAngryAction(map);
         }
@@ -194,15 +185,6 @@ public class SummonAidRule {
             addPotionsAction(map);
         }
     }
-
-    private EntityZombie getHelper(ZombieEvent.SummonAidEvent event) {
-        EntityZombie helper = event.getCustomSummonedAid();
-        if (helper == null) {
-            helper = new EntityZombie(event.getWorld());
-        }
-        return helper;
-    }
-
 
     private void addPotionsAction(AttributeMap map) {
         List<PotionEffect> effects = new ArrayList<>();
@@ -230,26 +212,13 @@ public class SummonAidRule {
         }
         if (!effects.isEmpty()) {
             actions.add(event -> {
-                EntityLivingBase living = getHelper(event);
+                EntityLivingBase living = event.getZombieHelper();
                 for (PotionEffect effect : effects) {
                     PotionEffect neweffect = new PotionEffect(effect.getPotion(), effect.getDuration(), effect.getAmplifier());
                     living.addPotionEffect(neweffect);
                 }
             });
         }
-    }
-
-    private List<ItemStack> getItems(List<String> itemNames) {
-        List<ItemStack> items = new ArrayList<>();
-        for (String name : itemNames) {
-            ItemStack stack = Tools.parseStack(name, InControl.logger);
-            if (stack.isEmpty()) {
-                InControl.logger.log(Level.ERROR, "Unknown item '" + name + "'!");
-            } else {
-                items.add(stack);
-            }
-        }
-        return items;
     }
 
     private void addArmorItem(AttributeMap map, Key<String> itemKey, EntityEquipmentSlot slot) {
@@ -260,12 +229,12 @@ public class SummonAidRule {
         if (items.size() == 1) {
             ItemStack item = items.get(0);
             actions.add(event -> {
-                EntityZombie helper = getHelper(event);
+                EntityZombie helper = event.getZombieHelper();
                 helper.setItemStackToSlot(slot, item);
             });
         } else {
             actions.add(event -> {
-                EntityZombie helper = getHelper(event);
+                EntityZombie helper = event.getZombieHelper();
                 helper.setItemStackToSlot(slot, items.get(rnd.nextInt(items.size())));
             });
         }
@@ -279,12 +248,12 @@ public class SummonAidRule {
         if (items.size() == 1) {
             ItemStack item = items.get(0);
             actions.add(event -> {
-                EntityZombie helper = getHelper(event);
+                EntityZombie helper = event.getZombieHelper();
                 helper.setHeldItem(EnumHand.MAIN_HAND, item);
             });
         } else {
             actions.add(event -> {
-                EntityZombie helper = getHelper(event);
+                EntityZombie helper = event.getZombieHelper();
                 helper.setHeldItem(EnumHand.MAIN_HAND, items.get(rnd.nextInt(items.size())));
             });
         }
@@ -293,7 +262,7 @@ public class SummonAidRule {
     private void addAngryAction(AttributeMap map) {
         if (map.get(ACTION_ANGRY)) {
             actions.add(event -> {
-                EntityZombie helper = getHelper(event);
+                EntityZombie helper = event.getZombieHelper();
                 EntityPlayer player = event.getWorld().getClosestPlayerToEntity(helper, 50);
                 if (player != null) {
                     helper.setAttackTarget(player);
@@ -306,7 +275,7 @@ public class SummonAidRule {
         float m = map.has(ACTION_HEALTHMULTIPLY) ? map.get(ACTION_HEALTHMULTIPLY) : 1;
         float a = map.has(ACTION_HEALTHADD) ? map.get(ACTION_HEALTHADD) : 0;
         actions.add(event -> {
-            EntityZombie helper = getHelper(event);
+            EntityZombie helper = event.getZombieHelper();
             IAttributeInstance entityAttribute = helper.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH);
             if (entityAttribute != null) {
                 double newMax = entityAttribute.getBaseValue() * m + a;
@@ -320,7 +289,7 @@ public class SummonAidRule {
         float m = map.has(ACTION_SPEEDMULTIPLY) ? map.get(ACTION_SPEEDMULTIPLY) : 1;
         float a = map.has(ACTION_SPEEDADD) ? map.get(ACTION_SPEEDADD) : 0;
         actions.add(event -> {
-            EntityZombie helper = getHelper(event);
+            EntityZombie helper = event.getZombieHelper();
             IAttributeInstance entityAttribute = helper.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED);
             if (entityAttribute != null) {
                 double newMax = entityAttribute.getBaseValue() * m + a;
@@ -334,7 +303,7 @@ public class SummonAidRule {
         float m = map.has(ACTION_SIZEMULTIPLY) ? map.get(ACTION_SIZEMULTIPLY) : 1;
         float a = map.has(ACTION_SIZEADD) ? map.get(ACTION_SIZEADD) : 0;
         actions.add(event -> {
-            EntityZombie helper = getHelper(event);
+            EntityZombie helper = event.getZombieHelper();
             // Not implemented yet
 //                entityLiving.setSize(entityLiving.width * m + a, entityLiving.height * m + a);
         });
@@ -344,7 +313,7 @@ public class SummonAidRule {
         float m = map.has(ACTION_DAMAGEMULTIPLY) ? map.get(ACTION_DAMAGEMULTIPLY) : 1;
         float a = map.has(ACTION_DAMAGEADD) ? map.get(ACTION_DAMAGEADD) : 0;
         actions.add(event -> {
-            EntityZombie helper = getHelper(event);
+            EntityZombie helper = event.getZombieHelper();
             IAttributeInstance entityAttribute = helper.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE);
             if (entityAttribute != null) {
                 double newMax = entityAttribute.getBaseValue() * m + a;
@@ -361,8 +330,28 @@ public class SummonAidRule {
 
 
     public void action(ZombieEvent.SummonAidEvent event) {
-        for (Consumer<ZombieEvent.SummonAidEvent> action : actions) {
-            action.accept(event);
+        SummonEventGetter getter = new SummonEventGetter() {
+            @Override
+            public EntityLivingBase getEntityLiving() {
+                return event.getEntity() instanceof EntityLivingBase ? (EntityLivingBase) event.getEntity() : null;
+            }
+
+            @Override
+            public World getWorld() {
+                return event.getWorld();
+            }
+
+            @Override
+            public EntityZombie getZombieHelper() {
+                EntityZombie helper = event.getCustomSummonedAid();
+                if (helper == null) {
+                    helper = new EntityZombie(event.getWorld());
+                }
+                return helper;
+            }
+        };
+        for (Consumer<SummonEventGetter> action : actions) {
+            action.accept(getter);
         }
     }
 

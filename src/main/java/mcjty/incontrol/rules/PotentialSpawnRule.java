@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.rules.support.GenericRuleEvaluator;
 import mcjty.tools.rules.IEventQuery;
+import mcjty.tools.rules.RuleBase;
 import mcjty.tools.typed.Attribute;
 import mcjty.tools.typed.AttributeMap;
 import mcjty.tools.typed.GenericAttributeMapFactory;
@@ -29,7 +30,7 @@ import java.util.List;
 
 import static mcjty.incontrol.rules.support.RuleKeys.*;
 
-public class PotentialSpawnRule {
+public class PotentialSpawnRule extends RuleBase<RuleBase.EventGetter> {
 
     private static final GenericAttributeMapFactory FACTORY = new GenericAttributeMapFactory();
     private static final GenericAttributeMapFactory MOB_FACTORY = new GenericAttributeMapFactory();
@@ -115,6 +116,8 @@ public class PotentialSpawnRule {
     private List<Class> toRemoveMobs = new ArrayList<>();
 
     private PotentialSpawnRule(AttributeMap map) {
+        super(InControl.logger);
+
         ruleEvaluator = new GenericRuleEvaluator(map);
 
         if ((!map.has(ACTION_MOBS)) && (!map.has(ACTION_REMOVE))) {
