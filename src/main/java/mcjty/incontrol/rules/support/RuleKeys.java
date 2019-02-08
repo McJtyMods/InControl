@@ -17,15 +17,7 @@ public interface RuleKeys extends CommonRuleKeys {
     Key<String> MOB = Key.create(Type.STRING, "mob");
     Key<String> MOD = Key.create(Type.STRING, "mod");
 
-    Key<Boolean> INCITY = Key.create(Type.BOOLEAN, "incity");
-    Key<Boolean> INBUILDING = Key.create(Type.BOOLEAN, "inbuilding");
-    Key<Boolean> INSTREET = Key.create(Type.BOOLEAN, "instreet");
-    Key<Boolean> INSPHERE = Key.create(Type.BOOLEAN, "insphere");
     Key<Boolean> SPAWNER = Key.create(Type.BOOLEAN, "spawner");
-    Key<Boolean> SUMMER = Key.create(Type.BOOLEAN, "summer");
-    Key<Boolean> WINTER = Key.create(Type.BOOLEAN, "winter");
-    Key<Boolean> SPRING = Key.create(Type.BOOLEAN, "spring");
-    Key<Boolean> AUTUMN = Key.create(Type.BOOLEAN, "autumn");
 
     // Outputs
     Key<String> ACTION_RESULT = Key.create(Type.STRING, "result");
@@ -54,7 +46,6 @@ public interface RuleKeys extends CommonRuleKeys {
     Key<Boolean> EXPLOSION = Key.create(Type.BOOLEAN, "explosion");
     Key<Boolean> FIRE = Key.create(Type.BOOLEAN, "fire");
     Key<Boolean> MAGIC = Key.create(Type.BOOLEAN, "magic");
-    Key<String> GAMESTAGE = Key.create(Type.STRING, "gamestage");
 
     Key<String> ACTION_ITEMNBT = Key.create(Type.JSON, "nbt");
     Key<String> ACTION_ITEM = Key.create(Type.STRING, "item");

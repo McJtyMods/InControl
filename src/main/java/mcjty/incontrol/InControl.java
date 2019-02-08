@@ -35,6 +35,7 @@ public class InControl {
     public static boolean lostcities = false;
     public static boolean gamestages = false;
     public static boolean sereneSeasons = false;
+    public static boolean baubles = false;
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event){
@@ -44,6 +45,7 @@ public class InControl {
         lostcities = Loader.isModLoaded("lostcities");
         gamestages = Loader.isModLoaded("gamestages");
         sereneSeasons = Loader.isModLoaded("sereneseasons");
+        baubles = Loader.isModLoaded("baubles");
 
         if (lostcities) {
             LostCitySupport.register();
@@ -54,6 +56,9 @@ public class InControl {
         }
         if (sereneSeasons) {
             logger.log(Level.INFO, "Enabling support for Serene Seasons");
+        }
+        if (baubles) {
+            logger.log(Level.INFO, "Enabling support for Baubles");
         }
     }
 

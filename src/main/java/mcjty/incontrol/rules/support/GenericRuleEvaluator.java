@@ -1,9 +1,7 @@
 package mcjty.incontrol.rules.support;
 
 import mcjty.incontrol.InControl;
-import mcjty.incontrol.compat.GameStageSupport;
-import mcjty.incontrol.compat.LostCitySupport;
-import mcjty.incontrol.compat.SereneSeasonsSupport;
+import mcjty.incontrol.compat.ModRuleCompatibilityLayer;
 import mcjty.incontrol.rules.PotentialSpawnRule;
 import mcjty.tools.rules.CommonRuleEvaluator;
 import mcjty.tools.rules.IEventQuery;
@@ -26,7 +24,6 @@ import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -37,83 +34,19 @@ import static mcjty.incontrol.rules.support.RuleKeys.*;
 
 public class GenericRuleEvaluator extends CommonRuleEvaluator {
 
-    private final List<BiFunction<Event, IEventQuery, Boolean>> checks = new ArrayList<>();
-
     public GenericRuleEvaluator(AttributeMap map) {
-        super(map, InControl.logger);
+        super(map, InControl.logger, new ModRuleCompatibilityLayer());
     }
 
     @Override
     protected void addChecks(AttributeMap map) {
+        super.addChecks(map);
+
         if (map.has(HOSTILE)) {
             addHostileCheck(map);
         }
         if (map.has(PASSIVE)) {
             addPassiveCheck(map);
-        }
-
-        if (map.has(SUMMER)) {
-            if (InControl.sereneSeasons) {
-                addSummerCheck(map);
-            } else {
-                InControl.logger.warn("Serene Seaons is missing: this test cannot work!");
-            }
-        }
-        if (map.has(WINTER)) {
-            if (InControl.sereneSeasons) {
-                addWinterCheck(map);
-            } else {
-                InControl.logger.warn("Serene Seaons is missing: this test cannot work!");
-            }
-        }
-        if (map.has(SPRING)) {
-            if (InControl.sereneSeasons) {
-                addSpringCheck(map);
-            } else {
-                InControl.logger.warn("Serene Seaons is missing: this test cannot work!");
-            }
-        }
-        if (map.has(AUTUMN)) {
-            if (InControl.sereneSeasons) {
-                addAutumnCheck(map);
-            } else {
-                InControl.logger.warn("Serene Seaons is missing: this test cannot work!");
-            }
-        }
-        if (map.has(GAMESTAGE)) {
-            if (InControl.gamestages) {
-                addGameStageCheck(map);
-            } else {
-                InControl.logger.warn("Game Stages is missing: the 'gamestage' test cannot work!");
-            }
-        }
-        if (map.has(INCITY)) {
-            if (InControl.lostcities) {
-                addInCityCheck(map);
-            } else {
-                InControl.logger.warn("The Lost Cities is missing: the 'incity' test cannot work!");
-            }
-        }
-        if (map.has(INSTREET)) {
-            if (InControl.lostcities) {
-                addInStreetCheck(map);
-            } else {
-                InControl.logger.warn("The Lost Cities is missing: the 'instreet' test cannot work!");
-            }
-        }
-        if (map.has(INSPHERE)) {
-            if (InControl.lostcities) {
-                addInSphereCheck(map);
-            } else {
-                InControl.logger.warn("The Lost Cities is missing: the 'insphere' test cannot work!");
-            }
-        }
-        if (map.has(INBUILDING)) {
-            if (InControl.lostcities) {
-                addInBuildingCheck(map);
-            } else {
-                InControl.logger.warn("The Lost Cities is missing: the 'inbuilding' test cannot work!");
-            }
         }
 
         if (map.has(CANSPAWNHERE)) {
@@ -247,63 +180,6 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             checks.add((event,query) -> (query.getEntity(event) instanceof IAnimals && !(query.getEntity(event) instanceof IMob)));
         } else {
             checks.add((event,query) -> !(query.getEntity(event) instanceof IAnimals && !(query.getEntity(event) instanceof IMob)));
-        }
-    }
-
-    private void addSummerCheck(AttributeMap map) {
-        Boolean s = map.get(SUMMER);
-        checks.add((event, query) -> s == InControl.sereneSeasons && SereneSeasonsSupport.isSummer(query.getWorld(event)));
-    }
-
-    private void addWinterCheck(AttributeMap map) {
-        Boolean s = map.get(WINTER);
-        checks.add((event, query) -> s == InControl.sereneSeasons && SereneSeasonsSupport.isWinter(query.getWorld(event)));
-    }
-
-    private void addSpringCheck(AttributeMap map) {
-        Boolean s = map.get(SPRING);
-        checks.add((event, query) -> s == InControl.sereneSeasons && SereneSeasonsSupport.isSpring(query.getWorld(event)));
-    }
-
-    private void addAutumnCheck(AttributeMap map) {
-        Boolean s = map.get(AUTUMN);
-        checks.add((event, query) -> s == InControl.sereneSeasons && SereneSeasonsSupport.isAutumn(query.getWorld(event)));
-    }
-
-    private void addGameStageCheck(AttributeMap map) {
-        String stage = map.get(GAMESTAGE);
-        checks.add((event, query) -> InControl.gamestages && GameStageSupport.hasGameStage(query.getSource(event), stage));
-    }
-
-    private void addInCityCheck(AttributeMap map) {
-        if (map.get(INCITY)) {
-            checks.add((event,query) -> InControl.lostcities && LostCitySupport.isCity(query, event));
-        } else {
-            checks.add((event,query) -> InControl.lostcities && !LostCitySupport.isCity(query, event));
-        }
-    }
-
-    private void addInStreetCheck(AttributeMap map) {
-        if (map.get(INSTREET)) {
-            checks.add((event,query) -> InControl.lostcities && LostCitySupport.isStreet(query, event));
-        } else {
-            checks.add((event,query) -> InControl.lostcities && !LostCitySupport.isStreet(query, event));
-        }
-    }
-
-    private void addInSphereCheck(AttributeMap map) {
-        if (map.get(INSPHERE)) {
-            checks.add((event,query) -> InControl.lostcities && LostCitySupport.inSphere(query, event));
-        } else {
-            checks.add((event,query) -> InControl.lostcities && !LostCitySupport.inSphere(query, event));
-        }
-    }
-
-    private void addInBuildingCheck(AttributeMap map) {
-        if (map.get(INBUILDING)) {
-            checks.add((event,query) -> InControl.lostcities && LostCitySupport.isBuilding(query, event));
-        } else {
-            checks.add((event,query) -> InControl.lostcities && !LostCitySupport.isBuilding(query, event));
         }
     }
 

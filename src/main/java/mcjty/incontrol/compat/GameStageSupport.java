@@ -2,16 +2,13 @@ package mcjty.incontrol.compat;
 
 import net.darkhax.gamestages.GameStageHelper;
 import net.darkhax.gamestages.data.IStageData;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.DamageSource;
 
 public class GameStageSupport {
 
-    public static boolean hasGameStage(DamageSource source, String stage) {
-        Entity entity = source.getTrueSource();
-        if (entity instanceof EntityPlayer) {
-            IStageData stageData = GameStageHelper.getPlayerData((EntityPlayer) entity);
+    public static boolean hasGameStage(EntityPlayer player, String stage) {
+        if (player != null) {
+            IStageData stageData = GameStageHelper.getPlayerData(player);
             return stageData.hasStage(stage);
         } else {
             return false;
