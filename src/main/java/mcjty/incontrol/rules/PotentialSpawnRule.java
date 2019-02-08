@@ -101,6 +101,7 @@ public class PotentialSpawnRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(SPRING))
                 .attribute(Attribute.create(AUTUMN))
                 .attribute(Attribute.createMulti(BLOCK))
+                .attribute(Attribute.createMulti(BLOCKUP))
                 .attribute(Attribute.createMulti(BIOME))
                 .attribute(Attribute.createMulti(BIOMETYPE))
                 .attribute(Attribute.createMulti(DIMENSION))

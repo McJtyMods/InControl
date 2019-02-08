@@ -1,6 +1,7 @@
 Upcoming:
 - Added support for Serene Seasons with new 'winter', 'summer', 'spring', and 'autumn' boolean keywords
 - Added support for baubles: new 'amulet', 'ring', 'belt', 'trinket', 'charm', 'body', 'and 'head' keywords
+- New 'blockup' test for various rules which will test the condition of the block above the current position
 
 3.8.3:
 - New 'offhanditem' and 'bothhandsitem' tags that are equivalent to 'helditem' but also work on the offhand (or both)
