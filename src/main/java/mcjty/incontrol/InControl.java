@@ -1,9 +1,9 @@
 package mcjty.incontrol;
 
 
-import mcjty.incontrol.cache.StructureCache;
 import mcjty.incontrol.compat.LostCitySupport;
 import mcjty.incontrol.proxy.CommonProxy;
+import mcjty.tools.cache.StructureCache;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;

@@ -80,6 +80,11 @@ public class SpawnRule {
         public Entity getAttacker(LivingSpawnEvent.CheckSpawn o) {
             return null;
         }
+
+        @Override
+        public EntityPlayer getPlayer(LivingSpawnEvent.CheckSpawn o) {
+            return null;
+        }
     };
 
     public static final IEventQuery<EntityJoinWorldEvent> EVENT_QUERY_JOIN = new IEventQuery<EntityJoinWorldEvent>() {
@@ -111,6 +116,11 @@ public class SpawnRule {
 
         @Override
         public Entity getAttacker(EntityJoinWorldEvent o) {
+            return null;
+        }
+
+        @Override
+        public EntityPlayer getPlayer(EntityJoinWorldEvent o) {
             return null;
         }
     };

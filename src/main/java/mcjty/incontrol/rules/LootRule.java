@@ -9,6 +9,7 @@ import mcjty.tools.typed.AttributeMap;
 import mcjty.tools.typed.GenericAttributeMapFactory;
 import mcjty.tools.varia.Tools;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.nbt.NBTException;
@@ -61,6 +62,12 @@ public class LootRule {
         @Override
         public Entity getAttacker(LivingDropsEvent o) {
             return o.getSource().getTrueSource();
+        }
+
+        @Override
+        public EntityPlayer getPlayer(LivingDropsEvent o) {
+            Entity entity = o.getSource().getTrueSource();
+            return entity instanceof EntityPlayer ? (EntityPlayer) entity : null;
         }
     };
 

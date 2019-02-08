@@ -72,6 +72,11 @@ public class SummonAidRule {
         public Entity getAttacker(ZombieEvent.SummonAidEvent o) {
             return null;
         }
+
+        @Override
+        public EntityPlayer getPlayer(ZombieEvent.SummonAidEvent o) {
+            return null;
+        }
     };
 
     static {

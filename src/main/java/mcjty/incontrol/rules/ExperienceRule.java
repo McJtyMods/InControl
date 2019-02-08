@@ -7,6 +7,7 @@ import mcjty.tools.typed.Attribute;
 import mcjty.tools.typed.AttributeMap;
 import mcjty.tools.typed.GenericAttributeMapFactory;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -46,6 +47,11 @@ public class ExperienceRule {
 
         @Override
         public Entity getAttacker(LivingExperienceDropEvent o) {
+            return o.getAttackingPlayer();
+        }
+
+        @Override
+        public EntityPlayer getPlayer(LivingExperienceDropEvent o) {
             return o.getAttackingPlayer();
         }
     };

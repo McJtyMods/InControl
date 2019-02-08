@@ -11,6 +11,7 @@ import mcjty.tools.typed.AttributeMap;
 import mcjty.tools.typed.GenericAttributeMapFactory;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
@@ -60,6 +61,11 @@ public class PotentialSpawnRule {
 
         @Override
         public Entity getAttacker(WorldEvent.PotentialSpawns o) {
+            return null;
+        }
+
+        @Override
+        public EntityPlayer getPlayer(WorldEvent.PotentialSpawns o) {
             return null;
         }
     };
