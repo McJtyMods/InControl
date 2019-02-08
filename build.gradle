@@ -45,6 +45,10 @@ repositories {
     maven { // Game stages
         url "https://maven.mcmoddev.com/"
     }
+    maven { // For Serene Seasons
+        name = "CurseForge"
+        url = "https://minecraft.curseforge.com/api/maven/"
+    }
 }
 
 group= "com.github.mcjty"
@@ -71,7 +75,7 @@ dependencies {
     //deobfCompile "mcjty.theoneprobe:TheOneProbe:1.1x-1.4.6-56"
     //deobfCompile "com.github.mcjty:compatlayer:1.11.2-0.2.6"
     deobfCompile "net.darkhax.gamestages:GameStages-1.12.2:2.0.114"
-
+    compile "serene-seasons:SereneSeasons-1.12.2:1.2.15:universal"
 }
 
 jar {
