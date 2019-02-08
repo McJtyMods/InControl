@@ -346,6 +346,11 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
             }
 
             @Override
+            public BlockPos getPosition() {
+                return new BlockPos(event.getX(), event.getY(), event.getZ());
+            }
+
+            @Override
             public EntityZombie getZombieHelper() {
                 EntityZombie helper = event.getCustomSummonedAid();
                 if (helper == null) {

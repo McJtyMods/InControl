@@ -218,6 +218,11 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
             public World getWorld() {
                 return event.getWorld();
             }
+
+            @Override
+            public BlockPos getPosition() {
+                return event.getEntityLiving().getPosition();
+            }
         };
         for (Consumer<EventGetter> action : actions) {
             action.accept(getter);
@@ -234,6 +239,11 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
             @Override
             public World getWorld() {
                 return event.getWorld();
+            }
+
+            @Override
+            public BlockPos getPosition() {
+                return event.getEntity() != null ? event.getEntity().getPosition() : null;
             }
         };
         for (Consumer<EventGetter> action : actions) {
