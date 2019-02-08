@@ -1,4 +1,4 @@
-Upcoming:
+3.9.0:
 - Added support for Serene Seasons with new 'winter', 'summer', 'spring', and 'autumn' boolean keywords
 - Added support for baubles: new 'amulet', 'ring', 'belt', 'trinket', 'charm', 'body', 'and 'head' keywords
 - New 'blockup' test for various rules which will test the condition of the block above the current position
