@@ -41,8 +41,12 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
 
         @Override
         public BlockPos getPos(LivingDropsEvent o) {
-            LivingDropsEvent s = o;
-            return s.getEntity().getPosition();
+            return o.getEntity().getPosition();
+        }
+
+        @Override
+        public BlockPos getValidBlockPos(LivingDropsEvent o) {
+            return o.getEntity().getPosition().down();
         }
 
         @Override

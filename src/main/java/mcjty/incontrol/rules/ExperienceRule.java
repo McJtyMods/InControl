@@ -33,6 +33,11 @@ public class ExperienceRule extends RuleBase<RuleBase.EventGetter> {
         }
 
         @Override
+        public BlockPos getValidBlockPos(LivingExperienceDropEvent o) {
+            return o.getEntity().getPosition().down();
+        }
+
+        @Override
         public int getY(LivingExperienceDropEvent o) {
             return o.getEntity().getPosition().getY();
         }

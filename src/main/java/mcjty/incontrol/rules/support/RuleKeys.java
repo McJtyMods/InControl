@@ -19,9 +19,6 @@ public interface RuleKeys extends CommonRuleKeys {
 
     Key<Boolean> SPAWNER = Key.create(Type.BOOLEAN, "spawner");
 
-    // Outputs
-    Key<String> ACTION_RESULT = Key.create(Type.STRING, "result");
-
     // Foor loot rules
     Key<String> SOURCE = Key.create(Type.STRING, "source");
     Key<Boolean> PLAYER = Key.create(Type.BOOLEAN, "player");

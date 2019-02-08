@@ -34,8 +34,12 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
 
         @Override
         public BlockPos getPos(LivingSpawnEvent.CheckSpawn o) {
-            LivingSpawnEvent.CheckSpawn s = o;
-            return new BlockPos(s.getX(), s.getY(), s.getZ());
+            return new BlockPos(o.getX(), o.getY(), o.getZ());
+        }
+
+        @Override
+        public BlockPos getValidBlockPos(LivingSpawnEvent.CheckSpawn o) {
+            return new BlockPos(o.getX(), o.getY()-1, o.getZ());
         }
 
         @Override
@@ -72,8 +76,12 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
 
         @Override
         public BlockPos getPos(EntityJoinWorldEvent o) {
-            EntityJoinWorldEvent s = o;
-            return s.getEntity().getPosition();
+            return o.getEntity().getPosition();
+        }
+
+        @Override
+        public BlockPos getValidBlockPos(EntityJoinWorldEvent o) {
+            return o.getEntity().getPosition().down();
         }
 
         @Override

@@ -46,6 +46,11 @@ public class PotentialSpawnRule extends RuleBase<RuleBase.EventGetter> {
         }
 
         @Override
+        public BlockPos getValidBlockPos(WorldEvent.PotentialSpawns o) {
+            return o.getPos().down();
+        }
+
+        @Override
         public int getY(WorldEvent.PotentialSpawns o) {
             return o.getPos().getY();
         }

@@ -49,8 +49,12 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
 
         @Override
         public BlockPos getPos(ZombieEvent.SummonAidEvent o) {
-            ZombieEvent.SummonAidEvent s = o;
-            return new BlockPos(s.getX(), s.getY(), s.getZ());
+            return new BlockPos(o.getX(), o.getY(), o.getZ());
+        }
+
+        @Override
+        public BlockPos getValidBlockPos(ZombieEvent.SummonAidEvent o) {
+            return new BlockPos(o.getX(), o.getY()-1, o.getZ());
         }
 
         @Override
