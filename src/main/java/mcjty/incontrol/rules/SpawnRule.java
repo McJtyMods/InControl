@@ -152,6 +152,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.createMulti(DIMENSION))
 
                 .attribute(Attribute.create(ACTION_RESULT))
+                .attribute(Attribute.create(ACTION_MESSAGE))
                 .attribute(Attribute.create(ACTION_HEALTHMULTIPLY))
                 .attribute(Attribute.create(ACTION_HEALTHADD))
                 .attribute(Attribute.create(ACTION_SPEEDMULTIPLY))
@@ -216,6 +217,11 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
             }
 
             @Override
+            public EntityPlayer getPlayer() {
+                return null;
+            }
+
+            @Override
             public World getWorld() {
                 return event.getWorld();
             }
@@ -235,6 +241,11 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
             @Override
             public EntityLivingBase getEntityLiving() {
                 return event.getEntity() instanceof EntityLivingBase ? (EntityLivingBase) event.getEntity() : null;
+            }
+
+            @Override
+            public EntityPlayer getPlayer() {
+                return null;
             }
 
             @Override

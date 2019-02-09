@@ -124,6 +124,7 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
                 .attribute(Attribute.createMulti(DIMENSION))
 
                 .attribute(Attribute.create(ACTION_RESULT))
+                .attribute(Attribute.create(ACTION_MESSAGE))
                 .attribute(Attribute.create(ACTION_HEALTHMULTIPLY))
                 .attribute(Attribute.create(ACTION_HEALTHADD))
                 .attribute(Attribute.create(ACTION_SPEEDMULTIPLY))
@@ -339,6 +340,11 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
             @Override
             public EntityLivingBase getEntityLiving() {
                 return event.getEntity() instanceof EntityLivingBase ? (EntityLivingBase) event.getEntity() : null;
+            }
+
+            @Override
+            public EntityPlayer getPlayer() {
+                return null;
             }
 
             @Override
