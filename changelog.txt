@@ -1,5 +1,6 @@
 Upcoming
 - Much more powerful item description system with expressions on damage and nbt
+- Giving items (armor, helditem, give command) is now also much more general and supports the new system
 
 3.9.0:
 - Added support for Serene Seasons with new 'winter', 'summer', 'spring', and 'autumn' boolean keywords

@@ -28,6 +28,7 @@ import net.minecraftforge.event.entity.living.ZombieEvent;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Level;
 
 import java.util.ArrayList;
@@ -228,39 +229,43 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
     }
 
     private void addArmorItem(AttributeMap map, Key<String> itemKey, EntityEquipmentSlot slot) {
-        final List<ItemStack> items = getItems(map.getList(itemKey));
+        List<Pair<Float, ItemStack>> items = getItemsWeighted(map.getList(itemKey));
         if (items.isEmpty()) {
             return;
         }
         if (items.size() == 1) {
-            ItemStack item = items.get(0);
+            Pair<Float, ItemStack> pair = items.get(0);
             actions.add(event -> {
                 EntityZombie helper = event.getZombieHelper();
-                helper.setItemStackToSlot(slot, item);
+                helper.setItemStackToSlot(slot, pair.getRight().copy());
             });
         } else {
+            final float total = getTotal(items);
             actions.add(event -> {
+                ItemStack item = getRandomItem(items, total);
                 EntityZombie helper = event.getZombieHelper();
-                helper.setItemStackToSlot(slot, items.get(rnd.nextInt(items.size())));
+                helper.setItemStackToSlot(slot, item.copy());
             });
         }
     }
 
     private void addHeldItem(AttributeMap map) {
-        final List<ItemStack> items = getItems(map.getList(ACTION_HELDITEM));
+        List<Pair<Float, ItemStack>> items = getItemsWeighted(map.getList(ACTION_HELDITEM));
         if (items.isEmpty()) {
             return;
         }
         if (items.size() == 1) {
-            ItemStack item = items.get(0);
+            Pair<Float, ItemStack> pair = items.get(0);
             actions.add(event -> {
                 EntityZombie helper = event.getZombieHelper();
-                helper.setHeldItem(EnumHand.MAIN_HAND, item);
+                helper.setHeldItem(EnumHand.MAIN_HAND, pair.getRight().copy());
             });
         } else {
+            final float total = getTotal(items);
             actions.add(event -> {
+                ItemStack item = getRandomItem(items, total);
                 EntityZombie helper = event.getZombieHelper();
-                helper.setHeldItem(EnumHand.MAIN_HAND, items.get(rnd.nextInt(items.size())));
+                helper.setHeldItem(EnumHand.MAIN_HAND, item.copy());
             });
         }
     }
