@@ -394,6 +394,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
     }
 
 
+    @Override
     public boolean match(Event event, IEventQuery query) {
         for (BiFunction<Event, IEventQuery, Boolean> rule : checks) {
             if (!rule.apply(event, query)) {
