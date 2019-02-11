@@ -1,4 +1,4 @@
-Upcoming
+3.9.1:
 - Much more powerful item description system with expressions on damage and nbt
 - Giving items (armor, helditem, give command) is now also much more general and supports the new system
 - Removed 'blockup' command and instead add a more general 'blockoffset' command that works together with the 'block' command
