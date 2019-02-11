@@ -96,6 +96,8 @@ public class ExperienceRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(SUMMER))
                 .attribute(Attribute.create(SPRING))
                 .attribute(Attribute.create(AUTUMN))
+                .attribute(Attribute.create(STATE))
+                .attribute(Attribute.create(PSTATE))
                 .attribute(Attribute.createMulti(MOB))
                 .attribute(Attribute.createMulti(MOD))
                 .attribute(Attribute.createMulti(BLOCK))

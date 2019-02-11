@@ -2,6 +2,7 @@ Upcoming
 - Much more powerful item description system with expressions on damage and nbt
 - Giving items (armor, helditem, give command) is now also much more general and supports the new system
 - Removed 'blockup' command and instead add a more general 'blockoffset' command that works together with the 'block' command
+- Added support for EnigmaScript though 'state' and 'pstate' tests
 
 3.9.0:
 - Added support for Serene Seasons with new 'winter', 'summer', 'spring', and 'autumn' boolean keywords

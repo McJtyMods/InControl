@@ -1,6 +1,7 @@
 package mcjty.incontrol;
 
 
+import mcjty.incontrol.compat.EnigmaSupport;
 import mcjty.incontrol.compat.LostCitySupport;
 import mcjty.incontrol.proxy.CommonProxy;
 import mcjty.tools.cache.StructureCache;
@@ -36,6 +37,7 @@ public class InControl {
     public static boolean gamestages = false;
     public static boolean sereneSeasons = false;
     public static boolean baubles = false;
+    public static boolean enigma = false;
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event){
@@ -46,6 +48,7 @@ public class InControl {
         gamestages = Loader.isModLoaded("gamestages");
         sereneSeasons = Loader.isModLoaded("sereneseasons");
         baubles = Loader.isModLoaded("baubles");
+        enigma = Loader.isModLoaded("enigma");
 
         if (lostcities) {
             LostCitySupport.register();
@@ -59,6 +62,10 @@ public class InControl {
         }
         if (baubles) {
             logger.log(Level.INFO, "Enabling support for Baubles");
+        }
+        if (enigma) {
+            EnigmaSupport.register();
+            logger.log(Level.INFO, "Enabling support for EnigmaScript");
         }
     }
 

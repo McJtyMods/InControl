@@ -100,6 +100,7 @@ public class PotentialSpawnRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(SUMMER))
                 .attribute(Attribute.create(SPRING))
                 .attribute(Attribute.create(AUTUMN))
+                .attribute(Attribute.create(STATE))
                 .attribute(Attribute.createMulti(BLOCK))
                 .attribute(Attribute.create(BLOCKOFFSET))
                 .attribute(Attribute.createMulti(BIOME))
