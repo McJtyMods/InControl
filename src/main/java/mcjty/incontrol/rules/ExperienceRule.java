@@ -2,8 +2,10 @@ package mcjty.incontrol.rules;
 
 import com.google.gson.JsonElement;
 import mcjty.incontrol.InControl;
+import mcjty.incontrol.compat.ModRuleCompatibilityLayer;
 import mcjty.incontrol.rules.support.GenericRuleEvaluator;
 import mcjty.tools.rules.IEventQuery;
+import mcjty.tools.rules.IModRuleCompatibilityLayer;
 import mcjty.tools.rules.RuleBase;
 import mcjty.tools.typed.Attribute;
 import mcjty.tools.typed.AttributeMap;
@@ -121,7 +123,7 @@ public class ExperienceRule extends RuleBase<RuleBase.EventGetter> {
     private ExperienceRule(AttributeMap map) {
         super(InControl.logger);
         ruleEvaluator = new GenericRuleEvaluator(map);
-        addActions(map);
+        addActions(map, new ModRuleCompatibilityLayer());
     }
 
     public int modifyXp(int xpIn) {
@@ -132,8 +134,8 @@ public class ExperienceRule extends RuleBase<RuleBase.EventGetter> {
     }
 
     @Override
-    protected void addActions(AttributeMap map) {
-        super.addActions(map);
+    protected void addActions(AttributeMap map, IModRuleCompatibilityLayer layer) {
+        super.addActions(map, layer);
 
         if (map.has(ACTION_RESULT)) {
             String br = map.get(ACTION_RESULT);

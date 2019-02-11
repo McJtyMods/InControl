@@ -116,6 +116,31 @@ public class ModRuleCompatibilityLayer implements IModRuleCompatibilityLayer {
     }
 
     @Override
+    public boolean hasEnigmaScript() {
+        return false;
+    }
+
+    @Override
+    public String getPlayerState(EntityPlayer player, String statename) {
+        return null;
+    }
+
+    @Override
+    public String getState(World world, String statename) {
+        return null;
+    }
+
+    @Override
+    public void setPlayerState(EntityPlayer player, String statename, String statevalue) {
+        // Not supported by In Control
+    }
+
+    @Override
+    public void setState(World world, String statename, String statevalue) {
+        // Not supported by In Control
+    }
+
+    @Override
     public String getBiomeName(Biome biome) {
         return biome.biomeName;
     }
