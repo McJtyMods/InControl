@@ -1,3 +1,12 @@
+Upcoming:
+- New 'mod' attribute for 'block' test so that you can test for modded blocks: 'block': { 'mod': 'rftools' }
+- New 'mod' attribute for 'helditem' (and similar) test so that you can test for modded blocks
+- New 'empty' attribute for 'helditem' (and similar) tests so that you can test for an empty item: 'helditem': { 'empty': true }
+- New 'count' attribute for 'helditem' (and similar) tests so that you can add expresssions to test for amounts. For example 'helditem': { 'item': 'minecraft:coal', 'count': '>=10' }
+- New 'ore' attribute for 'helditem' (and similar) tests to do ore dictionary tests
+- New 'energy' attribute for 'helditem' (and similar) tests to that you can test for forge energy in an item. This supports expressions
+- New 'energy' attribute for 'block' test to that you can test for forge energy in a block. There is also a new 'energyside' attribute which allows you to specify from which side the energy will be examined. If not given it will use null
+
 3.9.1:
 - Much more powerful item description system with expressions on damage and nbt
 - Giving items (armor, helditem, give command) is now also much more general and supports the new system
