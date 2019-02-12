@@ -1,4 +1,4 @@
-Upcoming:
+3.9.2:
 - New 'mod' attribute for 'block' test so that you can test for modded blocks: 'block': { 'mod': 'rftools' }
 - New 'mod' attribute for 'helditem' (and similar) test so that you can test for modded blocks
 - New 'empty' attribute for 'helditem' (and similar) tests so that you can test for an empty item: 'helditem': { 'empty': true }
