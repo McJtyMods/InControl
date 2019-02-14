@@ -1,3 +1,6 @@
+Upcoming:
+- Fixed a bug with the 'empty' keyword for items
+
 3.9.2:
 - New 'mod' attribute for 'block' test so that you can test for modded blocks: 'block': { 'mod': 'rftools' }
 - New 'mod' attribute for 'helditem' (and similar) test so that you can test for modded blocks
