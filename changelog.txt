@@ -1,5 +1,6 @@
 Upcoming:
 - Fixed a bug with the 'empty' keyword for items
+- Postponed loading of the rule files so that blocks/items from other mods can be found better
 
 3.9.2:
 - New 'mod' attribute for 'block' test so that you can test for modded blocks: 'block': { 'mod': 'rftools' }

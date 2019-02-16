@@ -4,6 +4,7 @@ package mcjty.incontrol;
 import mcjty.incontrol.compat.EnigmaSupport;
 import mcjty.incontrol.compat.LostCitySupport;
 import mcjty.incontrol.proxy.CommonProxy;
+import mcjty.incontrol.rules.RulesManager;
 import mcjty.tools.cache.StructureCache;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
@@ -77,6 +78,11 @@ public class InControl {
     @Mod.EventHandler
     public void postInit(FMLPostInitializationEvent e) {
         proxy.postInit(e);
+    }
+
+    @Mod.EventHandler
+    public void onLoadComplete(FMLLoadCompleteEvent e) {
+        RulesManager.readRules();
     }
 
     @Mod.EventHandler

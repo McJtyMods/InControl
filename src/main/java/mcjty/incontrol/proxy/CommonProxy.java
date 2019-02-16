@@ -26,7 +26,6 @@ public class CommonProxy {
 
     public void postInit(FMLPostInitializationEvent e) {
         ConfigSetup.postInit();
-        RulesManager.readRules();
     }
 
     public World getClientWorld() {
