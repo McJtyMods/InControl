@@ -1,3 +1,6 @@
+3.9.4:
+- Loot control will now also support the more advanced itemstack syntax for removal. Note that this is a potentially compatibility breaking change as specifying something like 'minecraft:stone_sword' (without meta) will now match all stone swords while before it would only match stone_sword with meta 0
+
 3.9.3:
 - Fixed a bug with the 'empty' keyword for items
 - Postponed loading of the rule files so that blocks/items from other mods can be found better
