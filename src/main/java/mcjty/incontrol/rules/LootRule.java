@@ -271,7 +271,6 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
 
     private void removeItem(AttributeMap map) {
         toRemoveItems.addAll(CommonRuleEvaluator.getItems(map.getList(ACTION_REMOVE), logger));
-//        toRemoveItems.addAll(getItems(map.getList(ACTION_REMOVE), null, null));
     }
 
     private static Random rnd = new Random();
