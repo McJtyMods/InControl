@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.compat.ModRuleCompatibilityLayer;
 import mcjty.incontrol.rules.support.GenericRuleEvaluator;
+import mcjty.tools.rules.CommonRuleEvaluator;
 import mcjty.tools.rules.IEventQuery;
 import mcjty.tools.rules.IModRuleCompatibilityLayer;
 import mcjty.tools.rules.RuleBase;
@@ -29,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import static mcjty.incontrol.rules.support.RuleKeys.*;
 
@@ -151,7 +153,7 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
     }
 
     private final GenericRuleEvaluator ruleEvaluator;
-    private List<Pair<ItemStack, Function<Integer, Integer>>> toRemoveItems = new ArrayList<>();
+    private List<Predicate<ItemStack>> toRemoveItems = new ArrayList<>();
     private List<Pair<ItemStack, Function<Integer, Integer>>> toAddItems = new ArrayList<>();
     private boolean removeAll = false;
 
@@ -176,7 +178,7 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
         }
     }
 
-    public List<Pair<ItemStack, Function<Integer, Integer>>> getToRemoveItems() {
+    public List<Predicate<ItemStack>> getToRemoveItems() {
         return toRemoveItems;
     }
 
@@ -268,7 +270,8 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
     }
 
     private void removeItem(AttributeMap map) {
-        toRemoveItems.addAll(getItems(map.getList(ACTION_REMOVE), null, null));
+        toRemoveItems.addAll(CommonRuleEvaluator.getItems(map.getList(ACTION_REMOVE), logger));
+//        toRemoveItems.addAll(getItems(map.getList(ACTION_REMOVE), null, null));
     }
 
     private static Random rnd = new Random();

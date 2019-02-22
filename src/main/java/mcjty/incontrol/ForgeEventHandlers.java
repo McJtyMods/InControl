@@ -19,6 +19,7 @@ import org.apache.logging.log4j.Level;
 
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class ForgeEventHandlers {
 
@@ -154,18 +155,11 @@ public class ForgeEventHandlers {
                 if (rule.isRemoveAll()) {
                     event.getDrops().clear();
                 } else {
-                    for (Pair<ItemStack, Function<Integer, Integer>> pair : rule.getToRemoveItems()) {
-                        ItemStack item = pair.getLeft();
+                    for (Predicate<ItemStack> stackTest : rule.getToRemoveItems()) {
                         for (int idx = event.getDrops().size() - 1; idx >= 0; idx--) {
                             ItemStack stack = event.getDrops().get(idx).getItem();
-                            if (item.hasTagCompound()) {
-                                if (!stack.isEmpty() && stack.isItemEqual(item) && ItemStack.areItemStackTagsEqual(stack, item)) {
-                                    event.getDrops().remove(idx);
-                                }
-                            } else {
-                                if (!stack.isEmpty() && stack.isItemEqual(item)) {
-                                    event.getDrops().remove(idx);
-                                }
+                            if (stackTest.test(stack)) {
+                                event.getDrops().remove(idx);
                             }
                         }
                     }
