@@ -1,4 +1,4 @@
-Upcoming:
+3.9.5:
 - Update to be compatible with Fx Control
 
 3.9.4:
