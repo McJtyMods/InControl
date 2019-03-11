@@ -151,7 +151,7 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
     private final GenericRuleEvaluator ruleEvaluator;
 
     private SummonAidRule(AttributeMap map) {
-        super(InControl.logger);
+        super(InControl.setup.getLogger());
         ruleEvaluator = new GenericRuleEvaluator(map);
         addActions(map, new ModRuleCompatibilityLayer());
     }
@@ -201,12 +201,12 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
         for (String p : map.getList(ACTION_POTION)) {
             String[] splitted = StringUtils.split(p, ',');
             if (splitted == null || splitted.length != 3) {
-                InControl.logger.log(Level.ERROR, "Bad potion specifier '" + p + "'! Use <potion>,<duration>,<amplifier>");
+                InControl.setup.getLogger().log(Level.ERROR, "Bad potion specifier '" + p + "'! Use <potion>,<duration>,<amplifier>");
                 continue;
             }
             Potion potion = ForgeRegistries.POTIONS.getValue(new ResourceLocation(splitted[0]));
             if (potion == null) {
-                InControl.logger.log(Level.ERROR, "Can't find potion '" + p + "'!");
+                InControl.setup.getLogger().log(Level.ERROR, "Can't find potion '" + p + "'!");
                 continue;
             }
             int duration = 0;
@@ -215,7 +215,7 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
                 duration = Integer.parseInt(splitted[1]);
                 amplifier = Integer.parseInt(splitted[2]);
             } catch (NumberFormatException e) {
-                InControl.logger.log(Level.ERROR, "Bad duration or amplifier integer for '" + p + "'!");
+                InControl.setup.getLogger().log(Level.ERROR, "Bad duration or amplifier integer for '" + p + "'!");
                 continue;
             }
             effects.add(new PotionEffect(potion, duration, amplifier));
@@ -313,7 +313,7 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
     }
 
     private void addSizeActions(AttributeMap map) {
-        InControl.logger.log(Level.WARN, "Mob resizing not implemented yet!");
+        InControl.setup.getLogger().log(Level.WARN, "Mob resizing not implemented yet!");
         float m = map.has(ACTION_SIZEMULTIPLY) ? map.get(ACTION_SIZEMULTIPLY) : 1;
         float a = map.has(ACTION_SIZEADD) ? map.get(ACTION_SIZEADD) : 0;
         actions.add(event -> {

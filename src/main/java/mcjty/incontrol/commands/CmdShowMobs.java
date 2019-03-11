@@ -1,5 +1,6 @@
-package mcjty.incontrol;
+package mcjty.incontrol.commands;
 
+import mcjty.incontrol.InControl;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -24,6 +25,6 @@ public class CmdShowMobs extends CommandBase {
     @Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
         Set<ResourceLocation> keys = ForgeRegistries.ENTITIES.getKeys();
-        keys.forEach(s -> InControl.logger.log(Level.INFO, "Mob:" + s));
+        keys.forEach(s -> InControl.setup.getLogger().log(Level.INFO, "Mob:" + s));
     }
 }

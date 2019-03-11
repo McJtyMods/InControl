@@ -12,7 +12,7 @@ public class ConfigSetup {
     public static File modConfigDir;
     private static Configuration mainConfig;
 
-    public static void preInit(FMLPreInitializationEvent e) {
+    public static void init(FMLPreInitializationEvent e) {
         modConfigDir = e.getModConfigurationDirectory();
         mainConfig = new Configuration(new File(modConfigDir.getPath() + File.separator + "incontrol", "main.cfg"));
         readMainConfig();

@@ -35,7 +35,7 @@ import static mcjty.incontrol.rules.support.RuleKeys.*;
 public class GenericRuleEvaluator extends CommonRuleEvaluator {
 
     public GenericRuleEvaluator(AttributeMap map) {
-        super(map, InControl.logger, new ModRuleCompatibilityLayer());
+        super(map, InControl.setup.getLogger(), new ModRuleCompatibilityLayer());
     }
 
     @Override
@@ -193,7 +193,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             if (clazz != null) {
                 checks.add((event,query) -> clazz.equals(query.getEntity(event).getClass()));
             } else {
-                InControl.logger.log(Level.ERROR, "Unknown mob '" + name + "'!");
+                InControl.setup.getLogger().log(Level.ERROR, "Unknown mob '" + name + "'!");
             }
         } else {
             Set<Class> classes = new HashSet<>();
@@ -204,7 +204,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
                 if (clazz != null) {
                     classes.add(clazz);
                 } else {
-                    InControl.logger.log(Level.ERROR, "Unknown mob '" + name + "'!");
+                    InControl.setup.getLogger().log(Level.ERROR, "Unknown mob '" + name + "'!");
                 }
             }
             if (!classes.isEmpty()) {
@@ -241,7 +241,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         try {
             amount = Integer.parseInt(splitted[0]);
         } catch (NumberFormatException e) {
-            InControl.logger.log(Level.ERROR, "Bad amount for mincount '" + splitted[0] + "'!");
+            InControl.setup.getLogger().log(Level.ERROR, "Bad amount for mincount '" + splitted[0] + "'!");
             return;
         }
         if (splitted.length > 1) {
@@ -249,7 +249,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             EntityEntry ee = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(id));
             entityClass = ee == null ? null : ee.getEntityClass();
             if (entityClass == null) {
-                InControl.logger.log(Level.ERROR, "Unknown mob '" + splitted[1] + "'!");
+                InControl.setup.getLogger().log(Level.ERROR, "Unknown mob '" + splitted[1] + "'!");
                 return;
             }
         }
@@ -269,7 +269,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         try {
             amount = Integer.parseInt(splitted[0]);
         } catch (NumberFormatException e) {
-            InControl.logger.log(Level.ERROR, "Bad amount for maxcount '" + splitted[0] + "'!");
+            InControl.setup.getLogger().log(Level.ERROR, "Bad amount for maxcount '" + splitted[0] + "'!");
             return;
         }
         if (splitted.length > 1) {
@@ -277,7 +277,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             EntityEntry ee = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(id));
             entityClass = ee == null ? null : ee.getEntityClass();
             if (entityClass == null) {
-                InControl.logger.log(Level.ERROR, "Unknown mob '" + splitted[1] + "'!");
+                InControl.setup.getLogger().log(Level.ERROR, "Unknown mob '" + splitted[1] + "'!");
                 return;
             }
         }

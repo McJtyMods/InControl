@@ -1,5 +1,6 @@
-package mcjty.incontrol;
+package mcjty.incontrol.commands;
 
+import mcjty.incontrol.InControl;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -36,7 +37,7 @@ public class CmdKillMobs extends CommandBase {
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
         if (args.length <= 0) {
             sender.sendMessage(new TextComponentString(TextFormatting.RED + "Use 'all', 'passive', 'hostile' or name of the mob followed by optional dimension id"));
-            InControl.logger.error("Use 'all', 'passive', 'hostile', 'entity' or name of the mob followed by optional dimension id");
+            InControl.setup.getLogger().error("Use 'all', 'passive', 'hostile', 'entity' or name of the mob followed by optional dimension id");
             return;
         }
         int dimension = (sender instanceof EntityPlayer) ? sender.getEntityWorld().provider.getDimension() : 0;

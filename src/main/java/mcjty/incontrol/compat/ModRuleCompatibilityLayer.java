@@ -1,6 +1,6 @@
 package mcjty.incontrol.compat;
 
-import mcjty.incontrol.InControl;
+import mcjty.incontrol.setup.ModSetup;
 import mcjty.tools.rules.IEventQuery;
 import mcjty.tools.rules.IModRuleCompatibilityLayer;
 import net.minecraft.entity.player.EntityPlayer;
@@ -12,7 +12,7 @@ public class ModRuleCompatibilityLayer implements IModRuleCompatibilityLayer {
 
     @Override
     public boolean hasBaubles() {
-        return InControl.baubles;
+        return ModSetup.baubles;
     }
 
     @Override
@@ -57,7 +57,7 @@ public class ModRuleCompatibilityLayer implements IModRuleCompatibilityLayer {
 
     @Override
     public boolean hasGameStages() {
-        return InControl.gamestages;
+        return ModSetup.gamestages;
     }
 
     @Override
@@ -67,7 +67,7 @@ public class ModRuleCompatibilityLayer implements IModRuleCompatibilityLayer {
 
     @Override
     public boolean hasLostCities() {
-        return InControl.lostcities;
+        return ModSetup.lostcities;
     }
 
     @Override
@@ -92,7 +92,7 @@ public class ModRuleCompatibilityLayer implements IModRuleCompatibilityLayer {
 
     @Override
     public boolean hasSereneSeasons() {
-        return InControl.sereneSeasons;
+        return ModSetup.sereneSeasons;
     }
 
     @Override

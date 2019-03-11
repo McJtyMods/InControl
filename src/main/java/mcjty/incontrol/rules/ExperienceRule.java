@@ -123,7 +123,7 @@ public class ExperienceRule extends RuleBase<RuleBase.EventGetter> {
     private float addxp = 0.0f;
 
     private ExperienceRule(AttributeMap map) {
-        super(InControl.logger);
+        super(InControl.setup.getLogger());
         ruleEvaluator = new GenericRuleEvaluator(map);
         addActions(map, new ModRuleCompatibilityLayer());
     }

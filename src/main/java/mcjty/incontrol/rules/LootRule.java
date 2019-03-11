@@ -158,7 +158,7 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
     private boolean removeAll = false;
 
     private LootRule(AttributeMap map) {
-        super(InControl.logger);
+        super(InControl.setup.getLogger());
         ruleEvaluator = new GenericRuleEvaluator(map);
         addActions(map, new ModRuleCompatibilityLayer());
     }
@@ -203,7 +203,7 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
                 try {
                     min[i] = max[i] = Integer.parseInt(minmax[0]);
                 } catch (NumberFormatException e) {
-                    InControl.logger.log(Level.ERROR, "Bad amount specified in loot rule: " + minmax);
+                    InControl.setup.getLogger().log(Level.ERROR, "Bad amount specified in loot rule: " + minmax);
                     min[i] = max[i] = 1;
                 }
             } else if (minmax.length == 2) {
@@ -211,11 +211,11 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
                     min[i] = Integer.parseInt(minmax[0]);
                     max[i] = Integer.parseInt(minmax[1]);
                 } catch (NumberFormatException e) {
-                    InControl.logger.log(Level.ERROR, "Bad amounts specified in loot rule: " + minmax);
+                    InControl.setup.getLogger().log(Level.ERROR, "Bad amounts specified in loot rule: " + minmax);
                     min[i] = max[i] = 1;
                 }
             } else {
-                InControl.logger.log(Level.ERROR, "Bad amount range specified in loot rule: " + minmax);
+                InControl.setup.getLogger().log(Level.ERROR, "Bad amount range specified in loot rule: " + minmax);
                 min[i] = max[i] = 1;
             }
         }
@@ -246,15 +246,15 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
 
         List<Pair<ItemStack, Function<Integer, Integer>>> items = new ArrayList<>();
         for (String name : itemNames) {
-            ItemStack stack = Tools.parseStack(name, InControl.logger);
+            ItemStack stack = Tools.parseStack(name, InControl.setup.getLogger());
             if (stack.isEmpty()) {
-                InControl.logger.log(Level.ERROR, "Unknown item '" + name + "'!");
+                InControl.setup.getLogger().log(Level.ERROR, "Unknown item '" + name + "'!");
             } else {
                 if (nbtJson != null) {
                     try {
                         stack.setTagCompound(JsonToNBT.getTagFromJson(nbtJson));
                     } catch (NBTException e) {
-                        InControl.logger.log(Level.ERROR, "Bad nbt for '" + name + "'!");
+                        InControl.setup.getLogger().log(Level.ERROR, "Bad nbt for '" + name + "'!");
                     }
                 }
                 items.add(Pair.of(stack, countFunction));

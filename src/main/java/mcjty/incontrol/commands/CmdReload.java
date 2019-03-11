@@ -1,4 +1,4 @@
-package mcjty.incontrol;
+package mcjty.incontrol.commands;
 
 import mcjty.incontrol.rules.RulesManager;
 import net.minecraft.command.CommandBase;

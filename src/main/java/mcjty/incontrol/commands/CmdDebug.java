@@ -1,5 +1,6 @@
-package mcjty.incontrol;
+package mcjty.incontrol.commands;
 
+import mcjty.incontrol.ForgeEventHandlers;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;

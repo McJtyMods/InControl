@@ -123,12 +123,12 @@ public class PotentialSpawnRule extends RuleBase<RuleBase.EventGetter> {
     private List<Class> toRemoveMobs = new ArrayList<>();
 
     private PotentialSpawnRule(AttributeMap map) {
-        super(InControl.logger);
+        super(InControl.setup.getLogger());
 
         ruleEvaluator = new GenericRuleEvaluator(map);
 
         if ((!map.has(ACTION_MOBS)) && (!map.has(ACTION_REMOVE))) {
-            InControl.logger.log(Level.ERROR, "No 'mobs' or 'remove' specified!");
+            InControl.setup.getLogger().log(Level.ERROR, "No 'mobs' or 'remove' specified!");
             return;
         }
         makeSpawnEntries(map);
@@ -153,7 +153,7 @@ public class PotentialSpawnRule extends RuleBase<RuleBase.EventGetter> {
             EntityEntry entry = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(id));
             Class<? extends Entity> clazz = entry == null ? null : entry.getEntityClass();
             if (clazz == null) {
-                InControl.logger.log(Level.ERROR, "Cannot find mob '" + s + "'!");
+                InControl.setup.getLogger().log(Level.ERROR, "Cannot find mob '" + s + "'!");
                 return;
             }
             toRemoveMobs.add(clazz);
@@ -166,7 +166,7 @@ public class PotentialSpawnRule extends RuleBase<RuleBase.EventGetter> {
             EntityEntry ee = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(id));
             Class<? extends Entity> clazz = ee == null ? null : ee.getEntityClass();
             if (clazz == null) {
-                InControl.logger.log(Level.ERROR, "Cannot find mob '" + mobMap.get(MOB_NAME) + "'!");
+                InControl.setup.getLogger().log(Level.ERROR, "Cannot find mob '" + mobMap.get(MOB_NAME) + "'!");
                 return;
             }
 

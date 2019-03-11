@@ -96,7 +96,7 @@ public class RulesManager {
             if (rule != null) {
                 rules.add(rule);
             } else {
-                InControl.logger.log(Level.ERROR, "Rule " + i + " in " + filename + " is invalid, skipping!");
+                InControl.setup.getLogger().log(Level.ERROR, "Rule " + i + " in " + filename + " is invalid, skipping!");
             }
             i++;
         }
@@ -115,12 +115,12 @@ public class RulesManager {
             return null;
         }
 
-        InControl.logger.log(Level.INFO, "Reading spawn rules from " + filename);
+        InControl.setup.getLogger().log(Level.INFO, "Reading spawn rules from " + filename);
         InputStream inputstream = null;
         try {
             inputstream = new FileInputStream(file);
         } catch (FileNotFoundException e) {
-            InControl.logger.log(Level.ERROR, "Error reading " + filename + "!");
+            InControl.setup.getLogger().log(Level.ERROR, "Error reading " + filename + "!");
             return null;
         }
 
@@ -128,7 +128,7 @@ public class RulesManager {
         try {
             br = new BufferedReader(new InputStreamReader(inputstream, "UTF-8"));
         } catch (UnsupportedEncodingException e) {
-            InControl.logger.log(Level.ERROR, "Error reading " + filename + "!");
+            InControl.setup.getLogger().log(Level.ERROR, "Error reading " + filename + "!");
             return null;
         }
 
@@ -143,7 +143,7 @@ public class RulesManager {
         try {
             writer = new PrintWriter(file);
         } catch (FileNotFoundException e) {
-            InControl.logger.log(Level.ERROR, "Error writing " + file.getName() + "!");
+            InControl.setup.getLogger().log(Level.ERROR, "Error writing " + file.getName() + "!");
             return;
         }
         JsonArray array = new JsonArray();

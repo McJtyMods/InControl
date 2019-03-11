@@ -180,7 +180,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
     private final GenericRuleEvaluator ruleEvaluator;
 
     private SpawnRule(AttributeMap map, boolean onJoin) {
-        super(InControl.logger);
+        super(InControl.setup.getLogger());
         this.onJoin = onJoin;
         ruleEvaluator = new GenericRuleEvaluator(map);
         addActions(map, new ModRuleCompatibilityLayer());
