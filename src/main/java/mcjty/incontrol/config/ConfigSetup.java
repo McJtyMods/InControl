@@ -38,7 +38,6 @@ public class ConfigSetup {
         if (mainConfig.hasChanged()) {
             mainConfig.save();
         }
-        mainConfig = null;
     }
 
 }
