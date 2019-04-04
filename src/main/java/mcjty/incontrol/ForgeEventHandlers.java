@@ -25,7 +25,7 @@ public class ForgeEventHandlers {
 
     public static boolean debug = false;
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onEntityJoinWorld(EntityJoinWorldEvent event) {
         int i = 0;
         for (SpawnRule rule : RulesManager.rules) {
@@ -47,7 +47,7 @@ public class ForgeEventHandlers {
         }
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onEntitySpawnEvent(LivingSpawnEvent.CheckSpawn event) {
         int i = 0;
         for (SpawnRule rule : RulesManager.rules) {
@@ -69,7 +69,7 @@ public class ForgeEventHandlers {
         }
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onSummonAidEvent(ZombieEvent.SummonAidEvent event) {
         int i = 0;
         for (SummonAidRule rule : RulesManager.summonAidRules) {
@@ -119,7 +119,7 @@ public class ForgeEventHandlers {
         }
     }
 
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onLivingExperienceDrop(LivingExperienceDropEvent event) {
         int i = 0;
         for (ExperienceRule rule : RulesManager.experienceRules) {
@@ -142,7 +142,7 @@ public class ForgeEventHandlers {
         }
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onLivingDrops(LivingDropsEvent event) {
         int i = 0;
         for (LootRule rule : RulesManager.lootRules) {
