@@ -12,7 +12,7 @@ import net.minecraftforge.fml.common.event.*;
 
 @Mod(modid = InControl.MODID, name = InControl.MODNAME,
         dependencies =
-                "after:forge@[" + InControl.MIN_FORGE11_VER + ",)",
+                "after:forge@[" + InControl.MIN_FORGE14_VER + ",)",
         version = InControl.VERSION,
         acceptedMinecraftVersions = "[1.12,1.13)",
         acceptableRemoteVersions = "*")
@@ -21,7 +21,7 @@ public class InControl {
     public static final String MODID = "incontrol";
     public static final String MODNAME = "InControl";
     public static final String VERSION = "3.9.6";
-    public static final String MIN_FORGE11_VER = "13.19.0.2176";
+    public static final String MIN_FORGE14_VER = "14.23.5.2768";
 
     @SidedProxy(clientSide = "mcjty.incontrol.setup.ClientProxy", serverSide = "mcjty.incontrol.setup.ServerProxy")
     public static IProxy proxy;
