@@ -2,9 +2,9 @@ package mcjty.incontrol;
 
 
 import mcjty.incontrol.commands.*;
+import mcjty.incontrol.rules.RulesManager;
 import mcjty.incontrol.setup.IProxy;
 import mcjty.incontrol.setup.ModSetup;
-import mcjty.incontrol.rules.RulesManager;
 import mcjty.tools.cache.StructureCache;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
@@ -31,7 +31,7 @@ public class InControl {
     public static InControl instance;
 
     @Mod.EventHandler
-    public void preInit(FMLPreInitializationEvent event){
+    public void preInit(FMLPreInitializationEvent event) {
         setup.preInit(event);
         proxy.preInit(event);
     }

@@ -20,7 +20,6 @@ public class LostCitySupport {
     }
 
 
-
     public static <T> boolean isCity(IEventQuery<T> query, T event) {
         World world = query.getWorld(event);
         if (world.isRemote) {

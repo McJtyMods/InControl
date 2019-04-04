@@ -32,8 +32,6 @@ import static mcjty.incontrol.rules.support.RuleKeys.*;
 
 public class PotentialSpawnRule extends RuleBase<RuleBase.EventGetter> {
 
-    private static final GenericAttributeMapFactory FACTORY = new GenericAttributeMapFactory();
-    private static final GenericAttributeMapFactory MOB_FACTORY = new GenericAttributeMapFactory();
     public static final IEventQuery<WorldEvent.PotentialSpawns> EVENT_QUERY = new IEventQuery<WorldEvent.PotentialSpawns>() {
         @Override
         public World getWorld(WorldEvent.PotentialSpawns o) {
@@ -75,6 +73,9 @@ public class PotentialSpawnRule extends RuleBase<RuleBase.EventGetter> {
             return null;
         }
     };
+    public static final EntityId FIXER = new EntityId();
+    private static final GenericAttributeMapFactory FACTORY = new GenericAttributeMapFactory();
+    private static final GenericAttributeMapFactory MOB_FACTORY = new GenericAttributeMapFactory();
 
     static {
         FACTORY
@@ -137,13 +138,33 @@ public class PotentialSpawnRule extends RuleBase<RuleBase.EventGetter> {
         }
     }
 
-    public static final EntityId FIXER = new EntityId();
-
     public static String fixEntityId(String id) {
         NBTTagCompound nbt = new NBTTagCompound();
         nbt.setString("id", id);
         nbt = FIXER.fixTagCompound(nbt);
         return nbt.getString("id");
+    }
+
+    public static PotentialSpawnRule parse(JsonElement element) {
+        if (element == null) {
+            return null;
+        } else {
+            JsonObject jsonObject = element.getAsJsonObject();
+            if ((!jsonObject.has("mobs")) && (!jsonObject.has("remove"))) {
+                return null;
+            }
+
+            AttributeMap map = FACTORY.parse(element);
+
+            if (jsonObject.has("mobs")) {
+                JsonArray mobs = jsonObject.get("mobs").getAsJsonArray();
+                for (JsonElement mob : mobs) {
+                    AttributeMap mobMap = MOB_FACTORY.parse(mob);
+                    map.addList(ACTION_MOBS, mobMap);
+                }
+            }
+            return new PotentialSpawnRule(map);
+        }
     }
 
     private void addToRemoveAction(AttributeMap map) {
@@ -196,31 +217,8 @@ public class PotentialSpawnRule extends RuleBase<RuleBase.EventGetter> {
         return ruleEvaluator.match(event, EVENT_QUERY);
     }
 
-
     public List<Class> getToRemoveMobs() {
         return toRemoveMobs;
-    }
-
-    public static PotentialSpawnRule parse(JsonElement element) {
-        if (element == null) {
-            return null;
-        } else {
-            JsonObject jsonObject = element.getAsJsonObject();
-            if ((!jsonObject.has("mobs")) && (!jsonObject.has("remove"))) {
-                return null;
-            }
-
-            AttributeMap map = FACTORY.parse(element);
-
-            if (jsonObject.has("mobs")) {
-                JsonArray mobs = jsonObject.get("mobs").getAsJsonArray();
-                for (JsonElement mob : mobs) {
-                    AttributeMap mobMap = MOB_FACTORY.parse(mob);
-                    map.addList(ACTION_MOBS, mobMap);
-                }
-            }
-            return new PotentialSpawnRule(map);
-        }
     }
 }
 

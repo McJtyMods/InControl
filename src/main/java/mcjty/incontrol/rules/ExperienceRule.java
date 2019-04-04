@@ -22,7 +22,6 @@ import static mcjty.incontrol.rules.support.RuleKeys.*;
 
 public class ExperienceRule extends RuleBase<RuleBase.EventGetter> {
 
-    private static final GenericAttributeMapFactory FACTORY = new GenericAttributeMapFactory();
     public static final IEventQuery<LivingExperienceDropEvent> EVENT_QUERY = new IEventQuery<LivingExperienceDropEvent>() {
         @Override
         public World getWorld(LivingExperienceDropEvent o) {
@@ -64,6 +63,7 @@ public class ExperienceRule extends RuleBase<RuleBase.EventGetter> {
             return o.getAttackingPlayer();
         }
     };
+    private static final GenericAttributeMapFactory FACTORY = new GenericAttributeMapFactory();
 
     static {
         FACTORY
@@ -128,6 +128,15 @@ public class ExperienceRule extends RuleBase<RuleBase.EventGetter> {
         addActions(map, new ModRuleCompatibilityLayer());
     }
 
+    public static ExperienceRule parse(JsonElement element) {
+        if (element == null) {
+            return null;
+        } else {
+            AttributeMap map = FACTORY.parse(element);
+            return new ExperienceRule(map);
+        }
+    }
+
     public int modifyXp(int xpIn) {
         if (xp != null) {
             xpIn = xp;
@@ -170,13 +179,4 @@ public class ExperienceRule extends RuleBase<RuleBase.EventGetter> {
     public Event.Result getResult() {
         return result;
     }
-
-
-    public static ExperienceRule parse(JsonElement element) {
-        if (element == null) {
-            return null;
-        } else {
-            AttributeMap map = FACTORY.parse(element);
-            return new ExperienceRule(map);
-        }
-    }}
+}
