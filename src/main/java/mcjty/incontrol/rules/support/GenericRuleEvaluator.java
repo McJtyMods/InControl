@@ -7,12 +7,14 @@ import mcjty.tools.rules.CommonRuleEvaluator;
 import mcjty.tools.rules.IEventQuery;
 import mcjty.tools.typed.AttributeMap;
 import mcjty.tools.varia.Tools;
+import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.passive.IAnimals;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.init.Blocks;
 import net.minecraft.server.management.PlayerList;
 import net.minecraft.util.ClassInheritanceMultiMap;
 import net.minecraft.util.ResourceLocation;
@@ -107,6 +109,9 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         }
         if (map.has(PLAYERHEIGHTCHECK)) {
             addPlayerHeightRelativeCheck(map);
+        }
+        if (map.has(BLOCKBURNING)) {
+            addBurningBlockCheck(map);
         }
     }
 
@@ -488,17 +493,21 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
 
     private void addPlayerHeightRelativeCheck(AttributeMap map) {
         checks.add((event, query) -> {
-            BlockPos eventPos = query.getPos(event);
+            if (!map.has(PLAYERHEIGHTCHECK) || !map.get(PLAYERHEIGHTCHECK)) {
+                return true;
+            }
+
+            BlockPos eventPos = query.getValidBlockPos(event);
+
+            if (eventPos == null) {
+                eventPos = query.getPos(event);
+            }
 
             if (eventPos == null) {
                 return false;
             }
 
             float eventY = eventPos.getY();
-
-            if (!map.get(PLAYERHEIGHTCHECK)) {
-                return true;
-            }
 
             int phUp = 12;
             int phDown = 12;
@@ -528,6 +537,40 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             float maxSpawnDistanceDown = playerBlockHeight - phDown;
 
             return !(eventY > maxSpawnDistanceUp) && !(eventY < maxSpawnDistanceDown);
+        });
+    }
+
+    private void addBurningBlockCheck(AttributeMap map) {
+        checks.add((event, query) -> {
+            if (!map.has(BLOCKBURNING) || !map.get(BLOCKBURNING)) {
+                return true;
+            }
+
+            BlockPos eventPos = query.getValidBlockPos(event);
+
+            if (eventPos == null) {
+                eventPos = query.getPos(event);
+            }
+
+            if (eventPos == null) {
+                return false;
+            }
+
+            Block eventBlock = query.getWorld(event).getBlockState(eventPos).getBlock();
+
+            if (eventBlock == null) {
+                return false;
+            }
+
+            BlockPos upOne = eventPos.up();
+            Block upBlock = null;
+
+            if (upOne != null) {
+                upBlock = query.getWorld(event).getBlockState(upOne).getBlock();
+            }
+
+            return eventBlock.equals(Blocks.FIRE) || (upBlock != null && upBlock.equals(Blocks.FIRE));
+
         });
     }
 

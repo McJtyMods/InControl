@@ -118,6 +118,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(MINCHUNKCOUNT))
                 .attribute(Attribute.create(MAXCHUNKCOUNT))
                 .attribute(Attribute.create(PLAYERHEIGHTCHECK))
+                .attribute(Attribute.create(BLOCKBURNING))
                 .attribute(Attribute.create(PHMAXDIFFUP))
                 .attribute(Attribute.create(PHMAXDIFFDOWN))
                 .attribute(Attribute.create(PHMAXDIST))

@@ -14,6 +14,7 @@ public interface RuleKeys extends CommonRuleKeys {
     Key<Integer> PHMAXDIFFUP = Key.create(Type.INTEGER, "phmaxdiffup");
     Key<Integer> PHMAXDIFFDOWN = Key.create(Type.INTEGER, "phmaxdiffdown");
     Key<Float> PHMAXDIST = Key.create(Type.FLOAT, "phmaxdist");
+    Key<Boolean> BLOCKBURNING = Key.create(Type.BOOLEAN, "blockburning");
     Key<String> MINCOUNT = Key.create(Type.STRING, "mincount");
     Key<String> MAXCOUNT = Key.create(Type.STRING, "maxcount");
     Key<Boolean> CANSPAWNHERE = Key.create(Type.BOOLEAN, "canspawnhere");
