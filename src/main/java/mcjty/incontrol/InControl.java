@@ -20,7 +20,7 @@ public class InControl {
 
     public static final String MODID = "incontrol";
     public static final String MODNAME = "InControl";
-    public static final String VERSION = "3.9.7";
+    public static final String VERSION = "3.9.8";
     public static final String MIN_FORGE14_VER = "14.23.5.2768";
 
     @SidedProxy(clientSide = "mcjty.incontrol.setup.ClientProxy", serverSide = "mcjty.incontrol.setup.ServerProxy")
@@ -67,6 +67,7 @@ public class InControl {
 
     @Mod.EventHandler
     public void serverStopped(FMLServerStoppedEvent event) {
+        ForgeEventHandlers.debugtype = 0;
         StructureCache.CACHE.clean();
     }
 }

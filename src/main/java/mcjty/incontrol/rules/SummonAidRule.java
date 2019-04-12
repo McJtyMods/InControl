@@ -35,7 +35,6 @@ import org.apache.logging.log4j.Level;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.function.Consumer;
 
 import static mcjty.incontrol.rules.support.RuleKeys.*;
@@ -85,12 +84,17 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
         }
     };
     private static final GenericAttributeMapFactory FACTORY = new GenericAttributeMapFactory();
-    private static Random rnd = new Random();
 
     static {
         FACTORY
                 .attribute(Attribute.create(MINTIME))
                 .attribute(Attribute.create(MAXTIME))
+                .attribute(Attribute.create(MINCHUNKCOUNT))
+                .attribute(Attribute.create(MAXCHUNKCOUNT))
+                .attribute(Attribute.create(PLAYERHEIGHTCHECK))
+                .attribute(Attribute.create(PHMAXDIFFUP))
+                .attribute(Attribute.create(PHMAXDIFFDOWN))
+                .attribute(Attribute.create(PHMAXDIST))
                 .attribute(Attribute.create(MINCOUNT))
                 .attribute(Attribute.create(MAXCOUNT))
                 .attribute(Attribute.create(MINLIGHT))

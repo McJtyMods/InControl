@@ -14,7 +14,10 @@ import net.minecraft.entity.passive.IAnimals;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.management.PlayerList;
+import net.minecraft.util.ClassInheritanceMultiMap;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
@@ -90,11 +93,23 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         if (map.has(MOD)) {
             addModsCheck(map);
         }
+        if (map.has(MINCHUNKCOUNT)) {
+            addMinCountChunkCheck(map);
+        }
+        if (map.has(MAXCHUNKCOUNT)) {
+            addMaxCountChunkCheck(map);
+        }
         if (map.has(MINCOUNT)) {
             addMinCountCheck(map);
         }
         if (map.has(MAXCOUNT)) {
             addMaxCountCheck(map);
+        }
+        if (map.has(RANDOM)) {
+            addRandomCheck(map);
+        }
+        if (map.has(PLAYERHEIGHTCHECK)) {
+            addPlayerHeightRelativeCheck(map);
         }
     }
 
@@ -233,6 +248,82 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         }
     }
 
+    private void addMinCountChunkCheck(AttributeMap map) {
+        final String minchunkcount = map.get(MINCHUNKCOUNT);
+        String[] splitted = StringUtils.split(minchunkcount, ',');
+        Class<?> entityClass = null;
+        int amount;
+        try {
+            amount = Integer.parseInt(splitted[0]);
+        } catch (NumberFormatException e) {
+            InControl.setup.getLogger().log(Level.ERROR, "Bad amount for minchunkcount '" + splitted[0] + "'!");
+            return;
+        }
+        if (splitted.length > 1) {
+            String id = PotentialSpawnRule.fixEntityId(splitted[1]);
+            EntityEntry ee = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(id));
+            entityClass = ee == null ? null : ee.getEntityClass();
+            if (entityClass == null) {
+                InControl.setup.getLogger().log(Level.ERROR, "Unknown mob '" + splitted[1] + "'!");
+                return;
+            }
+        }
+
+        Class<?> finalEntityClass = entityClass;
+        checks.add((event, query) -> {
+            Chunk chunk = query.getWorld(event).getChunk(query.getPos(event));
+            int count = 0;
+
+            for (ClassInheritanceMultiMap<Entity> entity : chunk.getEntityLists()) {
+                if (entity.getClass() != (finalEntityClass == null ? query.getEntity(event).getClass() : finalEntityClass)) {
+                    continue;
+                }
+
+                count++;
+            }
+
+            return count >= amount;
+        });
+    }
+
+    private void addMaxCountChunkCheck(AttributeMap map) {
+        final String maxchunkcount = map.get(MAXCHUNKCOUNT);
+        String[] splitted = StringUtils.split(maxchunkcount, ',');
+        Class<?> entityClass = null;
+        int amount;
+        try {
+            amount = Integer.parseInt(splitted[0]);
+        } catch (NumberFormatException e) {
+            InControl.setup.getLogger().log(Level.ERROR, "Bad amount for maxchunkcount '" + splitted[0] + "'!");
+            return;
+        }
+        if (splitted.length > 1) {
+            String id = PotentialSpawnRule.fixEntityId(splitted[1]);
+            EntityEntry ee = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(id));
+            entityClass = ee == null ? null : ee.getEntityClass();
+            if (entityClass == null) {
+                InControl.setup.getLogger().log(Level.ERROR, "Unknown mob '" + splitted[1] + "'!");
+                return;
+            }
+        }
+
+        Class<?> finalEntityClass = entityClass;
+        checks.add((event, query) -> {
+            Chunk chunk = query.getWorld(event).getChunk(query.getPos(event));
+            int count = 0;
+
+            for (ClassInheritanceMultiMap<Entity> entity : chunk.getEntityLists()) {
+                if (entity.getClass() != (finalEntityClass == null ? query.getEntity(event).getClass() : finalEntityClass)) {
+                    continue;
+                }
+
+                count++;
+            }
+
+            return count < amount;
+        });
+    }
+
     private void addMinCountCheck(AttributeMap map) {
         final String mincount = map.get(MINCOUNT);
         String[] splitted = StringUtils.split(mincount, ',');
@@ -285,7 +376,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         Class<?> finalEntityClass = entityClass;
         checks.add((event, query) -> {
             int count = query.getWorld(event).countEntities(finalEntityClass == null ? query.getEntity(event).getClass() : finalEntityClass);
-            return count <= amount;
+            return count < amount;
         });
     }
 
@@ -393,6 +484,55 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         });
     }
 
+    private void addRandomCheck(AttributeMap map) {
+        float random = map.get(RANDOM);
+        checks.add((event, query) -> query.getWorld(event).rand.nextFloat() <= random);
+    }
+
+    private void addPlayerHeightRelativeCheck(AttributeMap map) {
+        checks.add((event, query) -> {
+            BlockPos eventPos = query.getPos(event);
+
+            if (eventPos == null) {
+                return false;
+            }
+
+            float eventY = eventPos.getY();
+
+            if (!map.get(PLAYERHEIGHTCHECK)) {
+                return true;
+            }
+
+            int phUp = 12;
+            int phDown = 12;
+            float phDistance = 24.0f;
+
+            if (map.has(PHMAXDIFFUP)) {
+                phUp = map.get(PHMAXDIFFUP);
+            }
+
+            if (map.has(PHMAXDIFFDOWN)) {
+                phUp = map.get(PHMAXDIFFDOWN);
+            }
+
+            if (map.has(PHMAXDIST)) {
+                phDistance = map.get(PHMAXDIST);
+            }
+
+            EntityPlayer closestPlayer = query.getWorld(event).getClosestPlayer(
+                    (double) eventPos.getX(), (double) eventPos.getY(), (double) eventPos.getZ(), (double) phDistance, false);
+
+            if (closestPlayer == null) {
+                return false;
+            }
+
+            float playerBlockHeight = closestPlayer.getPosition().getY();
+            float maxSpawnDistanceUp = playerBlockHeight + phUp;
+            float maxSpawnDistanceDown = playerBlockHeight - phDown;
+
+            return !(eventY > maxSpawnDistanceUp) && !(eventY < maxSpawnDistanceDown);
+        });
+    }
 
     @Override
     public boolean match(Event event, IEventQuery query) {

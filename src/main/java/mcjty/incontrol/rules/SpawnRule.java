@@ -115,6 +115,12 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
         FACTORY
                 .attribute(Attribute.create(MINTIME))
                 .attribute(Attribute.create(MAXTIME))
+                .attribute(Attribute.create(MINCHUNKCOUNT))
+                .attribute(Attribute.create(MAXCHUNKCOUNT))
+                .attribute(Attribute.create(PLAYERHEIGHTCHECK))
+                .attribute(Attribute.create(PHMAXDIFFUP))
+                .attribute(Attribute.create(PHMAXDIFFDOWN))
+                .attribute(Attribute.create(PHMAXDIST))
                 .attribute(Attribute.create(MINCOUNT))
                 .attribute(Attribute.create(MAXCOUNT))
                 .attribute(Attribute.create(MINLIGHT))

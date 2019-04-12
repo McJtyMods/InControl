@@ -12,6 +12,7 @@ import mcjty.tools.typed.Attribute;
 import mcjty.tools.typed.AttributeMap;
 import mcjty.tools.typed.GenericAttributeMapFactory;
 import mcjty.tools.varia.Tools;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -79,7 +80,7 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
         }
     };
     private static final GenericAttributeMapFactory FACTORY = new GenericAttributeMapFactory();
-    private static Random rnd = new Random();
+    public static Minecraft mc = Minecraft.getMinecraft();
 
     static {
         FACTORY
@@ -229,6 +230,8 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
                 min[i] = max[i] = 1;
             }
         }
+
+        Random rnd = mc == null || mc.world == null ? new Random() : mc.world.rand;
 
         if (loottable.length == 1) {
             // Easy case

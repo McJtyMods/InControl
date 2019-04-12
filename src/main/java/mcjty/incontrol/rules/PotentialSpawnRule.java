@@ -79,6 +79,12 @@ public class PotentialSpawnRule extends RuleBase<RuleBase.EventGetter> {
 
     static {
         FACTORY
+                .attribute(Attribute.create(MINCHUNKCOUNT))
+                .attribute(Attribute.create(MAXCHUNKCOUNT))
+                .attribute(Attribute.create(PLAYERHEIGHTCHECK))
+                .attribute(Attribute.create(PHMAXDIFFUP))
+                .attribute(Attribute.create(PHMAXDIFFDOWN))
+                .attribute(Attribute.create(PHMAXDIST))
                 .attribute(Attribute.create(MINCOUNT))
                 .attribute(Attribute.create(MAXCOUNT))
                 .attribute(Attribute.create(MINTIME))

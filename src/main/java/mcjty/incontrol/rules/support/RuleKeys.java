@@ -8,6 +8,12 @@ import mcjty.tools.typed.Type;
 public interface RuleKeys extends CommonRuleKeys {
 
     // Inputs
+    Key<String> MINCHUNKCOUNT = Key.create(Type.STRING, "minchunkcount");
+    Key<String> MAXCHUNKCOUNT = Key.create(Type.STRING, "maxchunkcount");
+    Key<Boolean> PLAYERHEIGHTCHECK = Key.create(Type.BOOLEAN, "phdiffcheck");
+    Key<Integer> PHMAXDIFFUP = Key.create(Type.INTEGER, "phmaxdiffup");
+    Key<Integer> PHMAXDIFFDOWN = Key.create(Type.INTEGER, "phmaxdiffdown");
+    Key<Float> PHMAXDIST = Key.create(Type.FLOAT, "phmaxdist");
     Key<String> MINCOUNT = Key.create(Type.STRING, "mincount");
     Key<String> MAXCOUNT = Key.create(Type.STRING, "maxcount");
     Key<Boolean> CANSPAWNHERE = Key.create(Type.BOOLEAN, "canspawnhere");

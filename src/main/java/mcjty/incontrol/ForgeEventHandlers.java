@@ -23,7 +23,7 @@ import java.util.function.Predicate;
 
 public class ForgeEventHandlers {
 
-    public static boolean debug = false;
+    public static int debugtype = 0;
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onEntityJoinWorld(EntityJoinWorldEvent event) {
@@ -31,7 +31,7 @@ public class ForgeEventHandlers {
         for (SpawnRule rule : RulesManager.rules) {
             if (rule.isOnJoin() && rule.match(event)) {
                 Event.Result result = rule.getResult();
-                if (debug) {
+                if (debugtype == 1 || debugtype == 3) {
                     InControl.setup.getLogger().log(Level.INFO, "Join Rule " + i + ": " + result
                             + " entity: " + event.getEntity().getName()
                             + " y: " + event.getEntity().getPosition().getY());
@@ -53,7 +53,7 @@ public class ForgeEventHandlers {
         for (SpawnRule rule : RulesManager.rules) {
             if (rule.match(event)) {
                 Event.Result result = rule.getResult();
-                if (debug) {
+                if (debugtype == 1 || debugtype == 3) {
                     InControl.setup.getLogger().log(Level.INFO, "Rule " + i + ": " + result
                             + " entity: " + event.getEntity().getName()
                             + " y: " + event.getY()
@@ -75,7 +75,7 @@ public class ForgeEventHandlers {
         for (SummonAidRule rule : RulesManager.summonAidRules) {
             if (rule.match(event)) {
                 Event.Result result = rule.getResult();
-                if (debug) {
+                if (debugtype == 1 || debugtype == 3) {
                     InControl.setup.getLogger().log(Level.INFO, "SummonAid " + i + ": " + result
                             + " entity: " + event.getEntity().getName()
                             + " y: " + event.getY()
@@ -92,7 +92,7 @@ public class ForgeEventHandlers {
 
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onPotentialSpawns(WorldEvent.PotentialSpawns event) {
         int i = 0;
         for (PotentialSpawnRule rule : RulesManager.potentialSpawnRules) {
@@ -109,7 +109,7 @@ public class ForgeEventHandlers {
 
                 List<Biome.SpawnListEntry> spawnEntries = rule.getSpawnEntries();
                 for (Biome.SpawnListEntry entry : spawnEntries) {
-                    if (debug) {
+                    if (debugtype == 2 || debugtype == 3) {
                         InControl.setup.getLogger().log(Level.INFO, "Potential " + i + ": " + entry.entityClass.toString());
                     }
                     event.getList().add(entry);
@@ -125,7 +125,7 @@ public class ForgeEventHandlers {
         for (ExperienceRule rule : RulesManager.experienceRules) {
             if (rule.match(event)) {
                 Event.Result result = rule.getResult();
-                if (debug) {
+                if (debugtype == 1 || debugtype == 3) {
                     InControl.setup.getLogger().log(Level.INFO, "Experience Rule " + i + ": " + result
                             + " entity: " + event.getEntity().getName()
                             + " y: " + event.getEntity().getPosition().getY());
@@ -147,7 +147,7 @@ public class ForgeEventHandlers {
         int i = 0;
         for (LootRule rule : RulesManager.lootRules) {
             if (rule.match(event)) {
-                if (debug) {
+                if (debugtype == 1 || debugtype == 3) {
                     InControl.setup.getLogger().log(Level.INFO, "Loot " + i + ": "
                             + " entity: " + event.getEntity().getName());
                 }
