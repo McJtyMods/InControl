@@ -8,103 +8,106 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 
 public class BaublesInventoryWrapper implements IInventory {
-	
-	final IBaublesItemHandler handler;	
 
-	public BaublesInventoryWrapper(IBaublesItemHandler handler) {
-		super();
-		this.handler = handler;
-	}
+    final IBaublesItemHandler handler;
 
-	@Override
-	public String getName() {
-		return "BaublesInventory";
-	}
+    public BaublesInventoryWrapper(IBaublesItemHandler handler) {
+        super();
+        this.handler = handler;
+    }
 
-	@Override
-	public boolean hasCustomName() {
-		return false;
-	}
+    @Override
+    public String getName() {
+        return "BaublesInventory";
+    }
 
-	@Override
-	public ITextComponent getDisplayName() {
-		return new TextComponentString(this.getName());
-	}
+    @Override
+    public boolean hasCustomName() {
+        return false;
+    }
 
-	@Override
-	public int getSizeInventory() {
-		return handler.getSlots();
-	}
+    @Override
+    public ITextComponent getDisplayName() {
+        return new TextComponentString(this.getName());
+    }
 
-	@Override
-	public ItemStack getStackInSlot(int index) {
-		return handler.getStackInSlot(index);
-	}
+    @Override
+    public int getSizeInventory() {
+        return handler.getSlots();
+    }
 
-	@Override
-	public ItemStack decrStackSize(int index, int count) {
-		return handler.extractItem(index, count, false);
-	}
+    @Override
+    public ItemStack getStackInSlot(int index) {
+        return handler.getStackInSlot(index);
+    }
 
-	@Override
-	public ItemStack removeStackFromSlot(int index) {
-		ItemStack out = this.getStackInSlot(index);
-		handler.setStackInSlot(index, null);
-		return out;
-	}
+    @Override
+    public ItemStack decrStackSize(int index, int count) {
+        return handler.extractItem(index, count, false);
+    }
 
-	@Override
-	public void setInventorySlotContents(int index, ItemStack stack) {
-		handler.setStackInSlot(index, stack);
-	}
+    @Override
+    public ItemStack removeStackFromSlot(int index) {
+        ItemStack out = this.getStackInSlot(index);
+        handler.setStackInSlot(index, null);
+        return out;
+    }
 
-	@Override
-	public int getInventoryStackLimit() {
-		return 64;
-	}
+    @Override
+    public void setInventorySlotContents(int index, ItemStack stack) {
+        handler.setStackInSlot(index, stack);
+    }
 
-	@Override
-	public void markDirty() {	}
+    @Override
+    public int getInventoryStackLimit() {
+        return 64;
+    }
 
-	@Override
-	public boolean isEmpty() {
-		return false;
-	}
+    @Override
+    public void markDirty() {
+    }
 
-	@Override
-	public boolean isUsableByPlayer(EntityPlayer player) {
-		return true;
-	}
+    @Override
+    public boolean isEmpty() {
+        return false;
+    }
 
-	@Override
-	public void openInventory(EntityPlayer player) {	}
+    @Override
+    public boolean isUsableByPlayer(EntityPlayer player) {
+        return true;
+    }
 
-	@Override
-	public void closeInventory(EntityPlayer player) {	}
+    @Override
+    public void openInventory(EntityPlayer player) {
+    }
 
-	@Override
-	public boolean isItemValidForSlot(int index, ItemStack stack) {
-		return handler.isItemValidForSlot(index, stack, null);
-	}
+    @Override
+    public void closeInventory(EntityPlayer player) {
+    }
 
-	@Override
-	public int getField(int id) {
-		return 0;
-	}
+    @Override
+    public boolean isItemValidForSlot(int index, ItemStack stack) {
+        return handler.isItemValidForSlot(index, stack, null);
+    }
 
-	@Override
-	public void setField(int id, int value) {}
+    @Override
+    public int getField(int id) {
+        return 0;
+    }
 
-	@Override
-	public int getFieldCount() {
-		return 0;
-	}
+    @Override
+    public void setField(int id, int value) {
+    }
 
-	@Override
-	public void clear() {	
-		for (int i = 0; i < this.getSizeInventory(); ++i)
-        {
-			this.setInventorySlotContents(i, null);
+    @Override
+    public int getFieldCount() {
+        return 0;
+    }
+
+    @Override
+    public void clear() {
+        for (int i = 0; i < this.getSizeInventory(); ++i) {
+            this.setInventorySlotContents(i, null);
         }
-	}
+    }
 }
