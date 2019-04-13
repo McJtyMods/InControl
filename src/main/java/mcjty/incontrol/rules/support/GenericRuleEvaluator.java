@@ -499,11 +499,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
                 return true;
             }
 
-            BlockPos eventPos = query.getValidBlockPos(event);
-
-            if (eventPos == null) {
-                eventPos = query.getPos(event);
-            }
+            BlockPos eventPos = query.getPos(event);
 
             if (eventPos == null) {
                 return false;
@@ -548,11 +544,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
                 return true;
             }
 
-            BlockPos eventPos = query.getValidBlockPos(event);
-
-            if (eventPos == null) {
-                eventPos = query.getPos(event);
-            }
+            BlockPos eventPos = query.getPos(event);
 
             if (eventPos == null) {
                 return false;
