@@ -38,12 +38,12 @@ public class RulesManager {
 
     private static boolean exists(String file) {
         File f = new File(file);
-        return f.exists() && !f.isDirectory();
+        return !f.exists() || f.isDirectory();
     }
 
     public static boolean readCustomSpawn(String file) {
         System.out.println("file = " + file);
-        if (!exists(file)) {
+        if (exists(file)) {
             return false;
         }
         rules.clear();
@@ -52,7 +52,7 @@ public class RulesManager {
     }
 
     public static boolean readCustomSummonAid(String file) {
-        if (!exists(file)) {
+        if (exists(file)) {
             return false;
         }
         summonAidRules.clear();
@@ -61,7 +61,7 @@ public class RulesManager {
     }
 
     public static boolean readCustomPotentialSpawn(String file) {
-        if (!exists(file)) {
+        if (exists(file)) {
             return false;
         }
         potentialSpawnRules.clear();
@@ -70,7 +70,7 @@ public class RulesManager {
     }
 
     public static boolean readCustomLoot(String file) {
-        if (!exists(file)) {
+        if (exists(file)) {
             return false;
         }
         lootRules.clear();
@@ -129,9 +129,8 @@ public class RulesManager {
         br = new BufferedReader(new InputStreamReader(inputstream, StandardCharsets.UTF_8));
 
         JsonParser parser = new JsonParser();
-        JsonElement element = parser.parse(br);
 
-        return element;
+        return parser.parse(br);
     }
 
     private static void makeEmptyRuleFile(File file) {

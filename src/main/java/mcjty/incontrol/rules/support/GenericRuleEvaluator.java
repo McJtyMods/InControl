@@ -240,9 +240,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             });
         } else {
             Set<String> modids = new HashSet<>();
-            for (String modid : mods) {
-                modids.add(modid);
-            }
+            modids.addAll(mods);
             checks.add((event, query) -> {
                 String id = Tools.findModID(query.getEntity(event));
                 return modids.contains(id);
@@ -282,9 +280,13 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
                 }
 
                 count++;
+
+                if (count >= amount) {
+                    return true;
+                }
             }
 
-            return count >= amount;
+            return false;
         });
     }
 
@@ -320,6 +322,10 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
                 }
 
                 count++;
+
+                if (count >= amount) {
+                    return false;
+                }
             }
 
             return count < amount;
@@ -565,12 +571,16 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             BlockPos upOne = eventPos.up();
             Block upBlock = null;
 
-            if (upOne != null) {
-                upBlock = query.getWorld(event).getBlockState(upOne).getBlock();
+            if (eventBlock.equals(Blocks.FIRE)) {
+                return true;
             }
 
-            return eventBlock.equals(Blocks.FIRE) || (upBlock != null && upBlock.equals(Blocks.FIRE));
+            if (upOne != null) {
+                upBlock = query.getWorld(event).getBlockState(upOne).getBlock();
+                return upBlock != null && upBlock.equals(Blocks.FIRE);
+            }
 
+            return false;
         });
     }
 
