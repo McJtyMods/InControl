@@ -7,8 +7,6 @@ import mcjty.incontrol.config.ConfigSetup;
 import mcjty.incontrol.rules.RulesManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Loader;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
@@ -19,7 +17,7 @@ public class ModSetup {
     public static boolean gamestages = false;
     public static boolean sereneSeasons = false;
     public static boolean baubles = false;
-    public static boolean enigma = false;
+    private static boolean enigma = false;
 
     private Logger logger;
 
@@ -64,10 +62,7 @@ public class ModSetup {
         }
     }
 
-    public void init(FMLInitializationEvent e) {
-    }
-
-    public void postInit(FMLPostInitializationEvent e) {
+    public void postInit() {
         ConfigSetup.postInit();
     }
 }

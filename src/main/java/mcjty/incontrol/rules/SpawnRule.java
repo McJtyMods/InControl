@@ -27,7 +27,7 @@ import static mcjty.incontrol.rules.support.RuleKeys.*;
 
 public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
 
-    public static final IEventQuery<LivingSpawnEvent.CheckSpawn> EVENT_QUERY = new IEventQuery<LivingSpawnEvent.CheckSpawn>() {
+    private static final IEventQuery<LivingSpawnEvent.CheckSpawn> EVENT_QUERY = new IEventQuery<LivingSpawnEvent.CheckSpawn>() {
         @Override
         public World getWorld(LivingSpawnEvent.CheckSpawn o) {
             return o.getWorld();
@@ -68,7 +68,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
             return null;
         }
     };
-    public static final IEventQuery<EntityJoinWorldEvent> EVENT_QUERY_JOIN = new IEventQuery<EntityJoinWorldEvent>() {
+    private static final IEventQuery<EntityJoinWorldEvent> EVENT_QUERY_JOIN = new IEventQuery<EntityJoinWorldEvent>() {
         @Override
         public World getWorld(EntityJoinWorldEvent o) {
             return o.getWorld();

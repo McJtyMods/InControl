@@ -2,7 +2,6 @@ package mcjty.incontrol.commands;
 
 import mcjty.incontrol.InControl;
 import net.minecraft.command.CommandBase;
-import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
@@ -15,26 +14,30 @@ import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.WorldServer;
 
+import javax.annotation.Nonnull;
 import java.util.List;
+import java.util.Objects;
 
 public class CmdKillMobs extends CommandBase {
-    public static String findEntityIdByClass(Class<? extends Entity> clazz) {
+    private static String findEntityIdByClass(Class<? extends Entity> clazz) {
         ResourceLocation key = EntityList.getKey(clazz);
         return key == null ? null : key.toString();
     }
 
+    @Nonnull
     @Override
     public String getName() {
         return "ctrlkill";
     }
 
+    @Nonnull
     @Override
-    public String getUsage(ICommandSender sender) {
+    public String getUsage(@Nonnull ICommandSender sender) {
         return "ctrlkill";
     }
 
     @Override
-    public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
+    public void execute(@Nonnull MinecraftServer server, @Nonnull ICommandSender sender, String[] args) {
         if (args.length <= 0) {
             sender.sendMessage(new TextComponentString(TextFormatting.RED + "Use 'all', 'passive', 'hostile' or name of the mob followed by optional dimension id"));
             InControl.setup.getLogger().error("Use 'all', 'passive', 'hostile', 'entity' or name of the mob followed by optional dimension id");
@@ -61,7 +64,7 @@ public class CmdKillMobs extends CommandBase {
             } else if (entity) {
                 return !(input instanceof IAnimals) && !(input instanceof EntityPlayer);
             } else {
-                String id = findEntityIdByClass(input.getClass());
+                String id = findEntityIdByClass(Objects.requireNonNull(input).getClass());
                 return arg0.equals(id);
             }
         });

@@ -4,7 +4,7 @@ import net.darkhax.gamestages.GameStageHelper;
 import net.darkhax.gamestages.data.IStageData;
 import net.minecraft.entity.player.EntityPlayer;
 
-public class GameStageSupport {
+class GameStageSupport {
 
     public static boolean hasGameStage(EntityPlayer player, String stage) {
         if (player != null) {

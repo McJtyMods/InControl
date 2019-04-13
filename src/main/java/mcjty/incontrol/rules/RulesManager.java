@@ -12,11 +12,11 @@ import java.util.function.Function;
 
 public class RulesManager {
 
-    public static List<SpawnRule> rules = new ArrayList<>();
-    public static List<SummonAidRule> summonAidRules = new ArrayList<>();
-    public static List<PotentialSpawnRule> potentialSpawnRules = new ArrayList<>();
-    public static List<LootRule> lootRules = new ArrayList<>();
-    public static List<ExperienceRule> experienceRules = new ArrayList<>();
+    public static final List<SpawnRule> rules = new ArrayList<>();
+    public static final List<SummonAidRule> summonAidRules = new ArrayList<>();
+    public static final List<PotentialSpawnRule> potentialSpawnRules = new ArrayList<>();
+    public static final List<LootRule> lootRules = new ArrayList<>();
+    public static final List<ExperienceRule> experienceRules = new ArrayList<>();
     private static String path;
 
     public static void reloadRules() {
@@ -117,7 +117,7 @@ public class RulesManager {
         }
 
         InControl.setup.getLogger().log(Level.INFO, "Reading spawn rules from " + filename);
-        InputStream inputstream = null;
+        InputStream inputstream;
         try {
             inputstream = new FileInputStream(file);
         } catch (FileNotFoundException e) {

@@ -32,7 +32,7 @@ public class EnigmaSupport {
         return enigmaScript.getState(world, statename);
     }
 
-    public static class GetEnigmaScript implements Function<IEnigmaScript, Void> {
+    private static class GetEnigmaScript implements Function<IEnigmaScript, Void> {
         @Nullable
         @Override
         public Void apply(IEnigmaScript lc) {

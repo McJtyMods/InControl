@@ -6,7 +6,9 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.INBTSerializable;
 
-public class BaublesContainerProvider implements INBTSerializable<NBTTagCompound>, ICapabilityProvider {
+import javax.annotation.Nonnull;
+
+class BaublesContainerProvider implements INBTSerializable<NBTTagCompound>, ICapabilityProvider {
 
     private final BaublesContainer container;
 
@@ -15,14 +17,12 @@ public class BaublesContainerProvider implements INBTSerializable<NBTTagCompound
     }
 
     @Override
-    public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
-        return capability == BaublesCapabilities.CAPABILITY_BAUBLES;
+    public boolean hasCapability(@Nonnull Capability<?> capability, EnumFacing facing) {
+        return false;
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
-        if (capability == BaublesCapabilities.CAPABILITY_BAUBLES) return (T) this.container;
+    public <T> T getCapability(@Nonnull Capability<T> capability, EnumFacing facing) {
         return null;
     }
 

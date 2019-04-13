@@ -8,7 +8,8 @@ import mcjty.incontrol.setup.ModSetup;
 import mcjty.tools.cache.StructureCache;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
-import net.minecraftforge.fml.common.event.*;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 
 @Mod(modid = InControl.MODID, name = InControl.MODNAME,
         dependencies =
@@ -25,7 +26,7 @@ public class InControl {
 
     @SidedProxy(clientSide = "mcjty.incontrol.setup.ClientProxy", serverSide = "mcjty.incontrol.setup.ServerProxy")
     public static IProxy proxy;
-    public static ModSetup setup = new ModSetup();
+    public static final ModSetup setup = new ModSetup();
 
     @Mod.Instance
     public static InControl instance;
@@ -33,23 +34,15 @@ public class InControl {
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         setup.preInit(event);
-        proxy.preInit(event);
     }
 
     @Mod.EventHandler
-    public void init(FMLInitializationEvent e) {
-        setup.init(e);
-        proxy.init(e);
+    public void postInit() {
+        setup.postInit();
     }
 
     @Mod.EventHandler
-    public void postInit(FMLPostInitializationEvent e) {
-        setup.postInit(e);
-        proxy.postInit(e);
-    }
-
-    @Mod.EventHandler
-    public void onLoadComplete(FMLLoadCompleteEvent e) {
+    public void onLoadComplete() {
         RulesManager.readRules();
     }
 
@@ -66,7 +59,7 @@ public class InControl {
     }
 
     @Mod.EventHandler
-    public void serverStopped(FMLServerStoppedEvent event) {
+    public void serverStopped() {
         ForgeEventHandlers.debugtype = 0;
         StructureCache.CACHE.clean();
     }

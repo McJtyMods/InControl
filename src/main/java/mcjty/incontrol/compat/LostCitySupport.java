@@ -76,7 +76,7 @@ public class LostCitySupport {
         return false;
     }
 
-    public static class GetLostCities implements Function<ILostCities, Void> {
+    private static class GetLostCities implements Function<ILostCities, Void> {
         @Nullable
         @Override
         public Void apply(ILostCities lc) {

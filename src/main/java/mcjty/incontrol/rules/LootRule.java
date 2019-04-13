@@ -28,6 +28,7 @@ import org.apache.logging.log4j.Level;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Function;
@@ -37,7 +38,7 @@ import static mcjty.incontrol.rules.support.RuleKeys.*;
 
 public class LootRule extends RuleBase<RuleBase.EventGetter> {
 
-    public static final IEventQuery<LivingDropsEvent> EVENT_QUERY = new IEventQuery<LivingDropsEvent>() {
+    private static final IEventQuery<LivingDropsEvent> EVENT_QUERY = new IEventQuery<LivingDropsEvent>() {
         @Override
         public World getWorld(LivingDropsEvent o) {
             return o.getEntity().getEntityWorld();
@@ -80,7 +81,7 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
         }
     };
     private static final GenericAttributeMapFactory FACTORY = new GenericAttributeMapFactory();
-    public static Minecraft mc = Minecraft.getMinecraft();
+    private static final Minecraft mc = Minecraft.getMinecraft();
 
     static {
         FACTORY
@@ -155,8 +156,8 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
     }
 
     private final GenericRuleEvaluator ruleEvaluator;
-    private List<Predicate<ItemStack>> toRemoveItems = new ArrayList<>();
-    private List<Pair<ItemStack, Function<Integer, Integer>>> toAddItems = new ArrayList<>();
+    private final List<Predicate<ItemStack>> toRemoveItems = new ArrayList<>();
+    private final List<Pair<ItemStack, Function<Integer, Integer>>> toAddItems = new ArrayList<>();
     private boolean removeAll = false;
 
     private LootRule(AttributeMap map) {
@@ -214,7 +215,7 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
                 try {
                     min[i] = max[i] = Integer.parseInt(minmax[0]);
                 } catch (NumberFormatException e) {
-                    InControl.setup.getLogger().log(Level.ERROR, "Bad amount specified in loot rule: " + minmax);
+                    InControl.setup.getLogger().log(Level.ERROR, "Bad amount specified in loot rule: " + Arrays.toString(minmax));
                     min[i] = max[i] = 1;
                 }
             } else if (minmax.length == 2) {
@@ -222,11 +223,11 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
                     min[i] = Integer.parseInt(minmax[0]);
                     max[i] = Integer.parseInt(minmax[1]);
                 } catch (NumberFormatException e) {
-                    InControl.setup.getLogger().log(Level.ERROR, "Bad amounts specified in loot rule: " + minmax);
+                    InControl.setup.getLogger().log(Level.ERROR, "Bad amounts specified in loot rule: " + Arrays.toString(minmax));
                     min[i] = max[i] = 1;
                 }
             } else {
-                InControl.setup.getLogger().log(Level.ERROR, "Bad amount range specified in loot rule: " + minmax);
+                InControl.setup.getLogger().log(Level.ERROR, "Bad amount range specified in loot rule: " + Arrays.toString(minmax));
                 min[i] = max[i] = 1;
             }
         }

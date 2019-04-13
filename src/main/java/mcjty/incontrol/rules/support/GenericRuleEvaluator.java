@@ -31,6 +31,7 @@ import org.apache.logging.log4j.Level;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiFunction;
 
@@ -239,8 +240,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
                 return modid.equals(id);
             });
         } else {
-            Set<String> modids = new HashSet<>();
-            modids.addAll(mods);
+            Set<String> modids = new HashSet<>(mods);
             checks.add((event, query) -> {
                 String id = Tools.findModID(query.getEntity(event));
                 return modids.contains(id);
@@ -409,12 +409,8 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         }
 
         // If this returns false it is still possible we have a fake player. Try to find the player in the list of online players
-        PlayerList playerList = DimensionManager.getWorld(0).getMinecraftServer().getPlayerList();
+        PlayerList playerList = Objects.requireNonNull(DimensionManager.getWorld(0).getMinecraftServer()).getPlayerList();
         EntityPlayerMP playerByUUID = playerList.getPlayerByUUID(((EntityPlayer) entity).getGameProfile().getId());
-        if (playerByUUID == null) {
-            // The player isn't online. Then it can't be real
-            return true;
-        }
 
         // The player is in the list. But is it this player?
         return entity != playerByUUID;
@@ -564,23 +560,16 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
 
             Block eventBlock = query.getWorld(event).getBlockState(eventPos).getBlock();
 
-            if (eventBlock == null) {
-                return false;
-            }
-
             BlockPos upOne = eventPos.up();
-            Block upBlock = null;
+            Block upBlock;
 
             if (eventBlock.equals(Blocks.FIRE)) {
                 return true;
             }
 
-            if (upOne != null) {
-                upBlock = query.getWorld(event).getBlockState(upOne).getBlock();
-                return upBlock != null && upBlock.equals(Blocks.FIRE);
-            }
+            upBlock = query.getWorld(event).getBlockState(upOne).getBlock();
+            return upBlock.equals(Blocks.FIRE);
 
-            return false;
         });
     }
 

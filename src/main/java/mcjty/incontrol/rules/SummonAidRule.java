@@ -42,7 +42,7 @@ import static mcjty.incontrol.rules.support.RuleKeys.*;
 
 public class SummonAidRule extends RuleBase<SummonEventGetter> {
 
-    public static final IEventQuery<ZombieEvent.SummonAidEvent> EVENT_QUERY = new IEventQuery<ZombieEvent.SummonAidEvent>() {
+    private static final IEventQuery<ZombieEvent.SummonAidEvent> EVENT_QUERY = new IEventQuery<ZombieEvent.SummonAidEvent>() {
         @Override
         public World getWorld(ZombieEvent.SummonAidEvent o) {
             return o.getWorld();
@@ -224,8 +224,8 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
                 InControl.setup.getLogger().log(Level.ERROR, "Can't find potion '" + p + "'!");
                 continue;
             }
-            int duration = 0;
-            int amplifier = 0;
+            int duration;
+            int amplifier;
             try {
                 duration = Integer.parseInt(splitted[1]);
                 amplifier = Integer.parseInt(splitted[2]);
@@ -306,11 +306,9 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
         actions.add(event -> {
             EntityZombie helper = event.getZombieHelper();
             IAttributeInstance entityAttribute = helper.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH);
-            if (entityAttribute != null) {
-                double newMax = entityAttribute.getBaseValue() * m + a;
-                entityAttribute.setBaseValue(newMax);
-                helper.setHealth((float) newMax);
-            }
+            double newMax = entityAttribute.getBaseValue() * m + a;
+            entityAttribute.setBaseValue(newMax);
+            helper.setHealth((float) newMax);
         });
     }
 
@@ -320,10 +318,8 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
         actions.add(event -> {
             EntityZombie helper = event.getZombieHelper();
             IAttributeInstance entityAttribute = helper.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED);
-            if (entityAttribute != null) {
-                double newMax = entityAttribute.getBaseValue() * m + a;
-                entityAttribute.setBaseValue(newMax);
-            }
+            double newMax = entityAttribute.getBaseValue() * m + a;
+            entityAttribute.setBaseValue(newMax);
         });
     }
 
@@ -344,10 +340,8 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
         actions.add(event -> {
             EntityZombie helper = event.getZombieHelper();
             IAttributeInstance entityAttribute = helper.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE);
-            if (entityAttribute != null) {
-                double newMax = entityAttribute.getBaseValue() * m + a;
-                entityAttribute.setBaseValue(newMax);
-            }
+            double newMax = entityAttribute.getBaseValue() * m + a;
+            entityAttribute.setBaseValue(newMax);
         });
     }
 

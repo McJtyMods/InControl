@@ -6,7 +6,7 @@ import baubles.api.cap.IBaublesItemHandler;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 
-public class BaublesSupport {
+class BaublesSupport {
 
     public static int[] getAmuletSlots() {
         return BaubleType.AMULET.getValidSlots();

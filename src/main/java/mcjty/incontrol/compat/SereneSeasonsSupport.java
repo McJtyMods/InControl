@@ -5,7 +5,7 @@ import sereneseasons.api.season.ISeasonState;
 import sereneseasons.api.season.Season;
 import sereneseasons.api.season.SeasonHelper;
 
-public class SereneSeasonsSupport {
+class SereneSeasonsSupport {
 
     public static boolean isSpring(World world) {
         ISeasonState seasonState = SeasonHelper.getSeasonState(world);

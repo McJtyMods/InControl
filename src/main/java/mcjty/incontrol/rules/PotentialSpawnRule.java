@@ -32,7 +32,7 @@ import static mcjty.incontrol.rules.support.RuleKeys.*;
 
 public class PotentialSpawnRule extends RuleBase<RuleBase.EventGetter> {
 
-    public static final IEventQuery<WorldEvent.PotentialSpawns> EVENT_QUERY = new IEventQuery<WorldEvent.PotentialSpawns>() {
+    private static final IEventQuery<WorldEvent.PotentialSpawns> EVENT_QUERY = new IEventQuery<WorldEvent.PotentialSpawns>() {
         @Override
         public World getWorld(WorldEvent.PotentialSpawns o) {
             return o.getWorld();
@@ -73,7 +73,7 @@ public class PotentialSpawnRule extends RuleBase<RuleBase.EventGetter> {
             return null;
         }
     };
-    public static final EntityId FIXER = new EntityId();
+    private static final EntityId FIXER = new EntityId();
     private static final GenericAttributeMapFactory FACTORY = new GenericAttributeMapFactory();
     private static final GenericAttributeMapFactory MOB_FACTORY = new GenericAttributeMapFactory();
 
@@ -127,8 +127,8 @@ public class PotentialSpawnRule extends RuleBase<RuleBase.EventGetter> {
     }
 
     private final GenericRuleEvaluator ruleEvaluator;
-    private List<Biome.SpawnListEntry> spawnEntries = new ArrayList<>();
-    private List<Class> toRemoveMobs = new ArrayList<>();
+    private final List<Biome.SpawnListEntry> spawnEntries = new ArrayList<>();
+    private final List<Class> toRemoveMobs = new ArrayList<>();
 
     private PotentialSpawnRule(AttributeMap map) {
         super(InControl.setup.getLogger());

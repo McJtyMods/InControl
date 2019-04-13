@@ -22,7 +22,7 @@ import static mcjty.incontrol.rules.support.RuleKeys.*;
 
 public class ExperienceRule extends RuleBase<RuleBase.EventGetter> {
 
-    public static final IEventQuery<LivingExperienceDropEvent> EVENT_QUERY = new IEventQuery<LivingExperienceDropEvent>() {
+    private static final IEventQuery<LivingExperienceDropEvent> EVENT_QUERY = new IEventQuery<LivingExperienceDropEvent>() {
         @Override
         public World getWorld(LivingExperienceDropEvent o) {
             return o.getEntity().getEntityWorld();

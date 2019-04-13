@@ -9,11 +9,10 @@ import java.io.File;
 
 public class ConfigSetup {
 
-    public static File modConfigDir;
     private static Configuration mainConfig;
 
     public static void init(FMLPreInitializationEvent e) {
-        modConfigDir = e.getModConfigurationDirectory();
+        File modConfigDir = e.getModConfigurationDirectory();
         mainConfig = new Configuration(new File(modConfigDir.getPath() + File.separator + "incontrol", "main.cfg"));
         readMainConfig();
     }
@@ -23,8 +22,6 @@ public class ConfigSetup {
         try {
             cfg.load();
             cfg.addCustomCategoryComment(GeneralConfiguration.CATEGORY_GENERAL, "General settings");
-
-            GeneralConfiguration.init(cfg);
         } catch (Exception e1) {
             FMLLog.log(Level.ERROR, e1, "Problem loading config file!");
         } finally {
