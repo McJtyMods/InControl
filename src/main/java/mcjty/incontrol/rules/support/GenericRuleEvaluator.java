@@ -285,7 +285,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         Class<?> finalEntityClass = entityClass;
         checks.add((event,query) -> {
             int count = query.getWorld(event).countEntities(finalEntityClass == null ? query.getEntity(event).getClass() : finalEntityClass);
-            return count <= amount;
+            return count < amount;
         });
     }
 
