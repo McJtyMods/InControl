@@ -27,7 +27,6 @@ import static mcjty.incontrol.rules.support.RuleKeys.*;
 
 public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
 
-    private static final GenericAttributeMapFactory FACTORY = new GenericAttributeMapFactory();
     public static final IEventQuery<LivingSpawnEvent.CheckSpawn> EVENT_QUERY = new IEventQuery<LivingSpawnEvent.CheckSpawn>() {
         @Override
         public World getWorld(LivingSpawnEvent.CheckSpawn o) {
@@ -41,7 +40,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
 
         @Override
         public BlockPos getValidBlockPos(LivingSpawnEvent.CheckSpawn o) {
-            return new BlockPos(o.getX(), o.getY()-1, o.getZ());
+            return new BlockPos(o.getX(), o.getY() - 1, o.getZ());
         }
 
         @Override
@@ -69,7 +68,6 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
             return null;
         }
     };
-
     public static final IEventQuery<EntityJoinWorldEvent> EVENT_QUERY_JOIN = new IEventQuery<EntityJoinWorldEvent>() {
         @Override
         public World getWorld(EntityJoinWorldEvent o) {
@@ -88,7 +86,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
 
         @Override
         public int getY(EntityJoinWorldEvent o) {
-            return (int) o.getEntity().getPosition().getY();
+            return o.getEntity().getPosition().getY();
         }
 
         @Override
@@ -111,6 +109,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
             return null;
         }
     };
+    private static final GenericAttributeMapFactory FACTORY = new GenericAttributeMapFactory();
 
     static {
         FACTORY
@@ -175,15 +174,25 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
         ;
     }
 
-    private Event.Result result;
     private final boolean onJoin;
     private final GenericRuleEvaluator ruleEvaluator;
+    private Event.Result result;
 
     private SpawnRule(AttributeMap map, boolean onJoin) {
         super(InControl.setup.getLogger());
         this.onJoin = onJoin;
         ruleEvaluator = new GenericRuleEvaluator(map);
         addActions(map, new ModRuleCompatibilityLayer());
+    }
+
+    public static SpawnRule parse(JsonElement element) {
+        if (element == null) {
+            return null;
+        } else {
+            AttributeMap map = FACTORY.parse(element);
+            boolean onJoin = element.getAsJsonObject().has("onjoin") && element.getAsJsonObject().get("onjoin").getAsBoolean();
+            return new SpawnRule(map, onJoin);
+        }
     }
 
     @Override
@@ -266,22 +275,11 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
         }
     }
 
-
     public Event.Result getResult() {
         return result;
     }
 
     public boolean isOnJoin() {
         return onJoin;
-    }
-
-    public static SpawnRule parse(JsonElement element) {
-        if (element == null) {
-            return null;
-        } else {
-            AttributeMap map = FACTORY.parse(element);
-            boolean onJoin = element.getAsJsonObject().has("onjoin") && element.getAsJsonObject().get("onjoin").getAsBoolean();
-            return new SpawnRule(map, onJoin);
-        }
     }
 }

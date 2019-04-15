@@ -32,7 +32,7 @@ public class ForgeEventHandlers {
             if (rule.isOnJoin() && rule.match(event)) {
                 Event.Result result = rule.getResult();
                 if (debug) {
-                    InControl.setup.getLogger().log(Level.INFO, "Join Rule " + i + ": "+ result
+                    InControl.setup.getLogger().log(Level.INFO, "Join Rule " + i + ": " + result
                             + " entity: " + event.getEntity().getName()
                             + " y: " + event.getEntity().getPosition().getY());
                 }
@@ -54,7 +54,7 @@ public class ForgeEventHandlers {
             if (rule.match(event)) {
                 Event.Result result = rule.getResult();
                 if (debug) {
-                    InControl.setup.getLogger().log(Level.INFO, "Rule " + i + ": "+ result
+                    InControl.setup.getLogger().log(Level.INFO, "Rule " + i + ": " + result
                             + " entity: " + event.getEntity().getName()
                             + " y: " + event.getY()
                             + " biome: " + event.getWorld().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ())).biomeName);
@@ -76,7 +76,7 @@ public class ForgeEventHandlers {
             if (rule.match(event)) {
                 Event.Result result = rule.getResult();
                 if (debug) {
-                    InControl.setup.getLogger().log(Level.INFO, "SummonAid " + i + ": "+ result
+                    InControl.setup.getLogger().log(Level.INFO, "SummonAid " + i + ": " + result
                             + " entity: " + event.getEntity().getName()
                             + " y: " + event.getY()
                             + " biome: " + event.getWorld().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ())).biomeName);
@@ -100,7 +100,7 @@ public class ForgeEventHandlers {
 
                 // First remove mob entries if needed
                 for (Class clazz : rule.getToRemoveMobs()) {
-                    for (int idx = event.getList().size()-1 ; idx >= 0 ; idx--) {
+                    for (int idx = event.getList().size() - 1; idx >= 0; idx--) {
                         if (event.getList().get(idx).entityClass == clazz) {
                             event.getList().remove(idx);
                         }
@@ -110,7 +110,7 @@ public class ForgeEventHandlers {
                 List<Biome.SpawnListEntry> spawnEntries = rule.getSpawnEntries();
                 for (Biome.SpawnListEntry entry : spawnEntries) {
                     if (debug) {
-                        InControl.setup.getLogger().log(Level.INFO, "Potential " + i + ": "+ entry.entityClass.toString());
+                        InControl.setup.getLogger().log(Level.INFO, "Potential " + i + ": " + entry.entityClass.toString());
                     }
                     event.getList().add(entry);
                 }
@@ -126,7 +126,7 @@ public class ForgeEventHandlers {
             if (rule.match(event)) {
                 Event.Result result = rule.getResult();
                 if (debug) {
-                    InControl.setup.getLogger().log(Level.INFO, "Experience Rule " + i + ": "+ result
+                    InControl.setup.getLogger().log(Level.INFO, "Experience Rule " + i + ": " + result
                             + " entity: " + event.getEntity().getName()
                             + " y: " + event.getEntity().getPosition().getY());
                 }

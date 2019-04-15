@@ -18,6 +18,11 @@ import net.minecraft.world.WorldServer;
 import java.util.List;
 
 public class CmdKillMobs extends CommandBase {
+    public static String findEntityIdByClass(Class<? extends Entity> clazz) {
+        ResourceLocation key = EntityList.getKey(clazz);
+        return key == null ? null : key.toString();
+    }
+
     @Override
     public String getName() {
         return "ctrlkill";
@@ -26,11 +31,6 @@ public class CmdKillMobs extends CommandBase {
     @Override
     public String getUsage(ICommandSender sender) {
         return "ctrlkill";
-    }
-
-    public static String findEntityIdByClass(Class<? extends Entity> clazz) {
-        ResourceLocation key = EntityList.getKey(clazz);
-        return key == null ? null : key.toString();
     }
 
     @Override
