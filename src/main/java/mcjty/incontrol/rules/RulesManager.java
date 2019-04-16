@@ -126,7 +126,12 @@ public class RulesManager {
         }
 
         BufferedReader br;
-        br = new BufferedReader(new InputStreamReader(inputstream, StandardCharsets.UTF_8));
+        try {
+            br = new BufferedReader(new InputStreamReader(inputstream, "UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            InControl.setup.getLogger().log(Level.ERROR, "Error reading " + filename + "!");
+            return null;
+        }
 
         JsonParser parser = new JsonParser();
         JsonElement element = parser.parse(br);

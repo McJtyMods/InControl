@@ -331,8 +331,10 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
     private void addRealPlayerCheck(AttributeMap map) {
         boolean asPlayer = map.get(REALPLAYER);
         if (asPlayer) {
+            checks.add((event,query) -> query.getAttacker(event) == null ? false : isRealPlayer(query.getAttacker(event)));
             checks.add((event, query) -> query.getAttacker(event) != null && isRealPlayer(query.getAttacker(event)));
         } else {
+            checks.add((event,query) -> query.getAttacker(event) == null ? true : !isRealPlayer(query.getAttacker(event)));
             checks.add((event, query) -> query.getAttacker(event) == null || !isRealPlayer(query.getAttacker(event)));
         }
     }
@@ -340,8 +342,10 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
     private void addFakePlayerCheck(AttributeMap map) {
         boolean asPlayer = map.get(FAKEPLAYER);
         if (asPlayer) {
+            checks.add((event,query) -> query.getAttacker(event) == null ? false : isFakePlayer(query.getAttacker(event)));
             checks.add((event, query) -> query.getAttacker(event) != null && isFakePlayer(query.getAttacker(event)));
         } else {
+            checks.add((event,query) -> query.getAttacker(event) == null ? true : !isFakePlayer(query.getAttacker(event)));
             checks.add((event, query) -> query.getAttacker(event) == null || !isFakePlayer(query.getAttacker(event)));
         }
     }
@@ -349,8 +353,10 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
     private void addExplosionCheck(AttributeMap map) {
         boolean explosion = map.get(EXPLOSION);
         if (explosion) {
+            checks.add((event,query) -> query.getSource(event) == null ? false : query.getSource(event).isExplosion());
             checks.add((event, query) -> query.getSource(event) != null && query.getSource(event).isExplosion());
         } else {
+            checks.add((event,query) -> query.getSource(event) == null ? true : !query.getSource(event).isExplosion());
             checks.add((event, query) -> query.getSource(event) == null || !query.getSource(event).isExplosion());
         }
     }
@@ -358,8 +364,10 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
     private void addProjectileCheck(AttributeMap map) {
         boolean projectile = map.get(PROJECTILE);
         if (projectile) {
+            checks.add((event,query) -> query.getSource(event) == null ? false : query.getSource(event).isProjectile());
             checks.add((event, query) -> query.getSource(event) != null && query.getSource(event).isProjectile());
         } else {
+            checks.add((event,query) -> query.getSource(event) == null ? true : !query.getSource(event).isProjectile());
             checks.add((event, query) -> query.getSource(event) == null || !query.getSource(event).isProjectile());
         }
     }
@@ -367,8 +375,10 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
     private void addFireCheck(AttributeMap map) {
         boolean fire = map.get(FIRE);
         if (fire) {
+            checks.add((event,query) -> query.getSource(event) == null ? false : query.getSource(event).isFireDamage());
             checks.add((event, query) -> query.getSource(event) != null && query.getSource(event).isFireDamage());
         } else {
+            checks.add((event,query) -> query.getSource(event) == null ? true : !query.getSource(event).isFireDamage());
             checks.add((event, query) -> query.getSource(event) == null || !query.getSource(event).isFireDamage());
         }
     }
@@ -376,8 +386,10 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
     private void addMagicCheck(AttributeMap map) {
         boolean magic = map.get(MAGIC);
         if (magic) {
+            checks.add((event,query) -> query.getSource(event) == null ? false : query.getSource(event).isMagicDamage());
             checks.add((event, query) -> query.getSource(event) != null && query.getSource(event).isMagicDamage());
         } else {
+            checks.add((event,query) -> query.getSource(event) == null ? true : !query.getSource(event).isMagicDamage());
             checks.add((event, query) -> query.getSource(event) == null || !query.getSource(event).isMagicDamage());
         }
     }
