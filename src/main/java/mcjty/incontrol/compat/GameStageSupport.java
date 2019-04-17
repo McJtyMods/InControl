@@ -14,4 +14,18 @@ public class GameStageSupport {
             return false;
         }
     }
+
+    public static void addGameStage(EntityPlayer player, String stage) {
+        if (player != null) {
+            IStageData stageData = GameStageHelper.getPlayerData(player);
+            stageData.addStage(stage);
+        }
+    }
+
+    public static void removeGameStage(EntityPlayer player, String stage) {
+        if (player != null) {
+            IStageData stageData = GameStageHelper.getPlayerData(player);
+            stageData.addStage(stage);
+        }
+    }
 }

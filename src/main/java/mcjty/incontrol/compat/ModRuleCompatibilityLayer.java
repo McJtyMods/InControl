@@ -66,6 +66,16 @@ public class ModRuleCompatibilityLayer implements IModRuleCompatibilityLayer {
     }
 
     @Override
+    public void addGameStage(EntityPlayer player, String stage) {
+        GameStageSupport.addGameStage(player, stage);
+    }
+
+    @Override
+    public void removeGameStage(EntityPlayer player, String stage) {
+        GameStageSupport.removeGameStage(player, stage);
+    }
+
+    @Override
     public boolean hasLostCities() {
         return ModSetup.lostcities;
     }
