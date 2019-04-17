@@ -169,17 +169,17 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
 
     private void addHostileCheck(AttributeMap map) {
         if (map.get(HOSTILE)) {
-            checks.add((event,query) -> query.getEntity(event) instanceof IMob);
+            checks.add((event, query) -> query.getEntity(event) instanceof IMob);
         } else {
-            checks.add((event,query) -> !(query.getEntity(event) instanceof IMob));
+            checks.add((event, query) -> !(query.getEntity(event) instanceof IMob));
         }
     }
 
     private void addPassiveCheck(AttributeMap map) {
         if (map.get(PASSIVE)) {
-            checks.add((event,query) -> (query.getEntity(event) instanceof IAnimals && !(query.getEntity(event) instanceof IMob)));
+            checks.add((event, query) -> (query.getEntity(event) instanceof IAnimals && !(query.getEntity(event) instanceof IMob)));
         } else {
-            checks.add((event,query) -> !(query.getEntity(event) instanceof IAnimals && !(query.getEntity(event) instanceof IMob)));
+            checks.add((event, query) -> !(query.getEntity(event) instanceof IAnimals && !(query.getEntity(event) instanceof IMob)));
         }
     }
 
@@ -191,7 +191,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             EntityEntry ee = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(id));
             Class<? extends Entity> clazz = ee == null ? null : ee.getEntityClass();
             if (clazz != null) {
-                checks.add((event,query) -> clazz.equals(query.getEntity(event).getClass()));
+                checks.add((event, query) -> clazz.equals(query.getEntity(event).getClass()));
             } else {
                 InControl.setup.getLogger().log(Level.ERROR, "Unknown mob '" + name + "'!");
             }
@@ -208,7 +208,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
                 }
             }
             if (!classes.isEmpty()) {
-                checks.add((event,query) -> classes.contains(query.getEntity(event).getClass()));
+                checks.add((event, query) -> classes.contains(query.getEntity(event).getClass()));
             }
         }
     }
@@ -217,7 +217,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         List<String> mods = map.getList(MOD);
         if (mods.size() == 1) {
             String modid = mods.get(0);
-            checks.add((event,query) -> {
+            checks.add((event, query) -> {
                 String id = Tools.findModID(query.getEntity(event));
                 return modid.equals(id);
             });
@@ -226,7 +226,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             for (String modid : mods) {
                 modids.add(modid);
             }
-            checks.add((event,query) -> {
+            checks.add((event, query) -> {
                 String id = Tools.findModID(query.getEntity(event));
                 return modids.contains(id);
             });
@@ -255,7 +255,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         }
 
         Class<?> finalEntityClass = entityClass;
-        checks.add((event,query) -> {
+        checks.add((event, query) -> {
             int count = query.getWorld(event).countEntities(finalEntityClass == null ? query.getEntity(event).getClass() : finalEntityClass);
             return count >= amount;
         });
@@ -283,9 +283,9 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         }
 
         Class<?> finalEntityClass = entityClass;
-        checks.add((event,query) -> {
+        checks.add((event, query) -> {
             int count = query.getWorld(event).countEntities(finalEntityClass == null ? query.getEntity(event).getClass() : finalEntityClass);
-            return count <= amount;
+            return count < amount;
         });
     }
 
@@ -293,9 +293,9 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
     private void addPlayerCheck(AttributeMap map) {
         boolean asPlayer = map.get(PLAYER);
         if (asPlayer) {
-            checks.add((event,query) -> query.getAttacker(event) instanceof EntityPlayer);
+            checks.add((event, query) -> query.getAttacker(event) instanceof EntityPlayer);
         } else {
-            checks.add((event,query) -> query.getAttacker(event) instanceof EntityPlayer);
+            checks.add((event, query) -> query.getAttacker(event) instanceof EntityPlayer);
         }
     }
 
@@ -385,7 +385,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
     private void addSourceCheck(AttributeMap map) {
         List<String> sources = map.getList(SOURCE);
         Set<String> sourceSet = new HashSet<>(sources);
-        checks.add((event,query) -> {
+        checks.add((event, query) -> {
             if (query.getSource(event) == null) {
                 return false;
             }

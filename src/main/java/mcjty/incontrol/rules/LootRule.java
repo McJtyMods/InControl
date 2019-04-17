@@ -36,7 +36,6 @@ import static mcjty.incontrol.rules.support.RuleKeys.*;
 
 public class LootRule extends RuleBase<RuleBase.EventGetter> {
 
-    private static final GenericAttributeMapFactory FACTORY = new GenericAttributeMapFactory();
     public static final IEventQuery<LivingDropsEvent> EVENT_QUERY = new IEventQuery<LivingDropsEvent>() {
         @Override
         public World getWorld(LivingDropsEvent o) {
@@ -79,6 +78,8 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
             return entity instanceof EntityPlayer ? (EntityPlayer) entity : null;
         }
     };
+    private static final GenericAttributeMapFactory FACTORY = new GenericAttributeMapFactory();
+    private static Random rnd = new Random();
 
     static {
         FACTORY
@@ -163,6 +164,15 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
         addActions(map, new ModRuleCompatibilityLayer());
     }
 
+    public static LootRule parse(JsonElement element) {
+        if (element == null) {
+            return null;
+        } else {
+            AttributeMap map = FACTORY.parse(element);
+            return new LootRule(map);
+        }
+    }
+
     @Override
     protected void addActions(AttributeMap map, IModRuleCompatibilityLayer layer) {
         super.addActions(map, layer);
@@ -197,7 +207,7 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
         String[] loottable = StringUtils.split(itemcount, '/');
         int[] min = new int[loottable.length];
         int[] max = new int[loottable.length];
-        for (int i = 0 ; i < loottable.length ; i++) {
+        for (int i = 0; i < loottable.length; i++) {
             String[] minmax = StringUtils.split(loottable[i], '-');
             if (minmax.length == 1) {
                 try {
@@ -225,12 +235,12 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
             if (min[0] == max[0]) {
                 return looting -> min[0];
             } else {
-                return looting -> rnd.nextInt(max[0]-min[0]+1) + min[0];
+                return looting -> rnd.nextInt(max[0] - min[0] + 1) + min[0];
             }
         } else {
             return looting -> {
                 if (looting >= min.length) {
-                    return rnd.nextInt(max[min.length-1] - min[min.length-1] + 1) + min[min.length-1];
+                    return rnd.nextInt(max[min.length - 1] - min[min.length - 1] + 1) + min[min.length - 1];
                 } else if (looting >= 0) {
                     return rnd.nextInt(max[looting] - min[looting] + 1) + min[looting];
                 } else {
@@ -241,7 +251,7 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
     }
 
     private List<Pair<ItemStack, Function<Integer, Integer>>> getItems(List<String> itemNames, @Nullable String nbtJson,
-                                     @Nullable String itemcount) {
+                                                                       @Nullable String itemcount) {
         Function<Integer, Integer> countFunction = getCountFunction(itemcount);
 
         List<Pair<ItemStack, Function<Integer, Integer>>> items = new ArrayList<>();
@@ -273,17 +283,7 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
         toRemoveItems.addAll(CommonRuleEvaluator.getItems(map.getList(ACTION_REMOVE), logger));
     }
 
-    private static Random rnd = new Random();
-
     public boolean match(LivingDropsEvent event) {
         return ruleEvaluator.match(event, EVENT_QUERY);
     }
-
-    public static LootRule parse(JsonElement element) {
-        if (element == null) {
-            return null;
-        } else {
-            AttributeMap map = FACTORY.parse(element);
-            return new LootRule(map);
-        }
-    }}
+}

@@ -5,18 +5,19 @@ import mcjty.incontrol.InControl;
 import org.apache.logging.log4j.Level;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
 public class RulesManager {
 
-    private static String path;
     public static List<SpawnRule> rules = new ArrayList<>();
     public static List<SummonAidRule> summonAidRules = new ArrayList<>();
     public static List<PotentialSpawnRule> potentialSpawnRules = new ArrayList<>();
     public static List<LootRule> lootRules = new ArrayList<>();
     public static List<ExperienceRule> experienceRules = new ArrayList<>();
+    private static String path;
 
     public static void reloadRules() {
         rules.clear();

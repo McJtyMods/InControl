@@ -43,7 +43,6 @@ import static mcjty.incontrol.rules.support.RuleKeys.*;
 
 public class SummonAidRule extends RuleBase<SummonEventGetter> {
 
-    private static final GenericAttributeMapFactory FACTORY = new GenericAttributeMapFactory();
     public static final IEventQuery<ZombieEvent.SummonAidEvent> EVENT_QUERY = new IEventQuery<ZombieEvent.SummonAidEvent>() {
         @Override
         public World getWorld(ZombieEvent.SummonAidEvent o) {
@@ -57,7 +56,7 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
 
         @Override
         public BlockPos getValidBlockPos(ZombieEvent.SummonAidEvent o) {
-            return new BlockPos(o.getX(), o.getY()-1, o.getZ());
+            return new BlockPos(o.getX(), o.getY() - 1, o.getZ());
         }
 
         @Override
@@ -85,6 +84,8 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
             return null;
         }
     };
+    private static final GenericAttributeMapFactory FACTORY = new GenericAttributeMapFactory();
+    private static Random rnd = new Random();
 
     static {
         FACTORY
@@ -147,13 +148,22 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
         ;
     }
 
-    private Event.Result result;
     private final GenericRuleEvaluator ruleEvaluator;
+    private Event.Result result;
 
     private SummonAidRule(AttributeMap map) {
         super(InControl.setup.getLogger());
         ruleEvaluator = new GenericRuleEvaluator(map);
         addActions(map, new ModRuleCompatibilityLayer());
+    }
+
+    public static SummonAidRule parse(JsonElement element) {
+        if (element == null) {
+            return null;
+        } else {
+            AttributeMap map = FACTORY.parse(element);
+            return new SummonAidRule(map);
+        }
     }
 
     @Override
@@ -336,12 +346,9 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
         });
     }
 
-    private static Random rnd = new Random();
-
     public boolean match(ZombieEvent.SummonAidEvent event) {
         return ruleEvaluator.match(event, EVENT_QUERY);
     }
-
 
     public void action(ZombieEvent.SummonAidEvent event) {
         SummonEventGetter getter = new SummonEventGetter() {
@@ -381,14 +388,5 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
 
     public Event.Result getResult() {
         return result;
-    }
-
-    public static SummonAidRule parse(JsonElement element) {
-        if (element == null) {
-            return null;
-        } else {
-            AttributeMap map = FACTORY.parse(element);
-            return new SummonAidRule(map);
-        }
     }
 }
