@@ -1,5 +1,7 @@
 Upcoming
 - Various cleanups from SM9
+- Subscribe to events with lowest priority to potentially catch more mods which have the same subscriber (from SM9)
+
 
 3.9.6:
 - Update to be compatible with Fx Control
