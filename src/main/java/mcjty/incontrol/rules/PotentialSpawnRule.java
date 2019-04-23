@@ -108,7 +108,7 @@ public class PotentialSpawnRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.createMulti(BIOMETYPE))
                 .attribute(Attribute.createMulti(DIMENSION))
 
-                .attribute(Attribute.createMulti(ACTION_REMOVE))
+                .attribute(Attribute.createMulti(ACTION_REMOVE_MOBS))
         ;
 
         MOB_FACTORY
@@ -128,12 +128,12 @@ public class PotentialSpawnRule extends RuleBase<RuleBase.EventGetter> {
 
         ruleEvaluator = new GenericRuleEvaluator(map);
 
-        if ((!map.has(ACTION_MOBS)) && (!map.has(ACTION_REMOVE))) {
+        if ((!map.has(ACTION_MOBS)) && (!map.has(ACTION_REMOVE_MOBS))) {
             InControl.setup.getLogger().log(Level.ERROR, "No 'mobs' or 'remove' specified!");
             return;
         }
         makeSpawnEntries(map);
-        if (map.has(ACTION_REMOVE)) {
+        if (map.has(ACTION_REMOVE_MOBS)) {
             addToRemoveAction(map);
         }
     }
@@ -168,7 +168,7 @@ public class PotentialSpawnRule extends RuleBase<RuleBase.EventGetter> {
     }
 
     private void addToRemoveAction(AttributeMap map) {
-        List<String> toremove = map.getList(ACTION_REMOVE);
+        List<String> toremove = map.getList(ACTION_REMOVE_MOBS);
         for (String s : toremove) {
             String id = fixEntityId(s);
             EntityEntry entry = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(id));

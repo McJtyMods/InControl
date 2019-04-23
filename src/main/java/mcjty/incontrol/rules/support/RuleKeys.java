@@ -41,6 +41,7 @@ public interface RuleKeys extends CommonRuleKeys {
     // Mob spawn entry
     Key<AttributeMap> ACTION_MOBS = Key.create(Type.MAP, "mobs");
     Key<String> ACTION_REMOVE = Key.create(Type.JSON, "remove");
+    Key<String> ACTION_REMOVE_MOBS = Key.create(Type.STRING, "remove");
     Key<String> MOB_NAME = Key.create(Type.STRING, "mob");
     Key<Integer> MOB_WEIGHT = Key.create(Type.INTEGER, "weight");
     Key<Integer> MOB_GROUPCOUNTMIN = Key.create(Type.INTEGER, "groupcountmin");
