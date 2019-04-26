@@ -1,4 +1,4 @@
-Upcoming
+3.9.7:
 - Various cleanups from SM9
 - Subscribe to events with lowest priority to potentially catch more mods which have the same subscriber (from SM9)
 - Fixed 'remove' in potential spawn. It was broken
