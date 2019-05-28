@@ -1,3 +1,6 @@
+Upcoming:
+- Allow 'count' for itemstacks with 'give' and related commands
+
 3.9.8:
 - If a spawn rule has no explicit result given (as opposed to result default, deny, or allow) then InControl will no longer set any result but just leave the result in the event as it already is
 - Added new 'customname' action for spawn rules that you can use to set customnames on mobs when they spawn (turns out this is not possible to do with NBT)
