@@ -59,7 +59,9 @@ public class ForgeEventHandlers {
                             + " y: " + event.getY()
                             + " biome: " + event.getWorld().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ())).biomeName);
                 }
-                event.setResult(result);
+                if (result != null) {
+                    event.setResult(result);
+                }
                 if (result != Event.Result.DENY) {
                     rule.action(event);
                 }

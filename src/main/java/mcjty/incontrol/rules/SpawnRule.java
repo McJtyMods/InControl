@@ -20,6 +20,7 @@ import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import net.minecraftforge.fml.common.eventhandler.Event;
 
+import javax.annotation.Nullable;
 import java.util.function.Consumer;
 
 import static mcjty.incontrol.rules.support.RuleKeys.*;
@@ -176,7 +177,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
 
     private final boolean onJoin;
     private final GenericRuleEvaluator ruleEvaluator;
-    private Event.Result result;
+    private Event.Result result = null;
 
     private SpawnRule(AttributeMap map, boolean onJoin) {
         super(InControl.setup.getLogger());
@@ -209,7 +210,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
                 this.result = Event.Result.DENY;
             }
         } else {
-            this.result = Event.Result.DEFAULT;
+            this.result = null;
         }
     }
 
@@ -275,6 +276,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
         }
     }
 
+    @Nullable
     public Event.Result getResult() {
         return result;
     }
