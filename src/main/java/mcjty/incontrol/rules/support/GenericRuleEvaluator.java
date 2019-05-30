@@ -236,7 +236,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
     private void addMinCountCheck(AttributeMap map) {
         final String mincount = map.get(MINCOUNT);
         String[] splitted = StringUtils.split(mincount, ',');
-        Class<?> entityClass = null;
+        Class<? extends Entity> entityClass = null;
         int amount;
         try {
             amount = Integer.parseInt(splitted[0]);
@@ -254,9 +254,13 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             }
         }
 
-        Class<?> finalEntityClass = entityClass;
+        Class<? extends Entity> finalEntityClass = entityClass;
         checks.add((event, query) -> {
-            int count = query.getWorld(event).countEntities(finalEntityClass == null ? query.getEntity(event).getClass() : finalEntityClass);
+            int count = InControl.setup.cache.getCount(query.getWorld(event), finalEntityClass == null ? query.getEntity(event).getClass() : finalEntityClass);
+//            int oldCount = query.getWorld(event).countEntities(finalEntityClass == null ? query.getEntity(event).getClass() : finalEntityClass);
+//            if (oldCount != count) {
+//                System.out.println("  ERROR: oldCount = " + oldCount + " -> newCount = " + count);
+//            }
             return count >= amount;
         });
     }
@@ -264,7 +268,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
     private void addMaxCountCheck(AttributeMap map) {
         final String maxcount = map.get(MAXCOUNT);
         String[] splitted = StringUtils.split(maxcount, ',');
-        Class<?> entityClass = null;
+        Class<? extends Entity> entityClass = null;
         int amount;
         try {
             amount = Integer.parseInt(splitted[0]);
@@ -282,9 +286,13 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             }
         }
 
-        Class<?> finalEntityClass = entityClass;
+        Class<? extends Entity> finalEntityClass = entityClass;
         checks.add((event, query) -> {
-            int count = query.getWorld(event).countEntities(finalEntityClass == null ? query.getEntity(event).getClass() : finalEntityClass);
+            int count = InControl.setup.cache.getCount(query.getWorld(event), finalEntityClass == null ? query.getEntity(event).getClass() : finalEntityClass);
+//            int oldCount = query.getWorld(event).countEntities(finalEntityClass == null ? query.getEntity(event).getClass() : finalEntityClass);
+//            if (oldCount != count) {
+//                System.out.println("  ERROR: oldCount = " + oldCount + " -> newCount = " + count);
+//            }
             return count < amount;
         });
     }

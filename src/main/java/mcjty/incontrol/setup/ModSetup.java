@@ -4,6 +4,7 @@ import mcjty.incontrol.ForgeEventHandlers;
 import mcjty.incontrol.compat.EnigmaSupport;
 import mcjty.incontrol.compat.LostCitySupport;
 import mcjty.incontrol.config.ConfigSetup;
+import mcjty.incontrol.rules.RuleCache;
 import mcjty.incontrol.rules.RulesManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Loader;
@@ -22,6 +23,7 @@ public class ModSetup {
     public static boolean enigma = false;
 
     private Logger logger;
+    public RuleCache cache = new RuleCache();
 
     public void preInit(FMLPreInitializationEvent e) {
         logger = e.getModLog();

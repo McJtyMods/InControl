@@ -1,5 +1,6 @@
 Upcoming:
 - Allow 'count' for itemstacks with 'give' and related commands
+- Big optimisation in how 'maxcount' and 'mincount' are handled
 
 3.9.8:
 - If a spawn rule has no explicit result given (as opposed to result default, deny, or allow) then InControl will no longer set any result but just leave the result in the event as it already is

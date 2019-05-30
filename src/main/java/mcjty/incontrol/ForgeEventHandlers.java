@@ -14,6 +14,7 @@ import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Level;
 
@@ -46,6 +47,22 @@ public class ForgeEventHandlers {
             i++;
         }
     }
+
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public void onEntityJoinWorldLast(EntityJoinWorldEvent event) {
+        // We register spawns in a high priority event so that we take things that other mods
+        // do into account
+        InControl.setup.cache.registerSpawn(event.getWorld(), event.getEntity().getClass());
+    }
+
+    @SubscribeEvent
+    public void onWorldTick(TickEvent.WorldTickEvent event) {
+        // For every world tick we reset the cache
+        if (event.phase == TickEvent.Phase.START && !event.world.isRemote) {
+            InControl.setup.cache.reset(event.world);
+        }
+    }
+
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onEntitySpawnEvent(LivingSpawnEvent.CheckSpawn event) {
