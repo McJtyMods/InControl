@@ -1,4 +1,4 @@
-Upcoming:
+3.9.9:
 - Allow 'count' for itemstacks with 'give' and related commands
 - Big optimisation in how 'maxcount' and 'mincount' are handled
 
