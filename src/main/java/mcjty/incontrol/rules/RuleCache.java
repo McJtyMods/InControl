@@ -16,13 +16,11 @@ public class RuleCache {
         if (cache != null) {
             cache.reset();
         }
-        System.out.println("[" + world.provider.getDimension() + "]RESET");
     }
 
     public int getCount(World world, Class<? extends Entity> entityType) {
         CachePerWorld cache = getOrCreateCache(world);
         int count = cache.getCount(world, entityType);
-        System.out.println("    [" + world.provider.getDimension() + "] count " + entityType.getSimpleName() + " = " + count);
         return count;
     }
 
@@ -30,6 +28,7 @@ public class RuleCache {
         CachePerWorld cache = getOrCreateCache(world);
         cache.registerSpawn(world, entityType);
     }
+
     public void registerDespawn(World world, Class<? extends Entity> entityType) {
         CachePerWorld cache = getOrCreateCache(world);
         cache.registerDespawn(world, entityType);
