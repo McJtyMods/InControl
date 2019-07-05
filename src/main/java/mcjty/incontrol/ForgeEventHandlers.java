@@ -1,6 +1,7 @@
 package mcjty.incontrol;
 
 import mcjty.incontrol.rules.*;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
@@ -29,6 +30,9 @@ public class ForgeEventHandlers {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onEntityJoinWorld(EntityJoinWorldEvent event) {
         int i = 0;
+        if (!(event.getEntity() instanceof EntityLivingBase)) {
+            return;
+        }
         for (SpawnRule rule : RulesManager.rules) {
             if (rule.isOnJoin() && rule.match(event)) {
                 Event.Result result = rule.getResult();

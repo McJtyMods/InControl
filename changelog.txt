@@ -1,3 +1,6 @@
+Upcoming:
+- Fixed a problem that 'onJoin' rules would also affect entities like item drops and non-living entities
+
 3.9.10:
 - Removed some debug code
 
