@@ -8,8 +8,8 @@ import mcjty.tools.typed.Type;
 public interface RuleKeys extends CommonRuleKeys {
 
     // Inputs
-    Key<String> MINCOUNT = Key.create(Type.STRING, "mincount");
-    Key<String> MAXCOUNT = Key.create(Type.STRING, "maxcount");
+    Key<String> MINCOUNT = Key.create(Type.JSON, "mincount");
+    Key<String> MAXCOUNT = Key.create(Type.JSON, "maxcount");
     Key<Boolean> CANSPAWNHERE = Key.create(Type.BOOLEAN, "canspawnhere");
     Key<Boolean> NOTCOLLIDING = Key.create(Type.BOOLEAN, "notcolliding");
     Key<Boolean> PASSIVE = Key.create(Type.BOOLEAN, "passive");

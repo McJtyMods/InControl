@@ -1,5 +1,9 @@
 package mcjty.incontrol.rules.support;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.compat.ModRuleCompatibilityLayer;
 import mcjty.incontrol.rules.PotentialSpawnRule;
@@ -13,8 +17,13 @@ import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.passive.IAnimals;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.server.management.PlayerChunkMapEntry;
 import net.minecraft.server.management.PlayerList;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
@@ -24,6 +33,8 @@ import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 
+import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -91,10 +102,10 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             addModsCheck(map);
         }
         if (map.has(MINCOUNT)) {
-            addMinCountCheck(map);
+            addMinCountScaledCheck(map);
         }
         if (map.has(MAXCOUNT)) {
-            addMaxCountCheck(map);
+            addMaxCountScaledCheck(map);
         }
     }
 
@@ -233,68 +244,226 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         }
     }
 
-    private void addMinCountCheck(AttributeMap map) {
-        final String mincount = map.get(MINCOUNT);
-        String[] splitted = StringUtils.split(mincount, ',');
-        Class<? extends Entity> entityClass = null;
-        int amount;
-        try {
-            amount = Integer.parseInt(splitted[0]);
-        } catch (NumberFormatException e) {
-            InControl.setup.getLogger().log(Level.ERROR, "Bad amount for mincount '" + splitted[0] + "'!");
-            return;
-        }
-        if (splitted.length > 1) {
-            String id = PotentialSpawnRule.fixEntityId(splitted[1]);
-            EntityEntry ee = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(id));
-            entityClass = ee == null ? null : ee.getEntityClass();
-            if (entityClass == null) {
-                InControl.setup.getLogger().log(Level.ERROR, "Unknown mob '" + splitted[1] + "'!");
-                return;
-            }
+    private static class CountInfo {
+        private int amount;
+        private List<Class<? extends Entity>> entityClass = new ArrayList<>();
+        private boolean scaledPerPlayer = false;
+        private boolean scaledPerChunk = false;
+
+        public CountInfo() {
         }
 
-        Class<? extends Entity> finalEntityClass = entityClass;
-        checks.add((event, query) -> {
-            int count = InControl.setup.cache.getCount(query.getWorld(event), finalEntityClass == null ? query.getEntity(event).getClass() : finalEntityClass);
-//            int oldCount = query.getWorld(event).countEntities(finalEntityClass == null ? query.getEntity(event).getClass() : finalEntityClass);
-//            if (oldCount != count) {
-//                System.out.println("  ERROR: oldCount = " + oldCount + " -> newCount = " + count);
-//            }
-            return count >= amount;
-        });
+        public CountInfo setAmount(int amount) {
+            this.amount = amount;
+            return this;
+        }
+
+        public CountInfo addEntityClass(Class<? extends Entity> entityClass) {
+            if (entityClass != null) {
+                this.entityClass.add(entityClass);
+            }
+            return this;
+        }
+
+        public void setScaledPerPlayer(boolean scaledPerPlayer) {
+            this.scaledPerPlayer = scaledPerPlayer;
+        }
+
+        public void setScaledPerChunk(boolean scaledPerChunk) {
+            this.scaledPerChunk = scaledPerChunk;
+        }
     }
 
-    private void addMaxCountCheck(AttributeMap map) {
-        final String maxcount = map.get(MAXCOUNT);
-        String[] splitted = StringUtils.split(maxcount, ',');
-        Class<? extends Entity> entityClass = null;
-        int amount;
-        try {
-            amount = Integer.parseInt(splitted[0]);
-        } catch (NumberFormatException e) {
-            InControl.setup.getLogger().log(Level.ERROR, "Bad amount for maxcount '" + splitted[0] + "'!");
-            return;
+    @Nullable
+    private CountInfo parseCountInfo(String json) {
+        JsonParser parser = new JsonParser();
+        JsonElement element = parser.parse(json);
+        if (element.isJsonPrimitive()) {
+            if (element.getAsJsonPrimitive().isString()) {
+                String[] splitted = StringUtils.split(element.getAsString(), ',');
+                int amount;
+                try {
+                    amount = Integer.parseInt(splitted[0]);
+                } catch (NumberFormatException e) {
+                    InControl.setup.getLogger().log(Level.ERROR, "Bad amount for mincount '" + splitted[0] + "'!");
+                    return null;
+                }
+                Class<? extends Entity> entityClass = null;
+                if (splitted.length > 1) {
+                    entityClass = findEntity(splitted[1]);
+                    if (entityClass == null) return null;
+                }
+                return new CountInfo().setAmount(amount).addEntityClass(entityClass);
+            } else {
+                int amount = element.getAsInt();
+                return new CountInfo().setAmount(amount);
+            }
+        } else if (element.isJsonObject()) {
+            JsonObject obj = element.getAsJsonObject();
+            int amount = obj.get("amount").getAsInt();
+            CountInfo info = new CountInfo().setAmount(amount);
+            if (obj.has("entity")) {
+                if (obj.get("entity").isJsonPrimitive()) {
+                    String entity = obj.get("entity").getAsString();
+                    Class<? extends Entity> entityClass = findEntity(entity);
+                    if (entityClass == null) return null;
+                    info.addEntityClass(entityClass);
+                } else if (obj.get("entity").isJsonArray()) {
+                    JsonArray array = obj.get("entity").getAsJsonArray();
+                    for (JsonElement el : array) {
+                        String entity = el.getAsString();
+                        Class<? extends Entity> entityClass = findEntity(entity);
+                        if (entityClass == null) return null;
+                        info.addEntityClass(entityClass);
+                    }
+                } else {
+                    InControl.setup.getLogger().log(Level.ERROR, "Bad entity tag in count description!");
+                    return null;
+                }
+            }
+            if (obj.has("perplayer")) {
+                info.setScaledPerPlayer(obj.get("perplayer").getAsBoolean());
+            }
+            if (obj.has("perchunk")) {
+                info.setScaledPerChunk(obj.get("perchunk").getAsBoolean());
+            }
+            return info;
+        } else {
+            InControl.setup.getLogger().log(Level.ERROR, "Count description '" + json + "' is not valid!");
+            return null;
         }
-        if (splitted.length > 1) {
-            String id = PotentialSpawnRule.fixEntityId(splitted[1]);
-            EntityEntry ee = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(id));
-            entityClass = ee == null ? null : ee.getEntityClass();
-            if (entityClass == null) {
-                InControl.setup.getLogger().log(Level.ERROR, "Unknown mob '" + splitted[1] + "'!");
-                return;
+    }
+
+    private Class<? extends Entity> findEntity(String entity) {
+        Class<? extends Entity> entityClass;
+        String id = PotentialSpawnRule.fixEntityId(entity);
+        EntityEntry ee = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(id));
+        entityClass = ee == null ? null : ee.getEntityClass();
+        if (entityClass == null) {
+            InControl.setup.getLogger().log(Level.ERROR, "Unknown mob '" + entity + "'!");
+            return null;
+        }
+        return entityClass;
+    }
+
+    private int countValidSpawnChunks(WorldServer world) {
+        Set<ChunkPos> eligibleChunksForSpawning = new HashSet<>();
+
+        for (EntityPlayer entityplayer : world.playerEntities) {
+            if (!entityplayer.isSpectator()) {
+                int chunkX = MathHelper.floor(entityplayer.posX / 16.0D);
+                int chunkZ = MathHelper.floor(entityplayer.posZ / 16.0D);
+
+                for (int dx = -8; dx <= 8; ++dx) {
+                    for (int dz = -8; dz <= 8; ++dz) {
+                        boolean flag = dx == -8 || dx == 8 || dz == -8 || dz == 8;
+                        ChunkPos chunkpos = new ChunkPos(dx + chunkX, dz + chunkZ);
+
+                        if (!eligibleChunksForSpawning.contains(chunkpos)) {
+
+                            if (!flag && world.getWorldBorder().contains(chunkpos)) {
+                                PlayerChunkMapEntry entry = world.getPlayerChunkMap().getEntry(chunkpos.x, chunkpos.z);
+
+                                if (entry != null && entry.isSentToPlayers()) {
+                                    eligibleChunksForSpawning.add(chunkpos);
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
+        return eligibleChunksForSpawning.size();
+    }
 
-        Class<? extends Entity> finalEntityClass = entityClass;
-        checks.add((event, query) -> {
-            int count = InControl.setup.cache.getCount(query.getWorld(event), finalEntityClass == null ? query.getEntity(event).getClass() : finalEntityClass);
-//            int oldCount = query.getWorld(event).countEntities(finalEntityClass == null ? query.getEntity(event).getClass() : finalEntityClass);
-//            if (oldCount != count) {
-//                System.out.println("  ERROR: oldCount = " + oldCount + " -> newCount = " + count);
-//            }
-            return count < amount;
-        });
+    private int countValidPlayers(World world) {
+        int cnt = 0;
+        for (EntityPlayer entityplayer : world.playerEntities) {
+            if (!entityplayer.isSpectator()) {
+                cnt++;
+            }
+        }
+        return cnt;
+    }
+
+    private void addMinCountScaledCheck(AttributeMap map) {
+        final String json = map.get(MINCOUNT);
+        CountInfo info = parseCountInfo(json);
+
+        int infoAmount = info.amount;
+        BiFunction<World, Entity, Integer> counter = getCounter(info);
+
+        if (info.scaledPerChunk) {
+            checks.add((event, query) -> {
+                int count = counter.apply(query.getWorld(event), query.getEntity(event));
+                int chunks = countValidSpawnChunks((WorldServer) query.getWorld(event));
+                int amount = infoAmount * chunks / 289;
+                return count >= amount;
+            });
+        } else if (info.scaledPerPlayer) {
+            checks.add((event, query) -> {
+                int count = counter.apply(query.getWorld(event), query.getEntity(event));
+                int players = countValidPlayers(query.getWorld(event));
+                int amount = infoAmount * players;
+                return count >= amount;
+            });
+        } else {
+            checks.add((event, query) -> {
+                int count = counter.apply(query.getWorld(event), query.getEntity(event));
+                return count >= infoAmount;
+            });
+        }
+    }
+
+    private void addMaxCountScaledCheck(AttributeMap map) {
+        final String json = map.get(MAXCOUNT);
+        CountInfo info = parseCountInfo(json);
+
+        int infoAmount = info.amount;
+        BiFunction<World, Entity, Integer> counter = getCounter(info);
+
+        if (info.scaledPerChunk) {
+            checks.add((event, query) -> {
+                int count = counter.apply(query.getWorld(event), query.getEntity(event));
+                int chunks = countValidSpawnChunks((WorldServer) query.getWorld(event));
+                int amount = infoAmount * chunks / 289;
+                return count < amount;
+            });
+        } else if (info.scaledPerPlayer) {
+            checks.add((event, query) -> {
+                int count = counter.apply(query.getWorld(event), query.getEntity(event));
+                int players = countValidPlayers(query.getWorld(event));
+                int amount = infoAmount * players;
+                return count < amount;
+            });
+        } else {
+            checks.add((event, query) -> {
+                int count = counter.apply(query.getWorld(event), query.getEntity(event));
+                return count < infoAmount;
+            });
+        }
+    }
+
+    private BiFunction<World, Entity, Integer> getCounter(CountInfo info) {
+        List<Class<? extends Entity>> infoEntityClass = info.entityClass;
+        BiFunction<World, Entity, Integer> counter;
+        if (infoEntityClass.isEmpty()) {
+            counter = (world, entity) -> InControl.setup.cache.getCount(world, entity.getClass());
+        } else if (infoEntityClass.size() == 1) {
+            counter = (world, entity) -> {
+                Class<? extends Entity> entityType = infoEntityClass.get(0);
+                return InControl.setup.cache.getCount(world, entityType);
+            };
+        } else {
+            counter = (world, entity) -> {
+                int amount = 0;
+                for (Class<? extends Entity> cls : infoEntityClass) {
+                    amount += InControl.setup.cache.getCount(world, cls);
+                }
+                return amount;
+            };
+        }
+        return counter;
     }
 
 
@@ -339,54 +508,54 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
     private void addRealPlayerCheck(AttributeMap map) {
         boolean asPlayer = map.get(REALPLAYER);
         if (asPlayer) {
-            checks.add((event,query) -> query.getAttacker(event) == null ? false : isRealPlayer(query.getAttacker(event)));
+            checks.add((event, query) -> query.getAttacker(event) == null ? false : isRealPlayer(query.getAttacker(event)));
         } else {
-            checks.add((event,query) -> query.getAttacker(event) == null ? true : !isRealPlayer(query.getAttacker(event)));
+            checks.add((event, query) -> query.getAttacker(event) == null ? true : !isRealPlayer(query.getAttacker(event)));
         }
     }
 
     private void addFakePlayerCheck(AttributeMap map) {
         boolean asPlayer = map.get(FAKEPLAYER);
         if (asPlayer) {
-            checks.add((event,query) -> query.getAttacker(event) == null ? false : isFakePlayer(query.getAttacker(event)));
+            checks.add((event, query) -> query.getAttacker(event) == null ? false : isFakePlayer(query.getAttacker(event)));
         } else {
-            checks.add((event,query) -> query.getAttacker(event) == null ? true : !isFakePlayer(query.getAttacker(event)));
+            checks.add((event, query) -> query.getAttacker(event) == null ? true : !isFakePlayer(query.getAttacker(event)));
         }
     }
 
     private void addExplosionCheck(AttributeMap map) {
         boolean explosion = map.get(EXPLOSION);
         if (explosion) {
-            checks.add((event,query) -> query.getSource(event) == null ? false : query.getSource(event).isExplosion());
+            checks.add((event, query) -> query.getSource(event) == null ? false : query.getSource(event).isExplosion());
         } else {
-            checks.add((event,query) -> query.getSource(event) == null ? true : !query.getSource(event).isExplosion());
+            checks.add((event, query) -> query.getSource(event) == null ? true : !query.getSource(event).isExplosion());
         }
     }
 
     private void addProjectileCheck(AttributeMap map) {
         boolean projectile = map.get(PROJECTILE);
         if (projectile) {
-            checks.add((event,query) -> query.getSource(event) == null ? false : query.getSource(event).isProjectile());
+            checks.add((event, query) -> query.getSource(event) == null ? false : query.getSource(event).isProjectile());
         } else {
-            checks.add((event,query) -> query.getSource(event) == null ? true : !query.getSource(event).isProjectile());
+            checks.add((event, query) -> query.getSource(event) == null ? true : !query.getSource(event).isProjectile());
         }
     }
 
     private void addFireCheck(AttributeMap map) {
         boolean fire = map.get(FIRE);
         if (fire) {
-            checks.add((event,query) -> query.getSource(event) == null ? false : query.getSource(event).isFireDamage());
+            checks.add((event, query) -> query.getSource(event) == null ? false : query.getSource(event).isFireDamage());
         } else {
-            checks.add((event,query) -> query.getSource(event) == null ? true : !query.getSource(event).isFireDamage());
+            checks.add((event, query) -> query.getSource(event) == null ? true : !query.getSource(event).isFireDamage());
         }
     }
 
     private void addMagicCheck(AttributeMap map) {
         boolean magic = map.get(MAGIC);
         if (magic) {
-            checks.add((event,query) -> query.getSource(event) == null ? false : query.getSource(event).isMagicDamage());
+            checks.add((event, query) -> query.getSource(event) == null ? false : query.getSource(event).isMagicDamage());
         } else {
-            checks.add((event,query) -> query.getSource(event) == null ? true : !query.getSource(event).isMagicDamage());
+            checks.add((event, query) -> query.getSource(event) == null ? true : !query.getSource(event).isMagicDamage());
         }
     }
 
