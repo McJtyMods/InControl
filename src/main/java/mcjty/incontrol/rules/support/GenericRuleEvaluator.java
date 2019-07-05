@@ -230,8 +230,8 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         if (mods.size() == 1) {
             String modid = mods.get(0);
             checks.add((event, query) -> {
-                String id = Tools.findModID(query.getEntity(event));
-                return modid.equals(id);
+                String mod = InControl.instance.modCache.getMod(query.getEntity(event));
+                return modid.equals(mod);
             });
         } else {
             Set<String> modids = new HashSet<>();
@@ -239,8 +239,8 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
                 modids.add(modid);
             }
             checks.add((event, query) -> {
-                String id = Tools.findModID(query.getEntity(event));
-                return modids.contains(id);
+                String mod = InControl.instance.modCache.getMod(query.getEntity(event));
+                return modids.contains(mod);
             });
         }
     }
