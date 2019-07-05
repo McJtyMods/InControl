@@ -1,5 +1,6 @@
 Upcoming:
 - Fixed a problem that 'onJoin' rules would also affect entities like item drops and non-living entities
+- Much more powerful 'mincount' and 'maxcount' syntax. The old syntax is still supported but you can now use a JSON object to specify one or more entities to count on, count entities for a given mod, and count scaled per player or per loaded chunk
 
 3.9.10:
 - Removed some debug code

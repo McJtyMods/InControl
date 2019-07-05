@@ -39,6 +39,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import static mcjty.incontrol.rules.support.RuleKeys.*;
 
@@ -102,10 +103,10 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             addModsCheck(map);
         }
         if (map.has(MINCOUNT)) {
-            addMinCountScaledCheck(map);
+            addMinCountCheck(map);
         }
         if (map.has(MAXCOUNT)) {
-            addMaxCountScaledCheck(map);
+            addMaxCountCheck(map);
         }
     }
 
@@ -249,6 +250,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         private List<Class<? extends Entity>> entityClass = new ArrayList<>();
         private boolean scaledPerPlayer = false;
         private boolean scaledPerChunk = false;
+        private String mod = null;
 
         public CountInfo() {
         }
@@ -265,12 +267,29 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             return this;
         }
 
-        public void setScaledPerPlayer(boolean scaledPerPlayer) {
+        public CountInfo setScaledPerPlayer(boolean scaledPerPlayer) {
             this.scaledPerPlayer = scaledPerPlayer;
+            return this;
         }
 
-        public void setScaledPerChunk(boolean scaledPerChunk) {
+        public CountInfo setScaledPerChunk(boolean scaledPerChunk) {
             this.scaledPerChunk = scaledPerChunk;
+            return this;
+        }
+
+        public CountInfo setMod(String mod) {
+            this.mod = mod;
+            return this;
+        }
+
+        public String validate() {
+            if (scaledPerPlayer && scaledPerChunk) {
+                return "You cannot combine 'perchunk' and 'perplayer'!";
+            }
+            if (mod != null && !entityClass.isEmpty()) {
+                return "You cannot combine 'mod' with 'entity'!";
+            }
+            return null;
         }
     }
 
@@ -291,7 +310,10 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
                 Class<? extends Entity> entityClass = null;
                 if (splitted.length > 1) {
                     entityClass = findEntity(splitted[1]);
-                    if (entityClass == null) return null;
+                    if (entityClass == null) {
+                        InControl.setup.getLogger().log(Level.ERROR, "Cannot find entity '" + splitted[1] + "'!");
+                        return null;
+                    }
                 }
                 return new CountInfo().setAmount(amount).addEntityClass(entityClass);
             } else {
@@ -313,7 +335,10 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
                     for (JsonElement el : array) {
                         String entity = el.getAsString();
                         Class<? extends Entity> entityClass = findEntity(entity);
-                        if (entityClass == null) return null;
+                        if (entityClass == null) {
+                            InControl.setup.getLogger().log(Level.ERROR, "Cannot find entity '" + entity + "'!");
+                            return null;
+                        }
                         info.addEntityClass(entityClass);
                     }
                 } else {
@@ -321,11 +346,20 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
                     return null;
                 }
             }
+            if (obj.has("mod")) {
+                String mod = obj.get("mod").getAsString();
+                info.setMod(mod);
+            }
             if (obj.has("perplayer")) {
                 info.setScaledPerPlayer(obj.get("perplayer").getAsBoolean());
             }
             if (obj.has("perchunk")) {
                 info.setScaledPerChunk(obj.get("perchunk").getAsBoolean());
+            }
+            String error = info.validate();
+            if (error != null) {
+                InControl.setup.getLogger().log(Level.ERROR, error);
+                return null;
             }
             return info;
         } else {
@@ -386,82 +420,75 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         return cnt;
     }
 
-    private void addMinCountScaledCheck(AttributeMap map) {
+    private void addMinCountCheck(AttributeMap map) {
         final String json = map.get(MINCOUNT);
         CountInfo info = parseCountInfo(json);
-
-        int infoAmount = info.amount;
-        BiFunction<World, Entity, Integer> counter = getCounter(info);
-
-        if (info.scaledPerChunk) {
-            checks.add((event, query) -> {
-                int count = counter.apply(query.getWorld(event), query.getEntity(event));
-                int chunks = countValidSpawnChunks((WorldServer) query.getWorld(event));
-                int amount = infoAmount * chunks / 289;
-                return count >= amount;
-            });
-        } else if (info.scaledPerPlayer) {
-            checks.add((event, query) -> {
-                int count = counter.apply(query.getWorld(event), query.getEntity(event));
-                int players = countValidPlayers(query.getWorld(event));
-                int amount = infoAmount * players;
-                return count >= amount;
-            });
-        } else {
-            checks.add((event, query) -> {
-                int count = counter.apply(query.getWorld(event), query.getEntity(event));
-                return count >= infoAmount;
-            });
+        if (info == null) {
+            return;
         }
+
+        BiFunction<World, Entity, Integer> counter = getCounter(info);
+        Function<World, Integer> amountAdjuster = getAmountAdjuster(info, info.amount);
+
+        checks.add((event, query) -> {
+            World world = query.getWorld(event);
+            Entity entity = query.getEntity(event);
+            int count = counter.apply(world, entity);
+            int amount = amountAdjuster.apply(world);
+            return count >= amount;
+        });
     }
 
-    private void addMaxCountScaledCheck(AttributeMap map) {
+    private void addMaxCountCheck(AttributeMap map) {
         final String json = map.get(MAXCOUNT);
         CountInfo info = parseCountInfo(json);
 
-        int infoAmount = info.amount;
         BiFunction<World, Entity, Integer> counter = getCounter(info);
+        Function<World, Integer> amountAdjuster = getAmountAdjuster(info, info.amount);
 
+        checks.add((event, query) -> {
+            World world = query.getWorld(event);
+            Entity entity = query.getEntity(event);
+            int count = counter.apply(world, entity);
+            int amount = amountAdjuster.apply(world);
+            return count < amount;
+        });
+    }
+
+    private Function<World, Integer> getAmountAdjuster(CountInfo info, int infoAmount) {
+        Function<World, Integer> amountAdjuster;
         if (info.scaledPerChunk) {
-            checks.add((event, query) -> {
-                int count = counter.apply(query.getWorld(event), query.getEntity(event));
-                int chunks = countValidSpawnChunks((WorldServer) query.getWorld(event));
-                int amount = infoAmount * chunks / 289;
-                return count < amount;
-            });
+            amountAdjuster = world -> infoAmount * countValidSpawnChunks((WorldServer) world) / 289;
         } else if (info.scaledPerPlayer) {
-            checks.add((event, query) -> {
-                int count = counter.apply(query.getWorld(event), query.getEntity(event));
-                int players = countValidPlayers(query.getWorld(event));
-                int amount = infoAmount * players;
-                return count < amount;
-            });
+            amountAdjuster = world -> infoAmount * countValidPlayers(world);
         } else {
-            checks.add((event, query) -> {
-                int count = counter.apply(query.getWorld(event), query.getEntity(event));
-                return count < infoAmount;
-            });
+            amountAdjuster = world -> infoAmount;
         }
+        return amountAdjuster;
     }
 
     private BiFunction<World, Entity, Integer> getCounter(CountInfo info) {
-        List<Class<? extends Entity>> infoEntityClass = info.entityClass;
         BiFunction<World, Entity, Integer> counter;
-        if (infoEntityClass.isEmpty()) {
-            counter = (world, entity) -> InControl.setup.cache.getCount(world, entity.getClass());
-        } else if (infoEntityClass.size() == 1) {
-            counter = (world, entity) -> {
-                Class<? extends Entity> entityType = infoEntityClass.get(0);
-                return InControl.setup.cache.getCount(world, entityType);
-            };
+        if (info.mod != null) {
+            counter = (world, entity) -> InControl.setup.cache.getCountPerMod(world, info.mod);
         } else {
-            counter = (world, entity) -> {
-                int amount = 0;
-                for (Class<? extends Entity> cls : infoEntityClass) {
-                    amount += InControl.setup.cache.getCount(world, cls);
-                }
-                return amount;
-            };
+            List<Class<? extends Entity>> infoEntityClass = info.entityClass;
+            if (infoEntityClass.isEmpty()) {
+                counter = (world, entity) -> InControl.setup.cache.getCount(world, entity.getClass());
+            } else if (infoEntityClass.size() == 1) {
+                counter = (world, entity) -> {
+                    Class<? extends Entity> entityType = infoEntityClass.get(0);
+                    return InControl.setup.cache.getCount(world, entityType);
+                };
+            } else {
+                counter = (world, entity) -> {
+                    int amount = 0;
+                    for (Class<? extends Entity> cls : infoEntityClass) {
+                        amount += InControl.setup.cache.getCount(world, cls);
+                    }
+                    return amount;
+                };
+            }
         }
         return counter;
     }

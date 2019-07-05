@@ -1,5 +1,6 @@
 package mcjty.incontrol.rules;
 
+import mcjty.incontrol.InControl;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.world.World;
@@ -21,6 +22,12 @@ public class RuleCache {
     public int getCount(World world, Class<? extends Entity> entityType) {
         CachePerWorld cache = getOrCreateCache(world);
         int count = cache.getCount(world, entityType);
+        return count;
+    }
+
+    public int getCountPerMod(World world, String mod) {
+        CachePerWorld cache = getOrCreateCache(world);
+        int count = cache.getCountPerMod(world, mod);
         return count;
     }
 
@@ -48,10 +55,12 @@ public class RuleCache {
     private class CachePerWorld {
 
         private Map<Class, Integer> cachedCounters = new HashMap<>();
+        private Map<String, Integer> countPerMod = new HashMap<>();
         private boolean countDone = false;
 
         public void reset() {
             cachedCounters.clear();
+            countPerMod.clear();
             countDone = false;
         }
 
@@ -61,16 +70,17 @@ public class RuleCache {
             }
             countDone = true;
             cachedCounters.clear();
+            countPerMod.clear();
 
             for (Entity entity : world.loadedEntityList) {
                 if (entity instanceof EntityLiving) {
                     if (!((EntityLiving) entity).isNoDespawnRequired()) {
-                        int cnt = 0;
-                        if (cachedCounters.containsKey(entity.getClass())) {
-                            cnt = cachedCounters.get(entity.getClass());
-                        }
-                        cnt++;
+                        int cnt = cachedCounters.getOrDefault(entity.getClass(), 0)+1;
                         cachedCounters.put(entity.getClass(), cnt);
+
+                        String mod = InControl.instance.modCache.getMod(entity);
+                        cnt = countPerMod.getOrDefault(mod, 0)+1;
+                        countPerMod.put(mod, cnt);
                     }
                 }
             }
@@ -79,6 +89,11 @@ public class RuleCache {
         public int getCount(World world, Class<? extends Entity> entityType) {
             count(world);
             return cachedCounters.getOrDefault(entityType, 0);
+        }
+
+        public int getCountPerMod(World world, String mod) {
+            count(world);
+            return countPerMod.getOrDefault(mod, 0);
         }
 
         public void registerSpawn(World world, Class<? extends Entity> entityType) {

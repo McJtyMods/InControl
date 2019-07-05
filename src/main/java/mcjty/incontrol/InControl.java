@@ -2,6 +2,7 @@ package mcjty.incontrol;
 
 
 import mcjty.incontrol.commands.*;
+import mcjty.incontrol.rules.EntityModCache;
 import mcjty.incontrol.rules.RulesManager;
 import mcjty.incontrol.setup.IProxy;
 import mcjty.incontrol.setup.ModSetup;
@@ -29,6 +30,8 @@ public class InControl {
 
     @Mod.Instance
     public static InControl instance;
+
+    public EntityModCache modCache = new EntityModCache();
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
