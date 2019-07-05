@@ -3,10 +3,17 @@ package mcjty.incontrol.rules;
 import mcjty.incontrol.InControl;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.server.management.PlayerChunkMapEntry;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class RuleCache {
 
@@ -17,6 +24,16 @@ public class RuleCache {
         if (cache != null) {
             cache.reset();
         }
+    }
+
+    public int getValidSpawnChunks(World world) {
+        CachePerWorld cache = getOrCreateCache(world);
+        return cache.getValidSpawnChunks(world);
+    }
+
+    public int getValidPlayers(World world) {
+        CachePerWorld cache = getOrCreateCache(world);
+        return cache.getValidPlayers(world);
     }
 
     public int getCount(World world, Class<? extends Entity> entityType) {
@@ -56,12 +73,70 @@ public class RuleCache {
 
         private Map<Class, Integer> cachedCounters = new HashMap<>();
         private Map<String, Integer> countPerMod = new HashMap<>();
+        private int validSpawnChunks = -1;
+        private int validPlayers = -1;
         private boolean countDone = false;
 
         public void reset() {
             cachedCounters.clear();
             countPerMod.clear();
+            validSpawnChunks = -1;
+            validPlayers = -1;
             countDone = false;
+        }
+
+        public int getValidSpawnChunks(World world) {
+            if (validSpawnChunks == -1) {
+                validSpawnChunks = countValidSpawnChunks((WorldServer) world);
+            }
+            return validSpawnChunks;
+        }
+
+        public int getValidPlayers(World world) {
+            if (validPlayers == -1) {
+                validPlayers = countValidPlayers(world);
+            }
+            return validPlayers;
+        }
+
+        private int countValidPlayers(World world) {
+            int cnt = 0;
+            for (EntityPlayer entityplayer : world.playerEntities) {
+                if (!entityplayer.isSpectator()) {
+                    cnt++;
+                }
+            }
+            return cnt;
+        }
+
+        private int countValidSpawnChunks(WorldServer world) {
+            Set<ChunkPos> eligibleChunksForSpawning = new HashSet<>();
+
+            for (EntityPlayer entityplayer : world.playerEntities) {
+                if (!entityplayer.isSpectator()) {
+                    int chunkX = MathHelper.floor(entityplayer.posX / 16.0D);
+                    int chunkZ = MathHelper.floor(entityplayer.posZ / 16.0D);
+
+                    for (int dx = -8; dx <= 8; ++dx) {
+                        for (int dz = -8; dz <= 8; ++dz) {
+                            boolean flag = dx == -8 || dx == 8 || dz == -8 || dz == 8;
+                            ChunkPos chunkpos = new ChunkPos(dx + chunkX, dz + chunkZ);
+
+                            if (!eligibleChunksForSpawning.contains(chunkpos)) {
+
+                                if (!flag && world.getWorldBorder().contains(chunkpos)) {
+                                    PlayerChunkMapEntry entry = world.getPlayerChunkMap().getEntry(chunkpos.x, chunkpos.z);
+
+                                    if (entry != null && entry.isSentToPlayers()) {
+                                        eligibleChunksForSpawning.add(chunkpos);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return eligibleChunksForSpawning.size();
         }
 
         private void count(World world) {
@@ -108,6 +183,5 @@ public class RuleCache {
                 cachedCounters.put(entityType, cnt-1);
             }
         }
-
     }
 }

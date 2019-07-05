@@ -10,20 +10,15 @@ import mcjty.incontrol.rules.PotentialSpawnRule;
 import mcjty.tools.rules.CommonRuleEvaluator;
 import mcjty.tools.rules.IEventQuery;
 import mcjty.tools.typed.AttributeMap;
-import mcjty.tools.varia.Tools;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.passive.IAnimals;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.server.management.PlayerChunkMapEntry;
 import net.minecraft.server.management.PlayerList;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
@@ -324,14 +319,14 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             JsonObject obj = element.getAsJsonObject();
             int amount = obj.get("amount").getAsInt();
             CountInfo info = new CountInfo().setAmount(amount);
-            if (obj.has("entity")) {
-                if (obj.get("entity").isJsonPrimitive()) {
-                    String entity = obj.get("entity").getAsString();
+            if (obj.has("mob")) {
+                if (obj.get("mov").isJsonPrimitive()) {
+                    String entity = obj.get("mov").getAsString();
                     Class<? extends Entity> entityClass = findEntity(entity);
                     if (entityClass == null) return null;
                     info.addEntityClass(entityClass);
-                } else if (obj.get("entity").isJsonArray()) {
-                    JsonArray array = obj.get("entity").getAsJsonArray();
+                } else if (obj.get("mov").isJsonArray()) {
+                    JsonArray array = obj.get("mov").getAsJsonArray();
                     for (JsonElement el : array) {
                         String entity = el.getAsString();
                         Class<? extends Entity> entityClass = findEntity(entity);
@@ -380,45 +375,6 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         return entityClass;
     }
 
-    private int countValidSpawnChunks(WorldServer world) {
-        Set<ChunkPos> eligibleChunksForSpawning = new HashSet<>();
-
-        for (EntityPlayer entityplayer : world.playerEntities) {
-            if (!entityplayer.isSpectator()) {
-                int chunkX = MathHelper.floor(entityplayer.posX / 16.0D);
-                int chunkZ = MathHelper.floor(entityplayer.posZ / 16.0D);
-
-                for (int dx = -8; dx <= 8; ++dx) {
-                    for (int dz = -8; dz <= 8; ++dz) {
-                        boolean flag = dx == -8 || dx == 8 || dz == -8 || dz == 8;
-                        ChunkPos chunkpos = new ChunkPos(dx + chunkX, dz + chunkZ);
-
-                        if (!eligibleChunksForSpawning.contains(chunkpos)) {
-
-                            if (!flag && world.getWorldBorder().contains(chunkpos)) {
-                                PlayerChunkMapEntry entry = world.getPlayerChunkMap().getEntry(chunkpos.x, chunkpos.z);
-
-                                if (entry != null && entry.isSentToPlayers()) {
-                                    eligibleChunksForSpawning.add(chunkpos);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return eligibleChunksForSpawning.size();
-    }
-
-    private int countValidPlayers(World world) {
-        int cnt = 0;
-        for (EntityPlayer entityplayer : world.playerEntities) {
-            if (!entityplayer.isSpectator()) {
-                cnt++;
-            }
-        }
-        return cnt;
-    }
 
     private void addMinCountCheck(AttributeMap map) {
         final String json = map.get(MINCOUNT);
@@ -458,9 +414,9 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
     private Function<World, Integer> getAmountAdjuster(CountInfo info, int infoAmount) {
         Function<World, Integer> amountAdjuster;
         if (info.scaledPerChunk) {
-            amountAdjuster = world -> infoAmount * countValidSpawnChunks((WorldServer) world) / 289;
+            amountAdjuster = world -> infoAmount * InControl.setup.cache.getValidSpawnChunks(world) / 289;
         } else if (info.scaledPerPlayer) {
-            amountAdjuster = world -> infoAmount * countValidPlayers(world);
+            amountAdjuster = world -> infoAmount * InControl.setup.cache.getValidPlayers(world);
         } else {
             amountAdjuster = world -> infoAmount;
         }
