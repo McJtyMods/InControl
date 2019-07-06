@@ -1,7 +1,7 @@
 package mcjty.incontrol;
 
 import mcjty.incontrol.rules.*;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
@@ -30,7 +30,7 @@ public class ForgeEventHandlers {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onEntityJoinWorld(EntityJoinWorldEvent event) {
         int i = 0;
-        if (!(event.getEntity() instanceof EntityLivingBase)) {
+        if (!(event.getEntity() instanceof EntityLiving)) {
             return;
         }
         for (SpawnRule rule : RulesManager.rules) {
@@ -56,7 +56,9 @@ public class ForgeEventHandlers {
     public void onEntityJoinWorldLast(EntityJoinWorldEvent event) {
         // We register spawns in a high priority event so that we take things that other mods
         // do into account
-        InControl.setup.cache.registerSpawn(event.getWorld(), event.getEntity().getClass());
+        if (event.getEntity() instanceof EntityLiving) {
+            InControl.setup.cache.registerSpawn(event.getWorld(), event.getEntity().getClass());
+        }
     }
 
     @SubscribeEvent

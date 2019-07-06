@@ -245,6 +245,8 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         private List<Class<? extends Entity>> entityClass = new ArrayList<>();
         private boolean scaledPerPlayer = false;
         private boolean scaledPerChunk = false;
+        private boolean passive = false;
+        private boolean hostile = true;
         private String mod = null;
 
         public CountInfo() {
@@ -272,6 +274,16 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             return this;
         }
 
+        public CountInfo setPassive(boolean passive) {
+            this.passive = passive;
+            return this;
+        }
+
+        public CountInfo setHostile(boolean hostile) {
+            this.hostile = hostile;
+            return this;
+        }
+
         public CountInfo setMod(String mod) {
             this.mod = mod;
             return this;
@@ -282,7 +294,13 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
                 return "You cannot combine 'perchunk' and 'perplayer'!";
             }
             if (mod != null && !entityClass.isEmpty()) {
-                return "You cannot combine 'mod' with 'entity'!";
+                return "You cannot combine 'mod' with 'mob'!";
+            }
+            if (passive && hostile) {
+                return "Don't use passive and hostile at the same time!";
+            }
+            if ((passive || hostile) && !entityClass.isEmpty()) {
+                return "You cannot combine 'passive' or 'hostile' with 'mob'!";
             }
             return null;
         }
@@ -306,7 +324,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
                 if (splitted.length > 1) {
                     entityClass = findEntity(splitted[1]);
                     if (entityClass == null) {
-                        InControl.setup.getLogger().log(Level.ERROR, "Cannot find entity '" + splitted[1] + "'!");
+                        InControl.setup.getLogger().log(Level.ERROR, "Cannot find mob '" + splitted[1] + "'!");
                         return null;
                     }
                 }
@@ -320,18 +338,18 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             int amount = obj.get("amount").getAsInt();
             CountInfo info = new CountInfo().setAmount(amount);
             if (obj.has("mob")) {
-                if (obj.get("mov").isJsonPrimitive()) {
-                    String entity = obj.get("mov").getAsString();
+                if (obj.get("mob").isJsonPrimitive()) {
+                    String entity = obj.get("mob").getAsString();
                     Class<? extends Entity> entityClass = findEntity(entity);
                     if (entityClass == null) return null;
                     info.addEntityClass(entityClass);
-                } else if (obj.get("mov").isJsonArray()) {
-                    JsonArray array = obj.get("mov").getAsJsonArray();
+                } else if (obj.get("mob").isJsonArray()) {
+                    JsonArray array = obj.get("mob").getAsJsonArray();
                     for (JsonElement el : array) {
                         String entity = el.getAsString();
                         Class<? extends Entity> entityClass = findEntity(entity);
                         if (entityClass == null) {
-                            InControl.setup.getLogger().log(Level.ERROR, "Cannot find entity '" + entity + "'!");
+                            InControl.setup.getLogger().log(Level.ERROR, "Cannot find mob '" + entity + "'!");
                             return null;
                         }
                         info.addEntityClass(entityClass);
@@ -350,6 +368,12 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             }
             if (obj.has("perchunk")) {
                 info.setScaledPerChunk(obj.get("perchunk").getAsBoolean());
+            }
+            if (obj.has("passive")) {
+                info.setPassive(obj.get("passive").getAsBoolean());
+            }
+            if (obj.has("hostile")) {
+                info.setHostile(obj.get("hostile").getAsBoolean());
             }
             String error = info.validate();
             if (error != null) {
@@ -426,7 +450,17 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
     private BiFunction<World, Entity, Integer> getCounter(CountInfo info) {
         BiFunction<World, Entity, Integer> counter;
         if (info.mod != null) {
-            counter = (world, entity) -> InControl.setup.cache.getCountPerMod(world, info.mod);
+            if (info.hostile) {
+                counter = (world, entity) -> InControl.setup.cache.getCountPerModHostile(world, info.mod);
+            } else if (info.passive) {
+                counter = (world, entity) -> InControl.setup.cache.getCountPerModPassive(world, info.mod);
+            } else {
+                counter = (world, entity) -> InControl.setup.cache.getCountPerMod(world, info.mod);
+            }
+        } else if (info.hostile) {
+            counter = (world, entity) -> InControl.setup.cache.getCountHostile(world);
+        } else if (info.passive) {
+            counter = (world, entity) -> InControl.setup.cache.getCountPassive(world);
         } else {
             List<Class<? extends Entity>> infoEntityClass = info.entityClass;
             if (infoEntityClass.isEmpty()) {
