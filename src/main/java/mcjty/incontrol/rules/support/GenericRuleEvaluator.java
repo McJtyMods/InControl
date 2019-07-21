@@ -246,7 +246,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         private boolean scaledPerPlayer = false;
         private boolean scaledPerChunk = false;
         private boolean passive = false;
-        private boolean hostile = true;
+        private boolean hostile = false;
         private String mod = null;
 
         public CountInfo() {

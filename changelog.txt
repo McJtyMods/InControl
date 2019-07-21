@@ -1,3 +1,6 @@
+Upcoming
+- Fixed a problem with the mincount/maxcount always using a hostile counter
+
 3.9.12:
 - Fixed a compatibility problem with old maxcount/mincount syntax
 
