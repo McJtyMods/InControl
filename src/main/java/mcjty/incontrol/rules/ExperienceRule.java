@@ -12,6 +12,7 @@ import mcjty.tools.typed.AttributeMap;
 import mcjty.tools.typed.GenericAttributeMapFactory;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -61,6 +62,11 @@ public class ExperienceRule extends RuleBase<RuleBase.EventGetter> {
         @Override
         public EntityPlayer getPlayer(LivingExperienceDropEvent o) {
             return o.getAttackingPlayer();
+        }
+
+        @Override
+        public ItemStack getItem(LivingExperienceDropEvent o) {
+            return ItemStack.EMPTY;
         }
     };
     private static final GenericAttributeMapFactory FACTORY = new GenericAttributeMapFactory();

@@ -77,6 +77,11 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
             Entity entity = o.getSource().getTrueSource();
             return entity instanceof EntityPlayer ? (EntityPlayer) entity : null;
         }
+
+        @Override
+        public ItemStack getItem(LivingDropsEvent o) {
+            return ItemStack.EMPTY;
+        }
     };
     private static final GenericAttributeMapFactory FACTORY = new GenericAttributeMapFactory();
     private static Random rnd = new Random();

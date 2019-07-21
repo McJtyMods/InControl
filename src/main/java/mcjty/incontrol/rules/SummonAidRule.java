@@ -83,6 +83,11 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
         public EntityPlayer getPlayer(ZombieEvent.SummonAidEvent o) {
             return null;
         }
+
+        @Override
+        public ItemStack getItem(ZombieEvent.SummonAidEvent o) {
+            return ItemStack.EMPTY;
+        }
     };
     private static final GenericAttributeMapFactory FACTORY = new GenericAttributeMapFactory();
     private static Random rnd = new Random();

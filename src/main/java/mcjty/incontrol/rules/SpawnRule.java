@@ -13,6 +13,7 @@ import mcjty.tools.typed.GenericAttributeMapFactory;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -68,6 +69,11 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
         public EntityPlayer getPlayer(LivingSpawnEvent.CheckSpawn o) {
             return null;
         }
+
+        @Override
+        public ItemStack getItem(LivingSpawnEvent.CheckSpawn o) {
+            return ItemStack.EMPTY;
+        }
     };
     public static final IEventQuery<EntityJoinWorldEvent> EVENT_QUERY_JOIN = new IEventQuery<EntityJoinWorldEvent>() {
         @Override
@@ -108,6 +114,11 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
         @Override
         public EntityPlayer getPlayer(EntityJoinWorldEvent o) {
             return null;
+        }
+
+        @Override
+        public ItemStack getItem(EntityJoinWorldEvent o) {
+            return ItemStack.EMPTY;
         }
     };
     private static final GenericAttributeMapFactory FACTORY = new GenericAttributeMapFactory();

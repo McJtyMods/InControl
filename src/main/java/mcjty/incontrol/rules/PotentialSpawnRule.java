@@ -13,6 +13,7 @@ import mcjty.tools.typed.GenericAttributeMapFactory;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
@@ -71,6 +72,11 @@ public class PotentialSpawnRule extends RuleBase<RuleBase.EventGetter> {
         @Override
         public EntityPlayer getPlayer(WorldEvent.PotentialSpawns o) {
             return null;
+        }
+
+        @Override
+        public ItemStack getItem(WorldEvent.PotentialSpawns o) {
+            return ItemStack.EMPTY;
         }
     };
     public static final EntityId FIXER = new EntityId();
