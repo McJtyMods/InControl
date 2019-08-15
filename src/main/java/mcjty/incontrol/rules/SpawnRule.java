@@ -181,7 +181,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.createMulti(HEAD))
                 .attribute(Attribute.createMulti(BODY))
                 .attribute(Attribute.createMulti(CHARM))
-                .attribute(Attribute.createMulti(HELDITEM))
+                .attribute(Attribute.createMulti(PLAYER_HELDITEM))
                 .attribute(Attribute.createMulti(OFFHANDITEM))
                 .attribute(Attribute.createMulti(BOTHHANDSITEM))
 

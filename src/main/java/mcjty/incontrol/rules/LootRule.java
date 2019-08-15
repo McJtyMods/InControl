@@ -147,6 +147,7 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(PSTATE))
 
                 .attribute(Attribute.createMulti(HELDITEM))
+                .attribute(Attribute.createMulti(PLAYER_HELDITEM))
                 .attribute(Attribute.createMulti(OFFHANDITEM))
                 .attribute(Attribute.createMulti(BOTHHANDSITEM))
 

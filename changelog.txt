@@ -1,3 +1,6 @@
+3.9.15:
+- Worked around a problem caused in the previous version. The issue was that there was both a condition called 'helditem' as well as an action called 'helditem'. For spawns the condition has been renamed to 'playerhelditem'. It is recommended to use this in other places as well (when used as a condition)
+
 3.9.14:
 - Implemented a much requested feature with the spawn rules. That is support for gamestages. In Control will use the closest player (with a configurable maximum distance of 100). In addition keywords like helditem, helmet, trinker, ... are now also supported for spawn rules
 
