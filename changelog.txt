@@ -1,3 +1,6 @@
+3.9.14:
+- Implemented a much requested feature with the spawn rules. That is support for gamestages. In Control will use the closest player (with a configurable maximum distance of 100). In addition keywords like helditem, helmet, trinker, ... are now also supported for spawn rules
+
 3.9.13:
 - Fixed a problem with the mincount/maxcount always using a hostile counter
 

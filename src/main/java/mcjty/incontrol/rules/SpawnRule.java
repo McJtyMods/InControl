@@ -67,7 +67,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
 
         @Override
         public EntityPlayer getPlayer(LivingSpawnEvent.CheckSpawn o) {
-            return null;
+            return getClosestPlayer(o.getWorld(), new BlockPos(o.getX(), o.getY(), o.getZ()));
         }
 
         @Override
@@ -113,7 +113,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
 
         @Override
         public EntityPlayer getPlayer(EntityJoinWorldEvent o) {
-            return null;
+            return getClosestPlayer(o.getWorld(), o.getEntity().getPosition());
         }
 
         @Override
@@ -122,6 +122,10 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
         }
     };
     private static final GenericAttributeMapFactory FACTORY = new GenericAttributeMapFactory();
+
+    private static EntityPlayer getClosestPlayer(World world, BlockPos pos) {
+        return world.getClosestPlayer(pos.getX(), pos.getY(), pos.getZ(), 100, false);
+    }
 
     static {
         FACTORY
@@ -145,6 +149,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(INCITY))
                 .attribute(Attribute.create(INSTREET))
                 .attribute(Attribute.create(INSPHERE))
+                .attribute(Attribute.create(GAMESTAGE))
                 .attribute(Attribute.create(PASSIVE))
                 .attribute(Attribute.create(HOSTILE))
                 .attribute(Attribute.create(SEESKY))
@@ -164,6 +169,21 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.createMulti(BIOMETYPE))
                 .attribute(Attribute.createMulti(DIMENSION))
                 .attribute(Attribute.create(STATE))
+
+                .attribute(Attribute.createMulti(HELMET))
+                .attribute(Attribute.createMulti(CHESTPLATE))
+                .attribute(Attribute.createMulti(LEGGINGS))
+                .attribute(Attribute.createMulti(BOOTS))
+                .attribute(Attribute.createMulti(AMULET))
+                .attribute(Attribute.createMulti(RING))
+                .attribute(Attribute.createMulti(BELT))
+                .attribute(Attribute.createMulti(TRINKET))
+                .attribute(Attribute.createMulti(HEAD))
+                .attribute(Attribute.createMulti(BODY))
+                .attribute(Attribute.createMulti(CHARM))
+                .attribute(Attribute.createMulti(HELDITEM))
+                .attribute(Attribute.createMulti(OFFHANDITEM))
+                .attribute(Attribute.createMulti(BOTHHANDSITEM))
 
                 .attribute(Attribute.create(ACTION_RESULT))
                 .attribute(Attribute.create(ACTION_MESSAGE))
