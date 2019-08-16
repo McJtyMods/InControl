@@ -33,6 +33,9 @@ public class ForgeEventHandlers {
         if (!(event.getEntity() instanceof EntityLiving)) {
             return;
         }
+        if (event.getWorld().isRemote) {
+            return;
+        }
         for (SpawnRule rule : RulesManager.rules) {
             if (rule.isOnJoin() && rule.match(event)) {
                 Event.Result result = rule.getResult();
