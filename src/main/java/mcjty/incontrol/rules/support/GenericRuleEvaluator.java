@@ -6,25 +6,24 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.compat.ModRuleCompatibilityLayer;
-import mcjty.incontrol.rules.PotentialSpawnRule;
 import mcjty.tools.rules.CommonRuleEvaluator;
 import mcjty.tools.rules.IEventQuery;
 import mcjty.tools.typed.AttributeMap;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.MobEntity;
+import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.monster.IMob;
-import net.minecraft.entity.passive.IAnimals;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.passive.AnimalEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.management.PlayerList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
-import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
-import net.minecraftforge.fml.common.eventhandler.Event;
-import net.minecraftforge.fml.common.registry.EntityEntry;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraftforge.eventbus.api.Event;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 
@@ -110,8 +109,8 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         if (c) {
             checks.add((event, query) -> {
                 Entity entity = query.getEntity(event);
-                if (entity instanceof EntityLiving) {
-                    return ((EntityLiving) entity).getCanSpawnHere();
+                if (entity instanceof MobEntity) {
+                    return MobEntity.canSpawnOn((EntityType<? extends MobEntity>) entity.getType(), entity.getEntityWorld(), SpawnReason.NATURAL, entity.getPosition(), null);
                 } else {
                     return false;
                 }
@@ -119,8 +118,8 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         } else {
             checks.add((event, query) -> {
                 Entity entity = query.getEntity(event);
-                if (entity instanceof EntityLiving) {
-                    return !((EntityLiving) entity).getCanSpawnHere();
+                if (entity instanceof MobEntity) {
+                    return !MobEntity.canSpawnOn((EntityType<? extends MobEntity>) entity.getType(), entity.getEntityWorld(), SpawnReason.NATURAL, entity.getPosition(), null);
                 } else {
                     return true;
                 }
@@ -133,8 +132,8 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         if (c) {
             checks.add((event, query) -> {
                 Entity entity = query.getEntity(event);
-                if (entity instanceof EntityLiving) {
-                    return ((EntityLiving) entity).isNotColliding();
+                if (entity instanceof MobEntity) {
+                    return ((MobEntity) entity).isNotColliding(entity.getEntityWorld());
                 } else {
                     return false;
                 }
@@ -142,8 +141,8 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         } else {
             checks.add((event, query) -> {
                 Entity entity = query.getEntity(event);
-                if (entity instanceof EntityLiving) {
-                    return !((EntityLiving) entity).isNotColliding();
+                if (entity instanceof MobEntity) {
+                    return !((MobEntity) entity).isNotColliding(entity.getEntityWorld());
                 } else {
                     return true;
                 }
@@ -184,34 +183,30 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
 
     private void addPassiveCheck(AttributeMap map) {
         if (map.get(PASSIVE)) {
-            checks.add((event, query) -> (query.getEntity(event) instanceof IAnimals && !(query.getEntity(event) instanceof IMob)));
+            checks.add((event, query) -> (query.getEntity(event) instanceof AnimalEntity && !(query.getEntity(event) instanceof IMob)));
         } else {
-            checks.add((event, query) -> !(query.getEntity(event) instanceof IAnimals && !(query.getEntity(event) instanceof IMob)));
+            checks.add((event, query) -> !(query.getEntity(event) instanceof AnimalEntity && !(query.getEntity(event) instanceof IMob)));
         }
     }
 
     private void addMobsCheck(AttributeMap map) {
         List<String> mobs = map.getList(MOB);
         if (mobs.size() == 1) {
-            String name = mobs.get(0);
-            String id = PotentialSpawnRule.fixEntityId(name);
-            EntityEntry ee = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(id));
-            Class<? extends Entity> clazz = ee == null ? null : ee.getEntityClass();
-            if (clazz != null) {
-                checks.add((event, query) -> clazz.equals(query.getEntity(event).getClass()));
+            String id = mobs.get(0);
+            EntityType<?> type = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(id));
+            if (type != null) {
+                checks.add((event, query) -> type.equals(query.getEntity(event).getType()));
             } else {
-                InControl.setup.getLogger().log(Level.ERROR, "Unknown mob '" + name + "'!");
+                InControl.setup.getLogger().log(Level.ERROR, "Unknown mob '" + id + "'!");
             }
         } else {
-            Set<Class> classes = new HashSet<>();
-            for (String name : mobs) {
-                String id = PotentialSpawnRule.fixEntityId(name);
-                EntityEntry ee = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(id));
-                Class<? extends Entity> clazz = ee == null ? null : ee.getEntityClass();
-                if (clazz != null) {
-                    classes.add(clazz);
+            Set<EntityType> classes = new HashSet<>();
+            for (String id : mobs) {
+                EntityType<?> type = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(id));
+                if (type != null) {
+                    classes.add(type);
                 } else {
-                    InControl.setup.getLogger().log(Level.ERROR, "Unknown mob '" + name + "'!");
+                    InControl.setup.getLogger().log(Level.ERROR, "Unknown mob '" + id +"'!");
                 }
             }
             if (!classes.isEmpty()) {
@@ -225,7 +220,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         if (mods.size() == 1) {
             String modid = mods.get(0);
             checks.add((event, query) -> {
-                String mod = InControl.instance.modCache.getMod(query.getEntity(event));
+                String mod = query.getEntity(event).getType().getRegistryName().getNamespace();
                 return modid.equals(mod);
             });
         } else {
@@ -234,7 +229,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
                 modids.add(modid);
             }
             checks.add((event, query) -> {
-                String mod = InControl.instance.modCache.getMod(query.getEntity(event));
+                String mod = query.getEntity(event).getType().getRegistryName().getNamespace();
                 return modids.contains(mod);
             });
         }
@@ -242,7 +237,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
 
     private static class CountInfo {
         private int amount;
-        private List<Class<? extends Entity>> entityClass = new ArrayList<>();
+        private List<EntityType> entityTypes = new ArrayList<>();
         private boolean scaledPerPlayer = false;
         private boolean scaledPerChunk = false;
         private boolean passive = false;
@@ -257,9 +252,9 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             return this;
         }
 
-        public CountInfo addEntityClass(Class<? extends Entity> entityClass) {
+        public CountInfo addEntityType(EntityType entityClass) {
             if (entityClass != null) {
-                this.entityClass.add(entityClass);
+                this.entityTypes.add(entityClass);
             }
             return this;
         }
@@ -293,13 +288,13 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             if (scaledPerPlayer && scaledPerChunk) {
                 return "You cannot combine 'perchunk' and 'perplayer'!";
             }
-            if (mod != null && !entityClass.isEmpty()) {
+            if (mod != null && !entityTypes.isEmpty()) {
                 return "You cannot combine 'mod' with 'mob'!";
             }
             if (passive && hostile) {
                 return "Don't use passive and hostile at the same time!";
             }
-            if ((passive || hostile) && !entityClass.isEmpty()) {
+            if ((passive || hostile) && !entityTypes.isEmpty()) {
                 return "You cannot combine 'passive' or 'hostile' with 'mob'!";
             }
             return null;
@@ -320,7 +315,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
                     InControl.setup.getLogger().log(Level.ERROR, "Bad amount for mincount '" + splitted[0] + "'!");
                     return null;
                 }
-                Class<? extends Entity> entityClass = null;
+                EntityType   entityClass = null;
                 if (splitted.length > 1) {
                     entityClass = findEntity(splitted[1]);
                     if (entityClass == null) {
@@ -328,7 +323,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
                         return null;
                     }
                 }
-                return new CountInfo().setAmount(amount).addEntityClass(entityClass);
+                return new CountInfo().setAmount(amount).addEntityType(entityClass);
             } else {
                 int amount = element.getAsInt();
                 return new CountInfo().setAmount(amount);
@@ -340,19 +335,19 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             if (obj.has("mob")) {
                 if (obj.get("mob").isJsonPrimitive()) {
                     String entity = obj.get("mob").getAsString();
-                    Class<? extends Entity> entityClass = findEntity(entity);
-                    if (entityClass == null) return null;
-                    info.addEntityClass(entityClass);
+                    EntityType entityType = findEntity(entity);
+                    if (entityType == null) return null;
+                    info.addEntityType(entityType);
                 } else if (obj.get("mob").isJsonArray()) {
                     JsonArray array = obj.get("mob").getAsJsonArray();
                     for (JsonElement el : array) {
                         String entity = el.getAsString();
-                        Class<? extends Entity> entityClass = findEntity(entity);
-                        if (entityClass == null) {
+                        EntityType entityType = findEntity(entity);
+                        if (entityType == null) {
                             InControl.setup.getLogger().log(Level.ERROR, "Cannot find mob '" + entity + "'!");
                             return null;
                         }
-                        info.addEntityClass(entityClass);
+                        info.addEntityType(entityType);
                     }
                 } else {
                     InControl.setup.getLogger().log(Level.ERROR, "Bad entity tag in count description!");
@@ -387,16 +382,13 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         }
     }
 
-    private Class<? extends Entity> findEntity(String entity) {
-        Class<? extends Entity> entityClass;
-        String id = PotentialSpawnRule.fixEntityId(entity);
-        EntityEntry ee = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(id));
-        entityClass = ee == null ? null : ee.getEntityClass();
-        if (entityClass == null) {
-            InControl.setup.getLogger().log(Level.ERROR, "Unknown mob '" + entity + "'!");
+    private EntityType findEntity(String id) {
+        EntityType<?> ee = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(id));
+        if (ee == null) {
+            InControl.setup.getLogger().log(Level.ERROR, "Unknown mob '" + id + "'!");
             return null;
         }
-        return entityClass;
+        return ee;
     }
 
 
@@ -462,18 +454,18 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         } else if (info.passive) {
             counter = (world, entity) -> InControl.setup.cache.getCountPassive(world);
         } else {
-            List<Class<? extends Entity>> infoEntityClass = info.entityClass;
-            if (infoEntityClass.isEmpty()) {
-                counter = (world, entity) -> InControl.setup.cache.getCount(world, entity.getClass());
-            } else if (infoEntityClass.size() == 1) {
+            List<EntityType> infoEntityType = info.entityTypes;
+            if (infoEntityType.isEmpty()) {
+                counter = (world, entity) -> InControl.setup.cache.getCount(world, entity.getType());
+            } else if (infoEntityType.size() == 1) {
                 counter = (world, entity) -> {
-                    Class<? extends Entity> entityType = infoEntityClass.get(0);
+                    EntityType entityType = infoEntityType.get(0);
                     return InControl.setup.cache.getCount(world, entityType);
                 };
             } else {
                 counter = (world, entity) -> {
                     int amount = 0;
-                    for (Class<? extends Entity> cls : infoEntityClass) {
+                    for (EntityType cls : infoEntityType) {
                         amount += InControl.setup.cache.getCount(world, cls);
                     }
                     return amount;
@@ -487,15 +479,15 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
     private void addPlayerCheck(AttributeMap map) {
         boolean asPlayer = map.get(PLAYER);
         if (asPlayer) {
-            checks.add((event, query) -> query.getAttacker(event) instanceof EntityPlayer);
+            checks.add((event, query) -> query.getAttacker(event) instanceof PlayerEntity);
         } else {
-            checks.add((event, query) -> query.getAttacker(event) instanceof EntityPlayer);
+            checks.add((event, query) -> query.getAttacker(event) instanceof PlayerEntity);
         }
     }
 
 
     private boolean isFakePlayer(Entity entity) {
-        if (!(entity instanceof EntityPlayer)) {
+        if (!(entity instanceof PlayerEntity)) {
             return false;
         }
 
@@ -504,8 +496,8 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         }
 
         // If this returns false it is still possible we have a fake player. Try to find the player in the list of online players
-        PlayerList playerList = DimensionManager.getWorld(0).getMinecraftServer().getPlayerList();
-        EntityPlayerMP playerByUUID = playerList.getPlayerByUUID(((EntityPlayer) entity).getGameProfile().getId());
+        PlayerList playerList = entity.getEntityWorld().getServer().getPlayerList();
+        ServerPlayerEntity playerByUUID = playerList.getPlayerByUUID(((PlayerEntity) entity).getGameProfile().getId());
         if (playerByUUID == null) {
             // The player isn't online. Then it can't be real
             return true;
@@ -516,7 +508,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
     }
 
     private boolean isRealPlayer(Entity entity) {
-        if (!(entity instanceof EntityPlayer)) {
+        if (!(entity instanceof PlayerEntity)) {
             return false;
         }
         return !isFakePlayer(entity);

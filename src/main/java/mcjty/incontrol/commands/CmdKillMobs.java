@@ -1,73 +1,76 @@
 package mcjty.incontrol.commands;
 
+import com.mojang.brigadier.Command;
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.ArgumentBuilder;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import mcjty.incontrol.InControl;
-import net.minecraft.command.CommandBase;
-import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommandSender;
+import net.minecraft.command.CommandSource;
+import net.minecraft.command.Commands;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityList;
 import net.minecraft.entity.monster.IMob;
-import net.minecraft.entity.passive.IAnimals;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.entity.passive.AnimalEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.WorldServer;
+import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.world.server.ServerWorld;
 
 import java.util.List;
 
-public class CmdKillMobs extends CommandBase {
-    public static String findEntityIdByClass(Class<? extends Entity> clazz) {
-        ResourceLocation key = EntityList.getKey(clazz);
-        return key == null ? null : key.toString();
+public class CmdKillMobs  implements Command<CommandSource> {
+
+    private static final CmdKillMobs CMD = new CmdKillMobs();
+
+    public static ArgumentBuilder<CommandSource, ?> register(CommandDispatcher<CommandSource> dispatcher) {
+        return Commands.literal("kill")
+                .requires(cs -> cs.hasPermissionLevel(2))
+                .then(Commands.argument("type", StringArgumentType.word())
+                        .executes(CMD));
     }
 
     @Override
-    public String getName() {
-        return "ctrlkill";
-    }
-
-    @Override
-    public String getUsage(ICommandSender sender) {
-        return "ctrlkill";
-    }
-
-    @Override
-    public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
-        if (args.length <= 0) {
-            sender.sendMessage(new TextComponentString(TextFormatting.RED + "Use 'all', 'passive', 'hostile' or name of the mob followed by optional dimension id"));
-            InControl.setup.getLogger().error("Use 'all', 'passive', 'hostile', 'entity' or name of the mob followed by optional dimension id");
-            return;
-        }
-        int dimension = (sender instanceof EntityPlayer) ? sender.getEntityWorld().provider.getDimension() : 0;
-        if (args.length > 1) {
-            dimension = Integer.parseInt(args[1]);
-        }
-        String arg0 = args[0].toLowerCase();
-        boolean all = "all".equals(arg0);
-        boolean passive = "passive".equals(arg0);
-        boolean hostile = "hostile".equals(arg0);
-        boolean entity = "entity".equals(arg0);
-
-        WorldServer worldServer = server.getWorld(dimension);
-        List<Entity> entities = worldServer.getEntities(Entity.class, input -> {
-            if (all) {
-                return !(input instanceof EntityPlayer);
-            } else if (passive) {
-                return input instanceof IAnimals && !(input instanceof IMob);
-            } else if (hostile) {
-                return input instanceof IMob;
-            } else if (entity) {
-                return !(input instanceof IAnimals) && !(input instanceof EntityPlayer);
-            } else {
-                String id = findEntityIdByClass(input.getClass());
-                return arg0.equals(id);
+    public int run(CommandContext<CommandSource> context) throws CommandSyntaxException {
+        ServerPlayerEntity player = context.getSource().asPlayer();
+        if (player != null) {
+            String type = context.getArgument("type", String.class);
+            if (type == null || type.trim().isEmpty()) {
+                player.sendMessage(new StringTextComponent(TextFormatting.RED + "Use 'all', 'passive', 'hostile' or name of the mob followed by optional dimension id"));
+                InControl.setup.getLogger().error("Use 'all', 'passive', 'hostile', 'entity' or name of the mob followed by optional dimension id");
+                return 0;
             }
-        });
-        for (Entity e : entities) {
-            worldServer.removeEntity(e);
+            DimensionType dimension = player.getEntityWorld().getDimension().getType();
+//            if (args.length > 1) {
+//                dimension = Integer.parseInt(args[1]);
+//            }
+            boolean all = "all".equals(type);
+            boolean passive = "passive".equals(type);
+            boolean hostile = "hostile".equals(type);
+            boolean entity = "entity".equals(type);
+
+            ServerWorld worldServer = player.getEntityWorld().getServer().getWorld(dimension);
+            List<Entity> entities = worldServer.getEntities(null, input -> {
+                if (all) {
+                    return !(input instanceof PlayerEntity);
+                } else if (passive) {
+                    return input instanceof AnimalEntity && !(input instanceof IMob);
+                } else if (hostile) {
+                    return input instanceof IMob;
+                } else if (entity) {
+                    return !(input instanceof AnimalEntity) && !(input instanceof PlayerEntity);
+                } else {
+                    String id = input.getType().getRegistryName().toString();
+                    return type.equals(id);
+                }
+            });
+            for (Entity e : entities) {
+                worldServer.removeEntity(e);
+            }
+            player.sendMessage(new StringTextComponent(TextFormatting.YELLOW + "Removed " + entities.size() + " entities!"));
         }
-        sender.sendMessage(new TextComponentString(TextFormatting.YELLOW + "Removed " + entities.size() + " entities!"));
+        return 0;
     }
 }

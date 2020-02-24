@@ -11,15 +11,15 @@ import mcjty.tools.typed.Attribute;
 import mcjty.tools.typed.AttributeMap;
 import mcjty.tools.typed.GenericAttributeMapFactory;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
-import net.minecraftforge.fml.common.eventhandler.Event;
+import net.minecraftforge.eventbus.api.Event;
 
 import javax.annotation.Nullable;
 import java.util.function.Consumer;
@@ -32,7 +32,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
     public static final IEventQuery<LivingSpawnEvent.CheckSpawn> EVENT_QUERY = new IEventQuery<LivingSpawnEvent.CheckSpawn>() {
         @Override
         public World getWorld(LivingSpawnEvent.CheckSpawn o) {
-            return o.getWorld();
+            return o.getWorld().getWorld();
         }
 
         @Override
@@ -66,8 +66,8 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
         }
 
         @Override
-        public EntityPlayer getPlayer(LivingSpawnEvent.CheckSpawn o) {
-            return getClosestPlayer(o.getWorld(), new BlockPos(o.getX(), o.getY(), o.getZ()));
+        public PlayerEntity getPlayer(LivingSpawnEvent.CheckSpawn o) {
+            return getClosestPlayer(o.getWorld().getWorld(), new BlockPos(o.getX(), o.getY(), o.getZ()));
         }
 
         @Override
@@ -112,7 +112,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
         }
 
         @Override
-        public EntityPlayer getPlayer(EntityJoinWorldEvent o) {
+        public PlayerEntity getPlayer(EntityJoinWorldEvent o) {
             return getClosestPlayer(o.getWorld(), o.getEntity().getPosition());
         }
 
@@ -123,7 +123,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
     };
     private static final GenericAttributeMapFactory FACTORY = new GenericAttributeMapFactory();
 
-    private static EntityPlayer getClosestPlayer(World world, BlockPos pos) {
+    private static PlayerEntity getClosestPlayer(World world, BlockPos pos) {
         return world.getClosestPlayer(pos.getX(), pos.getY(), pos.getZ(), 100, false);
     }
 
@@ -257,18 +257,18 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
     public void action(LivingSpawnEvent.CheckSpawn event) {
         EventGetter getter = new EventGetter() {
             @Override
-            public EntityLivingBase getEntityLiving() {
+            public LivingEntity getEntityLiving() {
                 return event.getEntityLiving();
             }
 
             @Override
-            public EntityPlayer getPlayer() {
+            public PlayerEntity getPlayer() {
                 return null;
             }
 
             @Override
             public World getWorld() {
-                return event.getWorld();
+                return event.getWorld().getWorld();
             }
 
             @Override
@@ -284,12 +284,12 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
     public void action(EntityJoinWorldEvent event) {
         EventGetter getter = new EventGetter() {
             @Override
-            public EntityLivingBase getEntityLiving() {
-                return event.getEntity() instanceof EntityLivingBase ? (EntityLivingBase) event.getEntity() : null;
+            public LivingEntity getEntityLiving() {
+                return event.getEntity() instanceof LivingEntity ? (LivingEntity) event.getEntity() : null;
             }
 
             @Override
-            public EntityPlayer getPlayer() {
+            public PlayerEntity getPlayer() {
                 return null;
             }
 

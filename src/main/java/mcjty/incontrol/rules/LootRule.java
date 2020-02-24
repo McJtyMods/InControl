@@ -1,6 +1,7 @@
 package mcjty.incontrol.rules;
 
 import com.google.gson.JsonElement;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.compat.ModRuleCompatibilityLayer;
 import mcjty.incontrol.rules.support.GenericRuleEvaluator;
@@ -13,10 +14,9 @@ import mcjty.tools.typed.AttributeMap;
 import mcjty.tools.typed.GenericAttributeMapFactory;
 import mcjty.tools.varia.Tools;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.JsonToNBT;
-import net.minecraft.nbt.NBTException;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -73,9 +73,9 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
         }
 
         @Override
-        public EntityPlayer getPlayer(LivingDropsEvent o) {
+        public PlayerEntity getPlayer(LivingDropsEvent o) {
             Entity entity = o.getSource().getTrueSource();
-            return entity instanceof EntityPlayer ? (EntityPlayer) entity : null;
+            return entity instanceof PlayerEntity ? (PlayerEntity) entity : null;
         }
 
         @Override
@@ -268,8 +268,8 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
             } else {
                 if (nbtJson != null) {
                     try {
-                        stack.setTagCompound(JsonToNBT.getTagFromJson(nbtJson));
-                    } catch (NBTException e) {
+                        stack.setTag(JsonToNBT.getTagFromJson(nbtJson));
+                    } catch (CommandSyntaxException e) {
                         InControl.setup.getLogger().log(Level.ERROR, "Bad nbt for '" + name + "'!");
                     }
                 }

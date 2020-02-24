@@ -11,13 +11,13 @@ import mcjty.tools.typed.Attribute;
 import mcjty.tools.typed.AttributeMap;
 import mcjty.tools.typed.GenericAttributeMapFactory;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.living.LivingExperienceDropEvent;
-import net.minecraftforge.fml.common.eventhandler.Event;
+import net.minecraftforge.eventbus.api.Event;
 
 import static mcjty.incontrol.rules.support.RuleKeys.*;
 
@@ -60,7 +60,7 @@ public class ExperienceRule extends RuleBase<RuleBase.EventGetter> {
         }
 
         @Override
-        public EntityPlayer getPlayer(LivingExperienceDropEvent o) {
+        public PlayerEntity getPlayer(LivingExperienceDropEvent o) {
             return o.getAttackingPlayer();
         }
 

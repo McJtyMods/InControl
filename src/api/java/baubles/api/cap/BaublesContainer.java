@@ -3,7 +3,7 @@ package baubles.api.cap;
 import java.util.Arrays;
 
 import baubles.api.IBauble;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.ItemStackHandler;
 
@@ -28,7 +28,7 @@ public class BaublesContainer extends ItemStackHandler implements IBaublesItemHa
 	 * stack size) into the given slot.
 	 */
 	@Override
-	public boolean isItemValidForSlot(int slot, ItemStack stack, EntityLivingBase player) {
+	public boolean isItemValidForSlot(int slot, ItemStack stack, LivingEntity player) {
 		if (stack == null || !(stack.getItem() instanceof IBauble) ||
 				!((IBauble) stack.getItem()).canEquip(stack, player))
 			return false;

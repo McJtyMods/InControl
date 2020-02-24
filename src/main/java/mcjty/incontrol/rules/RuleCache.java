@@ -1,16 +1,15 @@
 package mcjty.incontrol.rules;
 
-import mcjty.incontrol.InControl;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.monster.IMob;
-import net.minecraft.entity.passive.IAnimals;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.server.management.PlayerChunkMapEntry;
+import net.minecraft.entity.passive.AnimalEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
+import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.world.server.ServerWorld;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,10 +18,10 @@ import java.util.Set;
 
 public class RuleCache {
 
-    private Map<Integer, CachePerWorld> caches = new HashMap<>();
+    private Map<DimensionType, CachePerWorld> caches = new HashMap<>();
 
     public void reset(World world) {
-        CachePerWorld cache = caches.get(world.provider.getDimension());
+        CachePerWorld cache = caches.get(world.getDimension().getType());
         if (cache != null) {
             cache.reset();
         }
@@ -49,7 +48,7 @@ public class RuleCache {
     }
 
 
-    public int getCount(World world, Class<? extends Entity> entityType) {
+    public int getCount(World world, EntityType entityType) {
         CachePerWorld cache = getOrCreateCache(world);
         int count = cache.getCount(world, entityType);
         return count;
@@ -73,21 +72,21 @@ public class RuleCache {
         return countPerMod == null ? 0 : countPerMod.passive;
     }
 
-    public void registerSpawn(World world, Class<? extends Entity> entityType) {
+    public void registerSpawn(World world, EntityType entityType) {
         CachePerWorld cache = getOrCreateCache(world);
         cache.registerSpawn(world, entityType);
     }
 
-    public void registerDespawn(World world, Class<? extends Entity> entityType) {
+    public void registerDespawn(World world, EntityType entityType) {
         CachePerWorld cache = getOrCreateCache(world);
         cache.registerDespawn(world, entityType);
     }
 
     private CachePerWorld getOrCreateCache(World world) {
-        CachePerWorld cache = caches.get(world.provider.getDimension());
+        CachePerWorld cache = caches.get(world.getDimension().getType());
         if (cache == null) {
             cache = new CachePerWorld();
-            caches.put(world.provider.getDimension(), cache);
+            caches.put(world.getDimension().getType(), cache);
         }
         return cache;
     }
@@ -101,7 +100,7 @@ public class RuleCache {
 
     private class CachePerWorld {
 
-        private Map<Class, Integer> cachedCounters = new HashMap<>();
+        private Map<EntityType, Integer> cachedCounters = new HashMap<>();
         private Map<String, CountPerMod> countPerMod = new HashMap<>();
         private int countPassive = -1;
         private int countHostile = -1;
@@ -121,7 +120,7 @@ public class RuleCache {
 
         public int getValidSpawnChunks(World world) {
             if (validSpawnChunks == -1) {
-                validSpawnChunks = countValidSpawnChunks((WorldServer) world);
+                validSpawnChunks = countValidSpawnChunks(world);
             }
             return validSpawnChunks;
         }
@@ -135,7 +134,7 @@ public class RuleCache {
 
         private int countValidPlayers(World world) {
             int cnt = 0;
-            for (EntityPlayer entityplayer : world.playerEntities) {
+            for (PlayerEntity entityplayer : world.getPlayers()) {
                 if (!entityplayer.isSpectator()) {
                     cnt++;
                 }
@@ -143,13 +142,13 @@ public class RuleCache {
             return cnt;
         }
 
-        private int countValidSpawnChunks(WorldServer world) {
+        private int countValidSpawnChunks(World world) {
             Set<ChunkPos> eligibleChunksForSpawning = new HashSet<>();
 
-            for (EntityPlayer entityplayer : world.playerEntities) {
+            for (PlayerEntity entityplayer : world.getPlayers()) {
                 if (!entityplayer.isSpectator()) {
-                    int chunkX = MathHelper.floor(entityplayer.posX / 16.0D);
-                    int chunkZ = MathHelper.floor(entityplayer.posZ / 16.0D);
+                    int chunkX = MathHelper.floor(entityplayer.getPosX() / 16.0D);
+                    int chunkZ = MathHelper.floor(entityplayer.getPosZ() / 16.0D);
 
                     for (int dx = -8; dx <= 8; ++dx) {
                         for (int dz = -8; dz <= 8; ++dz) {
@@ -159,11 +158,12 @@ public class RuleCache {
                             if (!eligibleChunksForSpawning.contains(chunkpos)) {
 
                                 if (!flag && world.getWorldBorder().contains(chunkpos)) {
-                                    PlayerChunkMapEntry entry = world.getPlayerChunkMap().getEntry(chunkpos.x, chunkpos.z);
-
-                                    if (entry != null && entry.isSentToPlayers()) {
-                                        eligibleChunksForSpawning.add(chunkpos);
-                                    }
+                                    // @todo 1.15
+//                                    PlayerChunkMapEntry entry = world.getPlayerChunkMap().getEntry(chunkpos.x, chunkpos.z);
+//
+//                                    if (entry != null && entry.isSentToPlayers()) {
+//                                        eligibleChunksForSpawning.add(chunkpos);
+//                                    }
                                 }
                             }
                         }
@@ -193,29 +193,29 @@ public class RuleCache {
             countPassive = 0;
             countHostile = 0;
 
-            for (Entity entity : world.loadedEntityList) {
-                if (entity instanceof EntityLiving) {
-                    if (!((EntityLiving) entity).isNoDespawnRequired()) {
-                        int cnt = cachedCounters.getOrDefault(entity.getClass(), 0)+1;
-                        cachedCounters.put(entity.getClass(), cnt);
+            ((ServerWorld)world).getEntities().forEach(entity -> {
+                if (entity instanceof MobEntity) {
+                    if (!((MobEntity) entity).isNoDespawnRequired()) {
+                        int cnt = cachedCounters.getOrDefault(entity.getType(), 0)+1;
+                        cachedCounters.put(entity.getType(), cnt);
 
-                        String mod = InControl.instance.modCache.getMod(entity);
+                        String mod = entity.getType().getRegistryName().getNamespace();
                         CountPerMod count = countPerMod.computeIfAbsent(mod, s -> new CountPerMod());
                         count.total++;
 
                         if (entity instanceof IMob) {
                             count.hostile++;
                             countHostile++;
-                        } else if (entity instanceof IAnimals) {
+                        } else if (entity instanceof AnimalEntity) {
                             count.passive++;
                             countPassive++;
                         }
                     }
                 }
-            }
+            });
         }
 
-        public int getCount(World world, Class<? extends Entity> entityType) {
+        public int getCount(World world, EntityType entityType) {
             count(world);
             return cachedCounters.getOrDefault(entityType, 0);
         }
@@ -225,12 +225,12 @@ public class RuleCache {
             return countPerMod.get(mod);
         }
 
-        public void registerSpawn(World world, Class<? extends Entity> entityType) {
+        public void registerSpawn(World world, EntityType entityType) {
             count(world);
             cachedCounters.put(entityType, cachedCounters.getOrDefault(entityType, 0) + 1);
         }
 
-        public void registerDespawn(World world, Class<? extends Entity> entityType) {
+        public void registerDespawn(World world, EntityType entityType) {
             count(world);
             Integer cnt = cachedCounters.getOrDefault(entityType, 0);
             if (cnt > 0) {

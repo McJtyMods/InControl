@@ -11,19 +11,16 @@ import mcjty.tools.typed.Attribute;
 import mcjty.tools.typed.AttributeMap;
 import mcjty.tools.typed.GenericAttributeMapFactory;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.datafix.fixes.EntityId;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.event.world.WorldEvent;
-import net.minecraftforge.fml.common.registry.EntityEntry;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.logging.log4j.Level;
 
 import java.util.ArrayList;
@@ -36,7 +33,7 @@ public class PotentialSpawnRule extends RuleBase<RuleBase.EventGetter> {
     public static final IEventQuery<WorldEvent.PotentialSpawns> EVENT_QUERY = new IEventQuery<WorldEvent.PotentialSpawns>() {
         @Override
         public World getWorld(WorldEvent.PotentialSpawns o) {
-            return o.getWorld();
+            return o.getWorld().getWorld();
         }
 
         @Override
@@ -70,7 +67,7 @@ public class PotentialSpawnRule extends RuleBase<RuleBase.EventGetter> {
         }
 
         @Override
-        public EntityPlayer getPlayer(WorldEvent.PotentialSpawns o) {
+        public PlayerEntity getPlayer(WorldEvent.PotentialSpawns o) {
             return null;
         }
 
@@ -79,7 +76,6 @@ public class PotentialSpawnRule extends RuleBase<RuleBase.EventGetter> {
             return ItemStack.EMPTY;
         }
     };
-    public static final EntityId FIXER = new EntityId();
     private static final GenericAttributeMapFactory FACTORY = new GenericAttributeMapFactory();
     private static final GenericAttributeMapFactory MOB_FACTORY = new GenericAttributeMapFactory();
 
@@ -127,7 +123,7 @@ public class PotentialSpawnRule extends RuleBase<RuleBase.EventGetter> {
 
     private final GenericRuleEvaluator ruleEvaluator;
     private List<Biome.SpawnListEntry> spawnEntries = new ArrayList<>();
-    private List<Class> toRemoveMobs = new ArrayList<>();
+    private List<EntityType> toRemoveMobs = new ArrayList<>();
 
     private PotentialSpawnRule(AttributeMap map) {
         super(InControl.setup.getLogger());
@@ -142,13 +138,6 @@ public class PotentialSpawnRule extends RuleBase<RuleBase.EventGetter> {
         if (map.has(ACTION_REMOVE_MOBS)) {
             addToRemoveAction(map);
         }
-    }
-
-    public static String fixEntityId(String id) {
-        NBTTagCompound nbt = new NBTTagCompound();
-        nbt.setString("id", id);
-        nbt = FIXER.fixTagCompound(nbt);
-        return nbt.getString("id");
     }
 
     public static PotentialSpawnRule parse(JsonElement element) {
@@ -176,23 +165,20 @@ public class PotentialSpawnRule extends RuleBase<RuleBase.EventGetter> {
     private void addToRemoveAction(AttributeMap map) {
         List<String> toremove = map.getList(ACTION_REMOVE_MOBS);
         for (String s : toremove) {
-            String id = fixEntityId(s);
-            EntityEntry entry = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(id));
-            Class<? extends Entity> clazz = entry == null ? null : entry.getEntityClass();
-            if (clazz == null) {
+            EntityType type = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(s));
+            if (type == null) {
                 InControl.setup.getLogger().log(Level.ERROR, "Cannot find mob '" + s + "'!");
                 return;
             }
-            toRemoveMobs.add(clazz);
+            toRemoveMobs.add(type);
         }
     }
 
     private void makeSpawnEntries(AttributeMap map) {
         for (AttributeMap mobMap : map.getList(ACTION_MOBS)) {
-            String id = fixEntityId(mobMap.get(MOB_NAME));
-            EntityEntry ee = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(id));
-            Class<? extends Entity> clazz = ee == null ? null : ee.getEntityClass();
-            if (clazz == null) {
+            String id = mobMap.get(MOB_NAME);
+            EntityType<?> type = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(id));
+            if (type == null) {
                 InControl.setup.getLogger().log(Level.ERROR, "Cannot find mob '" + mobMap.get(MOB_NAME) + "'!");
                 return;
             }
@@ -209,8 +195,7 @@ public class PotentialSpawnRule extends RuleBase<RuleBase.EventGetter> {
             if (groupCountMax == null) {
                 groupCountMax = Math.max(groupCountMin, 1);
             }
-            Biome.SpawnListEntry entry = new Biome.SpawnListEntry((Class<? extends EntityLiving>) clazz,
-                    weight, groupCountMin, groupCountMax);
+            Biome.SpawnListEntry entry = new Biome.SpawnListEntry(type, weight, groupCountMin, groupCountMax);
             spawnEntries.add(entry);
         }
     }
@@ -223,7 +208,7 @@ public class PotentialSpawnRule extends RuleBase<RuleBase.EventGetter> {
         return ruleEvaluator.match(event, EVENT_QUERY);
     }
 
-    public List<Class> getToRemoveMobs() {
+    public List<EntityType> getToRemoveMobs() {
         return toRemoveMobs;
     }
 }

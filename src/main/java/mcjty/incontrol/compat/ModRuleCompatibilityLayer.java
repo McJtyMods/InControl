@@ -3,7 +3,7 @@ package mcjty.incontrol.compat;
 import mcjty.incontrol.setup.ModSetup;
 import mcjty.tools.rules.IEventQuery;
 import mcjty.tools.rules.IModRuleCompatibilityLayer;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
@@ -51,7 +51,7 @@ public class ModRuleCompatibilityLayer implements IModRuleCompatibilityLayer {
     }
 
     @Override
-    public ItemStack getBaubleStack(EntityPlayer player, int slot) {
+    public ItemStack getBaubleStack(PlayerEntity player, int slot) {
         return BaublesSupport.getStack(player, slot);
     }
 
@@ -61,17 +61,17 @@ public class ModRuleCompatibilityLayer implements IModRuleCompatibilityLayer {
     }
 
     @Override
-    public boolean hasGameStage(EntityPlayer player, String stage) {
+    public boolean hasGameStage(PlayerEntity player, String stage) {
         return GameStageSupport.hasGameStage(player, stage);
     }
 
     @Override
-    public void addGameStage(EntityPlayer player, String stage) {
+    public void addGameStage(PlayerEntity player, String stage) {
         GameStageSupport.addGameStage(player, stage);
     }
 
     @Override
-    public void removeGameStage(EntityPlayer player, String stage) {
+    public void removeGameStage(PlayerEntity player, String stage) {
         GameStageSupport.removeGameStage(player, stage);
     }
 
@@ -131,7 +131,7 @@ public class ModRuleCompatibilityLayer implements IModRuleCompatibilityLayer {
     }
 
     @Override
-    public String getPlayerState(EntityPlayer player, String statename) {
+    public String getPlayerState(PlayerEntity player, String statename) {
         return null;
     }
 
@@ -141,7 +141,7 @@ public class ModRuleCompatibilityLayer implements IModRuleCompatibilityLayer {
     }
 
     @Override
-    public void setPlayerState(EntityPlayer player, String statename, String statevalue) {
+    public void setPlayerState(PlayerEntity player, String statename, String statevalue) {
         // Not supported by In Control
     }
 
@@ -152,6 +152,6 @@ public class ModRuleCompatibilityLayer implements IModRuleCompatibilityLayer {
 
     @Override
     public String getBiomeName(Biome biome) {
-        return biome.biomeName;
+        return biome.getDisplayName().getFormattedText();
     }
 }

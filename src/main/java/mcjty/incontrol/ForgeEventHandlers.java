@@ -1,24 +1,29 @@
 package mcjty.incontrol;
 
+import mcjty.incontrol.commands.ModCommands;
 import mcjty.incontrol.rules.*;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.item.EntityItem;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.biome.Biome;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.living.LivingExperienceDropEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import net.minecraftforge.event.entity.living.ZombieEvent;
 import net.minecraftforge.event.world.WorldEvent;
-import net.minecraftforge.fml.common.eventhandler.Event;
-import net.minecraftforge.fml.common.eventhandler.EventPriority;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.eventbus.api.Event;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Level;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -27,10 +32,15 @@ public class ForgeEventHandlers {
 
     public static boolean debug = false;
 
+    @SubscribeEvent
+    public void serverLoad(FMLServerStartingEvent event) {
+        ModCommands.register(event.getCommandDispatcher());
+    }
+
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onEntityJoinWorld(EntityJoinWorldEvent event) {
         int i = 0;
-        if (!(event.getEntity() instanceof EntityLiving)) {
+        if (!(event.getEntity() instanceof LivingEntity)) {
             return;
         }
         if (event.getWorld().isRemote) {
@@ -59,8 +69,8 @@ public class ForgeEventHandlers {
     public void onEntityJoinWorldLast(EntityJoinWorldEvent event) {
         // We register spawns in a high priority event so that we take things that other mods
         // do into account
-        if (event.getEntity() instanceof EntityLiving) {
-            InControl.setup.cache.registerSpawn(event.getWorld(), event.getEntity().getClass());
+        if (event.getEntity() instanceof LivingEntity) {
+            InControl.setup.cache.registerSpawn(event.getWorld(), event.getEntity().getType());
         }
     }
 
@@ -83,7 +93,7 @@ public class ForgeEventHandlers {
                     InControl.setup.getLogger().log(Level.INFO, "Rule " + i + ": " + result
                             + " entity: " + event.getEntity().getName()
                             + " y: " + event.getY()
-                            + " biome: " + event.getWorld().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ())).biomeName);
+                            + " biome: " + event.getWorld().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ())).getDisplayName().getFormattedText());
                 }
                 if (result != null) {
                     event.setResult(result);
@@ -107,7 +117,7 @@ public class ForgeEventHandlers {
                     InControl.setup.getLogger().log(Level.INFO, "SummonAid " + i + ": " + result
                             + " entity: " + event.getEntity().getName()
                             + " y: " + event.getY()
-                            + " biome: " + event.getWorld().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ())).biomeName);
+                            + " biome: " + event.getWorld().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ())).getDisplayName().getFormattedText());
                 }
                 event.setResult(result);
                 if (result != Event.Result.DENY) {
@@ -127,9 +137,9 @@ public class ForgeEventHandlers {
             if (rule.match(event)) {
 
                 // First remove mob entries if needed
-                for (Class clazz : rule.getToRemoveMobs()) {
+                for (EntityType type : rule.getToRemoveMobs()) {
                     for (int idx = event.getList().size() - 1; idx >= 0; idx--) {
-                        if (event.getList().get(idx).entityClass == clazz) {
+                        if (event.getList().get(idx).entityType == type) {
                             event.getList().remove(idx);
                         }
                     }
@@ -138,7 +148,7 @@ public class ForgeEventHandlers {
                 List<Biome.SpawnListEntry> spawnEntries = rule.getSpawnEntries();
                 for (Biome.SpawnListEntry entry : spawnEntries) {
                     if (debug) {
-                        InControl.setup.getLogger().log(Level.INFO, "Potential " + i + ": " + entry.entityClass.toString());
+                        InControl.setup.getLogger().log(Level.INFO, "Potential " + i + ": " + entry.entityType.getRegistryName().toString());
                     }
                     event.getList().add(entry);
                 }
@@ -183,13 +193,25 @@ public class ForgeEventHandlers {
                 if (rule.isRemoveAll()) {
                     event.getDrops().clear();
                 } else {
+                    List<ItemEntity> toRemove = null;
                     for (Predicate<ItemStack> stackTest : rule.getToRemoveItems()) {
-                        for (int idx = event.getDrops().size() - 1; idx >= 0; idx--) {
-                            ItemStack stack = event.getDrops().get(idx).getItem();
+                        Collection<ItemEntity> drops = event.getDrops();
+                        for (ItemEntity drop : drops) {
+                            ItemStack stack = drop.getItem();
                             if (stackTest.test(stack)) {
-                                event.getDrops().remove(idx);
+                                if (toRemove == null) {
+                                    toRemove = new ArrayList<>();
+                                };
+                                toRemove.add(drop);
                             }
                         }
+                    }
+                    if (toRemove != null) {
+                        Collection<ItemEntity> drops = event.getDrops();
+                        for (ItemEntity entity : toRemove) {
+                            drops.remove(entity);
+                        }
+
                     }
                 }
 
@@ -202,13 +224,13 @@ public class ForgeEventHandlers {
                         ItemStack copy = item.copy();
                         copy.setCount(item.getMaxStackSize());
                         amount -= item.getMaxStackSize();
-                        event.getDrops().add(new EntityItem(event.getEntity().getEntityWorld(), pos.getX(), pos.getY(), pos.getZ(),
+                        event.getDrops().add(new ItemEntity(event.getEntity().getEntityWorld(), pos.getX(), pos.getY(), pos.getZ(),
                                 copy));
                     }
                     if (amount > 0) {
                         ItemStack copy = item.copy();
                         copy.setCount(amount);
-                        event.getDrops().add(new EntityItem(event.getEntity().getEntityWorld(), pos.getX(), pos.getY(), pos.getZ(),
+                        event.getDrops().add(new ItemEntity(event.getEntity().getEntityWorld(), pos.getX(), pos.getY(), pos.getZ(),
                                 copy));
                     }
                 }
