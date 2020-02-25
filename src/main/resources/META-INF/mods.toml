@@ -11,7 +11,7 @@ authors="McJty"
 # A list of mods - how many allowed here is determined by the individual mod loader
 [[mods]] #mandatory
 # The modid of the mod
-modId="xnet"
+modId="incontrol"
 # The version number of the mod - there's a few well known ${} variables useable here or just hardcode it
 version="${file.jarVersion}" #mandatory
 displayName="InControl"
@@ -19,7 +19,7 @@ displayName="InControl"
 #updateJSONURL="http://myurl.me/" #optional
 # The description text for the mod (multi line!) (#mandatory)
 description='''
-Base mod for all McJty mods
+Be in control of spawns
 '''
 # A dependency - use the . to indicate dependency for a specific modid. Dependencies are optional.
 [[dependencies.incontrol]] #optional
