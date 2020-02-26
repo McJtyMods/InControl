@@ -44,7 +44,11 @@ public class GenericAttributeMapFactory {
                     transformer = JsonElement::toString;
                 } else if (type == Type.DIMENSION_TYPE) {
                     transformer = jsonElement -> {
-                        return DimensionType.byName(new ResourceLocation(jsonElement.getAsString()));
+                        if (jsonElement.getAsJsonPrimitive().isNumber()) {
+                            return DimensionType.getById(jsonElement.getAsInt());
+                        } else {
+                            return DimensionType.byName(new ResourceLocation(jsonElement.getAsString()));
+                        }
                     };
                 } else {
                     transformer = e -> "INVALID";
@@ -71,8 +75,12 @@ public class GenericAttributeMapFactory {
                     }
                 } else if (type == Type.DIMENSION_TYPE) {
                     if (jsonObject.has(key.getName())) {
-                        String str = jsonObject.get(key.getName()).getAsString();
-                        map.setNonnull(key, DimensionType.byName(new ResourceLocation(str)));
+                        JsonElement jsonElement = jsonObject.get(key.getName());
+                        if (element.getAsJsonPrimitive().isNumber()) {
+                            map.setNonnull(key, DimensionType.getById(element.getAsInt()));
+                        } else {
+                            map.setNonnull(key, DimensionType.byName(new ResourceLocation(jsonElement.getAsString())));
+                        }
                     }
                 } else if (type == Type.JSON) {
                     if (jsonObject.has(key.getName())) {
