@@ -124,14 +124,14 @@ dependencies {
             transitive = false
         })
     }
-    if (findProject(':McJtyTools') != null) {
-        compile project(':McJtyTools')
-    } else {
-        compile fg.deobf (project.dependencies.create("com.github.mcjty:mcjtytools:${mcjtytools_version}") {
-            transitive = false
-        })
-        embed "com.github.mcjty:mcjtytools:${mcjtytools_version}"
-    }
+//    if (findProject(':McJtyTools') != null) {
+//        compile project(':McJtyTools')
+//    } else {
+//        compile fg.deobf (project.dependencies.create("com.github.mcjty:mcjtytools:${mcjtytools_version}") {
+//            transitive = false
+//        })
+//        embed "com.github.mcjty:mcjtytools:${mcjtytools_version}"
+//    }
 
     //deobfCompile "net.darkhax.gamestages:GameStages-1.12.2:2.0.114"
     //compile "serene-seasons:SereneSeasons-1.12.2:1.2.15:universal"

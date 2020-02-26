@@ -69,7 +69,7 @@ public class ForgeEventHandlers {
     public void onEntityJoinWorldLast(EntityJoinWorldEvent event) {
         // We register spawns in a high priority event so that we take things that other mods
         // do into account
-        if (event.getEntity() instanceof LivingEntity) {
+        if (!event.getWorld().isRemote() && event.getEntity() instanceof LivingEntity) {
             InControl.setup.cache.registerSpawn(event.getWorld(), event.getEntity().getType());
         }
     }
