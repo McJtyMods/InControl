@@ -19,10 +19,10 @@ apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
-configurations {
-    // configuration that holds jars to embed inside the jar
-    embed
-}
+//configurations {
+//    // configuration that holds jars to embed inside the jar
+//    embed
+//}
 
 repositories {
     maven { // The repo from which to get waila
