@@ -6,6 +6,7 @@ import org.apache.logging.log4j.Level;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -28,8 +29,8 @@ public class RulesManager {
         readAllRules();
     }
 
-    public static void setRulePath(File directory) {
-        path = directory.getPath();
+    public static void setRulePath(Path path) {
+        RulesManager.path = path.toString();
     }
 
     public static void readRules() {
@@ -79,6 +80,11 @@ public class RulesManager {
     }
 
     private static void readAllRules() {
+        File directory = new File(path + File.separator + "incontrol");
+        if (!directory.exists()) {
+            directory.mkdir();
+        }
+
         readRules(path, "spawn.json", SpawnRule::parse, rules);
         readRules(path, "summonaid.json", SummonAidRule::parse, summonAidRules);
         readRules(path, "potentialspawn.json", PotentialSpawnRule::parse, potentialSpawnRules);

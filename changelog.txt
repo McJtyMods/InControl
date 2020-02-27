@@ -1,3 +1,6 @@
+4.0.1:
+- Fixed a problem where the config files where generated in the root
+
 3.9.16:
 - Fixed a problem where 'onjoin' rules were also firing on the client which could cause issues with some of the conditions that don't properly work on the client
 

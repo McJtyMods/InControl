@@ -8,6 +8,7 @@ import mcjty.incontrol.rules.RuleCache;
 import mcjty.incontrol.rules.RulesManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.ModList;
+import net.minecraftforge.fml.loading.FMLPaths;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,10 +29,10 @@ public class ModSetup {
         setupModCompat();
 
         MinecraftForge.EVENT_BUS.register(new ForgeEventHandlers());
+        RulesManager.setRulePath(FMLPaths.CONFIGDIR.get());
         RulesManager.readRules();
         // @todo 1.15
 //        ConfigSetup.init(e);
-//        RulesManager.setRulePath(e.getModConfigurationDirectory());
     }
 
     public Logger getLogger() {
