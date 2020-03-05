@@ -17,7 +17,7 @@ public class DummyCommandSender {} /* @todo 1.15 implements ICommandSender {
 
     @Override
     public ITextComponent getDisplayName() {
-        return new TextComponentString("dummy");
+        return new StringTextComponent("dummy");
     }
 
     @Override
