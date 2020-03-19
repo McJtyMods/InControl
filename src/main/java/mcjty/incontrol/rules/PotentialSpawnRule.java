@@ -24,7 +24,9 @@ import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.logging.log4j.Level;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static mcjty.incontrol.rules.support.RuleKeys.*;
 
@@ -123,7 +125,7 @@ public class PotentialSpawnRule extends RuleBase<RuleBase.EventGetter> {
 
     private final GenericRuleEvaluator ruleEvaluator;
     private List<Biome.SpawnListEntry> spawnEntries = new ArrayList<>();
-    private List<EntityType> toRemoveMobs = new ArrayList<>();
+    private Set<EntityType> toRemoveMobs = new HashSet<>();
 
     private PotentialSpawnRule(AttributeMap map) {
         super(InControl.setup.getLogger());
@@ -208,7 +210,7 @@ public class PotentialSpawnRule extends RuleBase<RuleBase.EventGetter> {
         return ruleEvaluator.match(event, EVENT_QUERY);
     }
 
-    public List<EntityType> getToRemoveMobs() {
+    public Set<EntityType> getToRemoveMobs() {
         return toRemoveMobs;
     }
 }
