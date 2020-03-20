@@ -1,3 +1,6 @@
+Upcoming:
+- Darkere improved performance when removing large amounts of mobs in potential spawn
+
 4.0.1:
 - Fixed a problem where the config files where generated in the root
 
