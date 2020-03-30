@@ -5,16 +5,12 @@ import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.server.ServerWorld;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 public class RuleCache {
 
@@ -143,34 +139,7 @@ public class RuleCache {
         }
 
         private int countValidSpawnChunks(World world) {
-            Set<ChunkPos> eligibleChunksForSpawning = new HashSet<>();
-
-            for (PlayerEntity entityplayer : world.getPlayers()) {
-                if (!entityplayer.isSpectator()) {
-                    int chunkX = MathHelper.floor(entityplayer.getPosX() / 16.0D);
-                    int chunkZ = MathHelper.floor(entityplayer.getPosZ() / 16.0D);
-
-                    for (int dx = -8; dx <= 8; ++dx) {
-                        for (int dz = -8; dz <= 8; ++dz) {
-                            boolean flag = dx == -8 || dx == 8 || dz == -8 || dz == 8;
-                            ChunkPos chunkpos = new ChunkPos(dx + chunkX, dz + chunkZ);
-
-                            if (!eligibleChunksForSpawning.contains(chunkpos)) {
-
-                                if (!flag && world.getWorldBorder().contains(chunkpos)) {
-                                    // @todo 1.15
-//                                    PlayerChunkMapEntry entry = world.getPlayerChunkMap().getEntry(chunkpos.x, chunkpos.z);
-//
-//                                    if (entry != null && entry.isSentToPlayers()) {
-//                                        eligibleChunksForSpawning.add(chunkpos);
-//                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            return eligibleChunksForSpawning.size();
+            return ((ServerWorld)world).getChunkProvider().chunkManager.getLoadedChunkCount();
         }
 
         public int getCountPassive(World world) {

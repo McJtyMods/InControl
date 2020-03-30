@@ -17,8 +17,6 @@ public class InControl {
 
     public InControl() {
         FMLJavaModLoadingContext.get().getModEventBus().addListener((FMLCommonSetupEvent event) -> setup.init());
-        FMLJavaModLoadingContext.get().getModEventBus().addListener((FMLServerStoppedEvent event) -> {
-            StructureCache.CACHE.clean();
-        });
+        FMLJavaModLoadingContext.get().getModEventBus().addListener((FMLServerStoppedEvent event) -> StructureCache.CACHE.clean());
     }
 }

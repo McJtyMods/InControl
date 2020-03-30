@@ -5,6 +5,7 @@ import mcjty.tools.rules.IEventQuery;
 import mcjty.tools.rules.IModRuleCompatibilityLayer;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 
@@ -152,6 +153,6 @@ public class ModRuleCompatibilityLayer implements IModRuleCompatibilityLayer {
 
     @Override
     public String getBiomeName(Biome biome) {
-        return biome.getDisplayName().getFormattedText();
+        return new TranslationTextComponent(biome.getTranslationKey()).getFormattedText();
     }
 }

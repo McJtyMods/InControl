@@ -7,6 +7,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
@@ -93,7 +94,7 @@ public class ForgeEventHandlers {
                     InControl.setup.getLogger().log(Level.INFO, "Rule " + i + ": " + result
                             + " entity: " + event.getEntity().getName()
                             + " y: " + event.getY()
-                            + " biome: " + event.getWorld().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ())).getDisplayName().getFormattedText());
+                            + " biome: " + new TranslationTextComponent(event.getWorld().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ())).getTranslationKey()).getFormattedText());
                 }
                 if (result != null) {
                     event.setResult(result);
@@ -117,7 +118,7 @@ public class ForgeEventHandlers {
                     InControl.setup.getLogger().log(Level.INFO, "SummonAid " + i + ": " + result
                             + " entity: " + event.getEntity().getName()
                             + " y: " + event.getY()
-                            + " biome: " + event.getWorld().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ())).getDisplayName().getFormattedText());
+                            + " biome: " + new TranslationTextComponent(event.getWorld().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ())).getTranslationKey()).getFormattedText());
                 }
                 event.setResult(result);
                 if (result != Event.Result.DENY) {
