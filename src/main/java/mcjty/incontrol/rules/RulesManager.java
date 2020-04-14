@@ -5,7 +5,6 @@ import mcjty.incontrol.InControl;
 import org.apache.logging.log4j.Level;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;

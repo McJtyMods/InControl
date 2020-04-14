@@ -2,7 +2,6 @@ package mcjty.incontrol;
 
 import mcjty.incontrol.commands.ModCommands;
 import mcjty.incontrol.rules.*;
-import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.item.ItemStack;

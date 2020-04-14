@@ -470,7 +470,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         if (map.has(BLOCKOFFSET)) {
             posFunction = parseOffset(map.get(BLOCKOFFSET));
         } else {
-            posFunction = event -> event.getPosition();
+            posFunction = EventGetter::getPosition;
         }
 
         String json = map.get(ACTION_SETBLOCK);

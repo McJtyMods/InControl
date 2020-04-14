@@ -1,11 +1,11 @@
 package baubles.api.cap;
 
-import java.util.Arrays;
-
 import baubles.api.IBauble;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.ItemStackHandler;
+
+import java.util.Arrays;
 
 public class BaublesContainer extends ItemStackHandler implements IBaublesItemHandler {
 

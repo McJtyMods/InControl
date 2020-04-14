@@ -403,7 +403,7 @@ public class CommonRuleEvaluator {
 
             checks.add((event,query) -> {
                 Biome biome = query.getWorld(event).getBiome(query.getPos(event));
-                return BiomeDictionary.getTypes(biome).stream().anyMatch(s -> types.contains(s));
+                return BiomeDictionary.getTypes(biome).stream().anyMatch(types::contains);
             });
         }
     }
@@ -874,7 +874,7 @@ public class CommonRuleEvaluator {
     private int getEnergy(World world, BlockPos pos, @Nullable Direction side) {
         TileEntity tileEntity = world.getTileEntity(pos);
         if (tileEntity != null) {
-            return tileEntity.getCapability(CapabilityEnergy.ENERGY, side).map(h -> h.getEnergyStored()).orElse(0);
+            return tileEntity.getCapability(CapabilityEnergy.ENERGY, side).map(IEnergyStorage::getEnergyStored).orElse(0);
         }
         return 0;
     }
