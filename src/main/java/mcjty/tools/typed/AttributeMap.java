@@ -22,10 +22,12 @@ public class AttributeMap {
     }
 
     public <A> A get(@Nonnull Key<A> key) {
+        //noinspection unchecked
         return (A) values.get(key);
     }
 
     public <A> Optional<A> getOptional(@Nonnull Key<A> key) {
+        //noinspection unchecked
         return Optional.ofNullable((A) values.get(key));
     }
 
@@ -33,7 +35,8 @@ public class AttributeMap {
         if (!values.containsKey(key)) {
             values.put(key, new ArrayList<>());
         }
-        List l = (List) values.get(key);
+        //noinspection unchecked
+        List<A> l = (List<A>) values.get(key);
         l.add(value);
     }
 
@@ -44,7 +47,8 @@ public class AttributeMap {
         if (!values.containsKey(key)) {
             values.put(key, new ArrayList<>());
         }
-        List l = (List) values.get(key);
+        //noinspection unchecked
+        List<A> l = (List<A>) values.get(key);
         l.add(value);
     }
 
@@ -52,6 +56,7 @@ public class AttributeMap {
         if (!values.containsKey(key)) {
             return Collections.emptyList();
         }
+        //noinspection unchecked
         return (List<A>) values.get(key);
     }
 }
