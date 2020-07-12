@@ -1,3 +1,6 @@
+4.0.4:
+- Fixed a bug with the health, damage, and speed actions. They often fired multiple times making the mobs too OP
+
 4.0.3:
 - 'perchunk' is implemented again
 - Avoid server-side crashes in combination with debug command
