@@ -12,11 +12,11 @@ import mcjty.tools.varia.Tools;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.attributes.IAttributeInstance;
+import net.minecraft.entity.ai.attributes.Attributes;
+import net.minecraft.entity.ai.attributes.ModifiableAttributeInstance;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.monster.EndermanEntity;
-import net.minecraft.entity.monster.ZombiePigmanEntity;
+import net.minecraft.entity.monster.ZombifiedPiglinEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.BlockItem;
@@ -26,7 +26,7 @@ import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.potion.Effect;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.state.IProperty;
+import net.minecraft.state.Property;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.Hand;
 import net.minecraft.util.ResourceLocation;
@@ -238,7 +238,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
             addSource(DamageSource.ANVIL);
             addSource(DamageSource.FALLING_BLOCK);
             addSource(DamageSource.DRAGON_BREATH);
-            addSource(DamageSource.FIREWORKS);
+//            addSource(DamageSource.FIREWORKS);    // @todo 1.16
         }
     }
 
@@ -510,7 +510,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
                     JsonObject propObj = el.getAsJsonObject();
                     String name = propObj.get("name").getAsString();
                     String value = propObj.get("value").getAsString();
-                    for (IProperty<?> key : state.getProperties()) {
+                    for (Property<?> key : state.getProperties()) {
                         if (name.equals(key.getName())) {
                             state = CommonRuleEvaluator.set(state, key, value);
                         }
@@ -646,7 +646,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
             LivingEntity entityLiving = event.getEntityLiving();
             if (entityLiving != null) {
                 if (!entityLiving.getTags().contains("ctrlHealth")) {
-                    IAttributeInstance entityAttribute = entityLiving.getAttribute(SharedMonsterAttributes.MAX_HEALTH);
+                    ModifiableAttributeInstance entityAttribute = entityLiving.getAttribute(Attributes.MAX_HEALTH);
                     if (entityAttribute != null) {
                         double newMax = entityAttribute.getBaseValue() * m + a;
                         entityAttribute.setBaseValue(newMax);
@@ -665,7 +665,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
             LivingEntity entityLiving = event.getEntityLiving();
             if (entityLiving != null) {
                 if (!entityLiving.getTags().contains("ctrlSpeed")) {
-                    IAttributeInstance entityAttribute = entityLiving.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED);
+                    ModifiableAttributeInstance entityAttribute = entityLiving.getAttribute(Attributes.MOVEMENT_SPEED);
                     if (entityAttribute != null) {
                         double newMax = entityAttribute.getBaseValue() * m + a;
                         entityAttribute.setBaseValue(newMax);
@@ -696,7 +696,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
             LivingEntity entityLiving = event.getEntityLiving();
             if (entityLiving != null) {
                 if (!entityLiving.getTags().contains("ctrlDamage")) {
-                    IAttributeInstance entityAttribute = entityLiving.getAttribute(SharedMonsterAttributes.ATTACK_DAMAGE);
+                    ModifiableAttributeInstance entityAttribute = entityLiving.getAttribute(Attributes.ATTACK_DAMAGE);
                     if (entityAttribute != null) {
                         double newMax = entityAttribute.getBaseValue() * m + a;
                         entityAttribute.setBaseValue(newMax);
@@ -803,8 +803,8 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         if (map.get(ACTION_ANGRY)) {
             actions.add(event -> {
                 LivingEntity entityLiving = event.getEntityLiving();
-                if (entityLiving instanceof ZombiePigmanEntity) {
-                    ZombiePigmanEntity pigZombie = (ZombiePigmanEntity) entityLiving;
+                if (entityLiving instanceof ZombifiedPiglinEntity) {
+                    ZombifiedPiglinEntity pigZombie = (ZombifiedPiglinEntity) entityLiving;
                     PlayerEntity player = event.getWorld().getClosestPlayer(entityLiving, 50);
                     if (player != null) {
                         pigZombie.setRevengeTarget(player);
@@ -812,7 +812,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
                 } else if (entityLiving instanceof LivingEntity) {
                     PlayerEntity player = event.getWorld().getClosestPlayer(entityLiving, 50);
                     if (player != null) {
-                        ((LivingEntity) entityLiving).setRevengeTarget(player);
+                        entityLiving.setRevengeTarget(player);
                     }
                 }
             });

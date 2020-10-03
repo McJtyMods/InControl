@@ -2,7 +2,8 @@ package mcjty.tools.rules;
 
 import mcjty.tools.typed.Key;
 import mcjty.tools.typed.Type;
-import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.util.RegistryKey;
+import net.minecraft.world.World;
 
 public interface CommonRuleKeys {
 
@@ -27,7 +28,7 @@ public interface CommonRuleKeys {
     Key<String> BIOME = Key.create(Type.STRING, "biome");
     Key<String> BIOMETYPE = Key.create(Type.STRING, "biometype");
     Key<String> STRUCTURE = Key.create(Type.STRING, "structure");
-    Key<DimensionType> DIMENSION = Key.create(Type.DIMENSION_TYPE, "dimension");
+    Key<RegistryKey<World>> DIMENSION = Key.create(Type.DIMENSION_TYPE, "dimension");
 
     Key<String> HELMET = Key.create(Type.JSON, "helmet");
     Key<String> CHESTPLATE = Key.create(Type.JSON, "chestplate");

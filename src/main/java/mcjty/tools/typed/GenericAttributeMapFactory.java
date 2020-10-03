@@ -4,8 +4,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import mcjty.tools.varia.JSonTools;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.util.registry.Registry;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -43,13 +44,7 @@ public class GenericAttributeMapFactory {
                 } else if (type == Type.JSON) {
                     transformer = JsonElement::toString;
                 } else if (type == Type.DIMENSION_TYPE) {
-                    transformer = jsonElement -> {
-                        if (jsonElement.getAsJsonPrimitive().isNumber()) {
-                            return DimensionType.getById(jsonElement.getAsInt());
-                        } else {
-                            return DimensionType.byName(new ResourceLocation(jsonElement.getAsString()));
-                        }
-                    };
+                    transformer = jsonElement -> RegistryKey.getOrCreateKey(Registry.WORLD_KEY, new ResourceLocation(jsonElement.getAsString()));
                 } else {
                     transformer = e -> "INVALID";
                 }
@@ -76,11 +71,7 @@ public class GenericAttributeMapFactory {
                 } else if (type == Type.DIMENSION_TYPE) {
                     if (jsonObject.has(key.getName())) {
                         JsonElement jsonElement = jsonObject.get(key.getName());
-                        if (element.getAsJsonPrimitive().isNumber()) {
-                            map.setNonnull(key, DimensionType.getById(element.getAsInt()));
-                        } else {
-                            map.setNonnull(key, DimensionType.byName(new ResourceLocation(jsonElement.getAsString())));
-                        }
+                        map.setNonnull(key, RegistryKey.getOrCreateKey(Registry.WORLD_KEY, new ResourceLocation(jsonElement.getAsString())));
                     }
                 } else if (type == Type.JSON) {
                     if (jsonObject.has(key.getName())) {

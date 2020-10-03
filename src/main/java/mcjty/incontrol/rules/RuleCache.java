@@ -5,8 +5,8 @@ import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.world.World;
-import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.server.ServerWorld;
 
 import java.util.HashMap;
@@ -14,10 +14,10 @@ import java.util.Map;
 
 public class RuleCache {
 
-    private Map<DimensionType, CachePerWorld> caches = new HashMap<>();
+    private Map<RegistryKey<World>, CachePerWorld> caches = new HashMap<>();
 
     public void reset(World world) {
-        CachePerWorld cache = caches.get(world.getDimension().getType());
+        CachePerWorld cache = caches.get(world.getDimensionKey());
         if (cache != null) {
             cache.reset();
         }
@@ -79,10 +79,10 @@ public class RuleCache {
     }
 
     private CachePerWorld getOrCreateCache(World world) {
-        CachePerWorld cache = caches.get(world.getDimension().getType());
+        CachePerWorld cache = caches.get(world.getDimensionKey());
         if (cache == null) {
             cache = new CachePerWorld();
-            caches.put(world.getDimension().getType(), cache);
+            caches.put(world.getDimensionKey(), cache);
         }
         return cache;
     }
