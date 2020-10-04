@@ -16,7 +16,6 @@ import net.minecraft.entity.ai.attributes.Attributes;
 import net.minecraft.entity.ai.attributes.ModifiableAttributeInstance;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.monster.EndermanEntity;
-import net.minecraft.entity.monster.ZombifiedPiglinEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.BlockItem;
@@ -803,13 +802,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         if (map.get(ACTION_ANGRY)) {
             actions.add(event -> {
                 LivingEntity entityLiving = event.getEntityLiving();
-                if (entityLiving instanceof ZombifiedPiglinEntity) {
-                    ZombifiedPiglinEntity pigZombie = (ZombifiedPiglinEntity) entityLiving;
-                    PlayerEntity player = event.getWorld().getClosestPlayer(entityLiving, 50);
-                    if (player != null) {
-                        pigZombie.setRevengeTarget(player);
-                    }
-                } else if (entityLiving instanceof LivingEntity) {
+                if (entityLiving instanceof LivingEntity) {
                     PlayerEntity player = event.getWorld().getClosestPlayer(entityLiving, 50);
                     if (player != null) {
                         entityLiving.setRevengeTarget(player);

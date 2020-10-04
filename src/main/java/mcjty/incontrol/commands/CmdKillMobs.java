@@ -14,9 +14,11 @@ import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.util.RegistryKey;
+import net.minecraft.util.Util;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 
 import java.util.List;
@@ -38,11 +40,11 @@ public class CmdKillMobs  implements Command<CommandSource> {
         if (player != null) {
             String type = context.getArgument("type", String.class);
             if (type == null || type.trim().isEmpty()) {
-                player.sendMessage(new StringTextComponent(TextFormatting.RED + "Use 'all', 'passive', 'hostile' or name of the mob followed by optional dimension id"));
+                player.sendMessage(new StringTextComponent(TextFormatting.RED + "Use 'all', 'passive', 'hostile' or name of the mob followed by optional dimension id"), Util.DUMMY_UUID);
                 InControl.setup.getLogger().error("Use 'all', 'passive', 'hostile', 'entity' or name of the mob followed by optional dimension id");
                 return 0;
             }
-            DimensionType dimension = player.getEntityWorld().getDimension().getType();
+            RegistryKey<World> dimension = player.getEntityWorld().getDimensionKey();
 //            if (args.length > 1) {
 //                dimension = Integer.parseInt(args[1]);
 //            }
@@ -69,7 +71,7 @@ public class CmdKillMobs  implements Command<CommandSource> {
             for (Entity e : entities) {
                 worldServer.removeEntity(e);
             }
-            player.sendMessage(new StringTextComponent(TextFormatting.YELLOW + "Removed " + entities.size() + " entities!"));
+            player.sendMessage(new StringTextComponent(TextFormatting.YELLOW + "Removed " + entities.size() + " entities!"), Util.DUMMY_UUID);
         }
         return 0;
     }

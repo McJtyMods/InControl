@@ -9,6 +9,7 @@ import mcjty.incontrol.ForgeEventHandlers;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.util.Util;
 import net.minecraft.util.text.StringTextComponent;
 
 public class CmdDebug implements Command<CommandSource> {
@@ -27,9 +28,9 @@ public class CmdDebug implements Command<CommandSource> {
         if (player != null) {
             ForgeEventHandlers.debug = !ForgeEventHandlers.debug;
             if (ForgeEventHandlers.debug) {
-                player.sendMessage(new StringTextComponent("Enabled InControl debug mode"));
+                player.sendMessage(new StringTextComponent("Enabled InControl debug mode"), Util.DUMMY_UUID);
             } else {
-                player.sendMessage(new StringTextComponent("Disabled InControl debug mode"));
+                player.sendMessage(new StringTextComponent("Disabled InControl debug mode"), Util.DUMMY_UUID);
             }
         }
         return 0;

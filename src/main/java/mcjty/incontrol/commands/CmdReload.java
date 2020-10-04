@@ -9,6 +9,7 @@ import mcjty.incontrol.rules.RulesManager;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.util.Util;
 import net.minecraft.util.text.StringTextComponent;
 
 public class CmdReload implements Command<CommandSource> {
@@ -25,7 +26,7 @@ public class CmdReload implements Command<CommandSource> {
     public int run(CommandContext<CommandSource> context) throws CommandSyntaxException {
         ServerPlayerEntity player = context.getSource().asPlayer();
         if (player != null) {
-            player.sendMessage(new StringTextComponent("Reloaded InControl rules"));
+            player.sendMessage(new StringTextComponent("Reloaded InControl rules"), Util.DUMMY_UUID);
             RulesManager.reloadRules();
         }
         return 0;
