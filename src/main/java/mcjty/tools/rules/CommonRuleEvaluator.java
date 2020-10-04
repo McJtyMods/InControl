@@ -18,8 +18,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.ListNBT;
+import net.minecraft.state.Property;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
@@ -298,13 +300,13 @@ public class CommonRuleEvaluator {
     }
 
     private void addDimensionCheck(AttributeMap map) {
-        List<DimensionType> dimensions = map.getList(DIMENSION);
+        List<RegistryKey<World>> dimensions = map.getList(DIMENSION);
         if (dimensions.size() == 1) {
-            DimensionType dim = dimensions.get(0);
-            checks.add((event,query) -> query.getWorld(event).getDimension().getType() == dim);
+            RegistryKey<World> dim = dimensions.get(0);
+            checks.add((event,query) -> query.getWorld(event).getDimensionKey().equals(dim));
         } else {
-            Set<DimensionType> dims = new HashSet<>(dimensions);
-            checks.add((event,query) -> dims.contains(query.getWorld(event).getDimension().getType()));
+            Set<RegistryKey<World>> dims = new HashSet<>(dimensions);
+            checks.add((event,query) -> dims.contains(query.getWorld(event).getDimensionKey()));
         }
     }
 
@@ -340,25 +342,26 @@ public class CommonRuleEvaluator {
 
     private void addTempCategoryCheck(AttributeMap map) {
         String tempcategory = map.get(TEMPCATEGORY).toLowerCase();
-        Biome.TempCategory cat = null;
-        if ("cold".equals(tempcategory)) {
-            cat = Biome.TempCategory.COLD;
-        } else if ("medium".equals(tempcategory)) {
-            cat = Biome.TempCategory.MEDIUM;
-        } else if ("warm".equals(tempcategory)) {
-            cat = Biome.TempCategory.WARM;
-        } else if ("ocean".equals(tempcategory)) {
-            cat = Biome.TempCategory.OCEAN;
-        } else {
-            logger.log(Level.ERROR, "Unknown tempcategory '" + tempcategory + "'! Use one of 'cold', 'medium', 'warm',  or 'ocean'");
-            return;
-        }
-
-        Biome.TempCategory finalCat = cat;
-        checks.add((event,query) -> {
-            Biome biome = query.getWorld(event).getBiome(query.getPos(event));
-            return biome.getTempCategory() == finalCat;
-        });
+//        Biome.TempCategory cat = null;
+//        if ("cold".equals(tempcategory)) {
+//            cat = Biome.TempCategory.COLD;
+//        } else if ("medium".equals(tempcategory)) {
+//            cat = Biome.TempCategory.MEDIUM;
+//        } else if ("warm".equals(tempcategory)) {
+//            cat = Biome.TempCategory.WARM;
+//        } else if ("ocean".equals(tempcategory)) {
+//            cat = Biome.TempCategory.OCEAN;
+//        } else {
+//            logger.log(Level.ERROR, "Unknown tempcategory '" + tempcategory + "'! Use one of 'cold', 'medium', 'warm',  or 'ocean'");
+//            return;
+//        }
+//
+//        Biome.TempCategory finalCat = cat;
+//        checks.add((event,query) -> {
+//            Biome biome = query.getWorld(event).getBiome(query.getPos(event));
+//            return biome.getTempCategory() == finalCat;
+//        });
+        // @todo 1.16
     }
 
     private void addStructureCheck(AttributeMap map) {
@@ -384,30 +387,31 @@ public class CommonRuleEvaluator {
     }
 
     private void addBiomeTypesCheck(AttributeMap map) {
-        List<String> biomeTypes = map.getList(BIOMETYPE);
-        if (biomeTypes.size() == 1) {
-            String biometype = biomeTypes.get(0);
-            BiomeDictionary.Type type = BiomeDictionary.Type.getType(biometype);
-            checks.add((event,query) -> {
-                Biome biome = query.getWorld(event).getBiome(query.getPos(event));
-                return BiomeDictionary.getTypes(biome).contains(type);
-            });
-        } else {
-            Set<BiomeDictionary.Type> types = new HashSet<>();
-            for (String s : biomeTypes) {
-                types.add(BiomeDictionary.Type.getType(s));
-            }
-
-            checks.add((event,query) -> {
-                Biome biome = query.getWorld(event).getBiome(query.getPos(event));
-                return BiomeDictionary.getTypes(biome).stream().anyMatch(types::contains);
-            });
-        }
+        // @todo 1.16
+//        List<String> biomeTypes = map.getList(BIOMETYPE);
+//        if (biomeTypes.size() == 1) {
+//            String biometype = biomeTypes.get(0);
+//            BiomeDictionary.Type type = BiomeDictionary.Type.getType(biometype);
+//            checks.add((event,query) -> {
+//                Biome biome = query.getWorld(event).getBiome(query.getPos(event));
+//                return BiomeDictionary.getTypes(biome).contains(type);
+//            });
+//        } else {
+//            Set<BiomeDictionary.Type> types = new HashSet<>();
+//            for (String s : biomeTypes) {
+//                types.add(BiomeDictionary.Type.getType(s));
+//            }
+//
+//            checks.add((event,query) -> {
+//                Biome biome = query.getWorld(event).getBiome(query.getPos(event));
+//                return BiomeDictionary.getTypes(biome).stream().anyMatch(types::contains);
+//            });
+//        }
     }
 
     private static final int[] EMPTYINTS = new int[0];
 
-    public static <T extends Comparable<T>> BlockState set(BlockState state, IProperty<T> property, String value) {
+    public static <T extends Comparable<T>> BlockState set(BlockState state, Property<T> property, String value) {
         Optional<T> optionalValue = property.parseValue(value);
         if (optionalValue.isPresent()) {
             return state.with(property, optionalValue.get());
@@ -492,7 +496,7 @@ public class CommonRuleEvaluator {
                         JsonObject propObj = el.getAsJsonObject();
                         String name = propObj.get("name").getAsString();
                         String value = propObj.get("value").getAsString();
-                        for (IProperty<?> key : blockState.getProperties()) {
+                        for (Property<?> key : blockState.getProperties()) {
                             if (name.equals(key.getName())) {
                                 blockState = set(blockState, key, value);
                             }
@@ -646,21 +650,23 @@ public class CommonRuleEvaluator {
     }
 
     private void addMinSpawnDistCheck(AttributeMap map) {
-        final Float d = map.get(MINSPAWNDIST) * map.get(MINSPAWNDIST);
-        checks.add((event,query) -> {
-            BlockPos pos = query.getPos(event);
-            double sqdist = pos.distanceSq(query.getWorld(event).getSpawnPoint());
-            return sqdist >= d;
-        });
+        // @todo 1.16
+//        final Float d = map.get(MINSPAWNDIST) * map.get(MINSPAWNDIST);
+//        checks.add((event,query) -> {
+//            BlockPos pos = query.getPos(event);
+//            double sqdist = pos.distanceSq(query.getWorld(event).getSpawnPoint());
+//            return sqdist >= d;
+//        });
     }
 
     private void addMaxSpawnDistCheck(AttributeMap map) {
-        final Float d = map.get(MAXSPAWNDIST) * map.get(MAXSPAWNDIST);
-        checks.add((event,query) -> {
-            BlockPos pos = query.getPos(event);
-            double sqdist = pos.distanceSq(query.getWorld(event).getSpawnPoint());
-            return sqdist <= d;
-        });
+        // @todo 1.16
+//        final Float d = map.get(MAXSPAWNDIST) * map.get(MAXSPAWNDIST);
+//        checks.add((event,query) -> {
+//            BlockPos pos = query.getPos(event);
+//            double sqdist = pos.distanceSq(query.getWorld(event).getSpawnPoint());
+//            return sqdist <= d;
+//        });
     }
 
 

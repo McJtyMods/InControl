@@ -1,15 +1,16 @@
 package mcjty.tools.cache;
 
-import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.util.RegistryKey;
+import net.minecraft.world.World;
 
 import javax.annotation.Nonnull;
 
 public class StructureCacheEntry {
     @Nonnull private final String structure;
-    private final DimensionType dimension;
+    private final RegistryKey<World> dimension;
     private final long chunkpos;
 
-    public StructureCacheEntry(@Nonnull String structure, DimensionType dimension, long chunkpos) {
+    public StructureCacheEntry(@Nonnull String structure, RegistryKey<World> dimension, long chunkpos) {
         this.structure = structure;
         this.dimension = dimension;
         this.chunkpos = chunkpos;
@@ -20,7 +21,7 @@ public class StructureCacheEntry {
         return structure;
     }
 
-    public DimensionType getDimension() {
+    public RegistryKey<World> getDimension() {
         return dimension;
     }
 

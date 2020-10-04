@@ -1,5 +1,5 @@
 modLoader="javafml"
-loaderVersion="[31,)"
+loaderVersion="[33,)"
 issueTrackerURL="http://github.com/McJtyMods/InControl/issues"
 displayURL="http://github.com/McJtyMods/InControl/"
 #logoFile="examplemod.png" #optional
@@ -17,6 +17,6 @@ Be in control of spawns
 [[dependencies.incontrol]]
     modId="forge"
     mandatory=true
-    versionRange="[31,)"
+    versionRange="[33,)"
     ordering="NONE"
     side="BOTH"
