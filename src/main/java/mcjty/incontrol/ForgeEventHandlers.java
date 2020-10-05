@@ -8,6 +8,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.MobSpawnInfo;
+import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
@@ -33,8 +35,8 @@ public class ForgeEventHandlers {
     public static boolean debug = false;
 
     @SubscribeEvent
-    public void serverLoad(FMLServerStartingEvent event) {
-        ModCommands.register(event.getCommandDispatcher());
+    public void serverLoad(RegisterCommandsEvent event) {
+        ModCommands.register(event.getDispatcher());
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
@@ -93,7 +95,7 @@ public class ForgeEventHandlers {
                     InControl.setup.getLogger().log(Level.INFO, "Rule " + i + ": " + result
                             + " entity: " + event.getEntity().getName()
                             + " y: " + event.getY()
-                            + " biome: " + new TranslationTextComponent(event.getWorld().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ())).getTranslationKey()).getFormattedText());
+                            + " biome: " + event.getWorld().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ())).getRegistryName());
                 }
                 if (result != null) {
                     event.setResult(result);
@@ -117,7 +119,7 @@ public class ForgeEventHandlers {
                     InControl.setup.getLogger().log(Level.INFO, "SummonAid " + i + ": " + result
                             + " entity: " + event.getEntity().getName()
                             + " y: " + event.getY()
-                            + " biome: " + new TranslationTextComponent(event.getWorld().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ())).getTranslationKey()).getFormattedText());
+                            + " biome: " + event.getWorld().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ())).getRegistryName());
                 }
                 event.setResult(result);
                 if (result != Event.Result.DENY) {
@@ -138,15 +140,15 @@ public class ForgeEventHandlers {
 
                 // First remove mob entries if needed
                 for (int idx = event.getList().size() - 1; idx >= 0; idx--) {
-                    if (rule.getToRemoveMobs().contains(event.getList().get(idx).entityType)) {
+                    if (rule.getToRemoveMobs().contains(event.getList().get(idx).type)) {
                         event.getList().remove(idx);
                     }
                 }
 
-                List<Biome.SpawnListEntry> spawnEntries = rule.getSpawnEntries();
-                for (Biome.SpawnListEntry entry : spawnEntries) {
+                List<MobSpawnInfo.Spawners> spawnEntries = rule.getSpawnEntries();
+                for (MobSpawnInfo.Spawners entry : spawnEntries) {
                     if (debug) {
-                        InControl.setup.getLogger().log(Level.INFO, "Potential " + i + ": " + entry.entityType.getRegistryName().toString());
+                        InControl.setup.getLogger().log(Level.INFO, "Potential " + i + ": " + entry.type.getRegistryName().toString());
                     }
                     event.getList().add(entry);
                 }

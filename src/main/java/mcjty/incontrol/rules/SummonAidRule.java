@@ -13,8 +13,8 @@ import mcjty.tools.typed.GenericAttributeMapFactory;
 import mcjty.tools.typed.Key;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.attributes.IAttributeInstance;
+import net.minecraft.entity.ai.attributes.Attributes;
+import net.minecraft.entity.ai.attributes.ModifiableAttributeInstance;
 import net.minecraft.entity.monster.ZombieEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.EquipmentSlotType;
@@ -305,7 +305,7 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
         float a = map.has(ACTION_HEALTHADD) ? map.get(ACTION_HEALTHADD) : 0;
         actions.add(event -> {
             ZombieEntity helper = event.getZombieHelper();
-            IAttributeInstance entityAttribute = helper.getAttribute(SharedMonsterAttributes.MAX_HEALTH);
+            ModifiableAttributeInstance entityAttribute = helper.getAttribute(Attributes.MAX_HEALTH);
             if (entityAttribute != null) {
                 double newMax = entityAttribute.getBaseValue() * m + a;
                 entityAttribute.setBaseValue(newMax);
@@ -319,7 +319,7 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
         float a = map.has(ACTION_SPEEDADD) ? map.get(ACTION_SPEEDADD) : 0;
         actions.add(event -> {
             ZombieEntity helper = event.getZombieHelper();
-            IAttributeInstance entityAttribute = helper.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED);
+            ModifiableAttributeInstance entityAttribute = helper.getAttribute(Attributes.MOVEMENT_SPEED);
             if (entityAttribute != null) {
                 double newMax = entityAttribute.getBaseValue() * m + a;
                 entityAttribute.setBaseValue(newMax);
@@ -343,7 +343,7 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
         float a = map.has(ACTION_DAMAGEADD) ? map.get(ACTION_DAMAGEADD) : 0;
         actions.add(event -> {
             ZombieEntity helper = event.getZombieHelper();
-            IAttributeInstance entityAttribute = helper.getAttribute(SharedMonsterAttributes.ATTACK_DAMAGE);
+            ModifiableAttributeInstance entityAttribute = helper.getAttribute(Attributes.ATTACK_DAMAGE);
             if (entityAttribute != null) {
                 double newMax = entityAttribute.getBaseValue() * m + a;
                 entityAttribute.setBaseValue(newMax);

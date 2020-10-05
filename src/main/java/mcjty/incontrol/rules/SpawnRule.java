@@ -32,7 +32,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
     public static final IEventQuery<LivingSpawnEvent.CheckSpawn> EVENT_QUERY = new IEventQuery<LivingSpawnEvent.CheckSpawn>() {
         @Override
         public World getWorld(LivingSpawnEvent.CheckSpawn o) {
-            return o.getWorld().getWorld();
+            return o.getWorld() instanceof World ? (World) o.getWorld() : null;
         }
 
         @Override
@@ -67,7 +67,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
 
         @Override
         public PlayerEntity getPlayer(LivingSpawnEvent.CheckSpawn o) {
-            return getClosestPlayer(o.getWorld().getWorld(), new BlockPos(o.getX(), o.getY(), o.getZ()));
+            return getClosestPlayer(o.getWorld() instanceof World ? (World) o.getWorld() : null, new BlockPos(o.getX(), o.getY(), o.getZ()));
         }
 
         @Override
@@ -268,7 +268,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
 
             @Override
             public World getWorld() {
-                return event.getWorld().getWorld();
+                return event.getWorld() instanceof World ? (World) event.getWorld() : null;
             }
 
             @Override

@@ -18,7 +18,7 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.MobSpawnInfo;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.logging.log4j.Level;
@@ -35,7 +35,7 @@ public class PotentialSpawnRule extends RuleBase<RuleBase.EventGetter> {
     public static final IEventQuery<WorldEvent.PotentialSpawns> EVENT_QUERY = new IEventQuery<WorldEvent.PotentialSpawns>() {
         @Override
         public World getWorld(WorldEvent.PotentialSpawns o) {
-            return o.getWorld().getWorld();
+            return o.getWorld() instanceof World ? (World) o.getWorld() : null;
         }
 
         @Override
@@ -124,7 +124,7 @@ public class PotentialSpawnRule extends RuleBase<RuleBase.EventGetter> {
     }
 
     private final GenericRuleEvaluator ruleEvaluator;
-    private List<Biome.SpawnListEntry> spawnEntries = new ArrayList<>();
+    private List<MobSpawnInfo.Spawners> spawnEntries = new ArrayList<>();
     private Set<EntityType> toRemoveMobs = new HashSet<>();
 
     private PotentialSpawnRule(AttributeMap map) {
@@ -197,12 +197,12 @@ public class PotentialSpawnRule extends RuleBase<RuleBase.EventGetter> {
             if (groupCountMax == null) {
                 groupCountMax = Math.max(groupCountMin, 1);
             }
-            Biome.SpawnListEntry entry = new Biome.SpawnListEntry(type, weight, groupCountMin, groupCountMax);
+            MobSpawnInfo.Spawners entry = new MobSpawnInfo.Spawners(type, weight, groupCountMin, groupCountMax);
             spawnEntries.add(entry);
         }
     }
 
-    public List<Biome.SpawnListEntry> getSpawnEntries() {
+    public List<MobSpawnInfo.Spawners> getSpawnEntries() {
         return spawnEntries;
     }
 
