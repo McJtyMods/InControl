@@ -1,3 +1,6 @@
+Upcoming:
+- The biome check now also supports biome registry names (this is prefered)
+
 4.0.4:
 - Fixed a bug with the health, damage, and speed actions. They often fired multiple times making the mobs too OP
 
