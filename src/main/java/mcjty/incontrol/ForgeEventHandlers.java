@@ -6,8 +6,6 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.MobSpawnInfo;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
@@ -16,11 +14,11 @@ import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.living.LivingExperienceDropEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import net.minecraftforge.event.entity.living.ZombieEvent;
+import net.minecraftforge.event.world.BiomeLoadingEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Level;
 
@@ -130,6 +128,18 @@ public class ForgeEventHandlers {
             i++;
         }
 
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public void onBiomeLoadingEvent(BiomeLoadingEvent event) {
+        // On 1.16.3 potentialspawn alone can't add spawns that are not supported by the biome. So we need to add all
+        // possible potential spawns to all possible biomes
+        for (PotentialSpawnRule rule : RulesManager.potentialSpawnRules) {
+            List<MobSpawnInfo.Spawners> spawnEntries = rule.getSpawnEntries();
+            for (MobSpawnInfo.Spawners entry : spawnEntries) {
+                event.getSpawns().withSpawner(entry.type.getClassification(), entry);
+            }
+        }
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
