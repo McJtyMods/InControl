@@ -10,6 +10,7 @@ import mcjty.tools.rules.RuleBase;
 import mcjty.tools.typed.Attribute;
 import mcjty.tools.typed.AttributeMap;
 import mcjty.tools.typed.GenericAttributeMapFactory;
+import mcjty.tools.varia.Tools;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.PlayerEntity;
@@ -35,7 +36,7 @@ public class PotentialSpawnRule extends RuleBase<RuleBase.EventGetter> {
     public static final IEventQuery<WorldEvent.PotentialSpawns> EVENT_QUERY = new IEventQuery<WorldEvent.PotentialSpawns>() {
         @Override
         public World getWorld(WorldEvent.PotentialSpawns o) {
-            return o.getWorld() instanceof World ? (World) o.getWorld() : null;
+            return Tools.getWorldSafe(o.getWorld());
         }
 
         @Override

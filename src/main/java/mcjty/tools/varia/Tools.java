@@ -7,6 +7,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.IServerWorld;
+import net.minecraft.world.IWorld;
+import net.minecraft.world.World;
+import net.minecraft.world.gen.WorldGenRegion;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -17,6 +21,16 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class Tools {
+
+    public static World getWorldSafe(IWorld world) {
+        if (world instanceof World) {
+            return (World) world;
+        }
+        else if (world instanceof IServerWorld) {
+            return ((IServerWorld) world).getWorld();
+        }
+        return null;
+    }
 
     public static Pair<Float, ItemStack> parseStackWithFactor(String name, Logger logger) {
         int i = 0;

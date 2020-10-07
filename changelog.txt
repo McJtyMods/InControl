@@ -2,6 +2,7 @@ Upcoming:
 - Biome registry name is now preferred for biome checks
 - 'tempcategory' is removed and replaced with a more generic 'category' for biomes. It's also a list now. The list of current categories is: taiga, extreme_hills, jungle, mesa, plains, savanna, icy, the_end, beach, forest, ocean, desert, river, swamp, mushroom and nether
 - 'biometype' has changed. It now only works for the following values: desert, desert_legacy, warm, cool, and icy
+- Numerical dimension ID's no longer work (like 0 for the overworld. Use 'minecraft:overworld' instead)
 
 4.0.4:
 - Fixed a bug with the health, damage, and speed actions. They often fired multiple times making the mobs too OP
