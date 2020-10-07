@@ -117,7 +117,7 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
                 .attribute(Attribute.create(HOSTILE))
                 .attribute(Attribute.create(SEESKY))
                 .attribute(Attribute.create(WEATHER))
-                .attribute(Attribute.create(TEMPCATEGORY))
+                .attribute(Attribute.createMulti(CATEGORY))
                 .attribute(Attribute.create(DIFFICULTY))
                 .attribute(Attribute.create(STRUCTURE))
                 .attribute(Attribute.create(WINTER))
