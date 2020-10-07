@@ -1,4 +1,4 @@
-Upcoming:
+1.15-4.0.5:
 - The biome check now also supports biome registry names (this is prefered)
 
 4.0.4:
