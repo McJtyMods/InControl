@@ -164,21 +164,19 @@ public class RuleCache {
 
             ((ServerWorld)world).getEntities().forEach(entity -> {
                 if (entity instanceof MobEntity) {
-                    if (!((MobEntity) entity).isNoDespawnRequired()) {
-                        int cnt = cachedCounters.getOrDefault(entity.getType(), 0)+1;
-                        cachedCounters.put(entity.getType(), cnt);
+                    int cnt = cachedCounters.getOrDefault(entity.getType(), 0)+1;
+                    cachedCounters.put(entity.getType(), cnt);
 
-                        String mod = entity.getType().getRegistryName().getNamespace();
-                        CountPerMod count = countPerMod.computeIfAbsent(mod, s -> new CountPerMod());
-                        count.total++;
+                    String mod = entity.getType().getRegistryName().getNamespace();
+                    CountPerMod count = countPerMod.computeIfAbsent(mod, s -> new CountPerMod());
+                    count.total++;
 
-                        if (entity instanceof IMob) {
-                            count.hostile++;
-                            countHostile++;
-                        } else if (entity instanceof AnimalEntity) {
-                            count.passive++;
-                            countPassive++;
-                        }
+                    if (entity instanceof IMob) {
+                        count.hostile++;
+                        countHostile++;
+                    } else if (entity instanceof AnimalEntity) {
+                        count.passive++;
+                        countPassive++;
                     }
                 }
             });

@@ -1,3 +1,6 @@
+Upcoming:
+- The mob counter now ignores the nodespawn flag. This should make it more compatible with modded mobs
+
 5.0.0:
 - Biome registry name is now preferred for biome checks
 - 'tempcategory' is removed and replaced with a more generic 'category' for biomes. It's also a list now. The list of current categories is: taiga, extreme_hills, jungle, mesa, plains, savanna, icy, the_end, beach, forest, ocean, desert, river, swamp, mushroom and nether
