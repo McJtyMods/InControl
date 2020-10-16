@@ -1,4 +1,4 @@
-Upcoming:
+1.16-5.0.1:
 - The mob counter now ignores the nodespawn flag. This should make it more compatible with modded mobs
 
 5.0.0:
