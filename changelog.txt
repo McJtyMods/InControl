@@ -1,3 +1,6 @@
+Upcoming:
+- The mob counter now ignores the nodespawn flag. This should make it more compatible with modded mobs
+
 1.15-4.0.5:
 - The biome check now also supports biome registry names (this is prefered)
 
