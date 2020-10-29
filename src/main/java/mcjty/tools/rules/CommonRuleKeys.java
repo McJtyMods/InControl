@@ -67,6 +67,7 @@ public interface CommonRuleKeys {
     Key<String> ACTION_ADDSTAGE = Key.create(Type.STRING, "addstage");
     Key<String> ACTION_REMOVESTAGE = Key.create(Type.STRING, "removestage");
     Key<String> ACTION_RESULT = Key.create(Type.STRING, "result");
+    Key<Boolean> ACTION_CONTINUE = Key.create(Type.BOOLEAN, "continue");
 
     Key<Float> ACTION_HEALTHMULTIPLY = Key.create(Type.FLOAT, "healthmultiply");
     Key<Float> ACTION_HEALTHADD = Key.create(Type.FLOAT, "healthadd");

@@ -1,3 +1,6 @@
+Upcoming:
+- New 'continue' flag for spawn rules. If this is true then when this rule fires it will not prevent processing for subsequent rules. This can be used (for example) to give armor to mobs under certain circumstances but still do other processing later
+
 1.15-4.0.6:
 - The mob counter now ignores the nodespawn flag. This should make it more compatible with modded mobs
 
