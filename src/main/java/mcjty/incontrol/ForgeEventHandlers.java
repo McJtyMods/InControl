@@ -59,7 +59,9 @@ public class ForgeEventHandlers {
                 } else {
                     event.setCanceled(true);
                 }
-                return;
+                if (!rule.isDoContinue()) {
+                    return;
+                }
             }
             i++;
         }
@@ -101,7 +103,9 @@ public class ForgeEventHandlers {
                 if (result != Event.Result.DENY) {
                     rule.action(event);
                 }
-                return;
+                if (!rule.isDoContinue()) {
+                    return;
+                }
             }
             i++;
         }

@@ -211,6 +211,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
     private final boolean onJoin;
     private final GenericRuleEvaluator ruleEvaluator;
     private Event.Result result = null;
+    private boolean doContinue = false;
 
     private SpawnRule(AttributeMap map, boolean onJoin) {
         super(InControl.setup.getLogger());
@@ -244,6 +245,9 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
             }
         } else {
             this.result = null;
+        }
+        if (map.has(ACTION_CONTINUE)) {
+            this.doContinue = map.get(ACTION_CONTINUE);
         }
     }
 
@@ -312,6 +316,10 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
     @Nullable
     public Event.Result getResult() {
         return result;
+    }
+
+    public boolean isDoContinue() {
+        return doContinue;
     }
 
     public boolean isOnJoin() {
