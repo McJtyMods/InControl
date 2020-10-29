@@ -364,7 +364,7 @@ public class CommonRuleEvaluator {
             String biomename = biomes.get(0);
             checks.add((event,query) -> {
                 Biome biome = query.getWorld(event).getBiome(query.getPos(event));
-                if (biome.getRegistryName().toString().equals(biomename)) {
+                if (Tools.getBiomeId(biome).equals(biomename)) {
                     return true;
                 } else {
                     return biomename.equals(compatibility.getBiomeName(biome));

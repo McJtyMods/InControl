@@ -1,3 +1,6 @@
+Upcoming:
+- The 'biome' test would crash on biomes that were created using json
+
 1.16-5.0.1:
 - The mob counter now ignores the nodespawn flag. This should make it more compatible with modded mobs
 
