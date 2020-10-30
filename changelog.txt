@@ -1,4 +1,4 @@
-Upcoming:
+1.16-5.0.2:
 - The 'biome' test would crash on biomes that were created using json
 - New 'continue' flag for spawn rules. If this is true then when this rule fires it will not prevent processing for subsequent rules. This can be used (for example) to give armor to mobs under certain circumstances but still do other processing later
 
