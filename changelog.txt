@@ -1,4 +1,4 @@
-Upcoming:
+1.15-4.0.7:
 - New 'continue' flag for spawn rules. If this is true then when this rule fires it will not prevent processing for subsequent rules. This can be used (for example) to give armor to mobs under certain circumstances but still do other processing later
 
 1.15-4.0.6:
