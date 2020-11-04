@@ -1,3 +1,6 @@
+3.9.18:
+- The mob counter now ignores the nodespawn flag. This should make it more compatible with modded mobs
+
 3.9.17:
 - Fixed a bug with the health, damage, and speed actions. They often fired multiple times making the mobs too OP
 
