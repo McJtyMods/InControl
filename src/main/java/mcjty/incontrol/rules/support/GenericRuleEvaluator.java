@@ -210,7 +210,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
                 }
             }
             if (!classes.isEmpty()) {
-                checks.add((event, query) -> classes.contains(query.getEntity(event).getClass()));
+                checks.add((event, query) -> classes.contains(query.getEntity(event).getType()));
             }
         }
     }
