@@ -1,4 +1,4 @@
-Upcoming:
+1.16-5.0.3:
 - Fixed a bug causing mob condition with multiple mobs to fail (one mob was fine)
 
 1.16-5.0.2:
