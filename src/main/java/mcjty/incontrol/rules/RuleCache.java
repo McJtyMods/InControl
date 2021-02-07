@@ -46,6 +46,11 @@ public class RuleCache {
         return cache.getCountHostile(world);
     }
 
+    public int getCountNeutral(IWorld world) {
+        CachePerWorld cache = getOrCreateCache(world);
+        return cache.getCountNeutral(world);
+    }
+
 
     public int getCount(IWorld world, EntityType entityType) {
         CachePerWorld cache = getOrCreateCache(world);
@@ -95,6 +100,7 @@ public class RuleCache {
     private static class CountPerMod {
         private int hostile;
         private int passive;
+        private int neutral;
         private int total;
     }
 
@@ -104,6 +110,7 @@ public class RuleCache {
         private Map<String, CountPerMod> countPerMod = new HashMap<>();
         private int countPassive = -1;
         private int countHostile = -1;
+        private int countNeutral = -1;
         private int validSpawnChunks = -1;
         private int validPlayers = -1;
         private boolean countDone = false;
@@ -113,6 +120,7 @@ public class RuleCache {
             countPerMod.clear();
             countPassive = -1;
             countHostile = -1;
+            countNeutral = -1;
             validSpawnChunks = -1;
             validPlayers = -1;
             countDone = false;
@@ -156,6 +164,11 @@ public class RuleCache {
             return countHostile;
         }
 
+        public int getCountNeutral(IWorld world) {
+            count(world);
+            return countNeutral;
+        }
+
         private void count(IWorld world) {
             if (countDone) {
                 return;
@@ -165,6 +178,7 @@ public class RuleCache {
             countPerMod.clear();
             countPassive = 0;
             countHostile = 0;
+            countNeutral = 0;
 
             ((ServerWorld)world).getEntities().forEach(entity -> {
                 if (entity instanceof MobEntity) {
@@ -181,6 +195,9 @@ public class RuleCache {
                     } else if (entity instanceof AnimalEntity) {
                         count.passive++;
                         countPassive++;
+                    } else {
+                        count.neutral++;
+                        countNeutral++;
                     }
                 }
             });

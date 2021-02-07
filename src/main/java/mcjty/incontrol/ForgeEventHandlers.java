@@ -2,6 +2,7 @@ package mcjty.incontrol;
 
 import mcjty.incontrol.commands.ModCommands;
 import mcjty.incontrol.rules.*;
+import mcjty.incontrol.spawner.SpawnerSystem;
 import mcjty.tools.varia.Tools;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -84,28 +85,20 @@ public class ForgeEventHandlers {
 
     @SubscribeEvent
     public void onWorldTick(TickEvent.WorldTickEvent event) {
-        // For every world tick we reset the cache
         if (event.phase == TickEvent.Phase.START && !event.world.isRemote) {
+            // For every world tick we reset the cache
             InControl.setup.cache.reset(event.world);
+
+            if (!event.world.getPlayers().isEmpty()) {
+                // If a world has players we do mob spawning in it
+                SpawnerSystem.checkRules(event);
+            }
         }
     }
 
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onEntitySpawnEvent(LivingSpawnEvent.CheckSpawn event) {
-//        IWorld w = event.getWorld();
-//        BlockState blockState = w.getBlockState(new BlockPos(event.getX(), event.getY()-1, event.getZ()));
-//        EntityType<?> type = event.getEntity().getType();
-//        if (type == EntityType.COW) {
-//            if (blockState.getBlock() == Blocks.STONE || blockState.getBlock() == Blocks.COBBLESTONE) {
-//                event.setResult(Event.Result.ALLOW);
-//                return;
-//            }
-//        }
-//        if (type == EntityType.COW) {
-//            event.setResult(Event.Result.DENY);
-//        }
-
         int i = 0;
         for (SpawnRule rule : RulesManager.rules) {
             if (rule.match(event)) {

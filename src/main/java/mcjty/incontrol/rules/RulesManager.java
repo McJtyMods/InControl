@@ -1,10 +1,11 @@
 package mcjty.incontrol.rules;
 
-import com.google.gson.*;
+import com.google.gson.JsonElement;
 import mcjty.incontrol.InControl;
+import mcjty.tools.varia.JSonTools;
 import org.apache.logging.log4j.Level;
 
-import java.io.*;
+import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -109,53 +110,7 @@ public class RulesManager {
     }
 
     private static JsonElement getRootElement(String path, String filename) {
-        File file;
-        if (path == null) {
-            file = new File(filename);
-        } else {
-            file = new File(path + File.separator + "incontrol", filename);
-        }
-        if (!file.exists()) {
-            // Create an empty rule file
-            makeEmptyRuleFile(file);
-            return null;
-        }
-
-        InControl.setup.getLogger().log(Level.INFO, "Reading spawn rules from " + filename);
-        InputStream inputstream = null;
-        try {
-            inputstream = new FileInputStream(file);
-        } catch (FileNotFoundException e) {
-            InControl.setup.getLogger().log(Level.ERROR, "Error reading " + filename + "!");
-            return null;
-        }
-
-        BufferedReader br;
-        try {
-            br = new BufferedReader(new InputStreamReader(inputstream, "UTF-8"));
-        } catch (UnsupportedEncodingException e) {
-            InControl.setup.getLogger().log(Level.ERROR, "Error reading " + filename + "!");
-            return null;
-        }
-
-        JsonParser parser = new JsonParser();
-        JsonElement element = parser.parse(br);
-
-        return element;
-    }
-
-    private static void makeEmptyRuleFile(File file) {
-        PrintWriter writer;
-        try {
-            writer = new PrintWriter(file);
-        } catch (FileNotFoundException e) {
-            InControl.setup.getLogger().log(Level.ERROR, "Error writing " + file.getName() + "!");
-            return;
-        }
-        JsonArray array = new JsonArray();
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        writer.print(gson.toJson(array));
-        writer.close();
+        return JSonTools.getRootElement(path, filename, InControl.setup.getLogger());
     }
 
 

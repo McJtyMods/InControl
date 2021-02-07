@@ -1,18 +1,69 @@
 package mcjty.tools.varia;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
+import com.google.gson.*;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
+import java.io.*;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 public class JSonTools {
+
+    public static JsonElement getRootElement(String path, String filename, Logger logger) {
+        File file;
+        if (path == null) {
+            file = new File(filename);
+        } else {
+            file = new File(path + File.separator + "incontrol", filename);
+        }
+        if (!file.exists()) {
+            // Create an empty rule file
+            makeEmptyRuleFile(file, logger);
+            return null;
+        }
+
+        logger.log(Level.INFO, "Reading rules from " + filename);
+        InputStream inputstream = null;
+        try {
+            inputstream = new FileInputStream(file);
+        } catch (FileNotFoundException e) {
+            logger.log(Level.ERROR, "Error reading " + filename + "!");
+            return null;
+        }
+
+        BufferedReader br;
+        try {
+            br = new BufferedReader(new InputStreamReader(inputstream, "UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            logger.log(Level.ERROR, "Error reading " + filename + "!");
+            return null;
+        }
+
+        JsonParser parser = new JsonParser();
+        JsonElement element = parser.parse(br);
+
+        return element;
+    }
+
+    private static void makeEmptyRuleFile(File file, Logger logger) {
+        PrintWriter writer;
+        try {
+            writer = new PrintWriter(file);
+        } catch (FileNotFoundException e) {
+            logger.log(Level.ERROR, "Error writing " + file.getName() + "!");
+            return;
+        }
+        JsonArray array = new JsonArray();
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        writer.print(gson.toJson(array));
+        writer.close();
+    }
+
 
     public static Optional<JsonElement> getElement(JsonObject element, String name) {
         JsonElement el = element.get(name);

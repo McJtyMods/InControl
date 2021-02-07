@@ -6,6 +6,7 @@ import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import mcjty.incontrol.rules.RulesManager;
+import mcjty.incontrol.spawner.SpawnerSystem;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -28,6 +29,7 @@ public class CmdReload implements Command<CommandSource> {
         if (player != null) {
             player.sendMessage(new StringTextComponent("Reloaded InControl rules"), Util.DUMMY_UUID);
             RulesManager.reloadRules();
+            SpawnerSystem.reloadRules();
         }
         return 0;
     }

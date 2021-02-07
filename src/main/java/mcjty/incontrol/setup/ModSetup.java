@@ -6,6 +6,7 @@ import mcjty.incontrol.compat.EnigmaSupport;
 import mcjty.incontrol.compat.LostCitySupport;
 import mcjty.incontrol.rules.RuleCache;
 import mcjty.incontrol.rules.RulesManager;
+import mcjty.incontrol.spawner.SpawnerParser;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.loading.FMLPaths;
@@ -31,6 +32,8 @@ public class ModSetup {
         MinecraftForge.EVENT_BUS.register(new ForgeEventHandlers());
         RulesManager.setRulePath(FMLPaths.CONFIGDIR.get());
         RulesManager.readRules();
+        SpawnerParser.setRulePath(FMLPaths.CONFIGDIR.get());
+        SpawnerParser.readRules("spawner.json");
     }
 
     public Logger getLogger() {
