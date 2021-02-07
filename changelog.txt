@@ -1,4 +1,4 @@
-Upcoming:
+1.16-5.0.4:
 - Fixed a big bug with the 'block' test which could cause worlgen to hang in some situations
 
 1.16-5.0.3:
