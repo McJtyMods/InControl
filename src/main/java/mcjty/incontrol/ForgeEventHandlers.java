@@ -2,10 +2,16 @@ package mcjty.incontrol;
 
 import mcjty.incontrol.commands.ModCommands;
 import mcjty.incontrol.rules.*;
+import mcjty.tools.varia.Tools;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IWorld;
+import net.minecraft.world.World;
 import net.minecraft.world.biome.MobSpawnInfo;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
@@ -87,6 +93,19 @@ public class ForgeEventHandlers {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onEntitySpawnEvent(LivingSpawnEvent.CheckSpawn event) {
+//        IWorld w = event.getWorld();
+//        BlockState blockState = w.getBlockState(new BlockPos(event.getX(), event.getY()-1, event.getZ()));
+//        EntityType<?> type = event.getEntity().getType();
+//        if (type == EntityType.COW) {
+//            if (blockState.getBlock() == Blocks.STONE || blockState.getBlock() == Blocks.COBBLESTONE) {
+//                event.setResult(Event.Result.ALLOW);
+//                return;
+//            }
+//        }
+//        if (type == EntityType.COW) {
+//            event.setResult(Event.Result.DENY);
+//        }
+
         int i = 0;
         for (SpawnRule rule : RulesManager.rules) {
             if (rule.match(event)) {

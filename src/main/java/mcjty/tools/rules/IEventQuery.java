@@ -5,11 +5,12 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
 
 public interface IEventQuery<T> {
 
-    World getWorld(T o);
+    IWorld getWorld(T o);
 
     /// Get the position directly from the event
     BlockPos getPos(T o);

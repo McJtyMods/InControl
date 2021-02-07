@@ -19,7 +19,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.management.PlayerList;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.World;
+import net.minecraft.world.IWorld;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import net.minecraftforge.eventbus.api.Event;
@@ -399,11 +399,11 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             return;
         }
 
-        BiFunction<World, Entity, Integer> counter = getCounter(info);
-        Function<World, Integer> amountAdjuster = getAmountAdjuster(info, info.amount);
+        BiFunction<IWorld, Entity, Integer> counter = getCounter(info);
+        Function<IWorld, Integer> amountAdjuster = getAmountAdjuster(info, info.amount);
 
         checks.add((event, query) -> {
-            World world = query.getWorld(event);
+            IWorld world = query.getWorld(event);
             Entity entity = query.getEntity(event);
             int count = counter.apply(world, entity);
             int amount = amountAdjuster.apply(world);
@@ -415,11 +415,11 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         final String json = map.get(MAXCOUNT);
         CountInfo info = parseCountInfo(json);
 
-        BiFunction<World, Entity, Integer> counter = getCounter(info);
-        Function<World, Integer> amountAdjuster = getAmountAdjuster(info, info.amount);
+        BiFunction<IWorld, Entity, Integer> counter = getCounter(info);
+        Function<IWorld, Integer> amountAdjuster = getAmountAdjuster(info, info.amount);
 
         checks.add((event, query) -> {
-            World world = query.getWorld(event);
+            IWorld world = query.getWorld(event);
             Entity entity = query.getEntity(event);
             int count = counter.apply(world, entity);
             int amount = amountAdjuster.apply(world);
@@ -427,8 +427,8 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         });
     }
 
-    private Function<World, Integer> getAmountAdjuster(CountInfo info, int infoAmount) {
-        Function<World, Integer> amountAdjuster;
+    private Function<IWorld, Integer> getAmountAdjuster(CountInfo info, int infoAmount) {
+        Function<IWorld, Integer> amountAdjuster;
         if (info.scaledPerChunk) {
             amountAdjuster = world -> infoAmount * InControl.setup.cache.getValidSpawnChunks(world) / 289;
         } else if (info.scaledPerPlayer) {
@@ -439,8 +439,8 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         return amountAdjuster;
     }
 
-    private BiFunction<World, Entity, Integer> getCounter(CountInfo info) {
-        BiFunction<World, Entity, Integer> counter;
+    private BiFunction<IWorld, Entity, Integer> getCounter(CountInfo info) {
+        BiFunction<IWorld, Entity, Integer> counter;
         if (info.mod != null) {
             if (info.hostile) {
                 counter = (world, entity) -> InControl.setup.cache.getCountPerModHostile(world, info.mod);

@@ -2,6 +2,7 @@ package mcjty.tools.rules;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 
@@ -61,13 +62,13 @@ public interface IModRuleCompatibilityLayer {
 
     boolean hasSereneSeasons();
 
-    boolean isSpring(World world);
+    boolean isSpring(IWorld world);
 
-    boolean isSummer(World world);
+    boolean isSummer(IWorld world);
 
-    boolean isWinter(World world);
+    boolean isWinter(IWorld world);
 
-    boolean isAutumn(World world);
+    boolean isAutumn(IWorld world);
 
     // --------------------
     // EnigmaScript
@@ -79,9 +80,9 @@ public interface IModRuleCompatibilityLayer {
 
     String getPlayerState(PlayerEntity player, String statename);
 
-    void setState(World world, String statename, String statevalue);
+    void setState(IWorld world, String statename, String statevalue);
 
-    String getState(World world, String statename);
+    String getState(IWorld world, String statename);
 
     // --------------------
     // Specific methods to avoid AT issues in McJtyTools

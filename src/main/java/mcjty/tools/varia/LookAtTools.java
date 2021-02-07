@@ -6,11 +6,12 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceContext;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
 
 public class LookAtTools {
 
-    public static RayTraceResult getMovingObjectPositionFromPlayer(World worldIn, PlayerEntity playerIn, boolean useLiquids) {
+    public static RayTraceResult getMovingObjectPositionFromPlayer(IWorld worldIn, PlayerEntity playerIn, boolean useLiquids) {
         float pitch = playerIn.rotationPitch;
         float yaw = playerIn.rotationYaw;
         Vector3d vec3 = getPlayerEyes(playerIn);

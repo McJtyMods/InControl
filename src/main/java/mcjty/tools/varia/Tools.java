@@ -15,7 +15,6 @@ import net.minecraft.world.IServerWorld;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.gen.WorldGenRegion;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -28,14 +27,14 @@ import java.util.Optional;
 
 public class Tools {
 
-    public static World getWorldSafe(IWorld world) {
+    public static RegistryKey<World> getDimensionKey(IWorld world) {
         if (world instanceof World) {
-            return (World) world;
+            return ((World) world).getDimensionKey();
+        } else if (world instanceof IServerWorld) {
+            return ((IServerWorld) world).getWorld().getDimensionKey();
+        } else {
+            throw new IllegalStateException("Not possible to get a dimension key here!");
         }
-        else if (world instanceof IServerWorld) {
-            return ((IServerWorld) world).getWorld();
-        }
-        return null;
     }
 
     /// Returns empty string on invalid biomes

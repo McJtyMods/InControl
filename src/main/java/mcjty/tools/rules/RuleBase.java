@@ -24,7 +24,6 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.potion.Effect;
 import net.minecraft.potion.EffectInstance;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.state.Property;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.Hand;
@@ -34,6 +33,7 @@ import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.Explosion;
+import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
@@ -109,7 +109,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
 
         PlayerEntity getPlayer();
 
-        World getWorld();
+        IWorld getWorld();
 
         BlockPos getPosition();
     }
@@ -244,9 +244,9 @@ public class RuleBase<T extends RuleBase.EventGetter> {
     private void addCommandAction(AttributeMap map) {
         String command = map.get(ACTION_COMMAND);
         actions.add(event -> {
-            MinecraftServer server = event.getWorld().getServer();
-            PlayerEntity player = event.getPlayer();
             // @todo 1.15 new command system
+//            MinecraftServer server = event.getWorld().getServer();
+//            PlayerEntity player = event.getPlayer();
 //            server.commandManager.executeCommand(player != null ? player : new DummyCommandSender(event.getWorld(), null), command);
         });
     }
@@ -534,17 +534,21 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         if (items.size() == 1) {
             ItemStack item = items.get(0).getRight();
             actions.add(event -> {
-                BlockPos pos = event.getPosition();
-                ItemEntity entityItem = new ItemEntity(event.getWorld(), pos.getX(), pos.getY(), pos.getZ(), item.copy());
-                event.getWorld().addEntity(entityItem);
+                if (event.getWorld() instanceof World) {
+                    BlockPos pos = event.getPosition();
+                    ItemEntity entityItem = new ItemEntity((World)event.getWorld(), pos.getX(), pos.getY(), pos.getZ(), item.copy());
+                    event.getWorld().addEntity(entityItem);
+                }
             });
         } else {
             final float total = getTotal(items);
             actions.add(event -> {
-                BlockPos pos = event.getPosition();
-                ItemStack item = getRandomItem(items, total);
-                ItemEntity entityItem = new ItemEntity(event.getWorld(), pos.getX(), pos.getY(), pos.getZ(), item.copy());
-                event.getWorld().addEntity(entityItem);
+                if (event.getWorld() instanceof World) {
+                    BlockPos pos = event.getPosition();
+                    ItemStack item = getRandomItem(items, total);
+                    ItemEntity entityItem = new ItemEntity((World)event.getWorld(), pos.getX(), pos.getY(), pos.getZ(), item.copy());
+                    event.getWorld().addEntity(entityItem);
+                }
             });
         }
     }
@@ -594,7 +598,9 @@ public class RuleBase<T extends RuleBase.EventGetter> {
             if (pos != null) {
                 // @todo 1.15 check if this is right and what to do about finalSmoking
 //                event.getWorld().createExplosion(null, pos.getX() + .5, pos.getY() + .5, pos.getZ() + .5, finalStrength, finalFlaming, finalSmoking);
-                event.getWorld().createExplosion(null, pos.getX() + .5, pos.getY() + .5, pos.getZ() + .5, finalStrength, finalFlaming, Explosion.Mode.DESTROY);
+                if (event.getWorld() instanceof World) {
+                    ((World)event.getWorld()).createExplosion(null, pos.getX() + .5, pos.getY() + .5, pos.getZ() + .5, finalStrength, finalFlaming, Explosion.Mode.DESTROY);
+                }
             }
         });
     }

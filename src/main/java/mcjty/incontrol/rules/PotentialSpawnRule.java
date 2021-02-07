@@ -10,7 +10,6 @@ import mcjty.tools.rules.RuleBase;
 import mcjty.tools.typed.Attribute;
 import mcjty.tools.typed.AttributeMap;
 import mcjty.tools.typed.GenericAttributeMapFactory;
-import mcjty.tools.varia.Tools;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.PlayerEntity;
@@ -18,7 +17,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.IWorld;
 import net.minecraft.world.biome.MobSpawnInfo;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -35,8 +34,8 @@ public class PotentialSpawnRule extends RuleBase<RuleBase.EventGetter> {
 
     public static final IEventQuery<WorldEvent.PotentialSpawns> EVENT_QUERY = new IEventQuery<WorldEvent.PotentialSpawns>() {
         @Override
-        public World getWorld(WorldEvent.PotentialSpawns o) {
-            return Tools.getWorldSafe(o.getWorld());
+        public IWorld getWorld(WorldEvent.PotentialSpawns o) {
+            return o.getWorld();
         }
 
         @Override

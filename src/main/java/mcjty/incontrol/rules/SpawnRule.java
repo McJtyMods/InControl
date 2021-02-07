@@ -17,6 +17,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
@@ -32,8 +33,8 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
 
     public static final IEventQuery<LivingSpawnEvent.CheckSpawn> EVENT_QUERY = new IEventQuery<LivingSpawnEvent.CheckSpawn>() {
         @Override
-        public World getWorld(LivingSpawnEvent.CheckSpawn o) {
-            return Tools.getWorldSafe(o.getWorld());
+        public IWorld getWorld(LivingSpawnEvent.CheckSpawn o) {
+            return o.getWorld();
         }
 
         @Override
@@ -68,7 +69,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
 
         @Override
         public PlayerEntity getPlayer(LivingSpawnEvent.CheckSpawn o) {
-            return getClosestPlayer(Tools.getWorldSafe(o.getWorld()), new BlockPos(o.getX(), o.getY(), o.getZ()));
+            return getClosestPlayer(o.getWorld(), new BlockPos(o.getX(), o.getY(), o.getZ()));
         }
 
         @Override
@@ -124,7 +125,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
     };
     private static final GenericAttributeMapFactory FACTORY = new GenericAttributeMapFactory();
 
-    private static PlayerEntity getClosestPlayer(World world, BlockPos pos) {
+    private static PlayerEntity getClosestPlayer(IWorld world, BlockPos pos) {
         return world.getClosestPlayer(pos.getX(), pos.getY(), pos.getZ(), 100, false);
     }
 
@@ -272,8 +273,8 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
             }
 
             @Override
-            public World getWorld() {
-                return Tools.getWorldSafe(event.getWorld());
+            public IWorld getWorld() {
+                return event.getWorld();
             }
 
             @Override

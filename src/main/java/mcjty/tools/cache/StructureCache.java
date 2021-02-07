@@ -1,9 +1,10 @@
 package mcjty.tools.cache;
 
+import mcjty.tools.varia.Tools;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.DimensionType;
+import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
 
 import java.util.HashMap;
@@ -22,8 +23,8 @@ public class StructureCache {
         structureCache.clear();
     }
 
-    public boolean isInStructure(World world, String structure, BlockPos pos) {
-        RegistryKey<World> dimension = world.getDimensionKey();
+    public boolean isInStructure(IWorld world, String structure, BlockPos pos) {
+        RegistryKey<World> dimension = Tools.getDimensionKey(world);
         ChunkPos cp = new ChunkPos(pos);
         long cplong = ChunkPos.asLong(cp.x, cp.z);
         StructureCacheEntry entry = new StructureCacheEntry(structure, dimension, cplong);
