@@ -69,7 +69,7 @@ public class SpawnerRule {
             }
         }
         if (object.has("persecond")) {
-            builder.perSecond(object.getAsJsonPrimitive("persecond").getAsInt());
+            builder.perSecond(object.getAsJsonPrimitive("persecond").getAsFloat());
         }
         if (object.has("attempts")) {
             builder.attempts(object.getAsJsonPrimitive("attempts").getAsInt());

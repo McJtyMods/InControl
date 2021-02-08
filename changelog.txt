@@ -1,3 +1,6 @@
+1.16.5.1.1:
+- Small bugfix
+
 1.16-5.1.0:
 - Big new spawner system (spawner.json) which implements a custom spawner with very little restrictions
 - New 'incontrol' tag for spawn.json to allow to test for a mob spawned by this new system

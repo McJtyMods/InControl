@@ -60,6 +60,14 @@ public class SpawnerSystem {
 
     private static void executeRule(SpawnerRule rule, World world) {
         SpawnerConditions conditions = rule.getConditions();
+        if (conditions.getMaxtotal() != -1) {
+            int count = InControl.setup.cache.getCountHostile(world);
+            count += InControl.setup.cache.getCountPassive(world);
+            count += InControl.setup.cache.getCountNeutral(world);
+            if (count >= conditions.getMaxtotal()) {
+                return;
+            }
+        }
         if (conditions.getMaxhostile() != -1) {
             int count = InControl.setup.cache.getCountHostile(world);
             if (count >= conditions.getMaxhostile()) {
@@ -97,7 +105,7 @@ public class SpawnerSystem {
 
         int minspawn = rule.getMinSpawn();
         int maxspawn = rule.getMaxSpawn();
-        int desiredAmount = minspawn + minspawn == maxspawn ? 0 : random.nextInt(maxspawn-minspawn);
+        int desiredAmount = minspawn + ((minspawn == maxspawn) ? 0 : random.nextInt(maxspawn-minspawn));
         int spawned = 0;
 
         for (int i = 0 ; i < rule.getAttempts() ; i++) {
@@ -135,34 +143,6 @@ public class SpawnerSystem {
                 return true;
             }
         }
-        if (conditions.getMaxtotal() != -1) {
-            int count1 = InControl.setup.cache.getCountPassive(world);
-            int count2 = InControl.setup.cache.getCountHostile(world);
-            int count3 = InControl.setup.cache.getCountNeutral(world);
-            int count = count1 + count2 + count3;
-            if (count >= conditions.getMaxtotal()) {
-                return true;
-            }
-        }
-        if (conditions.getMaxhostile() != -1) {
-            int count = InControl.setup.cache.getCountHostile(world);
-            if (count >= conditions.getMaxhostile()) {
-                return true;
-            }
-        }
-        if (conditions.getMaxpeaceful() != -1) {
-            int count = InControl.setup.cache.getCountPassive(world);
-            if (count >= conditions.getMaxpeaceful()) {
-                return true;
-            }
-        }
-        if (conditions.getMaxneutral() != -1) {
-            int count = InControl.setup.cache.getCountNeutral(world);
-            if (count >= conditions.getMaxneutral()) {
-                return true;
-            }
-        }
-
         return false;
     }
 
