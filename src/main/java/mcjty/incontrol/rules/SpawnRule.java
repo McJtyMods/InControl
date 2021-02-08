@@ -147,6 +147,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(CANSPAWNHERE))
                 .attribute(Attribute.create(NOTCOLLIDING))
                 .attribute(Attribute.create(SPAWNER))
+                .attribute(Attribute.create(INCONTROL))
                 .attribute(Attribute.create(INBUILDING))
                 .attribute(Attribute.create(INCITY))
                 .attribute(Attribute.create(INSTREET))

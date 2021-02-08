@@ -18,11 +18,11 @@ public class SpawnerConditions {
     private final int maxdist;
     private final int minheight;
     private final int maxheight;
-    private final int minlight;
-    private final int maxlight;
     private final boolean inWater;
     private final boolean inAir;
+    private final boolean noRestrictions;
     private final int maxthis;
+    private final int maxlocal;
     private final int maxtotal;
     private final int maxhostile;
     private final int maxpeaceful;
@@ -36,15 +36,38 @@ public class SpawnerConditions {
         maxdist = builder.maxdist;
         minheight = builder.minheight;
         maxheight = builder.maxheight;
-        minlight = builder.minlight;
-        maxlight = builder.maxlight;
         inWater = builder.inWater;
         inAir = builder.inAir;
         maxthis = builder.maxthis;
+        maxlocal = builder.maxlocal;
         maxtotal = builder.maxtotal;
         maxhostile = builder.maxhostile;
         maxpeaceful = builder.maxpeaceful;
         maxneutral = builder.maxneutral;
+        noRestrictions = builder.noRestrictions;
+
+        validate();
+    }
+
+    private void validate() {
+        if (mindist < 0) {
+            throw new IllegalStateException("Invalid negative minimum distance!");
+        }
+        if (maxdist < 0) {
+            throw new IllegalStateException("Invalid negative maximum distance!");
+        }
+        if (minheight < 0) {
+            throw new IllegalStateException("Invalid negative minimum height!");
+        }
+        if (maxheight < 0) {
+            throw new IllegalStateException("Invalid negative maximum height!");
+        }
+        if (mindist >= maxdist) {
+            throw new IllegalStateException("Minimum distance must be smaller then maximum!");
+        }
+        if (minheight >= maxheight) {
+            throw new IllegalStateException("Minimum height must be smaller then maximum!");
+        }
     }
 
     public Set<RegistryKey<World>> getDimensions() {
@@ -67,14 +90,6 @@ public class SpawnerConditions {
         return maxheight;
     }
 
-    public int getMinlight() {
-        return minlight;
-    }
-
-    public int getMaxlight() {
-        return maxlight;
-    }
-
     public boolean isInWater() {
         return inWater;
     }
@@ -83,8 +98,16 @@ public class SpawnerConditions {
         return inAir;
     }
 
+    public boolean isNoRestrictions() {
+        return noRestrictions;
+    }
+
     public int getMaxthis() {
         return maxthis;
+    }
+
+    public int getMaxlocal() {
+        return maxlocal;
     }
 
     public int getMaxtotal() {
@@ -132,20 +155,20 @@ public class SpawnerConditions {
         if (object.has("maxheight")) {
             builder.height(builder.minheight, object.getAsJsonPrimitive("maxheight").getAsInt());
         }
-        if (object.has("minlight")) {
-            builder.light(object.getAsJsonPrimitive("minlight").getAsInt(), builder.maxlight);
-        }
-        if (object.has("maxlight")) {
-            builder.light(builder.minlight, object.getAsJsonPrimitive("maxlight").getAsInt());
-        }
         if (object.has("inwater")) {
             builder.inWater(object.getAsJsonPrimitive("inwater").getAsBoolean());
         }
         if (object.has("inair")) {
             builder.inAir(object.getAsJsonPrimitive("inair").getAsBoolean());
         }
+        if (object.has("norestrictions")) {
+            builder.noRestrictions(object.getAsJsonPrimitive("norestrictions").getAsBoolean());
+        }
         if (object.has("maxthis")) {
             builder.maxThis(object.getAsJsonPrimitive("maxthis").getAsInt());
+        }
+        if (object.has("maxlocal")) {
+            builder.maxLocal(object.getAsJsonPrimitive("maxlocal").getAsInt());
         }
         if (object.has("maxtotal")) {
             builder.maxTotal(object.getAsJsonPrimitive("maxtotal").getAsInt());
@@ -168,12 +191,12 @@ public class SpawnerConditions {
         private int maxdist = 120;
         private int minheight = 1;
         private int maxheight = 256;
-        private int minlight = 0;
-        private int maxlight = 15;
         private boolean inWater = false;
         private boolean inAir = false;
+        private boolean noRestrictions = false;
 
         private int maxthis = -1;
+        private int maxlocal = -1;
         private int maxtotal = -1;
         private int maxhostile = -1;
         private int maxpeaceful = -1;
@@ -181,6 +204,11 @@ public class SpawnerConditions {
 
         public Builder dimensions(RegistryKey<World>... dimensions) {
             Collections.addAll(this.dimensions, dimensions);
+            return this;
+        }
+
+        public Builder noRestrictions(boolean noRestrictions) {
+            this.noRestrictions = noRestrictions;
             return this;
         }
 
@@ -196,11 +224,6 @@ public class SpawnerConditions {
             return this;
         }
 
-        public Builder light(int min, int max) {
-            this.minlight = min;
-            this.maxlight = max;
-            return this;
-        }
 
         public Builder inWater(boolean inWater) {
             this.inWater = inWater;
@@ -213,7 +236,12 @@ public class SpawnerConditions {
         }
 
         public Builder maxThis(int maxThis) {
-            this.maxdist = maxThis;
+            this.maxthis = maxThis;
+            return this;
+        }
+
+        public Builder maxLocal(int maxLocal) {
+            this.maxlocal = maxLocal;
             return this;
         }
 

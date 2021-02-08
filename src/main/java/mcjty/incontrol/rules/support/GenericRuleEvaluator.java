@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.compat.ModRuleCompatibilityLayer;
+import mcjty.incontrol.spawner.SpawnerSystem;
 import mcjty.tools.rules.CommonRuleEvaluator;
 import mcjty.tools.rules.IEventQuery;
 import mcjty.tools.typed.AttributeMap;
@@ -63,6 +64,9 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         }
         if (map.has(SPAWNER)) {
             addSpawnerCheck(map);
+        }
+        if (map.has(INCONTROL)) {
+            addInControlCheck(map);
         }
 
         if (map.has(MOB)) {
@@ -148,6 +152,11 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
                 }
             });
         }
+    }
+
+    private void addInControlCheck(AttributeMap map) {
+        boolean c = map.get(INCONTROL);
+        checks.add((event, query) -> c == (SpawnerSystem.busySpawning != null));
     }
 
     private void addSpawnerCheck(AttributeMap map) {

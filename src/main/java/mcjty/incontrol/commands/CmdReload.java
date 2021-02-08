@@ -5,6 +5,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import mcjty.incontrol.InControl;
 import mcjty.incontrol.rules.RulesManager;
 import mcjty.incontrol.spawner.SpawnerSystem;
 import net.minecraft.command.CommandSource;
@@ -12,6 +13,7 @@ import net.minecraft.command.Commands;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.Util;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TextFormatting;
 
 public class CmdReload implements Command<CommandSource> {
 
@@ -28,8 +30,13 @@ public class CmdReload implements Command<CommandSource> {
         ServerPlayerEntity player = context.getSource().asPlayer();
         if (player != null) {
             player.sendMessage(new StringTextComponent("Reloaded InControl rules"), Util.DUMMY_UUID);
-            RulesManager.reloadRules();
-            SpawnerSystem.reloadRules();
+            try {
+                RulesManager.reloadRules();
+                SpawnerSystem.reloadRules();
+            } catch (Exception e) {
+                InControl.setup.getLogger().error("Error reloading rules!", e);
+                player.sendMessage(new StringTextComponent(TextFormatting.RED + "Error: " + e.getLocalizedMessage()), Util.DUMMY_UUID);
+            }
         }
         return 0;
     }
