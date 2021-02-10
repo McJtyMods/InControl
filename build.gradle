@@ -50,7 +50,6 @@ repositories {
         url = "http://maven.covers1624.net"
     }
     maven {
-        name = "TESLA"
         url = "https://maven.mcmoddev.com"
     }
 }
@@ -127,7 +126,8 @@ dependencies {
 //        embed "com.github.mcjty:mcjtytools:${mcjtytools_version}"
 //    }
 
-    //deobfCompile "net.darkhax.gamestages:GameStages-1.12.2:2.0.114"
+    compile fg.deobf("net.darkhax.bookshelf:Bookshelf-1.16.4:9.3.18")
+    compile fg.deobf("net.darkhax.gamestages:GameStages-1.16.4:6.0.1")
     //compile "serene-seasons:SereneSeasons-1.12.2:1.2.15:universal"
 }
 
