@@ -1,86 +1,120 @@
 package mcjty.incontrol.compat;
 
+import mcjty.incontrol.InControl;
+import mcjty.lostcities.api.ILostChunkInfo;
+import mcjty.lostcities.api.ILostCities;
+import mcjty.lostcities.api.ILostCityInformation;
 import mcjty.tools.rules.IEventQuery;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IServerWorld;
+import net.minecraft.world.IWorld;
+import net.minecraft.world.World;
+import net.minecraftforge.fml.InterModComms;
+import net.minecraftforge.fml.ModList;
+
+import java.util.function.Function;
 
 public class LostCitySupport {
 
-//    private static ILostCities lostCities;
+    private static boolean registered = false;
+    private static ILostCities lostCities;
 
     public static void register() {
-        // @todo 1.15
-//        FMLInterModComms.sendFunctionMessage("lostcities", "getLostCities", "mcjty.incontrol.compat.LostCitySupport$GetLostCities");
+        if (ModList.get().isLoaded("lostcities")) {
+            registerInternal();
+        }
+    }
+
+    private static void registerInternal() {
+        if (registered) {
+            return;
+        }
+        registered = true;
+        InterModComms.sendTo("lostcities", "getLostCities", GetLostCities::new);
+        InControl.setup.getLogger().info("Enabling support for Lost Cities");
+    }
+
+    private static <T> World getWorld(IEventQuery<T> query, T event) {
+        IWorld world = query.getWorld(event);
+        if (world.isRemote()) {
+            return null;
+        }
+        World w;
+        if (world instanceof World) {
+            w = (World) world;
+        } else if (world instanceof IServerWorld) {
+            w = ((IServerWorld) world).getWorld();
+        } else {
+            throw new IllegalStateException("Bad world!");
+        }
+        return w;
     }
 
 
     public static <T> boolean isCity(IEventQuery<T> query, T event) {
-        // @todo 1.15
-//        World world = query.getWorld(event);
-//        if (world.isRemote) {
-//            return false;   // This test don't work client side
-//        }
-//        ILostChunkGenerator generator = lostCities.getLostGenerator(world.provider.getDimension());
-//        if (generator != null) {
-//            BlockPos pos = query.getPos(event);
-//            ILostChunkInfo chunkInfo = generator.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
-//            return chunkInfo.isCity();
-//        }
+        World w = getWorld(query, event);
+        if (w == null) {
+            return false;   // This test don't work client side
+        }
+        ILostCityInformation info = lostCities.getLostInfo(w);
+        if (info != null) {
+            BlockPos pos = query.getPos(event);
+            ILostChunkInfo chunkInfo = info.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
+            return chunkInfo.isCity();
+        }
         return false;
     }
 
     public static <T> boolean isStreet(IEventQuery<T> query, T event) {
-        // @todo 1.15
-//        World world = query.getWorld(event);
-//        if (world.isRemote) {
-//            return false;   // This test don't work client side
-//        }
-//        ILostChunkGenerator generator = lostCities.getLostGenerator(world.provider.getDimension());
-//        if (generator != null) {
-//            BlockPos pos = query.getPos(event);
-//            ILostChunkInfo chunkInfo = generator.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
-//            return chunkInfo.isCity() && chunkInfo.getBuildingType() == null;
-//        }
+        World w = getWorld(query, event);
+        if (w == null) {
+            return false;   // This test don't work client side
+        }
+        ILostCityInformation info = lostCities.getLostInfo(w);
+        if (info != null) {
+            BlockPos pos = query.getPos(event);
+            ILostChunkInfo chunkInfo = info.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
+            return chunkInfo.isCity() && chunkInfo.getBuildingType() == null;
+        }
         return false;
     }
 
     public static <T> boolean inSphere(IEventQuery<T> query, T event) {
-        // @todo 1.15
-//        World world = query.getWorld(event);
-//        if (world.isRemote) {
-//            return false;   // This test don't work client side
-//        }
-//        ILostChunkGenerator generator = lostCities.getLostGenerator(world.provider.getDimension());
-//        if (generator != null) {
-//            BlockPos pos = query.getPos(event);
-//            ILostChunkInfo chunkInfo = generator.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
-//            return chunkInfo.getSphere() != null;
-//        }
+        World w = getWorld(query, event);
+        if (w == null) {
+            return false;   // This test don't work client side
+        }
+        ILostCityInformation info = lostCities.getLostInfo(w);
+        if (info != null) {
+            BlockPos pos = query.getPos(event);
+            ILostChunkInfo chunkInfo = info.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
+            return chunkInfo.getSphere() != null;
+        }
         return false;
     }
 
     public static <T> boolean isBuilding(IEventQuery<T> query, T event) {
-        // @todo 1.15
-//        World world = query.getWorld(event);
-//        if (world.isRemote) {
-//            return false;   // This test don't work client side
-//        }
-//        ILostChunkGenerator generator = lostCities.getLostGenerator(world.provider.getDimension());
-//        if (generator != null) {
-//            BlockPos pos = query.getPos(event);
-//            ILostChunkInfo chunkInfo = generator.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
-//            return chunkInfo.isCity() && chunkInfo.getBuildingType() != null;
-//        }
+        World w = getWorld(query, event);
+        if (w == null) {
+            return false;   // This test don't work client side
+        }
+        ILostCityInformation info = lostCities.getLostInfo(w);
+        if (info != null) {
+            BlockPos pos = query.getPos(event);
+            ILostChunkInfo chunkInfo = info.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
+            return chunkInfo.isCity() && chunkInfo.getBuildingType() != null;
+        }
         return false;
     }
 
-    // @todo 1.15
-//    public static class GetLostCities implements Function<ILostCities, Void> {
-//        @Nullable
-//        @Override
-//        public Void apply(ILostCities lc) {
-//            lostCities = lc;
-//            return null;
-//        }
-//    }
-//
+    public static class GetLostCities implements Function<ILostCities, Void> {
+
+        @Override
+        public Void apply(ILostCities lc) {
+            lostCities = lc;
+            return null;
+        }
+    }
+
 }
 

@@ -128,6 +128,9 @@ dependencies {
 
     compile fg.deobf("net.darkhax.bookshelf:Bookshelf-1.16.4:9.3.18")
     compile fg.deobf("net.darkhax.gamestages:GameStages-1.16.4:6.0.1")
+    compile fg.deobf (project.dependencies.create("com.github.mcjty:lostcities:${lostcities_version}") {
+        transitive = false
+    })
     //compile "serene-seasons:SereneSeasons-1.12.2:1.2.15:universal"
 }
 

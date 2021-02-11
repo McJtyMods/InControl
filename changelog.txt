@@ -1,3 +1,6 @@
+Upcoming:
+- LostCity support is working again
+
 1.16-5.1.2:
 - Gamestage support is working again
 
