@@ -184,6 +184,10 @@ public class SpawnerSystem {
         int maxdist = conditions.getMaxdist();
         Box box = createSpawnBox(conditions, player.getPosition());
 
+        if (!box.isValid()) {
+            return null;
+        }
+
         if (checkLocalCount((ServerWorld) world, mob, conditions, box)) {
             return null;
         }
@@ -210,6 +214,10 @@ public class SpawnerSystem {
         int mindist = conditions.getMindist();
         int maxdist = conditions.getMaxdist();
         Box box = createSpawnBox(conditions, player.getPosition());
+
+        if (!box.isValid()) {
+            return null;
+        }
 
         if (checkLocalCount((ServerWorld) world, mob, conditions, box)) {
             return null;

@@ -46,6 +46,19 @@ public class Box {
         return maxZ;
     }
 
+    public boolean isValid() {
+        if (minX > maxX) {
+            return false;
+        }
+        if (minY > maxY) {
+            return false;
+        }
+        if (minZ > maxZ) {
+            return false;
+        }
+        return true;
+    }
+
     public boolean in(BlockPos pos) {
         if (pos.getX() < minX || pos.getX() > maxX) {
             return false;
