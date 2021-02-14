@@ -1,4 +1,4 @@
-Upcoming:
+1.16-5.1.5:
 - Structure testing works again
 - Added new 'dimensionmod' feature so that you can have a rule match for all dimensions of a given mod (like for example 'rftoolsdim')
 
