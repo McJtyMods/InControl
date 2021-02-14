@@ -171,6 +171,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.createMulti(BIOME))
                 .attribute(Attribute.createMulti(BIOMETYPE))
                 .attribute(Attribute.createMulti(DIMENSION))
+                .attribute(Attribute.createMulti(DIMENSION_MOD))
                 .attribute(Attribute.create(STATE))
 
                 .attribute(Attribute.createMulti(HELMET))

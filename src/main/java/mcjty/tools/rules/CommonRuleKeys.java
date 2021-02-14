@@ -29,6 +29,7 @@ public interface CommonRuleKeys {
     Key<String> BIOMETYPE = Key.create(Type.STRING, "biometype");
     Key<String> STRUCTURE = Key.create(Type.STRING, "structure");
     Key<RegistryKey<World>> DIMENSION = Key.create(Type.DIMENSION_TYPE, "dimension");
+    Key<String> DIMENSION_MOD = Key.create(Type.STRING, "dimensionmod");
 
     Key<String> HELMET = Key.create(Type.JSON, "helmet");
     Key<String> CHESTPLATE = Key.create(Type.JSON, "chestplate");

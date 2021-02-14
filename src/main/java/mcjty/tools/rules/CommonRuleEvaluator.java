@@ -73,6 +73,9 @@ public class CommonRuleEvaluator {
         if (map.has(DIMENSION)) {
             addDimensionCheck(map);
         }
+        if (map.has(DIMENSION_MOD)) {
+            addDimensionModCheck(map);
+        }
         if (map.has(MINTIME)) {
             addMinTimeCheck(map);
         }
@@ -311,6 +314,17 @@ public class CommonRuleEvaluator {
         } else {
             Set<RegistryKey<World>> dims = new HashSet<>(dimensions);
             checks.add((event,query) -> dims.contains(Tools.getDimensionKey(query.getWorld(event))));
+        }
+    }
+
+    private void addDimensionModCheck(AttributeMap map) {
+        List<String> dimensions = map.getList(DIMENSION_MOD);
+        if (dimensions.size() == 1) {
+            String dimmod = dimensions.get(0);
+            checks.add((event,query) -> Tools.getDimensionKey(query.getWorld(event)).getLocation().getNamespace().equals(dimmod));
+        } else {
+            Set<String> dims = new HashSet<>(dimensions);
+            checks.add((event,query) -> dims.contains(Tools.getDimensionKey(query.getWorld(event)).getLocation().getNamespace()));
         }
     }
 

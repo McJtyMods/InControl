@@ -1,5 +1,6 @@
 Upcoming:
 - Structure testing works again
+- Added new 'dimensionmod' feature so that you can have a rule match for all dimensions of a given mod (like for example 'rftoolsdim')
 
 1.16-5.1.4:
 - Fixed a crash with the new spawner when the player moves outside world boundaries

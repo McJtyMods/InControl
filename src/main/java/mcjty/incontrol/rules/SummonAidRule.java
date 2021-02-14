@@ -131,6 +131,7 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
                 .attribute(Attribute.createMulti(BIOME))
                 .attribute(Attribute.createMulti(BIOMETYPE))
                 .attribute(Attribute.createMulti(DIMENSION))
+                .attribute(Attribute.createMulti(DIMENSION_MOD))
                 .attribute(Attribute.create(STATE))
 
                 .attribute(Attribute.create(ACTION_RESULT))

@@ -111,6 +111,7 @@ public class ExperienceRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.createMulti(BIOME))
                 .attribute(Attribute.createMulti(BIOMETYPE))
                 .attribute(Attribute.createMulti(DIMENSION))
+                .attribute(Attribute.createMulti(DIMENSION_MOD))
                 .attribute(Attribute.createMulti(HELDITEM))
                 .attribute(Attribute.createMulti(PLAYER_HELDITEM))
                 .attribute(Attribute.createMulti(OFFHANDITEM))
