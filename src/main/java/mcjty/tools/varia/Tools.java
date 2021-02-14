@@ -15,6 +15,8 @@ import net.minecraft.world.IServerWorld;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.gen.WorldGenRegion;
+import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -156,5 +158,18 @@ public class Tools {
             }
             return new ItemStack(item);
         }
+    }
+
+
+    public static ServerWorld getServerWorld(IWorld world) {
+        ServerWorld sw;
+        if (world instanceof ServerWorld) {
+            sw = (ServerWorld) world;
+        } else if (world instanceof WorldGenRegion) {
+            sw = ((WorldGenRegion) world).getWorld();
+        } else {
+            throw new IllegalStateException("No world found!");
+        }
+        return sw;
     }
 }

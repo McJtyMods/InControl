@@ -9,7 +9,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
-import net.minecraft.world.gen.WorldGenRegion;
 import net.minecraft.world.server.ServerWorld;
 
 import java.util.HashMap;
@@ -181,14 +180,7 @@ public class RuleCache {
             countHostile = 0;
             countNeutral = 0;
 
-            ServerWorld sw;
-            if (world instanceof ServerWorld) {
-                sw = (ServerWorld) world;
-            } else if (world instanceof WorldGenRegion) {
-                sw = ((WorldGenRegion) world).getWorld();
-            } else {
-                throw new IllegalStateException("No world found!");
-            }
+            ServerWorld sw = Tools.getServerWorld(world);
 
             sw.getEntities().forEach(entity -> {
                 if (entity instanceof MobEntity) {
@@ -236,4 +228,5 @@ public class RuleCache {
             }
         }
     }
+
 }

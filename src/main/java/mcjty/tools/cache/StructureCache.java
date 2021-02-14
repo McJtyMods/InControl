@@ -1,11 +1,16 @@
 package mcjty.tools.cache;
 
+import it.unimi.dsi.fastutil.longs.LongSet;
 import mcjty.tools.varia.Tools;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.ChunkStatus;
+import net.minecraft.world.chunk.IChunk;
+import net.minecraft.world.gen.feature.structure.Structure;
+import net.minecraft.world.server.ServerWorld;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,16 +37,16 @@ public class StructureCache {
             return structureCache.get(entry);
         }
 
-        // @todo 1.15
-//        MapGenStructureData data = (MapGenStructureData) world.getPerWorldStorage().getOrLoadData(MapGenStructureData.class, structure);
-//        if (data == null) {
-//            return false;
-//        }
-//
-//        Set<Long> longs = parseStructureData(data);
-//        for (Long l : longs) {
-//            structureCache.put(new StructureCacheEntry(structure, dimension, l), true);
-//        }
+        ServerWorld sw = Tools.getServerWorld(world);
+        IChunk chunk = sw.getChunk(pos.getX() >> 4, pos.getZ() >> 4, ChunkStatus.STRUCTURE_REFERENCES, false);
+        if (chunk == null) {
+            return false;
+        }
+        Map<Structure<?>, LongSet> references = chunk.getStructureReferences();
+        for (Structure<?> s : references.keySet()) {
+            structureCache.put(new StructureCacheEntry(s.getRegistryName().toString(), dimension, cplong), true);
+        }
+
         if (structureCache.containsKey(entry)) {
             return true;
         } else {
