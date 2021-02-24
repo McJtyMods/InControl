@@ -151,7 +151,8 @@ public class RuleCache {
         }
 
         private int countValidSpawnChunks(IWorld world) {
-            return ((ServerWorld)world).getChunkProvider().chunkManager.getLoadedChunkCount();
+            ServerWorld sw = Tools.getServerWorld(world);
+            return sw.getChunkProvider().chunkManager.getLoadedChunkCount();
         }
 
         public int getCountPassive(IWorld world) {

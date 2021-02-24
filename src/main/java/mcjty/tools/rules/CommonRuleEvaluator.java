@@ -678,7 +678,8 @@ public class CommonRuleEvaluator {
         final Float d = map.get(MINSPAWNDIST) * map.get(MINSPAWNDIST);
         checks.add((event,query) -> {
             BlockPos pos = query.getPos(event);
-            double sqdist = pos.distanceSq(((ServerWorld)query.getWorld(event)).getSpawnPoint());
+            ServerWorld sw = Tools.getServerWorld(query.getWorld(event));
+            double sqdist = pos.distanceSq(sw.getSpawnPoint());
             return sqdist >= d;
         });
     }
@@ -687,7 +688,8 @@ public class CommonRuleEvaluator {
         final Float d = map.get(MAXSPAWNDIST) * map.get(MAXSPAWNDIST);
         checks.add((event,query) -> {
             BlockPos pos = query.getPos(event);
-            double sqdist = pos.distanceSq(((ServerWorld)query.getWorld(event)).getSpawnPoint());
+            ServerWorld sw = Tools.getServerWorld(query.getWorld(event));
+            double sqdist = pos.distanceSq(sw.getSpawnPoint());
             return sqdist <= d;
         });
     }
