@@ -1,3 +1,6 @@
+Upcoming:
+- Fixed structure testing for good hopefully
+
 1.16-5.1.6:
 - Fixed a few tests to work properly on new chunks
 

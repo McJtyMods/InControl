@@ -15,6 +15,7 @@ public class ModCommands {
                         .then(CmdKillMobs.register(dispatcher))
                         .then(CmdReload.register(dispatcher))
                         .then(CmdShowMobs.register(dispatcher))
+                        .then(CmdInfo.register(dispatcher))
         );
 
         dispatcher.register(Commands.literal("ctrl").redirect(commands));

@@ -43,8 +43,11 @@ public class StructureCache {
             return false;
         }
         Map<Structure<?>, LongSet> references = chunk.getStructureReferences();
-        for (Structure<?> s : references.keySet()) {
-            structureCache.put(new StructureCacheEntry(s.getRegistryName().toString(), dimension, cplong), true);
+        for (Map.Entry<Structure<?>, LongSet> e : references.entrySet()) {
+            LongSet longs = e.getValue();
+            if (!longs.isEmpty()) {
+                structureCache.put(new StructureCacheEntry(e.getKey().getRegistryName().toString(), dimension, cplong), true);
+            }
         }
 
         if (structureCache.containsKey(entry)) {
