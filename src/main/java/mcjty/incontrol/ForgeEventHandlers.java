@@ -9,6 +9,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.item.ItemEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IWorld;
@@ -50,6 +51,9 @@ public class ForgeEventHandlers {
         if (!(event.getEntity() instanceof LivingEntity)) {
             return;
         }
+        if (event.getEntity() instanceof PlayerEntity) {
+            return;
+        }
         if (event.getWorld().isRemote) {
             return;
         }
@@ -79,7 +83,9 @@ public class ForgeEventHandlers {
         // We register spawns in a high priority event so that we take things that other mods
         // do into account
         if (!event.getWorld().isRemote() && event.getEntity() instanceof LivingEntity) {
-            InControl.setup.cache.registerSpawn(event.getWorld(), event.getEntity().getType());
+            if (!(event.getEntity() instanceof PlayerEntity)) {
+                InControl.setup.cache.registerSpawn(event.getWorld(), event.getEntity().getType());
+            }
         }
     }
 
