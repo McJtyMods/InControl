@@ -653,7 +653,7 @@ public class CommonRuleEvaluator {
         checks.add((event,query) -> {
             IWorld world = query.getWorld(event);
             if (world instanceof World) {
-                int time = (int) ((World)world).getGameTime();
+                long time = ((World)world).getDayTime();
                 return (time % 24000) >= mintime;
             } else {
                 return false;
@@ -666,7 +666,7 @@ public class CommonRuleEvaluator {
         checks.add((event,query) -> {
             IWorld world = query.getWorld(event);
             if (world instanceof World) {
-                int time = (int) ((World)world).getGameTime();
+                long time = ((World)world).getDayTime();
                 return (time % 24000) <= maxtime;
             } else {
                 return false;

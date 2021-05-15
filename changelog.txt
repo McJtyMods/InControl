@@ -1,3 +1,6 @@
+Upcoming:
+- Fixed mintime and maxtime
+
 1.16-5.1.7:
 - Fixed structure testing for good hopefully
 - Fixed a serious problem with 'onjoin': true. It would also work for players and by doing that you could prevent players from joining the world which unfortunatelly doesn't work too well. Changed so that players are no longer affected
