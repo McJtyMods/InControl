@@ -812,6 +812,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
                     PlayerEntity player = event.getWorld().getClosestPlayer(entityLiving, 50);
                     if (player != null) {
                         entityLiving.setRevengeTarget(player);
+                        entityLiving.setLastAttackedEntity(player);
                     }
                 }
             });

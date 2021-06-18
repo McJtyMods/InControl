@@ -1,3 +1,6 @@
+Upcoming:
+- 'angry' tag should work better now
+
 1.16-5.1.8:
 - Fixed mintime and maxtime
 
