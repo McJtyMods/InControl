@@ -1,5 +1,6 @@
 Upcoming:
 - 'angry' tag should work better now
+- The spawner system will no longer attempt to spawn hostile mobs in peaceful mode
 
 1.16-5.1.8:
 - Fixed mintime and maxtime

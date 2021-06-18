@@ -6,10 +6,12 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.SpawnReason;
+import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.pathfinding.PathType;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.IWorldReader;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.Heightmap;
@@ -115,18 +117,20 @@ public class SpawnerSystem {
                 if (nocollisions) {
                     Entity entity = mob.create(world);
                     if (entity instanceof MobEntity) {
-                        MobEntity mobEntity = (MobEntity) entity;
-                        entity.setLocationAndAngles(pos.getX(), pos.getY(), pos.getZ(), random.nextFloat() * 360.0F, 0.0F);
-                        busySpawning = mobEntity;   // @todo check in spawn rule
-                        int result = ForgeHooks.canEntitySpawn(mobEntity, world, pos.getX(), pos.getY(), pos.getZ(), null, SpawnReason.NATURAL);
-                        busySpawning = null;
-                        if (result != -1) {
-                            if (canSpawn(world, mobEntity, conditions) && isNotColliding(world, mobEntity, conditions)) {
-                                mobEntity.onInitialSpawn(world, world.getDifficultyForLocation(entity.getPosition()), SpawnReason.NATURAL, null, null);
-                                world.func_242417_l(entity);
-                                spawned++;
-                                if (spawned >= desiredAmount) {
-                                    return;
+                        if (!(entity instanceof IMob) || world.getDifficulty() != Difficulty.PEACEFUL) {
+                            MobEntity mobEntity = (MobEntity) entity;
+                            entity.setLocationAndAngles(pos.getX(), pos.getY(), pos.getZ(), random.nextFloat() * 360.0F, 0.0F);
+                            busySpawning = mobEntity;   // @todo check in spawn rule
+                            int result = ForgeHooks.canEntitySpawn(mobEntity, world, pos.getX(), pos.getY(), pos.getZ(), null, SpawnReason.NATURAL);
+                            busySpawning = null;
+                            if (result != -1) {
+                                if (canSpawn(world, mobEntity, conditions) && isNotColliding(world, mobEntity, conditions)) {
+                                    mobEntity.onInitialSpawn(world, world.getDifficultyForLocation(entity.getPosition()), SpawnReason.NATURAL, null, null);
+                                    world.func_242417_l(entity);
+                                    spawned++;
+                                    if (spawned >= desiredAmount) {
+                                        return;
+                                    }
                                 }
                             }
                         }
