@@ -11,6 +11,7 @@ import mcjty.tools.varia.LookAtTools;
 import mcjty.tools.varia.Tools;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.entity.IAngerable;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.attributes.Attributes;
 import net.minecraft.entity.ai.attributes.ModifiableAttributeInstance;
@@ -813,6 +814,9 @@ public class RuleBase<T extends RuleBase.EventGetter> {
                     if (player != null) {
                         entityLiving.setRevengeTarget(player);
                         entityLiving.setLastAttackedEntity(player);
+                        if (entityLiving instanceof IAngerable) {
+                            ((IAngerable) entityLiving).setAttackTarget(player);
+                        }
                     }
                 }
             });
