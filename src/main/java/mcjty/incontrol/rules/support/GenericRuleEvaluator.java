@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.compat.ModRuleCompatibilityLayer;
 import mcjty.incontrol.spawner.SpawnerSystem;
@@ -26,7 +27,6 @@ import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Level;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -202,11 +202,12 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         List<String> mobs = map.getList(MOB);
         if (mobs.size() == 1) {
             String id = mobs.get(0);
+            if (!ForgeRegistries.ENTITIES.containsKey(new ResourceLocation(id))) {
+                ErrorHandler.error("Unknown mob '" + id + "'!");
+            }
             EntityType<?> type = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(id));
             if (type != null) {
                 checks.add((event, query) -> type.equals(query.getEntity(event).getType()));
-            } else {
-                InControl.setup.getLogger().log(Level.ERROR, "Unknown mob '" + id + "'!");
             }
         } else {
             Set<EntityType> classes = new HashSet<>();
@@ -215,7 +216,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
                 if (type != null) {
                     classes.add(type);
                 } else {
-                    InControl.setup.getLogger().log(Level.ERROR, "Unknown mob '" + id +"'!");
+                    ErrorHandler.error("Unknown mob '" + id + "'!");
                 }
             }
             if (!classes.isEmpty()) {
@@ -321,14 +322,14 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
                 try {
                     amount = Integer.parseInt(splitted[0]);
                 } catch (NumberFormatException e) {
-                    InControl.setup.getLogger().log(Level.ERROR, "Bad amount for mincount '" + splitted[0] + "'!");
+                    ErrorHandler.error("Bad amount for mincount '" + splitted[0] + "'!");
                     return null;
                 }
                 EntityType   entityClass = null;
                 if (splitted.length > 1) {
                     entityClass = findEntity(splitted[1]);
                     if (entityClass == null) {
-                        InControl.setup.getLogger().log(Level.ERROR, "Cannot find mob '" + splitted[1] + "'!");
+                        ErrorHandler.error("Cannot find mob '" + splitted[1] + "'!");
                         return null;
                     }
                 }
@@ -353,13 +354,13 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
                         String entity = el.getAsString();
                         EntityType entityType = findEntity(entity);
                         if (entityType == null) {
-                            InControl.setup.getLogger().log(Level.ERROR, "Cannot find mob '" + entity + "'!");
+                            ErrorHandler.error("Cannot find mob '" + entity + "'!");
                             return null;
                         }
                         info.addEntityType(entityType);
                     }
                 } else {
-                    InControl.setup.getLogger().log(Level.ERROR, "Bad entity tag in count description!");
+                    ErrorHandler.error("Bad entity tag in count description!");
                     return null;
                 }
             }
@@ -381,12 +382,12 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             }
             String error = info.validate();
             if (error != null) {
-                InControl.setup.getLogger().log(Level.ERROR, error);
+                ErrorHandler.error(error);
                 return null;
             }
             return info;
         } else {
-            InControl.setup.getLogger().log(Level.ERROR, "Count description '" + json + "' is not valid!");
+            ErrorHandler.error("Count description '" + json + "' is not valid!");
             return null;
         }
     }
@@ -394,7 +395,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
     private EntityType findEntity(String id) {
         EntityType<?> ee = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(id));
         if (ee == null) {
-            InControl.setup.getLogger().log(Level.ERROR, "Unknown mob '" + id + "'!");
+            ErrorHandler.error("Unknown mob '" + id + "'!");
             return null;
         }
         return ee;

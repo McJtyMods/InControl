@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import mcjty.incontrol.ErrorHandler;
 import mcjty.tools.cache.StructureCache;
 import mcjty.tools.typed.AttributeMap;
 import mcjty.tools.typed.Key;
@@ -11,6 +12,7 @@ import mcjty.tools.varia.LookAtTools;
 import mcjty.tools.varia.Tools;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.Item;
@@ -342,7 +344,7 @@ public class CommonRuleEvaluator {
             Difficulty finalDiff = diff;
             checks.add((event,query) -> query.getWorld(event).getDifficulty() == finalDiff);
         } else {
-            logger.log(Level.ERROR, "Unknown difficulty '" + difficulty + "'! Use one of 'easy', 'normal', 'hard',  or 'peaceful'");
+            ErrorHandler.error("Unknown difficulty '" + difficulty + "'! Use one of 'easy', 'normal', 'hard',  or 'peaceful'");
         }
     }
 
@@ -369,7 +371,7 @@ public class CommonRuleEvaluator {
                 }
             });
         } else {
-            logger.log(Level.ERROR, "Unknown weather '" + weather + "'! Use 'rain' or 'thunder'");
+            ErrorHandler.error("Unknown weather '" + weather + "'! Use 'rain' or 'thunder'");
         }
     }
 
@@ -503,11 +505,11 @@ public class CommonRuleEvaluator {
 //                return (world, pos) -> isMatchingOreDict(oreId, world.getBlockState(pos).getBlock());
                 return (world, pos) -> false;
             } else {
-                Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(blockname));
-                if (block == null) {
-                    logger.log(Level.ERROR, "Block '" + blockname + "' is not valid!");
+                if (!ForgeRegistries.BLOCKS.containsKey(new ResourceLocation(blockname))) {
+                    ErrorHandler.error("Block '" + blockname + "' is not valid!");
                     return null;
                 }
+                Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(blockname));
                 return (world, pos) -> testBlockStateSafe(world, pos, block);
             }
         } else if (element.isJsonObject()) {
@@ -520,11 +522,11 @@ public class CommonRuleEvaluator {
                 test = (world, pos) -> false;
             } else if (obj.has("block")) {
                 String blockname = obj.get("block").getAsString();
-                Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(blockname));
-                if (block == null) {
-                    logger.log(Level.ERROR, "Block '" + blockname + "' is not valid!");
+                if (!ForgeRegistries.BLOCKS.containsKey(new ResourceLocation(blockname))) {
+                    ErrorHandler.error("Block '" + blockname + "' is not valid!");
                     return null;
                 }
+                Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(blockname));
                 if (obj.has("properties")) {
                     BlockState blockState = block.getDefaultState();
                     JsonArray propArray = obj.get("properties").getAsJsonArray();
@@ -586,7 +588,7 @@ public class CommonRuleEvaluator {
 
             return test;
         } else {
-            logger.log(Level.ERROR, "Block description '" + json + "' is not valid!");
+            ErrorHandler.error("Block description '" + json + "' is not valid!");
         }
         return null;
     }
@@ -607,7 +609,7 @@ public class CommonRuleEvaluator {
                 }
             }
         } else {
-            logger.log(Level.ERROR, "Item description is not valid!");
+            ErrorHandler.error("Item description is not valid!");
         }
         return items;
     }
@@ -806,7 +808,7 @@ public class CommonRuleEvaluator {
             int amount = Integer.parseInt(expression);
             return i -> i == amount;
         } catch (NumberFormatException e) {
-            logger.log(Level.ERROR, "Bad expression '" + expression + "'!");
+            ErrorHandler.error("Bad expression '" + expression + "'!");
             return null;
         }
     }
@@ -820,7 +822,7 @@ public class CommonRuleEvaluator {
                 return getExpression(element.getAsString(), logger);
             }
         } else {
-            logger.log(Level.ERROR, "Bad expression!");
+            ErrorHandler.error("Bad expression!");
             return null;
         }
     }
@@ -851,7 +853,7 @@ public class CommonRuleEvaluator {
         String name = obj.get("item").getAsString();
         Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(name));
         if (item == null) {
-            logger.log(Level.ERROR, "Unknown item '" + name + "'!");
+            ErrorHandler.error("Unknown item '" + name + "'!");
             return null;
         }
 
@@ -991,7 +993,7 @@ public class CommonRuleEvaluator {
                     items.add(matcher);
                 }
             } else {
-                logger.log(Level.ERROR, "Item description '" + json + "' is not valid!");
+                ErrorHandler.error("Item description '" + json + "' is not valid!");
             }
         }
         return items;
@@ -1105,7 +1107,7 @@ public class CommonRuleEvaluator {
             state = split[0];
             value = split[1];
         } catch (Exception e) {
-            logger.log(Level.ERROR, "Bad state=value specifier '" + s + "'!");
+            ErrorHandler.error("Bad state=value specifier '" + s + "'!");
             return;
         }
 
@@ -1121,7 +1123,7 @@ public class CommonRuleEvaluator {
             state = split[0];
             value = split[1];
         } catch (Exception e) {
-            logger.log(Level.ERROR, "Bad state=value specifier '" + s + "'!");
+            ErrorHandler.error("Bad state=value specifier '" + s + "'!");
             return;
         }
 

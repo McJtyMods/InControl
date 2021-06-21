@@ -1,6 +1,7 @@
 package mcjty.incontrol.rules;
 
 import com.google.gson.JsonElement;
+import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.InControl;
 import mcjty.tools.varia.JSonTools;
 import org.apache.logging.log4j.Level;
@@ -85,11 +86,20 @@ public class RulesManager {
             directory.mkdir();
         }
 
-        readRules(path, "spawn.json", SpawnRule::parse, rules);
-        readRules(path, "summonaid.json", SummonAidRule::parse, summonAidRules);
-        readRules(path, "potentialspawn.json", PotentialSpawnRule::parse, potentialSpawnRules);
-        readRules(path, "loot.json", LootRule::parse, lootRules);
-        readRules(path, "experience.json", ExperienceRule::parse, experienceRules);
+        safeCall("spawn.json", () -> readRules(path, "spawn.json", SpawnRule::parse, rules));
+        safeCall("summonaid.json", () -> readRules(path, "summonaid.json", SummonAidRule::parse, summonAidRules));
+        safeCall("potentialspawn.json", () -> readRules(path, "potentialspawn.json", PotentialSpawnRule::parse, potentialSpawnRules));
+        safeCall("loot.json", () -> readRules(path, "loot.json", LootRule::parse, lootRules));
+        safeCall("experience.json", () -> readRules(path, "experience.json", ExperienceRule::parse, experienceRules));
+    }
+
+    private static void safeCall(String name, Runnable code) {
+        try {
+            code.run();
+        } catch (Exception e) {
+            ErrorHandler.error("JSON error in '" + name + "': check log for details (" + e.getMessage() + ")");
+            InControl.setup.getLogger().log(Level.ERROR, "Error parsing '" + name + "'", e);
+        }
     }
 
     private static <T> void readRules(String path, String filename, Function<JsonElement, T> parser, List<T> rules) {

@@ -1,8 +1,10 @@
 package mcjty.incontrol.spawner;
 
 import com.google.gson.JsonElement;
+import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.InControl;
 import mcjty.tools.varia.JSonTools;
+import org.apache.logging.log4j.Level;
 
 import java.nio.file.Path;
 
@@ -17,8 +19,13 @@ public class SpawnerParser {
         }
         for (JsonElement entry : element.getAsJsonArray()) {
             SpawnerRule.Builder builder = SpawnerRule.create();
-            SpawnerRule.parse(entry.getAsJsonObject(), builder);
-            SpawnerSystem.addRule(builder.build());
+            try {
+                SpawnerRule.parse(entry.getAsJsonObject(), builder);
+                SpawnerSystem.addRule(builder.build());
+            } catch (Exception e) {
+                ErrorHandler.error("JSON error in 'spawner.json': check log for details (" + e.getMessage() + ")");
+                InControl.setup.getLogger().log(Level.ERROR, "Error parsing 'spawner.json'", e);
+            }
         }
     }
 

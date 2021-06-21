@@ -2,6 +2,7 @@ package mcjty.tools.varia;
 
 import com.google.gson.JsonObject;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import mcjty.incontrol.ErrorHandler;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
@@ -93,7 +94,7 @@ public class Tools {
             try {
                 nbt = JsonToNBT.getTagFromJson(split[1]);
             } catch (CommandSyntaxException e) {
-                logger.log(Level.ERROR, "Error parsing NBT in '" + name + "'!");
+                ErrorHandler.error("Error parsing NBT in '" + name + "'!");
                 return ItemStack.EMPTY;
             }
             stack.setTag(nbt);
@@ -111,7 +112,7 @@ public class Tools {
         String name = obj.get("item").getAsString();
         Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(name));
         if (item == null) {
-            logger.log(Level.ERROR, "Unknown item '" + name + "'!");
+            ErrorHandler.error("Unknown item '" + name + "'!");
             return null;
         }
         ItemStack stack = new ItemStack(item);
@@ -127,7 +128,7 @@ public class Tools {
             try {
                 tag = JsonToNBT.getTagFromJson(nbt);
             } catch (CommandSyntaxException e) {
-                logger.log(Level.ERROR, "Error parsing json '" + nbt + "'!");
+                ErrorHandler.error("Error parsing json '" + nbt + "'!");
                 return ItemStack.EMPTY;
             }
             stack.setTag(tag);
@@ -146,7 +147,7 @@ public class Tools {
             try {
                 meta = Integer.parseInt(split[1]);
             } catch (NumberFormatException e) {
-                logger.log(Level.ERROR, "Unknown item '" + name + "'!");
+                ErrorHandler.error("Unknown item '" + name + "'!");
                 return ItemStack.EMPTY;
             }
             // @todo 1.15 Meta? Support properties?

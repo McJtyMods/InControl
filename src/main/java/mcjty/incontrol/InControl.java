@@ -19,5 +19,6 @@ public class InControl {
     public InControl() {
         FMLJavaModLoadingContext.get().getModEventBus().addListener((FMLCommonSetupEvent event) -> setup.init());
         MinecraftForge.EVENT_BUS.addListener((FMLServerStoppedEvent event) -> StructureCache.CACHE.clean());
+        MinecraftForge.EVENT_BUS.addListener(ErrorHandler::onPlayerJoinWorld);
     }
 }
