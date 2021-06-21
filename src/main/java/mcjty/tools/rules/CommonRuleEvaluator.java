@@ -30,6 +30,7 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.BiomeManager;
 import net.minecraftforge.common.util.Constants;
@@ -470,6 +471,26 @@ public class CommonRuleEvaluator {
         return (event, query) -> query.getValidBlockPos(event).add(offsetX, offsetY, offsetZ);
     }
 
+    private static boolean testBlockStateSafe(IWorld world, BlockPos pos, Block block) {
+        Chunk chunk = world.getChunkProvider().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
+        if (chunk != null) {
+            BlockState state = world.getBlockState(pos);
+            return state.getBlock() == block;
+        } else {
+            return false;
+        }
+    }
+
+    private static boolean testBlockStateSafe(IWorld world, BlockPos pos, BlockState block) {
+        Chunk chunk = world.getChunkProvider().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
+        if (chunk != null) {
+            BlockState state = world.getBlockState(pos);
+            return state == block;
+        } else {
+            return false;
+        }
+    }
+
     @Nullable
     private BiPredicate<IWorld, BlockPos> parseBlock(String json) {
         JsonParser parser = new JsonParser();
@@ -487,7 +508,7 @@ public class CommonRuleEvaluator {
                     logger.log(Level.ERROR, "Block '" + blockname + "' is not valid!");
                     return null;
                 }
-                return (world, pos) -> world.getBlockState(pos).getBlock() == block;
+                return (world, pos) -> testBlockStateSafe(world, pos, block);
             }
         } else if (element.isJsonObject()) {
             JsonObject obj = element.getAsJsonObject();
@@ -518,9 +539,9 @@ public class CommonRuleEvaluator {
                         }
                     }
                     BlockState finalBlockState = blockState;
-                    test = (world, pos) -> world.getBlockState(pos) == finalBlockState;
+                    test = (world, pos) -> testBlockStateSafe(world, pos, finalBlockState);
                 } else {
-                    test = (world, pos) -> world.getBlockState(pos).getBlock() == block;
+                    test = (world, pos) -> testBlockStateSafe(world, pos, block);
                 }
             } else {
                 test = (world, pos) -> true;
@@ -529,7 +550,14 @@ public class CommonRuleEvaluator {
             if (obj.has("mod")) {
                 String mod = obj.get("mod").getAsString();
                 BiPredicate<IWorld, BlockPos> finalTest = test;
-                test = (world, pos) -> finalTest.test(world, pos) && mod.equals(world.getBlockState(pos).getBlock().getRegistryName().getNamespace());
+                test = (world, pos) -> {
+                    Chunk chunk = world.getChunkProvider().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
+                    if (chunk != null) {
+                        return finalTest.test(world, pos) && mod.equals(world.getBlockState(pos).getBlock().getRegistryName().getNamespace());
+                    } else {
+                        return false;
+                    }
+                };
             }
             if (obj.has("energy")) {
                 Predicate<Integer> energy = getExpression(obj.get("energy"), logger);
