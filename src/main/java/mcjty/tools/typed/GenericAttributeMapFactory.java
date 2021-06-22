@@ -3,10 +3,14 @@ package mcjty.tools.typed;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import mcjty.incontrol.ErrorHandler;
 import mcjty.tools.varia.JSonTools;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.world.World;
+import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -44,7 +48,16 @@ public class GenericAttributeMapFactory {
                 } else if (type == Type.JSON) {
                     transformer = JsonElement::toString;
                 } else if (type == Type.DIMENSION_TYPE) {
-                    transformer = jsonElement -> RegistryKey.getOrCreateKey(Registry.WORLD_KEY, new ResourceLocation(jsonElement.getAsString()));
+                    transformer = jsonElement -> {
+                        RegistryKey<World> worldkey = RegistryKey.getOrCreateKey(Registry.WORLD_KEY, new ResourceLocation(jsonElement.getAsString()));
+                        MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
+                        if (server != null) {
+                            if (!server.func_240770_D_().contains(worldkey)) {
+                                ErrorHandler.error("Dimension '" + jsonElement.getAsString() + "' not found!");
+                            }
+                        }
+                        return worldkey;
+                    };
                 } else {
                     transformer = e -> "INVALID";
                 }
