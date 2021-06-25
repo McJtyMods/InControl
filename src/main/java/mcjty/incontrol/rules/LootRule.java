@@ -39,22 +39,22 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
     public static final IEventQuery<LivingDropsEvent> EVENT_QUERY = new IEventQuery<LivingDropsEvent>() {
         @Override
         public World getWorld(LivingDropsEvent o) {
-            return o.getEntity().getEntityWorld();
+            return o.getEntity().getCommandSenderWorld();
         }
 
         @Override
         public BlockPos getPos(LivingDropsEvent o) {
-            return o.getEntity().getPosition();
+            return o.getEntity().blockPosition();
         }
 
         @Override
         public BlockPos getValidBlockPos(LivingDropsEvent o) {
-            return o.getEntity().getPosition().down();
+            return o.getEntity().blockPosition().below();
         }
 
         @Override
         public int getY(LivingDropsEvent o) {
-            return o.getEntity().getPosition().getY();
+            return o.getEntity().blockPosition().getY();
         }
 
         @Override
@@ -69,12 +69,12 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
 
         @Override
         public Entity getAttacker(LivingDropsEvent o) {
-            return o.getSource().getTrueSource();
+            return o.getSource().getEntity();
         }
 
         @Override
         public PlayerEntity getPlayer(LivingDropsEvent o) {
-            Entity entity = o.getSource().getTrueSource();
+            Entity entity = o.getSource().getEntity();
             return entity instanceof PlayerEntity ? (PlayerEntity) entity : null;
         }
 
@@ -269,7 +269,7 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
             } else {
                 if (nbtJson != null) {
                     try {
-                        stack.setTag(JsonToNBT.getTagFromJson(nbtJson));
+                        stack.setTag(JsonToNBT.parseTag(nbtJson));
                     } catch (CommandSyntaxException e) {
                         InControl.setup.getLogger().log(Level.ERROR, "Bad nbt for '" + name + "'!");
                     }

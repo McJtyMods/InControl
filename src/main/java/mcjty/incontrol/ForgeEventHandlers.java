@@ -54,7 +54,7 @@ public class ForgeEventHandlers {
         if (event.getEntity() instanceof PlayerEntity) {
             return;
         }
-        if (event.getWorld().isRemote) {
+        if (event.getWorld().isClientSide) {
             return;
         }
         for (SpawnRule rule : RulesManager.rules) {
@@ -63,7 +63,7 @@ public class ForgeEventHandlers {
                 if (debug) {
                     InControl.setup.getLogger().log(Level.INFO, "Join Rule " + i + ": " + result
                             + " entity: " + event.getEntity().getName()
-                            + " y: " + event.getEntity().getPosition().getY());
+                            + " y: " + event.getEntity().blockPosition().getY());
                 }
                 if (result != Event.Result.DENY) {
                     rule.action(event);
@@ -82,7 +82,7 @@ public class ForgeEventHandlers {
     public void onEntityJoinWorldLast(EntityJoinWorldEvent event) {
         // We register spawns in a high priority event so that we take things that other mods
         // do into account
-        if (!event.getWorld().isRemote() && event.getEntity() instanceof LivingEntity) {
+        if (!event.getWorld().isClientSide() && event.getEntity() instanceof LivingEntity) {
             if (!(event.getEntity() instanceof PlayerEntity)) {
                 InControl.setup.cache.registerSpawn(event.getWorld(), event.getEntity().getType());
             }
@@ -91,11 +91,11 @@ public class ForgeEventHandlers {
 
     @SubscribeEvent
     public void onWorldTick(TickEvent.WorldTickEvent event) {
-        if (event.phase == TickEvent.Phase.START && !event.world.isRemote) {
+        if (event.phase == TickEvent.Phase.START && !event.world.isClientSide) {
             // For every world tick we reset the cache
             InControl.setup.cache.reset(event.world);
 
-            if (!event.world.getPlayers().isEmpty()) {
+            if (!event.world.players().isEmpty()) {
                 // If a world has players we do mob spawning in it
                 SpawnerSystem.checkRules(event);
             }
@@ -159,7 +159,7 @@ public class ForgeEventHandlers {
         for (PotentialSpawnRule rule : RulesManager.potentialSpawnRules) {
             List<MobSpawnInfo.Spawners> spawnEntries = rule.getSpawnEntries();
             for (MobSpawnInfo.Spawners entry : spawnEntries) {
-                event.getSpawns().withSpawner(entry.type.getClassification(), entry);
+                event.getSpawns().addSpawn(entry.type.getCategory(), entry);
             }
         }
     }
@@ -198,7 +198,7 @@ public class ForgeEventHandlers {
                 if (debug) {
                     InControl.setup.getLogger().log(Level.INFO, "Experience Rule " + i + ": " + result
                             + " entity: " + event.getEntity().getName()
-                            + " y: " + event.getEntity().getPosition().getY());
+                            + " y: " + event.getEntity().blockPosition().getY());
                 }
                 if (result != Event.Result.DENY) {
                     int newxp = rule.modifyXp(event.getDroppedExperience());
@@ -251,18 +251,18 @@ public class ForgeEventHandlers {
                     ItemStack item = pair.getLeft();
                     int fortune = event.getLootingLevel();
                     int amount = pair.getValue().apply(fortune);
-                    BlockPos pos = event.getEntity().getPosition();
+                    BlockPos pos = event.getEntity().blockPosition();
                     while (amount > item.getMaxStackSize()) {
                         ItemStack copy = item.copy();
                         copy.setCount(item.getMaxStackSize());
                         amount -= item.getMaxStackSize();
-                        event.getDrops().add(new ItemEntity(event.getEntity().getEntityWorld(), pos.getX(), pos.getY(), pos.getZ(),
+                        event.getDrops().add(new ItemEntity(event.getEntity().getCommandSenderWorld(), pos.getX(), pos.getY(), pos.getZ(),
                                 copy));
                     }
                     if (amount > 0) {
                         ItemStack copy = item.copy();
                         copy.setCount(amount);
-                        event.getDrops().add(new ItemEntity(event.getEntity().getEntityWorld(), pos.getX(), pos.getY(), pos.getZ(),
+                        event.getDrops().add(new ItemEntity(event.getEntity().getCommandSenderWorld(), pos.getX(), pos.getY(), pos.getZ(),
                                 copy));
                     }
                 }

@@ -28,6 +28,8 @@ import java.util.function.Consumer;
 import static mcjty.incontrol.rules.support.RuleKeys.*;
 
 
+import mcjty.tools.rules.RuleBase.EventGetter;
+
 public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
 
     public static final IEventQuery<LivingSpawnEvent.CheckSpawn> EVENT_QUERY = new IEventQuery<LivingSpawnEvent.CheckSpawn>() {
@@ -84,17 +86,17 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
 
         @Override
         public BlockPos getPos(EntityJoinWorldEvent o) {
-            return o.getEntity().getPosition();
+            return o.getEntity().blockPosition();
         }
 
         @Override
         public BlockPos getValidBlockPos(EntityJoinWorldEvent o) {
-            return o.getEntity().getPosition().down();
+            return o.getEntity().blockPosition().below();
         }
 
         @Override
         public int getY(EntityJoinWorldEvent o) {
-            return o.getEntity().getPosition().getY();
+            return o.getEntity().blockPosition().getY();
         }
 
         @Override
@@ -114,7 +116,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
 
         @Override
         public PlayerEntity getPlayer(EntityJoinWorldEvent o) {
-            return getClosestPlayer(o.getWorld(), o.getEntity().getPosition());
+            return getClosestPlayer(o.getWorld(), o.getEntity().blockPosition());
         }
 
         @Override
@@ -125,7 +127,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
     private static final GenericAttributeMapFactory FACTORY = new GenericAttributeMapFactory();
 
     private static PlayerEntity getClosestPlayer(IWorld world, BlockPos pos) {
-        return world.getClosestPlayer(pos.getX(), pos.getY(), pos.getZ(), 100, false);
+        return world.getNearestPlayer(pos.getX(), pos.getY(), pos.getZ(), 100, false);
     }
 
     static {
@@ -280,7 +282,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
 
             @Override
             public BlockPos getPosition() {
-                return event.getEntityLiving().getPosition();
+                return event.getEntityLiving().blockPosition();
             }
         };
         for (Consumer<EventGetter> action : actions) {
@@ -307,7 +309,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
 
             @Override
             public BlockPos getPosition() {
-                return event.getEntity() != null ? event.getEntity().getPosition() : null;
+                return event.getEntity() != null ? event.getEntity().blockPosition() : null;
             }
         };
         for (Consumer<EventGetter> action : actions) {

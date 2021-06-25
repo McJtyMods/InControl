@@ -22,22 +22,22 @@ public class CmdReload implements Command<CommandSource> {
 
     public static ArgumentBuilder<CommandSource, ?> register(CommandDispatcher<CommandSource> dispatcher) {
         return Commands.literal("reload")
-                .requires(cs -> cs.hasPermissionLevel(1))
+                .requires(cs -> cs.hasPermission(1))
                 .executes(CMD);
     }
 
     @Override
     public int run(CommandContext<CommandSource> context) throws CommandSyntaxException {
-        ServerPlayerEntity player = context.getSource().asPlayer();
+        ServerPlayerEntity player = context.getSource().getPlayerOrException();
         ErrorHandler.clearErrors();
         if (player != null) {
-            player.sendMessage(new StringTextComponent("Reloaded InControl rules"), Util.DUMMY_UUID);
+            player.sendMessage(new StringTextComponent("Reloaded InControl rules"), Util.NIL_UUID);
             try {
                 RulesManager.reloadRules();
                 SpawnerSystem.reloadRules();
             } catch (Exception e) {
                 InControl.setup.getLogger().error("Error reloading rules!", e);
-                player.sendMessage(new StringTextComponent(TextFormatting.RED + "Error: " + e.getLocalizedMessage()), Util.DUMMY_UUID);
+                player.sendMessage(new StringTextComponent(TextFormatting.RED + "Error: " + e.getLocalizedMessage()), Util.NIL_UUID);
             }
         }
         return 0;

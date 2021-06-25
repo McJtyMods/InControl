@@ -27,14 +27,14 @@ public class ErrorHandler {
         MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
         if (server != null) {
             for (ServerPlayerEntity player : server.getPlayerList().getPlayers()) {
-                player.sendMessage(new StringTextComponent(TextFormatting.RED + "InControl Error: " + TextFormatting.GOLD + message), Util.DUMMY_UUID);
+                player.sendMessage(new StringTextComponent(TextFormatting.RED + "InControl Error: " + TextFormatting.GOLD + message), Util.NIL_UUID);
             }
         }
     }
 
     public static void onPlayerJoinWorld(PlayerEvent.PlayerLoggedInEvent event) {
         for (String error : errors) {
-            event.getPlayer().sendMessage(new StringTextComponent(TextFormatting.RED + "InControl Error: " + TextFormatting.GOLD + error), Util.DUMMY_UUID);
+            event.getPlayer().sendMessage(new StringTextComponent(TextFormatting.RED + "InControl Error: " + TextFormatting.GOLD + error), Util.NIL_UUID);
         }
     }
 }

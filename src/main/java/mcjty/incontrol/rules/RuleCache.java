@@ -142,7 +142,7 @@ public class RuleCache {
 
         private int countValidPlayers(IWorld world) {
             int cnt = 0;
-            for (PlayerEntity entityplayer : world.getPlayers()) {
+            for (PlayerEntity entityplayer : world.players()) {
                 if (!entityplayer.isSpectator()) {
                     cnt++;
                 }
@@ -152,7 +152,7 @@ public class RuleCache {
 
         private int countValidSpawnChunks(IWorld world) {
             ServerWorld sw = Tools.getServerWorld(world);
-            return sw.getChunkProvider().chunkManager.getLoadedChunkCount();
+            return sw.getChunkSource().chunkMap.size();
         }
 
         public int getCountPassive(IWorld world) {

@@ -18,19 +18,19 @@ public class CmdDebug implements Command<CommandSource> {
 
     public static ArgumentBuilder<CommandSource, ?> register(CommandDispatcher<CommandSource> dispatcher) {
         return Commands.literal("debug")
-                .requires(cs -> cs.hasPermissionLevel(0))
+                .requires(cs -> cs.hasPermission(0))
                 .executes(CMD);
     }
 
     @Override
     public int run(CommandContext<CommandSource> context) throws CommandSyntaxException {
-        ServerPlayerEntity player = context.getSource().asPlayer();
+        ServerPlayerEntity player = context.getSource().getPlayerOrException();
         if (player != null) {
             ForgeEventHandlers.debug = !ForgeEventHandlers.debug;
             if (ForgeEventHandlers.debug) {
-                player.sendMessage(new StringTextComponent("Enabled InControl debug mode"), Util.DUMMY_UUID);
+                player.sendMessage(new StringTextComponent("Enabled InControl debug mode"), Util.NIL_UUID);
             } else {
-                player.sendMessage(new StringTextComponent("Disabled InControl debug mode"), Util.DUMMY_UUID);
+                player.sendMessage(new StringTextComponent("Disabled InControl debug mode"), Util.NIL_UUID);
             }
         }
         return 0;

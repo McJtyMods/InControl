@@ -42,7 +42,7 @@ public class StructureCache {
         if (chunk == null) {
             return false;
         }
-        Map<Structure<?>, LongSet> references = chunk.getStructureReferences();
+        Map<Structure<?>, LongSet> references = chunk.getAllReferences();
         for (Map.Entry<Structure<?>, LongSet> e : references.entrySet()) {
             LongSet longs = e.getValue();
             if (!longs.isEmpty()) {

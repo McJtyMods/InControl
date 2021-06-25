@@ -32,9 +32,9 @@ public class Tools {
 
     public static RegistryKey<World> getDimensionKey(IWorld world) {
         if (world instanceof World) {
-            return ((World) world).getDimensionKey();
+            return ((World) world).dimension();
         } else if (world instanceof IServerWorld) {
-            return ((IServerWorld) world).getWorld().getDimensionKey();
+            return ((IServerWorld) world).getLevel().dimension();
         } else {
             throw new IllegalStateException("Not possible to get a dimension key here!");
         }
@@ -44,8 +44,8 @@ public class Tools {
     @Nonnull
     public static String getBiomeId(Biome biome) {
         if (biome.getRegistryName() == null) {
-            Optional<MutableRegistry<Biome>> biomeRegistry = DynamicRegistries.func_239770_b_().func_230521_a_(Registry.BIOME_KEY);
-            return biomeRegistry.map(r -> r.getOptionalKey(biome).map(key -> key.getLocation().toString()).orElse("")).orElse("");
+            Optional<MutableRegistry<Biome>> biomeRegistry = DynamicRegistries.builtin().registry(Registry.BIOME_REGISTRY);
+            return biomeRegistry.map(r -> r.getResourceKey(biome).map(key -> key.location().toString()).orElse("")).orElse("");
         } else {
             return biome.getRegistryName().toString();
         }
@@ -92,7 +92,7 @@ public class Tools {
             }
             CompoundNBT nbt;
             try {
-                nbt = JsonToNBT.getTagFromJson(split[1]);
+                nbt = JsonToNBT.parseTag(split[1]);
             } catch (CommandSyntaxException e) {
                 ErrorHandler.error("Error parsing NBT in '" + name + "'!");
                 return ItemStack.EMPTY;
@@ -117,7 +117,7 @@ public class Tools {
         }
         ItemStack stack = new ItemStack(item);
         if (obj.has("damage")) {
-            stack.setDamage(obj.get("damage").getAsInt());
+            stack.setDamageValue(obj.get("damage").getAsInt());
         }
         if (obj.has("count")) {
             stack.setCount(obj.get("count").getAsInt());
@@ -126,7 +126,7 @@ public class Tools {
             String nbt = obj.get("nbt").toString();
             CompoundNBT tag = null;
             try {
-                tag = JsonToNBT.getTagFromJson(nbt);
+                tag = JsonToNBT.parseTag(nbt);
             } catch (CommandSyntaxException e) {
                 ErrorHandler.error("Error parsing json '" + nbt + "'!");
                 return ItemStack.EMPTY;
@@ -167,7 +167,7 @@ public class Tools {
         if (world instanceof ServerWorld) {
             sw = (ServerWorld) world;
         } else if (world instanceof WorldGenRegion) {
-            sw = ((WorldGenRegion) world).getWorld();
+            sw = ((WorldGenRegion) world).getLevel();
         } else {
             throw new IllegalStateException("No world found!");
         }

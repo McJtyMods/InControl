@@ -49,10 +49,10 @@ public class GenericAttributeMapFactory {
                     transformer = JsonElement::toString;
                 } else if (type == Type.DIMENSION_TYPE) {
                     transformer = jsonElement -> {
-                        RegistryKey<World> worldkey = RegistryKey.getOrCreateKey(Registry.WORLD_KEY, new ResourceLocation(jsonElement.getAsString()));
+                        RegistryKey<World> worldkey = RegistryKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(jsonElement.getAsString()));
                         MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
                         if (server != null) {
-                            if (!server.func_240770_D_().contains(worldkey)) {
+                            if (!server.levelKeys().contains(worldkey)) {
                                 ErrorHandler.error("Dimension '" + jsonElement.getAsString() + "' not found!");
                             }
                         }
@@ -84,7 +84,7 @@ public class GenericAttributeMapFactory {
                 } else if (type == Type.DIMENSION_TYPE) {
                     if (jsonObject.has(key.getName())) {
                         JsonElement jsonElement = jsonObject.get(key.getName());
-                        map.setNonnull(key, RegistryKey.getOrCreateKey(Registry.WORLD_KEY, new ResourceLocation(jsonElement.getAsString())));
+                        map.setNonnull(key, RegistryKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(jsonElement.getAsString())));
                     }
                 } else if (type == Type.JSON) {
                     if (jsonObject.has(key.getName())) {

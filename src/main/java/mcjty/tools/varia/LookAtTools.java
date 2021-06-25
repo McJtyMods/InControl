@@ -12,8 +12,8 @@ import net.minecraft.world.World;
 public class LookAtTools {
 
     public static RayTraceResult getMovingObjectPositionFromPlayer(IWorld worldIn, PlayerEntity playerIn, boolean useLiquids) {
-        float pitch = playerIn.rotationPitch;
-        float yaw = playerIn.rotationYaw;
+        float pitch = playerIn.xRot;
+        float yaw = playerIn.yRot;
         Vector3d vec3 = getPlayerEyes(playerIn);
         float f2 = MathHelper.cos(-yaw * 0.017453292F - (float) Math.PI);
         float f3 = MathHelper.sin(-yaw * 0.017453292F - (float)Math.PI);
@@ -28,13 +28,13 @@ public class LookAtTools {
         }
         Vector3d vec31 = vec3.add(f6 * reach, f5 * reach, f7 * reach);
         RayTraceContext context = new RayTraceContext(vec3, vec31, RayTraceContext.BlockMode.COLLIDER, useLiquids ? RayTraceContext.FluidMode.ANY : RayTraceContext.FluidMode.NONE, playerIn);
-        return worldIn.rayTraceBlocks(context);
+        return worldIn.clip(context);
     }
 
     private static Vector3d getPlayerEyes(PlayerEntity playerIn) {
-        double x = playerIn.getPosX();
-        double y = playerIn.getPosY() + playerIn.getEyeHeight();
-        double z = playerIn.getPosZ();
+        double x = playerIn.getX();
+        double y = playerIn.getY() + playerIn.getEyeHeight();
+        double z = playerIn.getZ();
         return new Vector3d(x, y, z);
     }
 }

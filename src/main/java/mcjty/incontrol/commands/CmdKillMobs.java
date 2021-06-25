@@ -29,22 +29,22 @@ public class CmdKillMobs  implements Command<CommandSource> {
 
     public static ArgumentBuilder<CommandSource, ?> register(CommandDispatcher<CommandSource> dispatcher) {
         return Commands.literal("kill")
-                .requires(cs -> cs.hasPermissionLevel(2))
+                .requires(cs -> cs.hasPermission(2))
                 .then(Commands.argument("type", StringArgumentType.word())
                         .executes(CMD));
     }
 
     @Override
     public int run(CommandContext<CommandSource> context) throws CommandSyntaxException {
-        ServerPlayerEntity player = context.getSource().asPlayer();
+        ServerPlayerEntity player = context.getSource().getPlayerOrException();
         if (player != null) {
             String type = context.getArgument("type", String.class);
             if (type == null || type.trim().isEmpty()) {
-                player.sendMessage(new StringTextComponent(TextFormatting.RED + "Use 'all', 'passive', 'hostile' or name of the mob followed by optional dimension id"), Util.DUMMY_UUID);
+                player.sendMessage(new StringTextComponent(TextFormatting.RED + "Use 'all', 'passive', 'hostile' or name of the mob followed by optional dimension id"), Util.NIL_UUID);
                 InControl.setup.getLogger().error("Use 'all', 'passive', 'hostile', 'entity' or name of the mob followed by optional dimension id");
                 return 0;
             }
-            RegistryKey<World> dimension = player.getEntityWorld().getDimensionKey();
+            RegistryKey<World> dimension = player.getCommandSenderWorld().dimension();
 //            if (args.length > 1) {
 //                dimension = Integer.parseInt(args[1]);
 //            }
@@ -53,7 +53,7 @@ public class CmdKillMobs  implements Command<CommandSource> {
             boolean hostile = "hostile".equals(type);
             boolean entity = "entity".equals(type);
 
-            ServerWorld worldServer = player.getEntityWorld().getServer().getWorld(dimension);
+            ServerWorld worldServer = player.getCommandSenderWorld().getServer().getLevel(dimension);
             List<Entity> entities = worldServer.getEntities(null, input -> {
                 if (all) {
                     return !(input instanceof PlayerEntity);
@@ -69,9 +69,9 @@ public class CmdKillMobs  implements Command<CommandSource> {
                 }
             });
             for (Entity e : entities) {
-                worldServer.removeEntity(e);
+                worldServer.despawn(e);
             }
-            player.sendMessage(new StringTextComponent(TextFormatting.YELLOW + "Removed " + entities.size() + " entities!"), Util.DUMMY_UUID);
+            player.sendMessage(new StringTextComponent(TextFormatting.YELLOW + "Removed " + entities.size() + " entities!"), Util.NIL_UUID);
         }
         return 0;
     }

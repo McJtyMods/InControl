@@ -26,22 +26,22 @@ public class CmdInfo implements Command<CommandSource> {
 
     public static ArgumentBuilder<CommandSource, ?> register(CommandDispatcher<CommandSource> dispatcher) {
         return Commands.literal("info")
-                .requires(cs -> cs.hasPermissionLevel(0))
+                .requires(cs -> cs.hasPermission(0))
                 .executes(CMD);
     }
 
     @Override
     public int run(CommandContext<CommandSource> context) throws CommandSyntaxException {
-        ServerPlayerEntity player = context.getSource().asPlayer();
+        ServerPlayerEntity player = context.getSource().getPlayerOrException();
         if (player != null) {
-            BlockPos pos = player.getPosition();
-            ServerWorld sw = Tools.getServerWorld(player.world);
+            BlockPos pos = player.blockPosition();
+            ServerWorld sw = Tools.getServerWorld(player.level);
             IChunk chunk = sw.getChunk(pos.getX() >> 4, pos.getZ() >> 4, ChunkStatus.STRUCTURE_REFERENCES, false);
             if (chunk != null) {
-                Map<Structure<?>, LongSet> references = chunk.getStructureReferences();
+                Map<Structure<?>, LongSet> references = chunk.getAllReferences();
                 for (Structure<?> s : references.keySet()) {
                     LongSet longs = references.get(s);
-                    player.sendMessage(new StringTextComponent(s.getRegistryName().toString() + ": " + longs.size()), Util.DUMMY_UUID);
+                    player.sendMessage(new StringTextComponent(s.getRegistryName().toString() + ": " + longs.size()), Util.NIL_UUID);
                 }
             }
         }

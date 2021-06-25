@@ -135,11 +135,11 @@ public class SpawnerConditions {
             JsonElement dimension = object.get("dimension");
             if (dimension.isJsonArray()) {
                 for (JsonElement element : dimension.getAsJsonArray()) {
-                    RegistryKey<World> key = RegistryKey.getOrCreateKey(Registry.WORLD_KEY, new ResourceLocation(element.getAsString()));
+                    RegistryKey<World> key = RegistryKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(element.getAsString()));
                     builder.dimensions(key);
                 }
             } else {
-                RegistryKey<World> key = RegistryKey.getOrCreateKey(Registry.WORLD_KEY, new ResourceLocation(dimension.getAsString()));
+                RegistryKey<World> key = RegistryKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(dimension.getAsString()));
                 builder.dimensions(key);
             }
         }

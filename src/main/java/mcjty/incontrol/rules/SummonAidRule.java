@@ -240,8 +240,8 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
             actions.add(event -> {
                 LivingEntity living = event.getZombieHelper();
                 for (EffectInstance effect : effects) {
-                    EffectInstance neweffect = new EffectInstance(effect.getPotion(), effect.getDuration(), effect.getAmplifier());
-                    living.addPotionEffect(neweffect);
+                    EffectInstance neweffect = new EffectInstance(effect.getEffect(), effect.getDuration(), effect.getAmplifier());
+                    living.addEffect(neweffect);
                 }
             });
         }
@@ -256,14 +256,14 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
             Pair<Float, ItemStack> pair = items.get(0);
             actions.add(event -> {
                 ZombieEntity helper = event.getZombieHelper();
-                helper.setItemStackToSlot(slot, pair.getRight().copy());
+                helper.setItemSlot(slot, pair.getRight().copy());
             });
         } else {
             final float total = getTotal(items);
             actions.add(event -> {
                 ItemStack item = getRandomItem(items, total);
                 ZombieEntity helper = event.getZombieHelper();
-                helper.setItemStackToSlot(slot, item.copy());
+                helper.setItemSlot(slot, item.copy());
             });
         }
     }
@@ -277,14 +277,14 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
             Pair<Float, ItemStack> pair = items.get(0);
             actions.add(event -> {
                 ZombieEntity helper = event.getZombieHelper();
-                helper.setHeldItem(Hand.MAIN_HAND, pair.getRight().copy());
+                helper.setItemInHand(Hand.MAIN_HAND, pair.getRight().copy());
             });
         } else {
             final float total = getTotal(items);
             actions.add(event -> {
                 ItemStack item = getRandomItem(items, total);
                 ZombieEntity helper = event.getZombieHelper();
-                helper.setHeldItem(Hand.MAIN_HAND, item.copy());
+                helper.setItemInHand(Hand.MAIN_HAND, item.copy());
             });
         }
     }
@@ -293,9 +293,9 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
         if (map.get(ACTION_ANGRY)) {
             actions.add(event -> {
                 ZombieEntity helper = event.getZombieHelper();
-                PlayerEntity player = event.getWorld().getClosestPlayer(helper, 50);
+                PlayerEntity player = event.getWorld().getNearestPlayer(helper, 50);
                 if (player != null) {
-                    helper.setAttackTarget(player);
+                    helper.setTarget(player);
                 }
             });
         }

@@ -114,7 +114,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             checks.add((event, query) -> {
                 Entity entity = query.getEntity(event);
                 if (entity instanceof MobEntity) {
-                    return MobEntity.canSpawnOn((EntityType<? extends MobEntity>) entity.getType(), entity.getEntityWorld(), SpawnReason.NATURAL, entity.getPosition(), null);
+                    return MobEntity.checkMobSpawnRules((EntityType<? extends MobEntity>) entity.getType(), entity.getCommandSenderWorld(), SpawnReason.NATURAL, entity.blockPosition(), null);
                 } else {
                     return false;
                 }
@@ -123,7 +123,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             checks.add((event, query) -> {
                 Entity entity = query.getEntity(event);
                 if (entity instanceof MobEntity) {
-                    return !MobEntity.canSpawnOn((EntityType<? extends MobEntity>) entity.getType(), entity.getEntityWorld(), SpawnReason.NATURAL, entity.getPosition(), null);
+                    return !MobEntity.checkMobSpawnRules((EntityType<? extends MobEntity>) entity.getType(), entity.getCommandSenderWorld(), SpawnReason.NATURAL, entity.blockPosition(), null);
                 } else {
                     return true;
                 }
@@ -137,7 +137,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             checks.add((event, query) -> {
                 Entity entity = query.getEntity(event);
                 if (entity instanceof MobEntity) {
-                    return ((MobEntity) entity).isNotColliding(entity.getEntityWorld());
+                    return ((MobEntity) entity).checkSpawnObstruction(entity.getCommandSenderWorld());
                 } else {
                     return false;
                 }
@@ -146,7 +146,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             checks.add((event, query) -> {
                 Entity entity = query.getEntity(event);
                 if (entity instanceof MobEntity) {
-                    return !((MobEntity) entity).isNotColliding(entity.getEntityWorld());
+                    return !((MobEntity) entity).checkSpawnObstruction(entity.getCommandSenderWorld());
                 } else {
                     return true;
                 }
@@ -506,8 +506,8 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         }
 
         // If this returns false it is still possible we have a fake player. Try to find the player in the list of online players
-        PlayerList playerList = entity.getEntityWorld().getServer().getPlayerList();
-        ServerPlayerEntity playerByUUID = playerList.getPlayerByUUID(((PlayerEntity) entity).getGameProfile().getId());
+        PlayerList playerList = entity.getCommandSenderWorld().getServer().getPlayerList();
+        ServerPlayerEntity playerByUUID = playerList.getPlayer(((PlayerEntity) entity).getGameProfile().getId());
         if (playerByUUID == null) {
             // The player isn't online. Then it can't be real
             return true;
@@ -563,18 +563,18 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
     private void addFireCheck(AttributeMap map) {
         boolean fire = map.get(FIRE);
         if (fire) {
-            checks.add((event, query) -> query.getSource(event) == null ? false : query.getSource(event).isFireDamage());
+            checks.add((event, query) -> query.getSource(event) == null ? false : query.getSource(event).isFire());
         } else {
-            checks.add((event, query) -> query.getSource(event) == null ? true : !query.getSource(event).isFireDamage());
+            checks.add((event, query) -> query.getSource(event) == null ? true : !query.getSource(event).isFire());
         }
     }
 
     private void addMagicCheck(AttributeMap map) {
         boolean magic = map.get(MAGIC);
         if (magic) {
-            checks.add((event, query) -> query.getSource(event) == null ? false : query.getSource(event).isMagicDamage());
+            checks.add((event, query) -> query.getSource(event) == null ? false : query.getSource(event).isMagic());
         } else {
-            checks.add((event, query) -> query.getSource(event) == null ? true : !query.getSource(event).isMagicDamage());
+            checks.add((event, query) -> query.getSource(event) == null ? true : !query.getSource(event).isMagic());
         }
     }
 
@@ -585,7 +585,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             if (query.getSource(event) == null) {
                 return false;
             }
-            return sourceSet.contains(query.getSource(event).getDamageType());
+            return sourceSet.contains(query.getSource(event).getMsgId());
         });
     }
 

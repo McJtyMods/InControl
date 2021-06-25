@@ -26,22 +26,22 @@ public class ExperienceRule extends RuleBase<RuleBase.EventGetter> {
     public static final IEventQuery<LivingExperienceDropEvent> EVENT_QUERY = new IEventQuery<LivingExperienceDropEvent>() {
         @Override
         public World getWorld(LivingExperienceDropEvent o) {
-            return o.getEntity().getEntityWorld();
+            return o.getEntity().getCommandSenderWorld();
         }
 
         @Override
         public BlockPos getPos(LivingExperienceDropEvent o) {
-            return o.getEntity().getPosition();
+            return o.getEntity().blockPosition();
         }
 
         @Override
         public BlockPos getValidBlockPos(LivingExperienceDropEvent o) {
-            return o.getEntity().getPosition().down();
+            return o.getEntity().blockPosition().below();
         }
 
         @Override
         public int getY(LivingExperienceDropEvent o) {
-            return o.getEntity().getPosition().getY();
+            return o.getEntity().blockPosition().getY();
         }
 
         @Override

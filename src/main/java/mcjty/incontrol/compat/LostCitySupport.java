@@ -36,14 +36,14 @@ public class LostCitySupport {
 
     private static <T> World getWorld(IEventQuery<T> query, T event) {
         IWorld world = query.getWorld(event);
-        if (world.isRemote()) {
+        if (world.isClientSide()) {
             return null;
         }
         World w;
         if (world instanceof World) {
             w = (World) world;
         } else if (world instanceof IServerWorld) {
-            w = ((IServerWorld) world).getWorld();
+            w = ((IServerWorld) world).getLevel();
         } else {
             throw new IllegalStateException("Bad world!");
         }

@@ -43,7 +43,7 @@ public class SpawnerSystem {
 
     public static void checkRules(TickEvent.WorldTickEvent event) {
         World world = event.world;
-        WorldSpawnerData spawnerData = worldData.get(world.getDimensionKey());
+        WorldSpawnerData spawnerData = worldData.get(world.dimension());
         if (spawnerData == null) {
             return;
         }
@@ -113,21 +113,21 @@ public class SpawnerSystem {
         for (int i = 0 ; i < rule.getAttempts() ; i++) {
             BlockPos pos = getRandomPosition(world, mob, conditions);
             if (pos != null) {
-                if (world.isBlockLoaded(pos)) {
-                    boolean nocollisions = world.hasNoCollisions(mob.getBoundingBoxWithSizeApplied(pos.getX(), pos.getY(), pos.getZ()));
+                if (world.hasChunkAt(pos)) {
+                    boolean nocollisions = world.noCollision(mob.getAABB(pos.getX(), pos.getY(), pos.getZ()));
                     if (nocollisions) {
                         Entity entity = mob.create(world);
                         if (entity instanceof MobEntity) {
                             if (!(entity instanceof IMob) || world.getDifficulty() != Difficulty.PEACEFUL) {
                                 MobEntity mobEntity = (MobEntity) entity;
-                                entity.setLocationAndAngles(pos.getX(), pos.getY(), pos.getZ(), random.nextFloat() * 360.0F, 0.0F);
+                                entity.moveTo(pos.getX(), pos.getY(), pos.getZ(), random.nextFloat() * 360.0F, 0.0F);
                                 busySpawning = mobEntity;   // @todo check in spawn rule
                                 int result = ForgeHooks.canEntitySpawn(mobEntity, world, pos.getX(), pos.getY(), pos.getZ(), null, SpawnReason.NATURAL);
                                 busySpawning = null;
                                 if (result != -1) {
                                     if (canSpawn(world, mobEntity, conditions) && isNotColliding(world, mobEntity, conditions)) {
-                                        mobEntity.onInitialSpawn(world, world.getDifficultyForLocation(entity.getPosition()), SpawnReason.NATURAL, null, null);
-                                        world.func_242417_l(entity);
+                                        mobEntity.finalizeSpawn(world, world.getCurrentDifficultyAt(entity.blockPosition()), SpawnReason.NATURAL, null, null);
+                                        world.addFreshEntityWithPassengers(entity);
                                         spawned++;
                                         if (spawned >= desiredAmount) {
                                             return;
@@ -156,15 +156,15 @@ public class SpawnerSystem {
         if (conditions.isNoRestrictions()) {
             return true;
         } else {
-            return mobEntity.canSpawn(world, SpawnReason.NATURAL);
+            return mobEntity.checkSpawnRules(world, SpawnReason.NATURAL);
         }
     }
 
     private static boolean isNotColliding(World world, MobEntity mobEntity, SpawnerConditions conditions) {
         if (conditions.isInWater()) {
-            return world.containsAnyLiquid(mobEntity.getBoundingBox()) && world.checkNoEntityCollision(mobEntity);
+            return world.containsAnyLiquid(mobEntity.getBoundingBox()) && world.isUnobstructed(mobEntity);
         } else {
-            return mobEntity.isNotColliding(world);
+            return mobEntity.checkSpawnObstruction(world);
         }
     }
 
@@ -183,12 +183,12 @@ public class SpawnerSystem {
 
     @Nullable
     private static BlockPos getRandomPositionInBox(World world, EntityType<?> mob, SpawnerConditions conditions) {
-        List<? extends PlayerEntity> players = world.getPlayers();
+        List<? extends PlayerEntity> players = world.players();
         PlayerEntity player = players.get(random.nextInt(players.size()));
 
         int mindist = conditions.getMindist();
         int maxdist = conditions.getMaxdist();
-        Box box = createSpawnBox(conditions, player.getPosition());
+        Box box = createSpawnBox(conditions, player.blockPosition());
 
         if (!box.isValid()) {
             return null;
@@ -199,11 +199,11 @@ public class SpawnerSystem {
         }
 
         BlockPos pos = box.randomPos(random);
-        double sqdist = pos.distanceSq(player.getPosition().getX(), player.getPosition().getY(), player.getPosition().getZ(), true);
+        double sqdist = pos.distSqr(player.blockPosition().getX(), player.blockPosition().getY(), player.blockPosition().getZ(), true);
 
         while (sqdist < mindist * mindist || sqdist > maxdist * maxdist) {
             pos = box.randomPos(random);
-            sqdist = pos.distanceSq(player.getPosition().getX(), player.getPosition().getY(), player.getPosition().getZ(), true);
+            sqdist = pos.distSqr(player.blockPosition().getX(), player.blockPosition().getY(), player.blockPosition().getZ(), true);
         }
 
         return pos;
@@ -211,7 +211,7 @@ public class SpawnerSystem {
 
     @Nullable
     private static BlockPos getRandomPositionOnGround(World world, EntityType<?> mob, SpawnerConditions conditions) {
-        List<? extends PlayerEntity> players = world.getPlayers();
+        List<? extends PlayerEntity> players = world.players();
         PlayerEntity player = players.get(random.nextInt(players.size()));
 
         int minheight = conditions.getMinheight();
@@ -219,7 +219,7 @@ public class SpawnerSystem {
 
         int mindist = conditions.getMindist();
         int maxdist = conditions.getMaxdist();
-        Box box = createSpawnBox(conditions, player.getPosition());
+        Box box = createSpawnBox(conditions, player.blockPosition());
 
         if (!box.isValid()) {
             return null;
@@ -231,13 +231,13 @@ public class SpawnerSystem {
 
         BlockPos pos = box.randomPos(random);
         pos = getValidSpawnablePosition(world, pos.getX(), pos.getZ(), minheight, maxheight);
-        double sqdist = pos == null ? Double.MAX_VALUE : pos.distanceSq(player.getPosition().getX(), player.getPosition().getY(), player.getPosition().getZ(), true);
+        double sqdist = pos == null ? Double.MAX_VALUE : pos.distSqr(player.blockPosition().getX(), player.blockPosition().getY(), player.blockPosition().getZ(), true);
 
         int counter = 100;
         while (sqdist < mindist * mindist || sqdist > maxdist * maxdist) {
             pos = box.randomPos(random);
             pos = getValidSpawnablePosition(world, pos.getX(), pos.getZ(), minheight, maxheight);
-            sqdist = pos == null ? Double.MAX_VALUE : pos.distanceSq(player.getPosition().getX(), player.getPosition().getY(), player.getPosition().getZ(), true);
+            sqdist = pos == null ? Double.MAX_VALUE : pos.distSqr(player.blockPosition().getX(), player.blockPosition().getY(), player.blockPosition().getZ(), true);
             counter--;
             if (counter <= 0) {
                 return null;
@@ -249,7 +249,7 @@ public class SpawnerSystem {
 
     private static boolean checkLocalCount(ServerWorld world, EntityType<?> mob, SpawnerConditions conditions, Box box) {
         if (conditions.getMaxlocal() != -1) {
-            long count = world.getEntities().filter(e -> e.getType() == mob && box.in(e.getPosition())).count();
+            long count = world.getEntities().filter(e -> e.getType() == mob && box.in(e.blockPosition())).count();
             if (count >= conditions.getMaxlocal()) {
                 return true;
             }
@@ -271,16 +271,16 @@ public class SpawnerSystem {
         height = random.nextInt(height + 1);
         BlockPos blockPos = new BlockPos(x, height-1, z);
         while (blockPos.getY() >= minHeight && !isValidSpawnPos(worldIn, blockPos)) {
-            blockPos = blockPos.down();
+            blockPos = blockPos.below();
         }
         return blockPos.getY() < minHeight ? null : blockPos;
     }
 
     private static boolean isValidSpawnPos(IWorldReader world, BlockPos pos) {
-        if (!world.getBlockState(pos).allowsMovement(world, pos, PathType.LAND)) {
+        if (!world.getBlockState(pos).isPathfindable(world, pos, PathType.LAND)) {
             return false;
         }
-        return world.getBlockState(pos.down()).isSolid();
+        return world.getBlockState(pos.below()).canOcclude();
     }
 
 
