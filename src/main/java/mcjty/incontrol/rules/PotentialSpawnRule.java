@@ -85,6 +85,8 @@ public class PotentialSpawnRule extends RuleBase<RuleBase.EventGetter> {
         FACTORY
                 .attribute(Attribute.create(MINCOUNT))
                 .attribute(Attribute.create(MAXCOUNT))
+                .attribute(Attribute.create(MINDAYCOUNT))
+                .attribute(Attribute.create(MAXDAYCOUNT))
                 .attribute(Attribute.create(MINTIME))
                 .attribute(Attribute.create(MAXTIME))
                 .attribute(Attribute.create(MINLIGHT))

@@ -1,5 +1,6 @@
 package mcjty.incontrol.spawner;
 
+import mcjty.incontrol.DataStorage;
 import mcjty.incontrol.InControl;
 import mcjty.tools.varia.Box;
 import net.minecraft.entity.Entity;
@@ -54,13 +55,14 @@ public class SpawnerSystem {
         spawnerData.counter--;
         if (spawnerData.counter <= 0) {
             spawnerData.counter = 20;
+            DataStorage data = DataStorage.getData(world);
             for (SpawnerRule rule : spawnerData.rules) {
-                executeRule(rule, world);
+                executeRule(rule, world, data);
             }
         }
     }
 
-    private static void executeRule(SpawnerRule rule, World world) {
+    private static void executeRule(SpawnerRule rule, World world, DataStorage data) {
         SpawnerConditions conditions = rule.getConditions();
         if (conditions.getMaxtotal() != -1) {
             int count = InControl.setup.cache.getCountHostile(world);
@@ -89,6 +91,11 @@ public class SpawnerSystem {
             }
         }
 
+        int daycounter = data.getDaycounter();
+        if (daycounter < conditions.getMindaycount() && daycounter >= conditions.getMaxdaycount()) {
+            return;
+        }
+
         List<EntityType<?>> mobs = rule.getMobs();
         for (EntityType<?> mob : mobs) {
             executeRule(rule, (ServerWorld)world, mob);
@@ -101,6 +108,7 @@ public class SpawnerSystem {
         }
 
         SpawnerConditions conditions = rule.getConditions();
+
         if (checkTooMany(world, mob, conditions)) {
             return;
         }

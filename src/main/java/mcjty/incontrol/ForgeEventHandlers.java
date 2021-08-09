@@ -41,7 +41,7 @@ public class ForgeEventHandlers {
     public static boolean debug = false;
 
     @SubscribeEvent
-    public void serverLoad(RegisterCommandsEvent event) {
+    public void registerCommands(RegisterCommandsEvent event) {
         ModCommands.register(event.getDispatcher());
     }
 
@@ -99,6 +99,8 @@ public class ForgeEventHandlers {
                 // If a world has players we do mob spawning in it
                 SpawnerSystem.checkRules(event);
             }
+
+            DataStorage.getData(event.world).tick(event.world);
         }
     }
 

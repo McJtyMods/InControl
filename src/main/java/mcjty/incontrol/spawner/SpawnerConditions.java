@@ -18,6 +18,8 @@ public class SpawnerConditions {
     private final int maxdist;
     private final int minheight;
     private final int maxheight;
+    private final int mindaycount;
+    private final int maxdaycount;
     private final boolean inWater;
     private final boolean inAir;
     private final boolean noRestrictions;
@@ -36,6 +38,8 @@ public class SpawnerConditions {
         maxdist = builder.maxdist;
         minheight = builder.minheight;
         maxheight = builder.maxheight;
+        mindaycount = builder.mindaycount;
+        maxdaycount = builder.maxdaycount;
         inWater = builder.inWater;
         inAir = builder.inAir;
         maxthis = builder.maxthis;
@@ -50,6 +54,12 @@ public class SpawnerConditions {
     }
 
     private void validate() {
+        if (mindaycount < 0) {
+            throw new IllegalStateException("Invalid negative minimum daycount!");
+        }
+        if (maxdaycount < 0) {
+            throw new IllegalStateException("Invalid negative maximum daycount!");
+        }
         if (mindist < 0) {
             throw new IllegalStateException("Invalid negative minimum distance!");
         }
@@ -72,6 +82,14 @@ public class SpawnerConditions {
 
     public Set<RegistryKey<World>> getDimensions() {
         return dimensions;
+    }
+
+    public int getMindaycount() {
+        return mindaycount;
+    }
+
+    public int getMaxdaycount() {
+        return maxdaycount;
     }
 
     public int getMindist() {
@@ -149,6 +167,12 @@ public class SpawnerConditions {
         if (object.has("maxdist")) {
             builder.distance(builder.mindist, object.getAsJsonPrimitive("maxdist").getAsInt());
         }
+        if (object.has("mindaycount")) {
+            builder.daycount(object.getAsJsonPrimitive("mindaycount").getAsInt(), builder.maxdaycount);
+        }
+        if (object.has("maxdaycount")) {
+            builder.daycount(builder.mindaycount, object.getAsJsonPrimitive("maxdaycount").getAsInt());
+        }
         if (object.has("minheight")) {
             builder.height(object.getAsJsonPrimitive("minheight").getAsInt(), builder.maxheight);
         }
@@ -189,6 +213,8 @@ public class SpawnerConditions {
 
         private int mindist = 24;
         private int maxdist = 120;
+        private int mindaycount = 0;
+        private int maxdaycount = Integer.MAX_VALUE;
         private int minheight = 1;
         private int maxheight = 256;
         private boolean inWater = false;
@@ -209,6 +235,12 @@ public class SpawnerConditions {
 
         public Builder noRestrictions(boolean noRestrictions) {
             this.noRestrictions = noRestrictions;
+            return this;
+        }
+
+        public Builder daycount(int min, int max) {
+            this.mindaycount = min;
+            this.maxdaycount = max;
             return this;
         }
 

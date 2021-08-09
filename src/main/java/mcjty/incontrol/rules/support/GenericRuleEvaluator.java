@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import mcjty.incontrol.DataStorage;
 import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.compat.ModRuleCompatibilityLayer;
@@ -11,6 +12,7 @@ import mcjty.incontrol.spawner.SpawnerSystem;
 import mcjty.tools.rules.CommonRuleEvaluator;
 import mcjty.tools.rules.IEventQuery;
 import mcjty.tools.typed.AttributeMap;
+import mcjty.tools.varia.Tools;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.MobEntity;
@@ -105,6 +107,12 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         }
         if (map.has(MAXCOUNT)) {
             addMaxCountCheck(map);
+        }
+        if (map.has(MINDAYCOUNT)) {
+            addMinDayCountCheck(map);
+        }
+        if (map.has(MAXDAYCOUNT)) {
+            addMaxDayCountCheck(map);
         }
     }
 
@@ -433,6 +441,34 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             Entity entity = query.getEntity(event);
             int count = counter.apply(world, entity);
             int amount = amountAdjuster.apply(world);
+            return count < amount;
+        });
+    }
+
+    private void addMinDayCountCheck(AttributeMap map) {
+        final Integer count = map.get(MINDAYCOUNT);
+        if (count == null) {
+            return;
+        }
+
+        checks.add((event, query) -> {
+            IWorld world = query.getWorld(event);
+            DataStorage data = DataStorage.getData(Tools.getServerWorld(world));
+            int amount = data.getDaycounter();
+            return count >= amount;
+        });
+    }
+
+    private void addMaxDayCountCheck(AttributeMap map) {
+        final Integer count = map.get(MAXDAYCOUNT);
+        if (count == null) {
+            return;
+        }
+
+        checks.add((event, query) -> {
+            IWorld world = query.getWorld(event);
+            DataStorage data = DataStorage.getData(Tools.getServerWorld(world));
+            int amount = data.getDaycounter();
             return count < amount;
         });
     }

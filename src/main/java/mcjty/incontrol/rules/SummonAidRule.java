@@ -96,6 +96,8 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
         FACTORY
                 .attribute(Attribute.create(MINTIME))
                 .attribute(Attribute.create(MAXTIME))
+                .attribute(Attribute.create(MINDAYCOUNT))
+                .attribute(Attribute.create(MAXDAYCOUNT))
                 .attribute(Attribute.create(MINCOUNT))
                 .attribute(Attribute.create(MAXCOUNT))
                 .attribute(Attribute.create(MINLIGHT))
