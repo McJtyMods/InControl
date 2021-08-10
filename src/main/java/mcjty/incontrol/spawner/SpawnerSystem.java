@@ -100,13 +100,21 @@ public class SpawnerSystem {
         }
 
         List<EntityType<?>> mobs = rule.getMobs();
-        for (EntityType<?> mob : mobs) {
-            executeRule(rule, (ServerWorld)world, mob);
+        List<Float> weights = rule.getWeights();
+        float maxWeight = rule.getMaxWeight();
+        for (int i = 0 ; i < mobs.size() ; i++) {
+            EntityType<?> mob = mobs.get(i);
+            float weight = i < weights.size() ? weights.get(i) : 1.0f;
+            executeRule(rule, (ServerWorld)world, mob, weight / maxWeight);
         }
     }
 
-    private static void executeRule(SpawnerRule rule, ServerWorld world, EntityType<?> mob) {
+    private static void executeRule(SpawnerRule rule, ServerWorld world, EntityType<?> mob, float weight) {
         if (random.nextFloat() > rule.getPersecond()) {
+            return;
+        }
+
+        if (random.nextFloat() > weight) {
             return;
         }
 

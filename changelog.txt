@@ -3,6 +3,8 @@ Upcoming:
 - New 'mindaycount' and 'maxdaycount' tags for spawn.json, potentialspawn.json, summonaid.json, and also the new spawner.json.
 - New phases.json rule file. There you can define phase rules for a limited set of global conditions. These phases can then be used in spawner, spawn, potentialspawn, ... for a more optimal way to check for rules
 - New '/incontrol phases' command to check the current active phases
+- New '/incontrol list' command to list all current mobs in the current world
+- New 'weight' system for spawner so that you can now have relative weights for the different mobs spawned by a single rule
 
 1.16-5.1.9:
 - 'angry' tag should work better now

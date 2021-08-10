@@ -12,6 +12,8 @@ import java.util.*;
 public class SpawnerRule {
 
     private final List<EntityType<?>> mobs = new ArrayList<>();
+    private final List<Float> weights = new ArrayList<>();
+    private final float maxWeight;
     private final float persecond;
     private final int attempts;
     private final int minSpawn;
@@ -21,16 +23,34 @@ public class SpawnerRule {
 
     private SpawnerRule(Builder builder) {
         mobs.addAll(builder.mobs);
+        weights.addAll(builder.weights);
         phases = builder.phases;
         persecond = builder.persecond;
         attempts = builder.attempts;
         conditions = builder.conditions;
         minSpawn = builder.minSpawn;
         maxSpawn = builder.maxSpawn;
+        float w = 0;
+        for (Float weight : weights) {
+            w += weight;
+        }
+        if (w <= 0) {
+            w = mobs.size();
+        }
+        maxWeight = w;
+
     }
 
     public List<EntityType<?>> getMobs() {
         return mobs;
+    }
+
+    public List<Float> getWeights() {
+        return weights;
+    }
+
+    public float getMaxWeight() {
+        return maxWeight;
     }
 
     public Set<String> getPhases() {
@@ -70,6 +90,17 @@ public class SpawnerRule {
                 }
             } else {
                 addMob(builder, mob);
+            }
+        }
+
+        if (object.has("weights")) {
+            JsonElement weights = object.get("weights");
+            if (weights.isJsonArray()) {
+                for (JsonElement element : weights.getAsJsonArray()) {
+                    builder.weights(element.getAsFloat());
+                }
+            } else {
+                builder.weights(weights.getAsFloat());
             }
         }
 
@@ -118,6 +149,7 @@ public class SpawnerRule {
 
     public static class Builder {
         private final List<EntityType<?>> mobs = new ArrayList<>();
+        private final List<Float> weights = new ArrayList<>();
         private final Set<String> phases = new HashSet<>();
         private float persecond = 1.0f;
         private int attempts = 1;
@@ -127,6 +159,11 @@ public class SpawnerRule {
 
         public Builder mobs(EntityType<?>... mobs) {
             Collections.addAll(this.mobs, mobs);
+            return this;
+        }
+
+        public Builder weights(Float... weights) {
+            Collections.addAll(this.weights, weights);
             return this;
         }
 
