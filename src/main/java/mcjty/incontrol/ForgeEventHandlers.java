@@ -1,18 +1,14 @@
 package mcjty.incontrol;
 
 import mcjty.incontrol.commands.ModCommands;
+import mcjty.incontrol.data.DataStorage;
 import mcjty.incontrol.rules.*;
 import mcjty.incontrol.spawner.SpawnerSystem;
-import mcjty.tools.varia.Tools;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.MobSpawnInfo;
 import net.minecraftforge.event.RegisterCommandsEvent;
@@ -57,7 +53,7 @@ public class ForgeEventHandlers {
         if (event.getWorld().isClientSide) {
             return;
         }
-        for (SpawnRule rule : RulesManager.rules) {
+        for (SpawnRule rule : RulesManager.getFilteredRules(event.getWorld())) {
             if (rule.isOnJoin() && rule.match(event)) {
                 Event.Result result = rule.getResult();
                 if (debug) {
@@ -100,7 +96,9 @@ public class ForgeEventHandlers {
                 SpawnerSystem.checkRules(event);
             }
 
-            DataStorage.getData(event.world).tick(event.world);
+            if (event.world.dimension().equals(World.OVERWORLD)) {
+                DataStorage.getData(event.world).tick(event.world);
+            }
         }
     }
 
@@ -108,7 +106,7 @@ public class ForgeEventHandlers {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onEntitySpawnEvent(LivingSpawnEvent.CheckSpawn event) {
         int i = 0;
-        for (SpawnRule rule : RulesManager.rules) {
+        for (SpawnRule rule : RulesManager.getFilteredRules(event.getEntity().getCommandSenderWorld())) {
             if (rule.match(event)) {
                 Event.Result result = rule.getResult();
                 if (debug) {
@@ -134,7 +132,7 @@ public class ForgeEventHandlers {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onSummonAidEvent(ZombieEvent.SummonAidEvent event) {
         int i = 0;
-        for (SummonAidRule rule : RulesManager.summonAidRules) {
+        for (SummonAidRule rule : RulesManager.getFilteredSummonAidRules(event.getWorld())) {
             if (rule.match(event)) {
                 Event.Result result = rule.getResult();
                 if (debug) {
@@ -194,7 +192,7 @@ public class ForgeEventHandlers {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onLivingExperienceDrop(LivingExperienceDropEvent event) {
         int i = 0;
-        for (ExperienceRule rule : RulesManager.experienceRules) {
+        for (ExperienceRule rule : RulesManager.getFilteredExperienceRuiles(event.getEntity().level)) {
             if (rule.match(event)) {
                 Event.Result result = rule.getResult();
                 if (debug) {
@@ -216,8 +214,9 @@ public class ForgeEventHandlers {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onLivingDrops(LivingDropsEvent event) {
+        World world = event.getEntity().getCommandSenderWorld();
         int i = 0;
-        for (LootRule rule : RulesManager.lootRules) {
+        for (LootRule rule : RulesManager.getFilteredLootRules(world)) {
             if (rule.match(event)) {
                 if (debug) {
                     InControl.setup.getLogger().log(Level.INFO, "Loot " + i + ": "
@@ -258,13 +257,13 @@ public class ForgeEventHandlers {
                         ItemStack copy = item.copy();
                         copy.setCount(item.getMaxStackSize());
                         amount -= item.getMaxStackSize();
-                        event.getDrops().add(new ItemEntity(event.getEntity().getCommandSenderWorld(), pos.getX(), pos.getY(), pos.getZ(),
+                        event.getDrops().add(new ItemEntity(world, pos.getX(), pos.getY(), pos.getZ(),
                                 copy));
                     }
                     if (amount > 0) {
                         ItemStack copy = item.copy();
                         copy.setCount(amount);
-                        event.getDrops().add(new ItemEntity(event.getEntity().getCommandSenderWorld(), pos.getX(), pos.getY(), pos.getZ(),
+                        event.getDrops().add(new ItemEntity(world, pos.getX(), pos.getY(), pos.getZ(),
                                 copy));
                     }
                 }

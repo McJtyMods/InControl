@@ -1,6 +1,6 @@
 package mcjty.incontrol.spawner;
 
-import mcjty.incontrol.DataStorage;
+import mcjty.incontrol.data.DataStorage;
 import mcjty.incontrol.InControl;
 import mcjty.tools.varia.Box;
 import net.minecraft.entity.Entity;
@@ -63,6 +63,9 @@ public class SpawnerSystem {
     }
 
     private static void executeRule(SpawnerRule rule, World world, DataStorage data) {
+        if (!data.getPhases().containsAll(rule.getPhases())) {
+            return;
+        }
         SpawnerConditions conditions = rule.getConditions();
         if (conditions.getMaxtotal() != -1) {
             int count = InControl.setup.cache.getCountHostile(world);

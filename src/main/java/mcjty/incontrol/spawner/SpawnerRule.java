@@ -7,9 +7,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.registries.ForgeRegistries;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class SpawnerRule {
 
@@ -18,10 +16,12 @@ public class SpawnerRule {
     private final int attempts;
     private final int minSpawn;
     private final int maxSpawn;
+    private final Set<String> phases;
     private final SpawnerConditions conditions;
 
     private SpawnerRule(Builder builder) {
         mobs.addAll(builder.mobs);
+        phases = builder.phases;
         persecond = builder.persecond;
         attempts = builder.attempts;
         conditions = builder.conditions;
@@ -31,6 +31,10 @@ public class SpawnerRule {
 
     public List<EntityType<?>> getMobs() {
         return mobs;
+    }
+
+    public Set<String> getPhases() {
+        return phases;
     }
 
     public float getPersecond() {
@@ -68,6 +72,18 @@ public class SpawnerRule {
                 addMob(builder, mob);
             }
         }
+
+        if (object.has("phase")) {
+            JsonElement phaseElement = object.get("phase");
+            if (phaseElement.isJsonArray()) {
+                for (JsonElement element : phaseElement.getAsJsonArray()) {
+                    builder.phases(element.getAsString());
+                }
+            } else {
+                builder.phases(phaseElement.getAsString());
+            }
+        }
+
         if (object.has("persecond")) {
             builder.perSecond(object.getAsJsonPrimitive("persecond").getAsFloat());
         }
@@ -102,6 +118,7 @@ public class SpawnerRule {
 
     public static class Builder {
         private final List<EntityType<?>> mobs = new ArrayList<>();
+        private final Set<String> phases = new HashSet<>();
         private float persecond = 1.0f;
         private int attempts = 1;
         private int minSpawn = 1;
@@ -110,6 +127,11 @@ public class SpawnerRule {
 
         public Builder mobs(EntityType<?>... mobs) {
             Collections.addAll(this.mobs, mobs);
+            return this;
+        }
+
+        public Builder phases(String... phases) {
+            Collections.addAll(this.phases, phases);
             return this;
         }
 

@@ -3,22 +3,35 @@ package mcjty.incontrol.rules;
 import com.google.gson.JsonElement;
 import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.InControl;
+import mcjty.incontrol.data.DataStorage;
 import mcjty.tools.varia.JSonTools;
+import net.minecraft.world.World;
 import org.apache.logging.log4j.Level;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class RulesManager {
 
-    public static List<SpawnRule> rules = new ArrayList<>();
-    public static List<SummonAidRule> summonAidRules = new ArrayList<>();
+    private static List<SpawnRule> rules = new ArrayList<>();
+    private static List<SpawnRule> filteredRules = null;
+
+    private static List<SummonAidRule> summonAidRules = new ArrayList<>();
+    private static List<SummonAidRule> filteredSummonAidRules = null;
+
+    private static List<LootRule> lootRules = new ArrayList<>();
+    private static List<LootRule> filteredLootRules = null;
+
+    private static List<ExperienceRule> experienceRules = new ArrayList<>();
+    private static List<ExperienceRule> filteredExperienceRuiles = null;
+
     public static List<PotentialSpawnRule> potentialSpawnRules = new ArrayList<>();
-    public static List<LootRule> lootRules = new ArrayList<>();
-    public static List<ExperienceRule> experienceRules = new ArrayList<>();
+    public static List<PhaseRule> phaseRules = new ArrayList<>();
     private static String path;
 
     public static void reloadRules() {
@@ -27,6 +40,8 @@ public class RulesManager {
         potentialSpawnRules.clear();
         lootRules.clear();
         experienceRules.clear();
+        phaseRules.clear();
+        onPhaseChange();
         readAllRules();
     }
 
@@ -36,6 +51,45 @@ public class RulesManager {
 
     public static void readRules() {
         readAllRules();
+    }
+
+    public static void onPhaseChange() {
+        filteredRules = null;
+        filteredSummonAidRules = null;
+        filteredLootRules = null;
+        filteredExperienceRuiles = null;
+    }
+
+    public static List<SpawnRule> getFilteredRules(World world) {
+        if (filteredRules == null) {
+            Set<String> phases = DataStorage.getData(world).getPhases();
+            filteredRules = rules.stream().filter(r -> phases.containsAll(r.getPhases())).collect(Collectors.toList());
+        }
+        return filteredRules;
+    }
+
+    public static List<SummonAidRule> getFilteredSummonAidRules(World world) {
+        if (filteredSummonAidRules == null) {
+            Set<String> phases = DataStorage.getData(world).getPhases();
+            filteredSummonAidRules = summonAidRules.stream().filter(r -> phases.containsAll(r.getPhases())).collect(Collectors.toList());
+        }
+        return filteredSummonAidRules;
+    }
+
+    public static List<LootRule> getFilteredLootRules(World world) {
+        if (filteredLootRules == null) {
+            Set<String> phases = DataStorage.getData(world).getPhases();
+            filteredLootRules = lootRules.stream().filter(r -> phases.containsAll(r.getPhases())).collect(Collectors.toList());
+        }
+        return filteredLootRules;
+    }
+
+    public static List<ExperienceRule> getFilteredExperienceRuiles(World world) {
+        if (filteredExperienceRuiles == null) {
+            Set<String> phases = DataStorage.getData(world).getPhases();
+            filteredExperienceRuiles = experienceRules.stream().filter(r -> phases.containsAll(r.getPhases())).collect(Collectors.toList());
+        }
+        return filteredExperienceRuiles;
     }
 
     private static boolean exists(String file) {
@@ -91,6 +145,7 @@ public class RulesManager {
         safeCall("potentialspawn.json", () -> readRules(path, "potentialspawn.json", PotentialSpawnRule::parse, potentialSpawnRules));
         safeCall("loot.json", () -> readRules(path, "loot.json", LootRule::parse, lootRules));
         safeCall("experience.json", () -> readRules(path, "experience.json", ExperienceRule::parse, experienceRules));
+        safeCall("phases.json", () -> readRules(path, "phases.json", PhaseRule::parse, phaseRules));
     }
 
     private static void safeCall(String name, Runnable code) {
@@ -122,6 +177,4 @@ public class RulesManager {
     private static JsonElement getRootElement(String path, String filename) {
         return JSonTools.getRootElement(path, filename, InControl.setup.getLogger());
     }
-
-
 }

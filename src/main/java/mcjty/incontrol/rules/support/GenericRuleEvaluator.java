@@ -4,7 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import mcjty.incontrol.DataStorage;
+import mcjty.incontrol.data.DataStorage;
 import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.compat.ModRuleCompatibilityLayer;
@@ -455,7 +455,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             IWorld world = query.getWorld(event);
             DataStorage data = DataStorage.getData(Tools.getServerWorld(world));
             int amount = data.getDaycounter();
-            return count >= amount;
+            return amount >= count;
         });
     }
 
@@ -469,7 +469,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             IWorld world = query.getWorld(event);
             DataStorage data = DataStorage.getData(Tools.getServerWorld(world));
             int amount = data.getDaycounter();
-            return count < amount;
+            return amount < count;
         });
     }
 
@@ -627,8 +627,8 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
 
 
     @Override
-    public boolean match(Event event, IEventQuery query) {
-        for (BiFunction<Event, IEventQuery, Boolean> rule : checks) {
+    public boolean match(Object event, IEventQuery query) {
+        for (BiFunction<Object, IEventQuery, Boolean> rule : checks) {
             if (!rule.apply(event, query)) {
                 return false;
             }

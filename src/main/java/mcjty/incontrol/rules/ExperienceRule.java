@@ -3,6 +3,7 @@ package mcjty.incontrol.rules;
 import com.google.gson.JsonElement;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.compat.ModRuleCompatibilityLayer;
+import mcjty.incontrol.data.PhaseTools;
 import mcjty.incontrol.rules.support.GenericRuleEvaluator;
 import mcjty.tools.rules.IEventQuery;
 import mcjty.tools.rules.IModRuleCompatibilityLayer;
@@ -18,6 +19,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.living.LivingExperienceDropEvent;
 import net.minecraftforge.eventbus.api.Event;
+
+import java.util.Set;
 
 import static mcjty.incontrol.rules.support.RuleKeys.*;
 
@@ -125,15 +128,21 @@ public class ExperienceRule extends RuleBase<RuleBase.EventGetter> {
     }
 
     private final GenericRuleEvaluator ruleEvaluator;
+    private final Set<String> phases;
     private Event.Result result;
     private Integer xp = null;
     private float multxp = 1.0f;
     private float addxp = 0.0f;
 
-    private ExperienceRule(AttributeMap map) {
+    private ExperienceRule(AttributeMap map, Set<String> phases) {
         super(InControl.setup.getLogger());
+        this.phases = phases;
         ruleEvaluator = new GenericRuleEvaluator(map);
         addActions(map, new ModRuleCompatibilityLayer());
+    }
+
+    public Set<String> getPhases() {
+        return phases;
     }
 
     public static ExperienceRule parse(JsonElement element) {
@@ -141,7 +150,7 @@ public class ExperienceRule extends RuleBase<RuleBase.EventGetter> {
             return null;
         } else {
             AttributeMap map = FACTORY.parse(element);
-            return new ExperienceRule(map);
+            return new ExperienceRule(map, PhaseTools.getPhases(element));
         }
     }
 

@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.compat.ModRuleCompatibilityLayer;
+import mcjty.incontrol.data.PhaseTools;
 import mcjty.incontrol.rules.support.GenericRuleEvaluator;
 import mcjty.tools.rules.CommonRuleEvaluator;
 import mcjty.tools.rules.IEventQuery;
@@ -29,6 +30,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -161,14 +163,20 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
     }
 
     private final GenericRuleEvaluator ruleEvaluator;
+    private final Set<String> phases;
     private List<Predicate<ItemStack>> toRemoveItems = new ArrayList<>();
     private List<Pair<ItemStack, Function<Integer, Integer>>> toAddItems = new ArrayList<>();
     private boolean removeAll = false;
 
-    private LootRule(AttributeMap map) {
+    private LootRule(AttributeMap map, Set<String> phases) {
         super(InControl.setup.getLogger());
+        this.phases = phases;
         ruleEvaluator = new GenericRuleEvaluator(map);
         addActions(map, new ModRuleCompatibilityLayer());
+    }
+
+    public Set<String> getPhases() {
+        return phases;
     }
 
     public static LootRule parse(JsonElement element) {
@@ -176,7 +184,7 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
             return null;
         } else {
             AttributeMap map = FACTORY.parse(element);
-            return new LootRule(map);
+            return new LootRule(map, PhaseTools.getPhases(element));
         }
     }
 

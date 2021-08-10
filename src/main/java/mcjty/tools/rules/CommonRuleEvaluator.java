@@ -12,7 +12,6 @@ import mcjty.tools.varia.LookAtTools;
 import mcjty.tools.varia.Tools;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.Item;
@@ -42,7 +41,6 @@ import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
@@ -58,7 +56,7 @@ import static mcjty.tools.rules.CommonRuleKeys.*;
 
 public class CommonRuleEvaluator {
 
-    protected final List<BiFunction<Event, IEventQuery, Boolean>> checks = new ArrayList<>();
+    protected final List<BiFunction<Object, IEventQuery, Boolean>> checks = new ArrayList<>();
     private final Logger logger;
     private final IModRuleCompatibilityLayer compatibility;
 
@@ -439,7 +437,7 @@ public class CommonRuleEvaluator {
     }
 
     @Nonnull
-    private BiFunction<Event, IEventQuery, BlockPos> parseOffset(String json) {
+    private BiFunction<Object, IEventQuery, BlockPos> parseOffset(String json) {
         JsonParser parser = new JsonParser();
         JsonElement element = parser.parse(json);
         JsonObject obj = element.getAsJsonObject();
@@ -624,7 +622,7 @@ public class CommonRuleEvaluator {
 
     private void addBlocksCheck(AttributeMap map) {
 
-        BiFunction<Event, IEventQuery, BlockPos> posFunction;
+        BiFunction<Object, IEventQuery, BlockPos> posFunction;
         if (map.has(BLOCKOFFSET)) {
             posFunction = parseOffset(map.get(BLOCKOFFSET));
         } else {
@@ -762,8 +760,8 @@ public class CommonRuleEvaluator {
     }
 
 
-    public boolean match(Event event, IEventQuery query) {
-        for (BiFunction<Event, IEventQuery, Boolean> rule : checks) {
+    public boolean match(Object event, IEventQuery query) {
+        for (BiFunction<Object, IEventQuery, Boolean> rule : checks) {
             if (!rule.apply(event, query)) {
                 return false;
             }

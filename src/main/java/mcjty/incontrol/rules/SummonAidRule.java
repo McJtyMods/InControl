@@ -3,6 +3,7 @@ package mcjty.incontrol.rules;
 import com.google.gson.JsonElement;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.compat.ModRuleCompatibilityLayer;
+import mcjty.incontrol.data.PhaseTools;
 import mcjty.incontrol.rules.support.GenericRuleEvaluator;
 import mcjty.tools.rules.IEventQuery;
 import mcjty.tools.rules.IModRuleCompatibilityLayer;
@@ -36,6 +37,7 @@ import org.apache.logging.log4j.Level;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import static mcjty.incontrol.rules.support.RuleKeys.*;
@@ -157,12 +159,18 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
     }
 
     private final GenericRuleEvaluator ruleEvaluator;
+    private final Set<String> phases;
     private Event.Result result;
 
-    private SummonAidRule(AttributeMap map) {
+    private SummonAidRule(AttributeMap map, Set<String> phases) {
         super(InControl.setup.getLogger());
+        this.phases = phases;
         ruleEvaluator = new GenericRuleEvaluator(map);
         addActions(map, new ModRuleCompatibilityLayer());
+    }
+
+    public Set<String> getPhases() {
+        return phases;
     }
 
     public static SummonAidRule parse(JsonElement element) {
@@ -170,7 +178,7 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
             return null;
         } else {
             AttributeMap map = FACTORY.parse(element);
-            return new SummonAidRule(map);
+            return new SummonAidRule(map, PhaseTools.getPhases(element));
         }
     }
 

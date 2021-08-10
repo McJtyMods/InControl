@@ -3,6 +3,7 @@ package mcjty.incontrol.rules;
 import com.google.gson.JsonElement;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.compat.ModRuleCompatibilityLayer;
+import mcjty.incontrol.data.PhaseTools;
 import mcjty.incontrol.rules.support.GenericRuleEvaluator;
 import mcjty.tools.rules.IEventQuery;
 import mcjty.tools.rules.IModRuleCompatibilityLayer;
@@ -23,12 +24,10 @@ import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import net.minecraftforge.eventbus.api.Event;
 
 import javax.annotation.Nullable;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import static mcjty.incontrol.rules.support.RuleKeys.*;
-
-
-import mcjty.tools.rules.RuleBase.EventGetter;
 
 public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
 
@@ -216,14 +215,20 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
 
     private final boolean onJoin;
     private final GenericRuleEvaluator ruleEvaluator;
+    private final Set<String> phases;
     private Event.Result result = null;
     private boolean doContinue = false;
 
-    private SpawnRule(AttributeMap map, boolean onJoin) {
+    private SpawnRule(AttributeMap map, boolean onJoin, Set<String> phases) {
         super(InControl.setup.getLogger());
         this.onJoin = onJoin;
+        this.phases = phases;
         ruleEvaluator = new GenericRuleEvaluator(map);
         addActions(map, new ModRuleCompatibilityLayer());
+    }
+
+    public Set<String> getPhases() {
+        return phases;
     }
 
     public static SpawnRule parse(JsonElement element) {
@@ -232,7 +237,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
         } else {
             AttributeMap map = FACTORY.parse(element);
             boolean onJoin = element.getAsJsonObject().has("onjoin") && element.getAsJsonObject().get("onjoin").getAsBoolean();
-            return new SpawnRule(map, onJoin);
+            return new SpawnRule(map, onJoin, PhaseTools.getPhases(element));
         }
     }
 
