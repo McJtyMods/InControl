@@ -9,7 +9,7 @@ Upcoming:
 
 1.16-5.1.9:
 - 'angry' tag should work better now
-- The spawner system will no longer attempt to spawn hostile mobs in peaceful mode
+- The spawner system will no longer at@Dtempt to spawn hostile mobs in peaceful mode
 - Fixed a serious problem with spawn rules using 'onjoin' and the 'block' test. It was possible that this rule would cause a deadlock (a non responsive Minecraft basically)
 - The spawner system will no longer try to spawn mobs in unloaded chunks
 - Much better error reporting and no longer crashing the game when there are json errors
