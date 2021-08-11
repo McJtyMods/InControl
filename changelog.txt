@@ -5,6 +5,7 @@ Upcoming:
 - New '/incontrol phases' command to check the current active phases
 - New '/incontrol list' command to list all current mobs in the current world
 - New 'weight' system for spawner so that you can now have relative weights for the different mobs spawned by a single rule
+- The 'difficulty' test was broken
 
 1.16-5.1.9:
 - 'angry' tag should work better now

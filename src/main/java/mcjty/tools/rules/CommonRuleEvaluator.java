@@ -37,7 +37,6 @@ import net.minecraftforge.common.BiomeManager;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.energy.IEnergyStorage;
-import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
@@ -331,13 +330,7 @@ public class CommonRuleEvaluator {
 
     private void addDifficultyCheck(AttributeMap map) {
         String difficulty = map.get(DIFFICULTY).toLowerCase();
-        Difficulty diff = null;
-        for (Difficulty d : Difficulty.values()) {
-            if (d.getKey().endsWith("." + difficulty)) { // @todo 1.15 maybe a better way?
-                diff = d;
-                break;
-            }
-        }
+        Difficulty diff = Difficulty.byName(difficulty);
         if (diff != null) {
             Difficulty finalDiff = diff;
             checks.add((event,query) -> query.getWorld(event).getDifficulty() == finalDiff);
