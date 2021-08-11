@@ -20,7 +20,9 @@ public class SpawnerConditions {
     private final int maxheight;
     private final int mindaycount;
     private final int maxdaycount;
+    private final boolean inLiquid;
     private final boolean inWater;
+    private final boolean inLava;
     private final boolean inAir;
     private final boolean noRestrictions;
     private final int maxthis;
@@ -40,7 +42,9 @@ public class SpawnerConditions {
         maxheight = builder.maxheight;
         mindaycount = builder.mindaycount;
         maxdaycount = builder.maxdaycount;
+        inLiquid = builder.inLiquid;
         inWater = builder.inWater;
+        inLava = builder.inLava;
         inAir = builder.inAir;
         maxthis = builder.maxthis;
         maxlocal = builder.maxlocal;
@@ -108,8 +112,16 @@ public class SpawnerConditions {
         return maxheight;
     }
 
+    public boolean isInLiquid() {
+        return inLiquid;
+    }
+
     public boolean isInWater() {
         return inWater;
+    }
+
+    public boolean isInLava() {
+        return inLava;
     }
 
     public boolean isInAir() {
@@ -182,6 +194,12 @@ public class SpawnerConditions {
         if (object.has("inwater")) {
             builder.inWater(object.getAsJsonPrimitive("inwater").getAsBoolean());
         }
+        if (object.has("inlava")) {
+            builder.inLava(object.getAsJsonPrimitive("inlava").getAsBoolean());
+        }
+        if (object.has("inliquid")) {
+            builder.inLiquid(object.getAsJsonPrimitive("inliquid").getAsBoolean());
+        }
         if (object.has("inair")) {
             builder.inAir(object.getAsJsonPrimitive("inair").getAsBoolean());
         }
@@ -217,7 +235,9 @@ public class SpawnerConditions {
         private int maxdaycount = Integer.MAX_VALUE;
         private int minheight = 1;
         private int maxheight = 256;
+        private boolean inLiquid = false;
         private boolean inWater = false;
+        private boolean inLava = false;
         private boolean inAir = false;
         private boolean noRestrictions = false;
 
@@ -256,9 +276,18 @@ public class SpawnerConditions {
             return this;
         }
 
+        public Builder inLiquid(boolean inLiquid) {
+            this.inLiquid = inLiquid;
+            return this;
+        }
 
         public Builder inWater(boolean inWater) {
             this.inWater = inWater;
+            return this;
+        }
+
+        public Builder inLava(boolean inLava) {
+            this.inLava = inLava;
             return this;
         }
 

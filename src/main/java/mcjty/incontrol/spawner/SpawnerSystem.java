@@ -1,17 +1,23 @@
 package mcjty.incontrol.spawner;
 
-import mcjty.incontrol.data.DataStorage;
 import mcjty.incontrol.InControl;
+import mcjty.incontrol.data.DataStorage;
 import mcjty.tools.varia.Box;
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.fluid.Fluid;
 import net.minecraft.pathfinding.PathType;
+import net.minecraft.tags.FluidTags;
+import net.minecraft.tags.ITag;
 import net.minecraft.util.RegistryKey;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.IWorldReader;
 import net.minecraft.world.World;
@@ -180,20 +186,48 @@ public class SpawnerSystem {
     }
 
     private static boolean isNotColliding(World world, MobEntity mobEntity, SpawnerConditions conditions) {
-        if (conditions.isInWater()) {
+        if (conditions.isInLiquid()) {
             return world.containsAnyLiquid(mobEntity.getBoundingBox()) && world.isUnobstructed(mobEntity);
+        } else if (conditions.isInWater()) {
+            return containsLiquid(world, mobEntity.getBoundingBox(), FluidTags.WATER);
+        } else if (conditions.isInLava()) {
+            return containsLiquid(world, mobEntity.getBoundingBox(), FluidTags.LAVA);
         } else {
             return mobEntity.checkSpawnObstruction(world);
         }
     }
 
+    private static boolean containsLiquid(World world, AxisAlignedBB box, ITag.INamedTag<Fluid> liquid) {
+        int x1 = MathHelper.floor(box.minX);
+        int x2 = MathHelper.ceil(box.maxX);
+        int y1 = MathHelper.floor(box.minY);
+        int y2 = MathHelper.ceil(box.maxY);
+        int z1 = MathHelper.floor(box.minZ);
+        int z2 = MathHelper.ceil(box.maxZ);
+        BlockPos.Mutable mpos = new BlockPos.Mutable();
+
+        for(int x = x1; x < x2; ++x) {
+            for(int y = y1; y < y2; ++y) {
+                for(int z = z1; z < z2; ++z) {
+                    BlockState blockstate = world.getBlockState(mpos.set(x, y, z));
+                    if (!blockstate.getFluidState().is(liquid)) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
 
     @Nullable
     private static BlockPos getRandomPosition(World world, EntityType<?> mob, SpawnerConditions conditions) {
         boolean inAir = conditions.isInAir();
         boolean inWater = conditions.isInWater();
+        boolean inLava = conditions.isInLava();
+        boolean inLiquid = conditions.isInLiquid();
 
-        if (inAir || inWater) {
+        if (inAir || inWater || inLava || inLiquid) {
             return getRandomPositionInBox(world, mob, conditions);
         } else {
             return getRandomPositionOnGround(world, mob, conditions);

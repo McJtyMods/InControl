@@ -6,6 +6,9 @@ Upcoming:
 - New '/incontrol list' command to list all current mobs in the current world
 - New 'weight' system for spawner so that you can now have relative weights for the different mobs spawned by a single rule
 - The 'difficulty' test was broken
+- Changed the 'inwater' option for spawner to only work for actual water and not for other fluids
+- Added new 'inliquid' option which works for any liquid (as 'inwater' used to do)
+- Added new 'inlava' option which works for lava
 
 1.16-5.1.9:
 - 'angry' tag should work better now
