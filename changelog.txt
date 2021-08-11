@@ -1,4 +1,4 @@
-Upcoming:
+1.16-5.2.0:
 - InControl now keeps track of the day counter. Using the '/incontrol days' command you can see what the current day is and also change it. The day counter progresses whenever the time goes from night to day
 - New 'mindaycount' and 'maxdaycount' tags for spawn.json, potentialspawn.json, summonaid.json, and also the new spawner.json.
 - New phases.json rule file. There you can define phase rules for a limited set of global conditions. These phases can then be used in spawner, spawn, potentialspawn, ... for a more optimal way to check for rules
