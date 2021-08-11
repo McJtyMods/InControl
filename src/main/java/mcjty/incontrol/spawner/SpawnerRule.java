@@ -3,6 +3,7 @@ package mcjty.incontrol.spawner;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import mcjty.incontrol.InControl;
+import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntityType;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -13,6 +14,8 @@ public class SpawnerRule {
 
     private final List<EntityType<?>> mobs = new ArrayList<>();
     private final List<Float> weights = new ArrayList<>();
+    private final EntityClassification mobsFromBiome;
+
     private final float maxWeight;
     private final float persecond;
     private final int attempts;
@@ -24,6 +27,8 @@ public class SpawnerRule {
     private SpawnerRule(Builder builder) {
         mobs.addAll(builder.mobs);
         weights.addAll(builder.weights);
+        mobsFromBiome = builder.mobsFromBiome;
+
         phases = builder.phases;
         persecond = builder.persecond;
         attempts = builder.attempts;
@@ -47,6 +52,10 @@ public class SpawnerRule {
 
     public List<Float> getWeights() {
         return weights;
+    }
+
+    public EntityClassification getMobsFromBiome() {
+        return mobsFromBiome;
     }
 
     public float getMaxWeight() {
@@ -104,6 +113,20 @@ public class SpawnerRule {
             }
         }
 
+        if (object.has("mobsfrombiome")) {
+            if (!builder.mobs.isEmpty()) {
+                InControl.setup.getLogger().error("'mobsfrombiome' cannot be combined with manual mobs!");
+                throw new RuntimeException("'mobsfrombiome' cannot be combined with manual mobs!");
+            }
+            String name = object.get("mobsfrombiome").getAsString().toLowerCase();
+            EntityClassification classification = EntityClassification.byName(name);
+            if (classification == null) {
+                InControl.setup.getLogger().error("Unknown classification " + name + "!");
+                throw new RuntimeException("Unknown classification " + name + "!");
+            }
+            builder.mobsFromBiome(classification);
+        }
+
         if (object.has("phase")) {
             JsonElement phaseElement = object.get("phase");
             if (phaseElement.isJsonArray()) {
@@ -150,6 +173,8 @@ public class SpawnerRule {
     public static class Builder {
         private final List<EntityType<?>> mobs = new ArrayList<>();
         private final List<Float> weights = new ArrayList<>();
+        private EntityClassification mobsFromBiome = null;
+
         private final Set<String> phases = new HashSet<>();
         private float persecond = 1.0f;
         private int attempts = 1;
@@ -164,6 +189,11 @@ public class SpawnerRule {
 
         public Builder weights(Float... weights) {
             Collections.addAll(this.weights, weights);
+            return this;
+        }
+
+        public Builder mobsFromBiome(EntityClassification mobsFromBiome) {
+            this.mobsFromBiome = mobsFromBiome;
             return this;
         }
 

@@ -9,6 +9,7 @@ Upcoming:
 - Changed the 'inwater' option for spawner to only work for actual water and not for other fluids
 - Added new 'inliquid' option which works for any liquid (as 'inwater' used to do)
 - Added new 'inlava' option which works for lava
+- Added the ability for spawner.json to spawn mobs that belong to the given biome. The new tag 'mobsfrombiome' can be used for that (instead of the normal 'mob' list). Possible values for this tag are: monster, creature, ambient, water_creature, water_ambient, and misc
 
 1.16-5.1.9:
 - 'angry' tag should work better now
