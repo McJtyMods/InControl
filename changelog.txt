@@ -1,3 +1,6 @@
+1.16-5.2.1:
+- Fixed a problem with the spawner where it was possible to get a deadlock situation with a rule that never managed to succeed
+
 1.16-5.2.0:
 - InControl now keeps track of the day counter. Using the '/incontrol days' command you can see what the current day is and also change it. The day counter progresses whenever the time goes from night to day
 - New 'mindaycount' and 'maxdaycount' tags for spawn.json, potentialspawn.json, summonaid.json, and also the new spawner.json.

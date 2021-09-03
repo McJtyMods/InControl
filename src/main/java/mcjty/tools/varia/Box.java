@@ -47,13 +47,13 @@ public class Box {
     }
 
     public boolean isValid() {
-        if (minX > maxX) {
+        if (minX >= maxX) {
             return false;
         }
-        if (minY > maxY) {
+        if (minY >= maxY) {
             return false;
         }
-        if (minZ > maxZ) {
+        if (minZ >= maxZ) {
             return false;
         }
         return true;
