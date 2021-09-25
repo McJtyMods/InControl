@@ -1,3 +1,6 @@
+1.16-5.2.2:
+- Attempt two to fix the spawner deadlock
+
 1.16-5.2.1:
 - Fixed a problem with the spawner where it was possible to get a deadlock situation with a rule that never managed to succeed
 

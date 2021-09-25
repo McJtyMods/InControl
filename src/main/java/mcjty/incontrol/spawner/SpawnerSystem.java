@@ -343,7 +343,7 @@ public class SpawnerSystem {
         int maxdist = conditions.getMaxdist();
         return Box.create()
                 .center(center, maxdist+1, maxdist+1, maxdist+1)
-                .clampY(conditions.getMinheight(), conditions.getMaxheight())
+                .clampY(conditions.getMinheight()-1, conditions.getMaxheight()+1)
                 .build();
     }
 
