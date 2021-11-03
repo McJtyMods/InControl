@@ -49,9 +49,6 @@ repositories {
         name = "CoFH Maven"
         url = "http://maven.covers1624.net"
     }
-    maven {
-        url = "https://maven.mcmoddev.com"
-    }
 }
 
 
