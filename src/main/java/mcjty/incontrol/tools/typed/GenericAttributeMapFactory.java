@@ -32,10 +32,10 @@ public class GenericAttributeMapFactory {
         AttributeMap map = new AttributeMap();
 
         for (Attribute attribute : attributes) {
-            Key key = attribute.getKey();
-            Type type = key.getType();
+            Key key = attribute.key();
+            Type type = key.type();
 
-            if (attribute.isMulti()) {
+            if (attribute.multi()) {
                 Function<JsonElement, Object> transformer;
                 if (type == Type.INTEGER) {
                     transformer = JsonElement::getAsInt;
@@ -62,7 +62,7 @@ public class GenericAttributeMapFactory {
                     transformer = e -> "INVALID";
                 }
 
-                JSonTools.getElement(jsonObject, key.getName())
+                JSonTools.getElement(jsonObject, key.name())
                         .ifPresent(e -> {
                             JSonTools.asArrayOrSingle(e)
                                     .map(transformer)
@@ -72,23 +72,23 @@ public class GenericAttributeMapFactory {
                         });
             } else {
                 if (type == Type.INTEGER) {
-                    map.setNonnull(key, JSonTools.parseInt(jsonObject, key.getName()));
+                    map.setNonnull(key, JSonTools.parseInt(jsonObject, key.name()));
                 } else if (type == Type.FLOAT) {
-                    map.setNonnull(key, JSonTools.parseFloat(jsonObject, key.getName()));
+                    map.setNonnull(key, JSonTools.parseFloat(jsonObject, key.name()));
                 } else if (type == Type.BOOLEAN) {
-                    map.setNonnull(key, JSonTools.parseBool(jsonObject, key.getName()));
+                    map.setNonnull(key, JSonTools.parseBool(jsonObject, key.name()));
                 } else if (type == Type.STRING) {
-                    if (jsonObject.has(key.getName())) {
-                        map.setNonnull(key, jsonObject.get(key.getName()).getAsString());
+                    if (jsonObject.has(key.name())) {
+                        map.setNonnull(key, jsonObject.get(key.name()).getAsString());
                     }
                 } else if (type == Type.DIMENSION_TYPE) {
-                    if (jsonObject.has(key.getName())) {
-                        JsonElement jsonElement = jsonObject.get(key.getName());
+                    if (jsonObject.has(key.name())) {
+                        JsonElement jsonElement = jsonObject.get(key.name());
                         map.setNonnull(key, ResourceKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(jsonElement.getAsString())));
                     }
                 } else if (type == Type.JSON) {
-                    if (jsonObject.has(key.getName())) {
-                        JsonElement el = jsonObject.get(key.getName());
+                    if (jsonObject.has(key.name())) {
+                        JsonElement el = jsonObject.get(key.name());
                         if (el.isJsonObject()) {
                             JsonObject obj = el.getAsJsonObject();
                             map.setNonnull(key, obj.toString());
@@ -100,7 +100,7 @@ public class GenericAttributeMapFactory {
                                 } else if (prim.isNumber()) {
                                     map.setNonnull(key, "" + prim.getAsInt());
                                 } else {
-                                    throw new RuntimeException("Bad type for key '" + key.getName() + "'!");
+                                    throw new RuntimeException("Bad type for key '" + key.name() + "'!");
                                 }
                             }
                         }

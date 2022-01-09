@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * A Type object represents a given type.
  */
-public final class Type<V> {
+public record Type<V>(@Nonnull Class<V> type) {
 
     // Root
     public static final Type<Object> OBJECT = new Type<Object>(Object.class);
@@ -28,20 +28,9 @@ public final class Type<V> {
     // Map
     public static final Type<AttributeMap> MAP = create(AttributeMap.class);
 
-    @Nonnull private final Class<V> type;
-
-    private Type(@Nonnull final Class<V> type) {
-        this.type = type;
-    }
-
     @Nonnull
     public static <V> Type<V> create(@Nonnull final Class<? super V> type) {
         return new Type<V>((Class<V>) type);
-    }
-
-    @Nonnull
-    public Class<V> getType() {
-        return type;
     }
 
     @Nonnull
@@ -55,6 +44,6 @@ public final class Type<V> {
 
     @Override
     public String toString() {
-        return "Type(" + getType().getSimpleName() + ')';
+        return "Type(" + type().getSimpleName() + ')';
     }
 }

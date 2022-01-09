@@ -1,14 +1,6 @@
 package mcjty.incontrol.tools.typed;
 
-public class Attribute<T> {
-
-    private final Key<T> key;
-    private final boolean multi;
-
-    private Attribute(Key<T> key, boolean multi) {
-        this.key = key;
-        this.multi = multi;
-    }
+public record Attribute<T>(Key<T> key, boolean multi) {
 
     public static <T> Attribute<T> create(Key<T> key) {
         return new Attribute<T>(key, false);
@@ -16,13 +8,5 @@ public class Attribute<T> {
 
     public static <T> Attribute<T> createMulti(Key<T> key) {
         return new Attribute<T>(key, true);
-    }
-
-    public Key<T> getKey() {
-        return key;
-    }
-
-    public boolean isMulti() {
-        return multi;
     }
 }

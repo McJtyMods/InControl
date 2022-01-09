@@ -332,7 +332,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
                     ErrorHandler.error("Bad amount for mincount '" + splitted[0] + "'!");
                     return null;
                 }
-                EntityType   entityClass = null;
+                EntityType entityClass = null;
                 if (splitted.length > 1) {
                     entityClass = findEntity(splitted[1]);
                     if (entityClass == null) {

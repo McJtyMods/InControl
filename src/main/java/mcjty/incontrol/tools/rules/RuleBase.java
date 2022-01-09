@@ -809,7 +809,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         if (map.get(ACTION_ANGRY)) {
             actions.add(event -> {
                 LivingEntity entityLiving = event.getEntityLiving();
-                if (entityLiving instanceof LivingEntity) {
+                if (entityLiving != null) {
                     Player player = event.getWorld().getNearestPlayer(entityLiving, 50);
                     if (player != null) {
                         entityLiving.setLastHurtByMob(player);

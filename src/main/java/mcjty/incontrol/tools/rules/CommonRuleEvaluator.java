@@ -290,7 +290,7 @@ public class CommonRuleEvaluator {
         }
     }
 
-    private static Random rnd = new Random();
+    private static final Random rnd = new Random();
 
     private void addRandomCheck(AttributeMap map) {
         final float r = map.get(RANDOM);
@@ -695,7 +695,7 @@ public class CommonRuleEvaluator {
     }
 
     private void addMinSpawnDistCheck(AttributeMap map) {
-        final Float d = map.get(MINSPAWNDIST) * map.get(MINSPAWNDIST);
+        final float d = map.get(MINSPAWNDIST) * map.get(MINSPAWNDIST);
         checks.add((event,query) -> {
             BlockPos pos = query.getPos(event);
             ServerLevel sw = Tools.getServerWorld(query.getWorld(event));
@@ -705,7 +705,7 @@ public class CommonRuleEvaluator {
     }
 
     private void addMaxSpawnDistCheck(AttributeMap map) {
-        final Float d = map.get(MAXSPAWNDIST) * map.get(MAXSPAWNDIST);
+        final float d = map.get(MAXSPAWNDIST) * map.get(MAXSPAWNDIST);
         checks.add((event,query) -> {
             BlockPos pos = query.getPos(event);
             ServerLevel sw = Tools.getServerWorld(query.getWorld(event));
