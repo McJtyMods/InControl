@@ -5,20 +5,20 @@ import mcjty.incontrol.InControl;
 import mcjty.incontrol.compat.ModRuleCompatibilityLayer;
 import mcjty.incontrol.data.PhaseTools;
 import mcjty.incontrol.rules.support.GenericRuleEvaluator;
-import mcjty.tools.rules.IEventQuery;
-import mcjty.tools.rules.IModRuleCompatibilityLayer;
-import mcjty.tools.rules.RuleBase;
-import mcjty.tools.typed.Attribute;
-import mcjty.tools.typed.AttributeMap;
-import mcjty.tools.typed.GenericAttributeMapFactory;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IWorld;
-import net.minecraft.world.World;
+import mcjty.incontrol.tools.rules.IEventQuery;
+import mcjty.incontrol.tools.rules.IModRuleCompatibilityLayer;
+import mcjty.incontrol.tools.rules.RuleBase;
+import mcjty.incontrol.tools.typed.Attribute;
+import mcjty.incontrol.tools.typed.AttributeMap;
+import mcjty.incontrol.tools.typed.GenericAttributeMapFactory;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import net.minecraftforge.eventbus.api.Event;
@@ -33,7 +33,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
 
     public static final IEventQuery<LivingSpawnEvent.CheckSpawn> EVENT_QUERY = new IEventQuery<LivingSpawnEvent.CheckSpawn>() {
         @Override
-        public IWorld getWorld(LivingSpawnEvent.CheckSpawn o) {
+        public LevelAccessor getWorld(LivingSpawnEvent.CheckSpawn o) {
             return o.getWorld();
         }
 
@@ -68,7 +68,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
         }
 
         @Override
-        public PlayerEntity getPlayer(LivingSpawnEvent.CheckSpawn o) {
+        public Player getPlayer(LivingSpawnEvent.CheckSpawn o) {
             return getClosestPlayer(o.getWorld(), new BlockPos(o.getX(), o.getY(), o.getZ()));
         }
 
@@ -79,7 +79,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
     };
     public static final IEventQuery<EntityJoinWorldEvent> EVENT_QUERY_JOIN = new IEventQuery<EntityJoinWorldEvent>() {
         @Override
-        public World getWorld(EntityJoinWorldEvent o) {
+        public Level getWorld(EntityJoinWorldEvent o) {
             return o.getWorld();
         }
 
@@ -114,7 +114,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
         }
 
         @Override
-        public PlayerEntity getPlayer(EntityJoinWorldEvent o) {
+        public Player getPlayer(EntityJoinWorldEvent o) {
             return getClosestPlayer(o.getWorld(), o.getEntity().blockPosition());
         }
 
@@ -125,7 +125,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
     };
     private static final GenericAttributeMapFactory FACTORY = new GenericAttributeMapFactory();
 
-    private static PlayerEntity getClosestPlayer(IWorld world, BlockPos pos) {
+    private static Player getClosestPlayer(LevelAccessor world, BlockPos pos) {
         return world.getNearestPlayer(pos.getX(), pos.getY(), pos.getZ(), 100, false);
     }
 
@@ -278,12 +278,12 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
             }
 
             @Override
-            public PlayerEntity getPlayer() {
+            public Player getPlayer() {
                 return null;
             }
 
             @Override
-            public IWorld getWorld() {
+            public LevelAccessor getWorld() {
                 return event.getWorld();
             }
 
@@ -305,12 +305,12 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
             }
 
             @Override
-            public PlayerEntity getPlayer() {
+            public Player getPlayer() {
                 return null;
             }
 
             @Override
-            public World getWorld() {
+            public Level getWorld() {
                 return event.getWorld();
             }
 

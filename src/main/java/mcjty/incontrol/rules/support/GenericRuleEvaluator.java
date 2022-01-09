@@ -9,24 +9,23 @@ import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.compat.ModRuleCompatibilityLayer;
 import mcjty.incontrol.spawner.SpawnerSystem;
-import mcjty.tools.rules.CommonRuleEvaluator;
-import mcjty.tools.rules.IEventQuery;
-import mcjty.tools.typed.AttributeMap;
-import mcjty.tools.varia.Tools;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.MobEntity;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.monster.IMob;
-import net.minecraft.entity.passive.AnimalEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.server.management.PlayerList;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.IWorld;
+import mcjty.incontrol.tools.rules.CommonRuleEvaluator;
+import mcjty.incontrol.tools.rules.IEventQuery;
+import mcjty.incontrol.tools.typed.AttributeMap;
+import mcjty.incontrol.tools.varia.Tools;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.monster.Enemy;
+import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.PlayerList;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
-import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 
@@ -121,8 +120,8 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         if (c) {
             checks.add((event, query) -> {
                 Entity entity = query.getEntity(event);
-                if (entity instanceof MobEntity) {
-                    return MobEntity.checkMobSpawnRules((EntityType<? extends MobEntity>) entity.getType(), entity.getCommandSenderWorld(), SpawnReason.NATURAL, entity.blockPosition(), null);
+                if (entity instanceof Mob) {
+                    return Mob.checkMobSpawnRules((EntityType<? extends Mob>) entity.getType(), entity.getCommandSenderWorld(), MobSpawnType.NATURAL, entity.blockPosition(), null);
                 } else {
                     return false;
                 }
@@ -130,8 +129,8 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         } else {
             checks.add((event, query) -> {
                 Entity entity = query.getEntity(event);
-                if (entity instanceof MobEntity) {
-                    return !MobEntity.checkMobSpawnRules((EntityType<? extends MobEntity>) entity.getType(), entity.getCommandSenderWorld(), SpawnReason.NATURAL, entity.blockPosition(), null);
+                if (entity instanceof Mob) {
+                    return !Mob.checkMobSpawnRules((EntityType<? extends Mob>) entity.getType(), entity.getCommandSenderWorld(), MobSpawnType.NATURAL, entity.blockPosition(), null);
                 } else {
                     return true;
                 }
@@ -144,8 +143,8 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         if (c) {
             checks.add((event, query) -> {
                 Entity entity = query.getEntity(event);
-                if (entity instanceof MobEntity) {
-                    return ((MobEntity) entity).checkSpawnObstruction(entity.getCommandSenderWorld());
+                if (entity instanceof Mob) {
+                    return ((Mob) entity).checkSpawnObstruction(entity.getCommandSenderWorld());
                 } else {
                     return false;
                 }
@@ -153,8 +152,8 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         } else {
             checks.add((event, query) -> {
                 Entity entity = query.getEntity(event);
-                if (entity instanceof MobEntity) {
-                    return !((MobEntity) entity).checkSpawnObstruction(entity.getCommandSenderWorld());
+                if (entity instanceof Mob) {
+                    return !((Mob) entity).checkSpawnObstruction(entity.getCommandSenderWorld());
                 } else {
                     return true;
                 }
@@ -192,17 +191,17 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
 
     private void addHostileCheck(AttributeMap map) {
         if (map.get(HOSTILE)) {
-            checks.add((event, query) -> query.getEntity(event) instanceof IMob);
+            checks.add((event, query) -> query.getEntity(event) instanceof Enemy);
         } else {
-            checks.add((event, query) -> !(query.getEntity(event) instanceof IMob));
+            checks.add((event, query) -> !(query.getEntity(event) instanceof Enemy));
         }
     }
 
     private void addPassiveCheck(AttributeMap map) {
         if (map.get(PASSIVE)) {
-            checks.add((event, query) -> (query.getEntity(event) instanceof AnimalEntity && !(query.getEntity(event) instanceof IMob)));
+            checks.add((event, query) -> (query.getEntity(event) instanceof Animal && !(query.getEntity(event) instanceof Enemy)));
         } else {
-            checks.add((event, query) -> !(query.getEntity(event) instanceof AnimalEntity && !(query.getEntity(event) instanceof IMob)));
+            checks.add((event, query) -> !(query.getEntity(event) instanceof Animal && !(query.getEntity(event) instanceof Enemy)));
         }
     }
 
@@ -417,11 +416,11 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             return;
         }
 
-        BiFunction<IWorld, Entity, Integer> counter = getCounter(info);
-        Function<IWorld, Integer> amountAdjuster = getAmountAdjuster(info, info.amount);
+        BiFunction<LevelAccessor, Entity, Integer> counter = getCounter(info);
+        Function<LevelAccessor, Integer> amountAdjuster = getAmountAdjuster(info, info.amount);
 
         checks.add((event, query) -> {
-            IWorld world = query.getWorld(event);
+            LevelAccessor world = query.getWorld(event);
             Entity entity = query.getEntity(event);
             int count = counter.apply(world, entity);
             int amount = amountAdjuster.apply(world);
@@ -433,11 +432,11 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         final String json = map.get(MAXCOUNT);
         CountInfo info = parseCountInfo(json);
 
-        BiFunction<IWorld, Entity, Integer> counter = getCounter(info);
-        Function<IWorld, Integer> amountAdjuster = getAmountAdjuster(info, info.amount);
+        BiFunction<LevelAccessor, Entity, Integer> counter = getCounter(info);
+        Function<LevelAccessor, Integer> amountAdjuster = getAmountAdjuster(info, info.amount);
 
         checks.add((event, query) -> {
-            IWorld world = query.getWorld(event);
+            LevelAccessor world = query.getWorld(event);
             Entity entity = query.getEntity(event);
             int count = counter.apply(world, entity);
             int amount = amountAdjuster.apply(world);
@@ -452,7 +451,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         }
 
         checks.add((event, query) -> {
-            IWorld world = query.getWorld(event);
+            LevelAccessor world = query.getWorld(event);
             DataStorage data = DataStorage.getData(Tools.getServerWorld(world));
             int amount = data.getDaycounter();
             return amount >= count;
@@ -466,15 +465,15 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         }
 
         checks.add((event, query) -> {
-            IWorld world = query.getWorld(event);
+            LevelAccessor world = query.getWorld(event);
             DataStorage data = DataStorage.getData(Tools.getServerWorld(world));
             int amount = data.getDaycounter();
             return amount < count;
         });
     }
 
-    private Function<IWorld, Integer> getAmountAdjuster(CountInfo info, int infoAmount) {
-        Function<IWorld, Integer> amountAdjuster;
+    private Function<LevelAccessor, Integer> getAmountAdjuster(CountInfo info, int infoAmount) {
+        Function<LevelAccessor, Integer> amountAdjuster;
         if (info.scaledPerChunk) {
             amountAdjuster = world -> infoAmount * InControl.setup.cache.getValidSpawnChunks(world) / 289;
         } else if (info.scaledPerPlayer) {
@@ -485,8 +484,8 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         return amountAdjuster;
     }
 
-    private BiFunction<IWorld, Entity, Integer> getCounter(CountInfo info) {
-        BiFunction<IWorld, Entity, Integer> counter;
+    private BiFunction<LevelAccessor, Entity, Integer> getCounter(CountInfo info) {
+        BiFunction<LevelAccessor, Entity, Integer> counter;
         if (info.mod != null) {
             if (info.hostile) {
                 counter = (world, entity) -> InControl.setup.cache.getCountPerModHostile(world, info.mod);
@@ -525,15 +524,15 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
     private void addPlayerCheck(AttributeMap map) {
         boolean asPlayer = map.get(PLAYER);
         if (asPlayer) {
-            checks.add((event, query) -> query.getAttacker(event) instanceof PlayerEntity);
+            checks.add((event, query) -> query.getAttacker(event) instanceof Player);
         } else {
-            checks.add((event, query) -> query.getAttacker(event) instanceof PlayerEntity);
+            checks.add((event, query) -> query.getAttacker(event) instanceof Player);
         }
     }
 
 
     private boolean isFakePlayer(Entity entity) {
-        if (!(entity instanceof PlayerEntity)) {
+        if (!(entity instanceof Player)) {
             return false;
         }
 
@@ -543,7 +542,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
 
         // If this returns false it is still possible we have a fake player. Try to find the player in the list of online players
         PlayerList playerList = entity.getCommandSenderWorld().getServer().getPlayerList();
-        ServerPlayerEntity playerByUUID = playerList.getPlayer(((PlayerEntity) entity).getGameProfile().getId());
+        ServerPlayer playerByUUID = playerList.getPlayer(((Player) entity).getGameProfile().getId());
         if (playerByUUID == null) {
             // The player isn't online. Then it can't be real
             return true;
@@ -554,7 +553,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
     }
 
     private boolean isRealPlayer(Entity entity) {
-        if (!(entity instanceof PlayerEntity)) {
+        if (!(entity instanceof Player)) {
             return false;
         }
         return !isFakePlayer(entity);

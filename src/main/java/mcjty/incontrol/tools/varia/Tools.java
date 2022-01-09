@@ -1,27 +1,25 @@
-package mcjty.tools.varia;
+package mcjty.incontrol.tools.varia;
 
 import com.google.gson.JsonObject;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import mcjty.incontrol.ErrorHandler;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.JsonToNBT;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.registry.DynamicRegistries;
-import net.minecraft.util.registry.MutableRegistry;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.world.IServerWorld;
-import net.minecraft.world.IWorld;
-import net.minecraft.world.World;
-import net.minecraft.world.biome.Biome;
-import net.minecraft.world.gen.WorldGenRegion;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.TagParser;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.WorldGenRegion;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
@@ -30,11 +28,11 @@ import java.util.Optional;
 
 public class Tools {
 
-    public static RegistryKey<World> getDimensionKey(IWorld world) {
-        if (world instanceof World) {
-            return ((World) world).dimension();
-        } else if (world instanceof IServerWorld) {
-            return ((IServerWorld) world).getLevel().dimension();
+    public static ResourceKey<Level> getDimensionKey(LevelAccessor world) {
+        if (world instanceof Level) {
+            return ((Level) world).dimension();
+        } else if (world instanceof ServerLevelAccessor) {
+            return ((ServerLevelAccessor) world).getLevel().dimension();
         } else {
             throw new IllegalStateException("Not possible to get a dimension key here!");
         }
@@ -44,7 +42,7 @@ public class Tools {
     @Nonnull
     public static String getBiomeId(Biome biome) {
         if (biome.getRegistryName() == null) {
-            Optional<MutableRegistry<Biome>> biomeRegistry = DynamicRegistries.builtin().registry(Registry.BIOME_REGISTRY);
+            Optional<? extends Registry<Biome>> biomeRegistry = RegistryAccess.builtin().registry(Registry.BIOME_REGISTRY);
             return biomeRegistry.map(r -> r.getResourceKey(biome).map(key -> key.location().toString()).orElse("")).orElse("");
         } else {
             return biome.getRegistryName().toString();
@@ -90,9 +88,9 @@ public class Tools {
             if (stack.isEmpty()) {
                 return stack;
             }
-            CompoundNBT nbt;
+            CompoundTag nbt;
             try {
-                nbt = JsonToNBT.parseTag(split[1]);
+                nbt = TagParser.parseTag(split[1]);
             } catch (CommandSyntaxException e) {
                 ErrorHandler.error("Error parsing NBT in '" + name + "'!");
                 return ItemStack.EMPTY;
@@ -124,9 +122,9 @@ public class Tools {
         }
         if (obj.has("nbt")) {
             String nbt = obj.get("nbt").toString();
-            CompoundNBT tag = null;
+            CompoundTag tag = null;
             try {
-                tag = JsonToNBT.parseTag(nbt);
+                tag = TagParser.parseTag(nbt);
             } catch (CommandSyntaxException e) {
                 ErrorHandler.error("Error parsing json '" + nbt + "'!");
                 return ItemStack.EMPTY;
@@ -162,10 +160,10 @@ public class Tools {
     }
 
 
-    public static ServerWorld getServerWorld(IWorld world) {
-        ServerWorld sw;
-        if (world instanceof ServerWorld) {
-            sw = (ServerWorld) world;
+    public static ServerLevel getServerWorld(LevelAccessor world) {
+        ServerLevel sw;
+        if (world instanceof ServerLevel) {
+            sw = (ServerLevel) world;
         } else if (world instanceof WorldGenRegion) {
             sw = ((WorldGenRegion) world).getLevel();
         } else {

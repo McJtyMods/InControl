@@ -5,43 +5,43 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.Commands;
-import net.minecraft.entity.MobEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Util;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.Util;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.ChatFormatting;
+import net.minecraft.world.level.Level;
+import net.minecraft.server.level.ServerLevel;
 
 import java.util.Map;
 
-public class CmdList implements Command<CommandSource> {
+public class CmdList implements Command<CommandSourceStack> {
 
     private static final CmdList CMD = new CmdList();
 
-    public static ArgumentBuilder<CommandSource, ?> register(CommandDispatcher<CommandSource> dispatcher) {
+    public static ArgumentBuilder<CommandSourceStack, ?> register(CommandDispatcher<CommandSourceStack> dispatcher) {
         return Commands.literal("list")
                 .requires(cs -> cs.hasPermission(2))
                 .executes(CMD);
     }
 
     @Override
-    public int run(CommandContext<CommandSource> context) throws CommandSyntaxException {
-        ServerPlayerEntity player = context.getSource().getPlayerOrException();
+    public int run(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        ServerPlayer player = context.getSource().getPlayerOrException();
         if (player != null) {
-            RegistryKey<World> dimension = player.getCommandSenderWorld().dimension();
+            ResourceKey<Level> dimension = player.getCommandSenderWorld().dimension();
 
-            ServerWorld worldServer = player.getCommandSenderWorld().getServer().getLevel(dimension);
+            ServerLevel worldServer = player.getCommandSenderWorld().getServer().getLevel(dimension);
             Counter<ResourceLocation> counter = new Counter<>();
-            worldServer.getEntities(null, e -> e instanceof MobEntity).forEach(input -> {
+            worldServer.getEntities(null, e -> e instanceof Mob).forEach(input -> {
                 counter.add(input.getType().getRegistryName());
             });
             for (Map.Entry<ResourceLocation, Integer> entry : counter.getMap().entrySet()) {
-                player.sendMessage(new StringTextComponent(TextFormatting.YELLOW + "Mob " + entry.getKey().toString() + ": " + entry.getValue()), Util.NIL_UUID);
+                player.sendMessage(new TextComponent(ChatFormatting.YELLOW + "Mob " + entry.getKey().toString() + ": " + entry.getValue()), Util.NIL_UUID);
             }
         }
         return 0;

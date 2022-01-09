@@ -9,35 +9,35 @@ import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.rules.RulesManager;
 import mcjty.incontrol.spawner.SpawnerSystem;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.Commands;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.Util;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.Util;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.ChatFormatting;
 
-public class CmdReload implements Command<CommandSource> {
+public class CmdReload implements Command<CommandSourceStack> {
 
     private static final CmdReload CMD = new CmdReload();
 
-    public static ArgumentBuilder<CommandSource, ?> register(CommandDispatcher<CommandSource> dispatcher) {
+    public static ArgumentBuilder<CommandSourceStack, ?> register(CommandDispatcher<CommandSourceStack> dispatcher) {
         return Commands.literal("reload")
                 .requires(cs -> cs.hasPermission(1))
                 .executes(CMD);
     }
 
     @Override
-    public int run(CommandContext<CommandSource> context) throws CommandSyntaxException {
-        ServerPlayerEntity player = context.getSource().getPlayerOrException();
+    public int run(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        ServerPlayer player = context.getSource().getPlayerOrException();
         ErrorHandler.clearErrors();
         if (player != null) {
-            player.sendMessage(new StringTextComponent("Reloaded InControl rules"), Util.NIL_UUID);
+            player.sendMessage(new TextComponent("Reloaded InControl rules"), Util.NIL_UUID);
             try {
                 RulesManager.reloadRules();
                 SpawnerSystem.reloadRules();
             } catch (Exception e) {
                 InControl.setup.getLogger().error("Error reloading rules!", e);
-                player.sendMessage(new StringTextComponent(TextFormatting.RED + "Error: " + e.getLocalizedMessage()), Util.NIL_UUID);
+                player.sendMessage(new TextComponent(ChatFormatting.RED + "Error: " + e.getLocalizedMessage()), Util.NIL_UUID);
             }
         }
         return 0;

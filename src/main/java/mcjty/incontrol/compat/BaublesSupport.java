@@ -1,7 +1,7 @@
 package mcjty.incontrol.compat;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 
 public class BaublesSupport {
 
@@ -43,7 +43,7 @@ public class BaublesSupport {
         return EMPTY;
     }
 //
-    public static ItemStack getStack(PlayerEntity player, int slot) {
+    public static ItemStack getStack(Player player, int slot) {
 //        IBaublesItemHandler handler = BaublesApi.getBaublesHandler(player);
 //        if (handler == null) {
 //            return ItemStack.EMPTY;

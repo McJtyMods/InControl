@@ -6,25 +6,24 @@ import mcjty.incontrol.InControl;
 import mcjty.incontrol.compat.ModRuleCompatibilityLayer;
 import mcjty.incontrol.data.PhaseTools;
 import mcjty.incontrol.rules.support.GenericRuleEvaluator;
-import mcjty.tools.rules.CommonRuleEvaluator;
-import mcjty.tools.rules.IEventQuery;
-import mcjty.tools.rules.IModRuleCompatibilityLayer;
-import mcjty.tools.rules.RuleBase;
-import mcjty.tools.typed.Attribute;
-import mcjty.tools.typed.AttributeMap;
-import mcjty.tools.typed.GenericAttributeMapFactory;
-import mcjty.tools.varia.Tools;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.JsonToNBT;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import mcjty.incontrol.tools.rules.CommonRuleEvaluator;
+import mcjty.incontrol.tools.rules.IEventQuery;
+import mcjty.incontrol.tools.rules.IModRuleCompatibilityLayer;
+import mcjty.incontrol.tools.rules.RuleBase;
+import mcjty.incontrol.tools.typed.Attribute;
+import mcjty.incontrol.tools.typed.AttributeMap;
+import mcjty.incontrol.tools.typed.GenericAttributeMapFactory;
+import mcjty.incontrol.tools.varia.Tools;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.TagParser;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.logging.log4j.Level;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -40,7 +39,7 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
 
     public static final IEventQuery<LivingDropsEvent> EVENT_QUERY = new IEventQuery<LivingDropsEvent>() {
         @Override
-        public World getWorld(LivingDropsEvent o) {
+        public Level getWorld(LivingDropsEvent o) {
             return o.getEntity().getCommandSenderWorld();
         }
 
@@ -75,9 +74,9 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
         }
 
         @Override
-        public PlayerEntity getPlayer(LivingDropsEvent o) {
+        public Player getPlayer(LivingDropsEvent o) {
             Entity entity = o.getSource().getEntity();
-            return entity instanceof PlayerEntity ? (PlayerEntity) entity : null;
+            return entity instanceof Player ? (Player) entity : null;
         }
 
         @Override
@@ -86,7 +85,7 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
         }
     };
     private static final GenericAttributeMapFactory FACTORY = new GenericAttributeMapFactory();
-    private static Random rnd = new Random();
+    private static final Random rnd = new Random();
 
     static {
         FACTORY
@@ -164,8 +163,8 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
 
     private final GenericRuleEvaluator ruleEvaluator;
     private final Set<String> phases;
-    private List<Predicate<ItemStack>> toRemoveItems = new ArrayList<>();
-    private List<Pair<ItemStack, Function<Integer, Integer>>> toAddItems = new ArrayList<>();
+    private final List<Predicate<ItemStack>> toRemoveItems = new ArrayList<>();
+    private final List<Pair<ItemStack, Function<Integer, Integer>>> toAddItems = new ArrayList<>();
     private boolean removeAll = false;
 
     private LootRule(AttributeMap map, Set<String> phases) {
@@ -228,7 +227,7 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
                 try {
                     min[i] = max[i] = Integer.parseInt(minmax[0]);
                 } catch (NumberFormatException e) {
-                    InControl.setup.getLogger().log(Level.ERROR, "Bad amount specified in loot rule: " + minmax);
+                    InControl.setup.getLogger().log(org.apache.logging.log4j.Level.ERROR, "Bad amount specified in loot rule: " + minmax);
                     min[i] = max[i] = 1;
                 }
             } else if (minmax.length == 2) {
@@ -236,11 +235,11 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
                     min[i] = Integer.parseInt(minmax[0]);
                     max[i] = Integer.parseInt(minmax[1]);
                 } catch (NumberFormatException e) {
-                    InControl.setup.getLogger().log(Level.ERROR, "Bad amounts specified in loot rule: " + minmax);
+                    InControl.setup.getLogger().log(org.apache.logging.log4j.Level.ERROR, "Bad amounts specified in loot rule: " + minmax);
                     min[i] = max[i] = 1;
                 }
             } else {
-                InControl.setup.getLogger().log(Level.ERROR, "Bad amount range specified in loot rule: " + minmax);
+                InControl.setup.getLogger().log(org.apache.logging.log4j.Level.ERROR, "Bad amount range specified in loot rule: " + minmax);
                 min[i] = max[i] = 1;
             }
         }
@@ -273,13 +272,13 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
         for (String name : itemNames) {
             ItemStack stack = Tools.parseStack(name, InControl.setup.getLogger());
             if (stack.isEmpty()) {
-                InControl.setup.getLogger().log(Level.ERROR, "Unknown item '" + name + "'!");
+                InControl.setup.getLogger().log(org.apache.logging.log4j.Level.ERROR, "Unknown item '" + name + "'!");
             } else {
                 if (nbtJson != null) {
                     try {
-                        stack.setTag(JsonToNBT.parseTag(nbtJson));
+                        stack.setTag(TagParser.parseTag(nbtJson));
                     } catch (CommandSyntaxException e) {
-                        InControl.setup.getLogger().log(Level.ERROR, "Bad nbt for '" + name + "'!");
+                        InControl.setup.getLogger().log(org.apache.logging.log4j.Level.ERROR, "Bad nbt for '" + name + "'!");
                     }
                 }
                 items.add(Pair.of(stack, countFunction));

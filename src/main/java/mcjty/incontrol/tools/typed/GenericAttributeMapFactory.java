@@ -1,16 +1,16 @@
-package mcjty.tools.typed;
+package mcjty.incontrol.tools.typed;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import mcjty.incontrol.ErrorHandler;
-import mcjty.tools.varia.JSonTools;
+import mcjty.incontrol.tools.varia.JSonTools;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.server.ServerLifecycleHooks;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.Registry;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.server.ServerLifecycleHooks;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -49,7 +49,7 @@ public class GenericAttributeMapFactory {
                     transformer = JsonElement::toString;
                 } else if (type == Type.DIMENSION_TYPE) {
                     transformer = jsonElement -> {
-                        RegistryKey<World> worldkey = RegistryKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(jsonElement.getAsString()));
+                        ResourceKey<Level> worldkey = ResourceKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(jsonElement.getAsString()));
                         MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
                         if (server != null) {
                             if (!server.levelKeys().contains(worldkey)) {
@@ -84,7 +84,7 @@ public class GenericAttributeMapFactory {
                 } else if (type == Type.DIMENSION_TYPE) {
                     if (jsonObject.has(key.getName())) {
                         JsonElement jsonElement = jsonObject.get(key.getName());
-                        map.setNonnull(key, RegistryKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(jsonElement.getAsString())));
+                        map.setNonnull(key, ResourceKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(jsonElement.getAsString())));
                     }
                 } else if (type == Type.JSON) {
                     if (jsonObject.has(key.getName())) {

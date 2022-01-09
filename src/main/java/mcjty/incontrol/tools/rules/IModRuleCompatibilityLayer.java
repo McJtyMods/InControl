@@ -1,10 +1,9 @@
-package mcjty.tools.rules;
+package mcjty.incontrol.tools.rules;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.world.IWorld;
-import net.minecraft.world.World;
-import net.minecraft.world.biome.Biome;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.biome.Biome;
 
 public interface IModRuleCompatibilityLayer {
 
@@ -27,7 +26,7 @@ public interface IModRuleCompatibilityLayer {
 
     int[] getTrinketSlots();
 
-    ItemStack getBaubleStack(PlayerEntity player, int slot);
+    ItemStack getBaubleStack(Player player, int slot);
 
 
     // --------------------
@@ -36,11 +35,11 @@ public interface IModRuleCompatibilityLayer {
 
     boolean hasGameStages();
 
-    boolean hasGameStage(PlayerEntity player, String stage);
+    boolean hasGameStage(Player player, String stage);
 
-    void addGameStage(PlayerEntity player, String stage);
+    void addGameStage(Player player, String stage);
 
-    void removeGameStage(PlayerEntity player, String stage);
+    void removeGameStage(Player player, String stage);
 
     // --------------------
     // Lost Cities
@@ -62,13 +61,13 @@ public interface IModRuleCompatibilityLayer {
 
     boolean hasSereneSeasons();
 
-    boolean isSpring(IWorld world);
+    boolean isSpring(LevelAccessor world);
 
-    boolean isSummer(IWorld world);
+    boolean isSummer(LevelAccessor world);
 
-    boolean isWinter(IWorld world);
+    boolean isWinter(LevelAccessor world);
 
-    boolean isAutumn(IWorld world);
+    boolean isAutumn(LevelAccessor world);
 
     // --------------------
     // EnigmaScript
@@ -76,13 +75,13 @@ public interface IModRuleCompatibilityLayer {
 
     boolean hasEnigmaScript();
 
-    void setPlayerState(PlayerEntity player, String statename, String statevalue);
+    void setPlayerState(Player player, String statename, String statevalue);
 
-    String getPlayerState(PlayerEntity player, String statename);
+    String getPlayerState(Player player, String statename);
 
-    void setState(IWorld world, String statename, String statevalue);
+    void setState(LevelAccessor world, String statename, String statevalue);
 
-    String getState(IWorld world, String statename);
+    String getState(LevelAccessor world, String statename);
 
     // --------------------
     // Specific methods to avoid AT issues in McJtyTools

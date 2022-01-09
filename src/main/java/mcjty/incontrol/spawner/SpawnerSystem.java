@@ -2,26 +2,27 @@ package mcjty.incontrol.spawner;
 
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.data.DataStorage;
-import mcjty.tools.varia.Box;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.*;
-import net.minecraft.entity.monster.IMob;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.pathfinding.PathType;
+import mcjty.incontrol.tools.varia.Box;
+import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.FluidTags;
-import net.minecraft.tags.ITag;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.util.WeightedRandom;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.tags.Tag;
+import net.minecraft.util.Mth;
+import net.minecraft.util.random.WeightedRandomList;
 import net.minecraft.world.Difficulty;
-import net.minecraft.world.IWorldReader;
-import net.minecraft.world.World;
-import net.minecraft.world.biome.MobSpawnInfo;
-import net.minecraft.world.gen.Heightmap;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.monster.Enemy;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.biome.MobSpawnSettings;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.entity.LevelEntityGetter;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.pathfinder.PathComputationType;
+import net.minecraft.world.phys.AABB;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.event.TickEvent;
 
@@ -30,11 +31,11 @@ import java.util.*;
 
 public class SpawnerSystem {
 
-    private static Map<RegistryKey<World>, WorldSpawnerData> worldData = new HashMap<>();
+    private static final Map<ResourceKey<Level>, WorldSpawnerData> worldData = new HashMap<>();
 
-    private static Random random = new Random();
+    private static final Random random = new Random();
 
-    public static MobEntity busySpawning = null;
+    public static Mob busySpawning = null;
 
     public static void reloadRules() {
         worldData.clear();
@@ -42,13 +43,13 @@ public class SpawnerSystem {
     }
 
     public static void addRule(SpawnerRule rule) {
-        for (RegistryKey<World> dimension : rule.getConditions().getDimensions()) {
+        for (ResourceKey<Level> dimension : rule.getConditions().getDimensions()) {
             worldData.computeIfAbsent(dimension, key -> new WorldSpawnerData()).rules.add(rule);
         }
     }
 
     public static void checkRules(TickEvent.WorldTickEvent event) {
-        World world = event.world;
+        Level world = event.world;
         WorldSpawnerData spawnerData = worldData.get(world.dimension());
         if (spawnerData == null) {
             return;
@@ -67,7 +68,7 @@ public class SpawnerSystem {
         }
     }
 
-    private static void executeRule(SpawnerRule rule, World world, DataStorage data) {
+    private static void executeRule(SpawnerRule rule, Level world, DataStorage data) {
         if (!data.getPhases().containsAll(rule.getPhases())) {
             return;
         }
@@ -105,7 +106,7 @@ public class SpawnerSystem {
         }
 
         if (rule.getMobsFromBiome() != null) {
-            executeRule(rule, (ServerWorld) world, null, rule.getMobsFromBiome(), 1.0f);
+            executeRule(rule, (ServerLevel) world, null, rule.getMobsFromBiome(), 1.0f);
         } else {
             List<EntityType<?>> mobs = rule.getMobs();
             List<Float> weights = rule.getWeights();
@@ -113,13 +114,13 @@ public class SpawnerSystem {
             for (int i = 0; i < mobs.size(); i++) {
                 EntityType<?> mob = mobs.get(i);
                 float weight = i < weights.size() ? weights.get(i) : 1.0f;
-                executeRule(rule, (ServerWorld) world, mob, null, weight / maxWeight);
+                executeRule(rule, (ServerLevel) world, mob, null, weight / maxWeight);
             }
         }
     }
 
     // Note: if 'mob' is null we spawn a random mob from the biome spawn list
-    private static void executeRule(SpawnerRule rule, ServerWorld world, @Nullable EntityType<?> mob, @Nullable EntityClassification classification, float weight) {
+    private static void executeRule(SpawnerRule rule, ServerLevel world, @Nullable EntityType<?> mob, @Nullable MobCategory classification, float weight) {
         if (random.nextFloat() > rule.getPersecond()) {
             return;
         }
@@ -152,16 +153,16 @@ public class SpawnerSystem {
                     boolean nocollisions = world.noCollision(spawnable.getAABB(pos.getX(), pos.getY(), pos.getZ()));
                     if (nocollisions) {
                         Entity entity = spawnable.create(world);
-                        if (entity instanceof MobEntity) {
-                            if (!(entity instanceof IMob) || world.getDifficulty() != Difficulty.PEACEFUL) {
-                                MobEntity mobEntity = (MobEntity) entity;
+                        if (entity instanceof Mob) {
+                            if (!(entity instanceof Enemy) || world.getDifficulty() != Difficulty.PEACEFUL) {
+                                Mob mobEntity = (Mob) entity;
                                 entity.moveTo(pos.getX(), pos.getY(), pos.getZ(), random.nextFloat() * 360.0F, 0.0F);
                                 busySpawning = mobEntity;   // @todo check in spawn rule
-                                int result = ForgeHooks.canEntitySpawn(mobEntity, world, pos.getX(), pos.getY(), pos.getZ(), null, SpawnReason.NATURAL);
+                                int result = ForgeHooks.canEntitySpawn(mobEntity, world, pos.getX(), pos.getY(), pos.getZ(), null, MobSpawnType.NATURAL);
                                 busySpawning = null;
                                 if (result != -1) {
                                     if (canSpawn(world, mobEntity, conditions) && isNotColliding(world, mobEntity, conditions)) {
-                                        mobEntity.finalizeSpawn(world, world.getCurrentDifficultyAt(entity.blockPosition()), SpawnReason.NATURAL, null, null);
+                                        mobEntity.finalizeSpawn(world, world.getCurrentDifficultyAt(entity.blockPosition()), MobSpawnType.NATURAL, null, null);
                                         world.addFreshEntityWithPassengers(entity);
                                         spawned++;
                                         if (spawned >= desiredAmount) {
@@ -177,26 +178,26 @@ public class SpawnerSystem {
         }
     }
 
-    private static EntityType<?> selectMob(ServerWorld world, EntityType<?> mob, EntityClassification classification, SpawnerConditions conditions, BlockPos pos) {
+    private static EntityType<?> selectMob(ServerLevel world, EntityType<?> mob, MobCategory classification, SpawnerConditions conditions, BlockPos pos) {
         EntityType<?> spawnable = mob;
         if (spawnable == null && classification != null) {
-            List<MobSpawnInfo.Spawners> spawners = world.getBiome(pos).getMobSettings().getMobs(classification);
+            WeightedRandomList<MobSpawnSettings.SpawnerData> spawners = world.getBiome(pos).getMobSettings().getMobs(classification);
             if (spawners.isEmpty()) {
                 return null;
             }
-            MobSpawnInfo.Spawners item = WeightedRandom.getRandomItem(world.random, spawners);
-            if (item == null) {
-                return null;
-            }
-            spawnable = item.type;
-            if (checkTooMany(world, spawnable, conditions)) {
-                return null;
-            }
+            spawnable = spawners.getRandom(world.random).map(item -> {
+                EntityType<?> type = item.type;
+                if (checkTooMany(world, type, conditions)) {
+                    return null;
+                } else {
+                    return type;
+                }
+            }).orElse(null);
         }
         return spawnable;
     }
 
-    private static boolean checkTooMany(ServerWorld world, EntityType<?> mob, SpawnerConditions conditions) {
+    private static boolean checkTooMany(ServerLevel world, EntityType<?> mob, SpawnerConditions conditions) {
         if (conditions.getMaxthis() != -1) {
             int count = InControl.setup.cache.getCount(world, mob);
             if (count >= conditions.getMaxthis()) {
@@ -206,15 +207,15 @@ public class SpawnerSystem {
         return false;
     }
 
-    private static boolean canSpawn(World world, MobEntity mobEntity, SpawnerConditions conditions) {
+    private static boolean canSpawn(Level world, Mob mobEntity, SpawnerConditions conditions) {
         if (conditions.isNoRestrictions()) {
             return true;
         } else {
-            return mobEntity.checkSpawnRules(world, SpawnReason.NATURAL);
+            return mobEntity.checkSpawnRules(world, MobSpawnType.NATURAL);
         }
     }
 
-    private static boolean isNotColliding(World world, MobEntity mobEntity, SpawnerConditions conditions) {
+    private static boolean isNotColliding(Level world, Mob mobEntity, SpawnerConditions conditions) {
         if (conditions.isInLiquid()) {
             return world.containsAnyLiquid(mobEntity.getBoundingBox()) && world.isUnobstructed(mobEntity);
         } else if (conditions.isInWater()) {
@@ -226,14 +227,14 @@ public class SpawnerSystem {
         }
     }
 
-    private static boolean containsLiquid(World world, AxisAlignedBB box, ITag.INamedTag<Fluid> liquid) {
-        int x1 = MathHelper.floor(box.minX);
-        int x2 = MathHelper.ceil(box.maxX);
-        int y1 = MathHelper.floor(box.minY);
-        int y2 = MathHelper.ceil(box.maxY);
-        int z1 = MathHelper.floor(box.minZ);
-        int z2 = MathHelper.ceil(box.maxZ);
-        BlockPos.Mutable mpos = new BlockPos.Mutable();
+    private static boolean containsLiquid(Level world, AABB box, Tag.Named<Fluid> liquid) {
+        int x1 = Mth.floor(box.minX);
+        int x2 = Mth.ceil(box.maxX);
+        int y1 = Mth.floor(box.minY);
+        int y2 = Mth.ceil(box.maxY);
+        int z1 = Mth.floor(box.minZ);
+        int z2 = Mth.ceil(box.maxZ);
+        BlockPos.MutableBlockPos mpos = new BlockPos.MutableBlockPos();
 
         for(int x = x1; x < x2; ++x) {
             for(int y = y1; y < y2; ++y) {
@@ -250,7 +251,7 @@ public class SpawnerSystem {
     }
 
     @Nullable
-    private static BlockPos getRandomPosition(World world, EntityType<?> mob, SpawnerConditions conditions) {
+    private static BlockPos getRandomPosition(Level world, EntityType<?> mob, SpawnerConditions conditions) {
         boolean inAir = conditions.isInAir();
         boolean inWater = conditions.isInWater();
         boolean inLava = conditions.isInLava();
@@ -264,9 +265,9 @@ public class SpawnerSystem {
     }
 
     @Nullable
-    private static BlockPos getRandomPositionInBox(World world, EntityType<?> mob, SpawnerConditions conditions) {
-        List<? extends PlayerEntity> players = world.players();
-        PlayerEntity player = players.get(random.nextInt(players.size()));
+    private static BlockPos getRandomPositionInBox(Level world, EntityType<?> mob, SpawnerConditions conditions) {
+        List<? extends Player> players = world.players();
+        Player player = players.get(random.nextInt(players.size()));
 
         int mindist = conditions.getMindist();
         int maxdist = conditions.getMaxdist();
@@ -276,7 +277,7 @@ public class SpawnerSystem {
             return null;
         }
 
-        if (checkLocalCount((ServerWorld) world, mob, conditions, box)) {
+        if (checkLocalCount((ServerLevel) world, mob, conditions, box)) {
             return null;
         }
 
@@ -292,9 +293,9 @@ public class SpawnerSystem {
     }
 
     @Nullable
-    private static BlockPos getRandomPositionOnGround(World world, EntityType<?> mob, SpawnerConditions conditions) {
-        List<? extends PlayerEntity> players = world.players();
-        PlayerEntity player = players.get(random.nextInt(players.size()));
+    private static BlockPos getRandomPositionOnGround(Level world, EntityType<?> mob, SpawnerConditions conditions) {
+        List<? extends Player> players = world.players();
+        Player player = players.get(random.nextInt(players.size()));
 
         int minheight = conditions.getMinheight();
         int maxheight = conditions.getMaxheight();
@@ -307,7 +308,7 @@ public class SpawnerSystem {
             return null;
         }
 
-        if (checkLocalCount((ServerWorld) world, mob, conditions, box)) {
+        if (checkLocalCount((ServerLevel) world, mob, conditions, box)) {
             return null;
         }
 
@@ -329,11 +330,17 @@ public class SpawnerSystem {
         return pos;
     }
 
-    private static boolean checkLocalCount(ServerWorld world, EntityType<?> mob, SpawnerConditions conditions, Box box) {
+    private static boolean checkLocalCount(ServerLevel world, EntityType<?> mob, SpawnerConditions conditions, Box box) {
         if (conditions.getMaxlocal() != -1) {
-            long count = world.getEntities().filter(e -> e.getType() == mob && box.in(e.blockPosition())).count();
-            if (count >= conditions.getMaxlocal()) {
-                return true;
+            LevelEntityGetter<Entity> entities = world.getEntities();
+            long count = 0;
+            for (Entity entity : entities.getAll()) {
+                if (entity.getType() == mob && box.in(entity.blockPosition())) {
+                    count++;
+                    if (count >= conditions.getMaxlocal()) {
+                        return true;
+                    }
+                }
             }
         }
         return false;
@@ -347,8 +354,8 @@ public class SpawnerSystem {
                 .build();
     }
 
-    private static BlockPos getValidSpawnablePosition(IWorldReader worldIn, int x, int z, int minHeight, int maxHeight) {
-        int height = worldIn.getHeight(Heightmap.Type.WORLD_SURFACE, x, z) + 1;
+    private static BlockPos getValidSpawnablePosition(LevelReader worldIn, int x, int z, int minHeight, int maxHeight) {
+        int height = worldIn.getHeight(Heightmap.Types.WORLD_SURFACE, x, z) + 1;
         height = Math.min(height, maxHeight);
         height = random.nextInt(height + 1);
         BlockPos blockPos = new BlockPos(x, height-1, z);
@@ -358,8 +365,8 @@ public class SpawnerSystem {
         return blockPos.getY() < minHeight ? null : blockPos;
     }
 
-    private static boolean isValidSpawnPos(IWorldReader world, BlockPos pos) {
-        if (!world.getBlockState(pos).isPathfindable(world, pos, PathType.LAND)) {
+    private static boolean isValidSpawnPos(LevelReader world, BlockPos pos) {
+        if (!world.getBlockState(pos).isPathfindable(world, pos, PathComputationType.LAND)) {
             return false;
         }
         return world.getBlockState(pos.below()).canOcclude();

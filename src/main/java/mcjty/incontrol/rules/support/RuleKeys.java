@@ -1,9 +1,9 @@
 package mcjty.incontrol.rules.support;
 
-import mcjty.tools.rules.CommonRuleKeys;
-import mcjty.tools.typed.AttributeMap;
-import mcjty.tools.typed.Key;
-import mcjty.tools.typed.Type;
+import mcjty.incontrol.tools.rules.CommonRuleKeys;
+import mcjty.incontrol.tools.typed.AttributeMap;
+import mcjty.incontrol.tools.typed.Key;
+import mcjty.incontrol.tools.typed.Type;
 
 public interface RuleKeys extends CommonRuleKeys {
 

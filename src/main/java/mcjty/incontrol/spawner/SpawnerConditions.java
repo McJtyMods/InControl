@@ -2,10 +2,10 @@ package mcjty.incontrol.spawner;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.world.World;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.Registry;
+import net.minecraft.world.level.Level;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -13,7 +13,7 @@ import java.util.Set;
 
 public class SpawnerConditions {
 
-    private final Set<RegistryKey<World>> dimensions;
+    private final Set<ResourceKey<Level>> dimensions;
     private final int mindist;
     private final int maxdist;
     private final int minheight;
@@ -84,7 +84,7 @@ public class SpawnerConditions {
         }
     }
 
-    public Set<RegistryKey<World>> getDimensions() {
+    public Set<ResourceKey<Level>> getDimensions() {
         return dimensions;
     }
 
@@ -165,11 +165,11 @@ public class SpawnerConditions {
             JsonElement dimension = object.get("dimension");
             if (dimension.isJsonArray()) {
                 for (JsonElement element : dimension.getAsJsonArray()) {
-                    RegistryKey<World> key = RegistryKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(element.getAsString()));
+                    ResourceKey<Level> key = ResourceKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(element.getAsString()));
                     builder.dimensions(key);
                 }
             } else {
-                RegistryKey<World> key = RegistryKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(dimension.getAsString()));
+                ResourceKey<Level> key = ResourceKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(dimension.getAsString()));
                 builder.dimensions(key);
             }
         }
@@ -227,7 +227,7 @@ public class SpawnerConditions {
     }
 
     public static class Builder {
-        private final Set<RegistryKey<World>> dimensions = new HashSet<>();
+        private final Set<ResourceKey<Level>> dimensions = new HashSet<>();
 
         private int mindist = 24;
         private int maxdist = 120;
@@ -248,7 +248,7 @@ public class SpawnerConditions {
         private int maxpeaceful = -1;
         private int maxneutral = -1;
 
-        public Builder dimensions(RegistryKey<World>... dimensions) {
+        public Builder dimensions(ResourceKey<Level>... dimensions) {
             Collections.addAll(this.dimensions, dimensions);
             return this;
         }

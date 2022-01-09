@@ -1,4 +1,4 @@
-package mcjty.tools.varia;
+package mcjty.incontrol.tools.varia;
 
 public class DummyCommandSender {} /* @todo 1.15 implements ICommandSender {
 

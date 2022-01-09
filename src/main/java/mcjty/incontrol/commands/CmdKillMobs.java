@@ -7,27 +7,27 @@ import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import mcjty.incontrol.InControl;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.Commands;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.monster.IMob;
-import net.minecraft.entity.passive.AnimalEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.util.Util;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.monster.Enemy;
+import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.Util;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.ChatFormatting;
+import net.minecraft.world.level.Level;
+import net.minecraft.server.level.ServerLevel;
 
 import java.util.List;
 
-public class CmdKillMobs  implements Command<CommandSource> {
+public class CmdKillMobs  implements Command<CommandSourceStack> {
 
     private static final CmdKillMobs CMD = new CmdKillMobs();
 
-    public static ArgumentBuilder<CommandSource, ?> register(CommandDispatcher<CommandSource> dispatcher) {
+    public static ArgumentBuilder<CommandSourceStack, ?> register(CommandDispatcher<CommandSourceStack> dispatcher) {
         return Commands.literal("kill")
                 .requires(cs -> cs.hasPermission(2))
                 .then(Commands.argument("type", StringArgumentType.word())
@@ -35,16 +35,16 @@ public class CmdKillMobs  implements Command<CommandSource> {
     }
 
     @Override
-    public int run(CommandContext<CommandSource> context) throws CommandSyntaxException {
-        ServerPlayerEntity player = context.getSource().getPlayerOrException();
+    public int run(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        ServerPlayer player = context.getSource().getPlayerOrException();
         if (player != null) {
             String type = context.getArgument("type", String.class);
             if (type == null || type.trim().isEmpty()) {
-                player.sendMessage(new StringTextComponent(TextFormatting.RED + "Use 'all', 'passive', 'hostile' or name of the mob followed by optional dimension id"), Util.NIL_UUID);
+                player.sendMessage(new TextComponent(ChatFormatting.RED + "Use 'all', 'passive', 'hostile' or name of the mob followed by optional dimension id"), Util.NIL_UUID);
                 InControl.setup.getLogger().error("Use 'all', 'passive', 'hostile', 'entity' or name of the mob followed by optional dimension id");
                 return 0;
             }
-            RegistryKey<World> dimension = player.getCommandSenderWorld().dimension();
+            ResourceKey<Level> dimension = player.getCommandSenderWorld().dimension();
 //            if (args.length > 1) {
 //                dimension = Integer.parseInt(args[1]);
 //            }
@@ -53,25 +53,25 @@ public class CmdKillMobs  implements Command<CommandSource> {
             boolean hostile = "hostile".equals(type);
             boolean entity = "entity".equals(type);
 
-            ServerWorld worldServer = player.getCommandSenderWorld().getServer().getLevel(dimension);
-            List<Entity> entities = worldServer.getEntities(null, input -> {
+            ServerLevel worldServer = player.getCommandSenderWorld().getServer().getLevel(dimension);
+            List<? extends Entity> entities = worldServer.getEntities(null, input -> {
                 if (all) {
-                    return !(input instanceof PlayerEntity);
+                    return !(input instanceof Player);
                 } else if (passive) {
-                    return input instanceof AnimalEntity && !(input instanceof IMob);
+                    return input instanceof Animal && !(input instanceof Enemy);
                 } else if (hostile) {
-                    return input instanceof IMob;
+                    return input instanceof Enemy;
                 } else if (entity) {
-                    return !(input instanceof AnimalEntity) && !(input instanceof PlayerEntity);
+                    return !(input instanceof Animal) && !(input instanceof Player);
                 } else {
                     String id = input.getType().getRegistryName().toString();
                     return type.equals(id);
                 }
             });
             for (Entity e : entities) {
-                worldServer.despawn(e);
+                worldServer.removeEntity(e);
             }
-            player.sendMessage(new StringTextComponent(TextFormatting.YELLOW + "Removed " + entities.size() + " entities!"), Util.NIL_UUID);
+            player.sendMessage(new TextComponent(ChatFormatting.YELLOW + "Removed " + entities.size() + " entities!"), Util.NIL_UUID);
         }
         return 0;
     }

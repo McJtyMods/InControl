@@ -3,20 +3,20 @@ package mcjty.incontrol.rules;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import mcjty.incontrol.rules.support.GenericRuleEvaluator;
-import mcjty.tools.rules.IEventQuery;
-import mcjty.tools.typed.Attribute;
-import mcjty.tools.typed.AttributeMap;
-import mcjty.tools.typed.GenericAttributeMapFactory;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IWorld;
+import mcjty.incontrol.tools.rules.IEventQuery;
+import mcjty.incontrol.tools.typed.Attribute;
+import mcjty.incontrol.tools.typed.AttributeMap;
+import mcjty.incontrol.tools.typed.GenericAttributeMapFactory;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.LevelAccessor;
 
 import static mcjty.incontrol.rules.support.RuleKeys.MAXDAYCOUNT;
 import static mcjty.incontrol.rules.support.RuleKeys.MINDAYCOUNT;
-import static mcjty.tools.rules.CommonRuleKeys.*;
+import static mcjty.incontrol.tools.rules.CommonRuleKeys.*;
 
 public class PhaseRule {
 
@@ -24,49 +24,49 @@ public class PhaseRule {
     private final GenericRuleEvaluator ruleEvaluator;
 
 
-    public static final IEventQuery<IWorld> EVENT_QUERY = new IEventQuery<IWorld>() {
+    public static final IEventQuery<LevelAccessor> EVENT_QUERY = new IEventQuery<LevelAccessor>() {
         @Override
-        public IWorld getWorld(IWorld o) {
+        public LevelAccessor getWorld(LevelAccessor o) {
             return o;
         }
 
         @Override
-        public BlockPos getPos(IWorld o) {
+        public BlockPos getPos(LevelAccessor o) {
             return null;
         }
 
         @Override
-        public BlockPos getValidBlockPos(IWorld o) {
+        public BlockPos getValidBlockPos(LevelAccessor o) {
             return null;
         }
 
         @Override
-        public int getY(IWorld o) {
+        public int getY(LevelAccessor o) {
             return 0;
         }
 
         @Override
-        public Entity getEntity(IWorld o) {
+        public Entity getEntity(LevelAccessor o) {
             return null;
         }
 
         @Override
-        public DamageSource getSource(IWorld o) {
+        public DamageSource getSource(LevelAccessor o) {
             return null;
         }
 
         @Override
-        public Entity getAttacker(IWorld o) {
+        public Entity getAttacker(LevelAccessor o) {
             return null;
         }
 
         @Override
-        public PlayerEntity getPlayer(IWorld o) {
+        public Player getPlayer(LevelAccessor o) {
             return null;
         }
 
         @Override
-        public ItemStack getItem(IWorld o) {
+        public ItemStack getItem(LevelAccessor o) {
             return null;
         }
     };
@@ -96,7 +96,7 @@ public class PhaseRule {
         return name;
     }
 
-    public boolean match(IWorld world) {
+    public boolean match(LevelAccessor world) {
         return ruleEvaluator.match(world, EVENT_QUERY);
     }
 

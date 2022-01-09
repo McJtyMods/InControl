@@ -1,40 +1,39 @@
-package mcjty.tools.rules;
+package mcjty.incontrol.tools.rules;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import mcjty.incontrol.ErrorHandler;
-import mcjty.tools.cache.StructureCache;
-import mcjty.tools.typed.AttributeMap;
-import mcjty.tools.typed.Key;
-import mcjty.tools.varia.LookAtTools;
-import mcjty.tools.varia.Tools;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.EquipmentSlotType;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.INBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.state.Property;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.Direction;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.RayTraceResult;
+import mcjty.incontrol.tools.cache.StructureCache;
+import mcjty.incontrol.tools.typed.AttributeMap;
+import mcjty.incontrol.tools.typed.Key;
+import mcjty.incontrol.tools.varia.LookAtTools;
+import mcjty.incontrol.tools.varia.Tools;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Difficulty;
-import net.minecraft.world.IWorld;
-import net.minecraft.world.World;
-import net.minecraft.world.biome.Biome;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.Property;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.common.BiomeManager;
-import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.energy.IEnergyStorage;
 import net.minecraftforge.items.CapabilityItemHandler;
@@ -51,7 +50,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import static mcjty.tools.rules.CommonRuleKeys.*;
+import static mcjty.incontrol.tools.rules.CommonRuleKeys.*;
 
 public class CommonRuleEvaluator {
 
@@ -307,12 +306,12 @@ public class CommonRuleEvaluator {
     }
 
     private void addDimensionCheck(AttributeMap map) {
-        List<RegistryKey<World>> dimensions = map.getList(DIMENSION);
+        List<ResourceKey<Level>> dimensions = map.getList(DIMENSION);
         if (dimensions.size() == 1) {
-            RegistryKey<World> dim = dimensions.get(0);
+            ResourceKey<Level> dim = dimensions.get(0);
             checks.add((event,query) -> Tools.getDimensionKey(query.getWorld(event)).equals(dim));
         } else {
-            Set<RegistryKey<World>> dims = new HashSet<>(dimensions);
+            Set<ResourceKey<Level>> dims = new HashSet<>(dimensions);
             checks.add((event,query) -> dims.contains(Tools.getDimensionKey(query.getWorld(event))));
         }
     }
@@ -345,18 +344,18 @@ public class CommonRuleEvaluator {
         boolean thunder = weather.toLowerCase().startsWith("thunder");
         if (raining) {
             checks.add((event,query) -> {
-                IWorld world = query.getWorld(event);
-                if (world instanceof World) {
-                    return ((World) world).isRaining();
+                LevelAccessor world = query.getWorld(event);
+                if (world instanceof Level) {
+                    return ((Level) world).isRaining();
                 } else {
                     return false;
                 }
             });
         } else if (thunder) {
             checks.add((event, query) -> {
-                IWorld world = query.getWorld(event);
-                if (world instanceof World) {
-                    return ((World) world).isThundering();
+                LevelAccessor world = query.getWorld(event);
+                if (world instanceof Level) {
+                    return ((Level) world).isThundering();
                 } else {
                     return false;
                 }
@@ -368,7 +367,7 @@ public class CommonRuleEvaluator {
 
     private void addCategoryCheck(AttributeMap map) {
         List<String> list = map.getList(CATEGORY);
-        Set<Biome.Category> categories = list.stream().map(s -> Biome.Category.byName(s.toLowerCase())).collect(Collectors.toSet());
+        Set<Biome.BiomeCategory> categories = list.stream().map(s -> Biome.BiomeCategory.byName(s.toLowerCase())).collect(Collectors.toSet());
         checks.add((event,query) -> {
             Biome biome = query.getWorld(event).getBiome(query.getPos(event));
             return categories.contains(biome.getBiomeCategory());
@@ -452,9 +451,9 @@ public class CommonRuleEvaluator {
 
         if (obj.has("look")) {
             return (event, query) -> {
-                RayTraceResult result = LookAtTools.getMovingObjectPositionFromPlayer(query.getWorld(event), query.getPlayer(event), false);
-                if (result instanceof BlockRayTraceResult) {
-                    return ((BlockRayTraceResult) result).getBlockPos().offset(offsetX, offsetY, offsetZ);
+                HitResult result = LookAtTools.getMovingObjectPositionFromPlayer(query.getWorld(event), query.getPlayer(event), false);
+                if (result instanceof BlockHitResult) {
+                    return ((BlockHitResult) result).getBlockPos().offset(offsetX, offsetY, offsetZ);
                 } else {
                     return query.getValidBlockPos(event).offset(offsetX, offsetY, offsetZ);
                 }
@@ -464,8 +463,8 @@ public class CommonRuleEvaluator {
         return (event, query) -> query.getValidBlockPos(event).offset(offsetX, offsetY, offsetZ);
     }
 
-    private static boolean testBlockStateSafe(IWorld world, BlockPos pos, Block block) {
-        Chunk chunk = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
+    private static boolean testBlockStateSafe(LevelAccessor world, BlockPos pos, Block block) {
+        LevelChunk chunk = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
         if (chunk != null) {
             BlockState state = world.getBlockState(pos);
             return state.getBlock() == block;
@@ -474,8 +473,8 @@ public class CommonRuleEvaluator {
         }
     }
 
-    private static boolean testBlockStateSafe(IWorld world, BlockPos pos, BlockState block) {
-        Chunk chunk = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
+    private static boolean testBlockStateSafe(LevelAccessor world, BlockPos pos, BlockState block) {
+        LevelChunk chunk = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
         if (chunk != null) {
             BlockState state = world.getBlockState(pos);
             return state == block;
@@ -485,7 +484,7 @@ public class CommonRuleEvaluator {
     }
 
     @Nullable
-    private BiPredicate<IWorld, BlockPos> parseBlock(String json) {
+    private BiPredicate<LevelAccessor, BlockPos> parseBlock(String json) {
         JsonParser parser = new JsonParser();
         JsonElement element = parser.parse(json);
         if (element.isJsonPrimitive()) {
@@ -505,7 +504,7 @@ public class CommonRuleEvaluator {
             }
         } else if (element.isJsonObject()) {
             JsonObject obj = element.getAsJsonObject();
-            BiPredicate<IWorld, BlockPos> test;
+            BiPredicate<LevelAccessor, BlockPos> test;
             if (obj.has("ore")) {
                 // @todo 1.15 ore dictionary?
 //                int oreId = OreDictionary.getOreID(obj.get("ore").getAsString());
@@ -542,9 +541,9 @@ public class CommonRuleEvaluator {
 
             if (obj.has("mod")) {
                 String mod = obj.get("mod").getAsString();
-                BiPredicate<IWorld, BlockPos> finalTest = test;
+                BiPredicate<LevelAccessor, BlockPos> finalTest = test;
                 test = (world, pos) -> {
-                    Chunk chunk = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
+                    LevelChunk chunk = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
                     if (chunk != null) {
                         return finalTest.test(world, pos) && mod.equals(world.getBlockState(pos).getBlock().getRegistryName().getNamespace());
                     } else {
@@ -561,7 +560,7 @@ public class CommonRuleEvaluator {
                     } else {
                         side = null;
                     }
-                    BiPredicate<IWorld, BlockPos> finalTest = test;
+                    BiPredicate<LevelAccessor, BlockPos> finalTest = test;
                     test = (world, pos) -> finalTest.test(world, pos) && energy.test(getEnergy(world, pos, side));
                 }
             }
@@ -573,7 +572,7 @@ public class CommonRuleEvaluator {
                     side = null;
                 }
                 List<Predicate<ItemStack>> items = getItems(obj.get("contains"));
-                BiPredicate<IWorld, BlockPos> finalTest = test;
+                BiPredicate<LevelAccessor, BlockPos> finalTest = test;
                 test = (world, pos) -> finalTest.test(world, pos) && contains(world, pos, side, items);
             }
 
@@ -625,7 +624,7 @@ public class CommonRuleEvaluator {
         List<String> blocks = map.getList(BLOCK);
         if (blocks.size() == 1) {
             String json = blocks.get(0);
-            BiPredicate<IWorld, BlockPos> blockMatcher = parseBlock(json);
+            BiPredicate<LevelAccessor, BlockPos> blockMatcher = parseBlock(json);
             if (blockMatcher != null) {
                 checks.add((event, query) -> {
                     BlockPos pos = posFunction.apply(event, query);
@@ -633,9 +632,9 @@ public class CommonRuleEvaluator {
                 });
             }
         } else {
-            List<BiPredicate<IWorld, BlockPos>> blockMatchers = new ArrayList<>();
+            List<BiPredicate<LevelAccessor, BlockPos>> blockMatchers = new ArrayList<>();
             for (String block : blocks) {
-                BiPredicate<IWorld, BlockPos> blockMatcher = parseBlock(block);
+                BiPredicate<LevelAccessor, BlockPos> blockMatcher = parseBlock(block);
                 if (blockMatcher == null) {
                     return;
                 }
@@ -645,8 +644,8 @@ public class CommonRuleEvaluator {
             checks.add((event,query) -> {
                 BlockPos pos = posFunction.apply(event, query);
                 if (pos != null) {
-                    IWorld world = query.getWorld(event);
-                    for (BiPredicate<IWorld, BlockPos> matcher : blockMatchers) {
+                    LevelAccessor world = query.getWorld(event);
+                    for (BiPredicate<LevelAccessor, BlockPos> matcher : blockMatchers) {
                         if (matcher.test(world, pos)) {
                             return true;
                         }
@@ -672,9 +671,9 @@ public class CommonRuleEvaluator {
     private void addMinTimeCheck(AttributeMap map) {
         final int mintime = map.get(MINTIME);
         checks.add((event,query) -> {
-            IWorld world = query.getWorld(event);
-            if (world instanceof World) {
-                long time = ((World)world).getDayTime();
+            LevelAccessor world = query.getWorld(event);
+            if (world instanceof Level) {
+                long time = ((Level)world).getDayTime();
                 return (time % 24000) >= mintime;
             } else {
                 return false;
@@ -685,9 +684,9 @@ public class CommonRuleEvaluator {
     private void addMaxTimeCheck(AttributeMap map) {
         final int maxtime = map.get(MAXTIME);
         checks.add((event,query) -> {
-            IWorld world = query.getWorld(event);
-            if (world instanceof World) {
-                long time = ((World)world).getDayTime();
+            LevelAccessor world = query.getWorld(event);
+            if (world instanceof Level) {
+                long time = ((Level)world).getDayTime();
                 return (time % 24000) <= maxtime;
             } else {
                 return false;
@@ -699,7 +698,7 @@ public class CommonRuleEvaluator {
         final Float d = map.get(MINSPAWNDIST) * map.get(MINSPAWNDIST);
         checks.add((event,query) -> {
             BlockPos pos = query.getPos(event);
-            ServerWorld sw = Tools.getServerWorld(query.getWorld(event));
+            ServerLevel sw = Tools.getServerWorld(query.getWorld(event));
             double sqdist = pos.distSqr(sw.getSharedSpawnPos());
             return sqdist >= d;
         });
@@ -709,7 +708,7 @@ public class CommonRuleEvaluator {
         final Float d = map.get(MAXSPAWNDIST) * map.get(MAXSPAWNDIST);
         checks.add((event,query) -> {
             BlockPos pos = query.getPos(event);
-            ServerWorld sw = Tools.getServerWorld(query.getWorld(event));
+            ServerLevel sw = Tools.getServerWorld(query.getWorld(event));
             double sqdist = pos.distSqr(sw.getSharedSpawnPos());
             return sqdist <= d;
         });
@@ -879,7 +878,7 @@ public class CommonRuleEvaluator {
             test = s -> finalTest.test(s) && "mod".equals(s.getItem().getRegistryName().getNamespace());
         }
         if (obj.has("nbt")) {
-            List<Predicate<CompoundNBT>> nbtMatchers = getNbtMatchers(obj, logger);
+            List<Predicate<CompoundTag>> nbtMatchers = getNbtMatchers(obj, logger);
             if (nbtMatchers != null) {
                 Predicate<ItemStack> finalTest = test;
                 test = s -> finalTest.test(s) && nbtMatchers.stream().allMatch(p -> p.test(s.getTag()));
@@ -900,8 +899,8 @@ public class CommonRuleEvaluator {
         return stack.getCapability(CapabilityEnergy.ENERGY).map(IEnergyStorage::getEnergyStored).orElse(0);
     }
 
-    private boolean contains(IWorld world, BlockPos pos, @Nullable Direction side, @Nonnull List<Predicate<ItemStack>> matchers) {
-        TileEntity tileEntity = world.getBlockEntity(pos);
+    private boolean contains(LevelAccessor world, BlockPos pos, @Nullable Direction side, @Nonnull List<Predicate<ItemStack>> matchers) {
+        BlockEntity tileEntity = world.getBlockEntity(pos);
         if (tileEntity != null) {
             return tileEntity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, side).map(h -> {
                 for (int i = 0 ; i < h.getSlots() ; i++) {
@@ -920,32 +919,32 @@ public class CommonRuleEvaluator {
         return false;
     }
 
-    private int getEnergy(IWorld world, BlockPos pos, @Nullable Direction side) {
-        TileEntity tileEntity = world.getBlockEntity(pos);
+    private int getEnergy(LevelAccessor world, BlockPos pos, @Nullable Direction side) {
+        BlockEntity tileEntity = world.getBlockEntity(pos);
         if (tileEntity != null) {
             return tileEntity.getCapability(CapabilityEnergy.ENERGY, side).map(IEnergyStorage::getEnergyStored).orElse(0);
         }
         return 0;
     }
 
-    private static List<Predicate<CompoundNBT>> getNbtMatchers(JsonObject obj, Logger logger) {
+    private static List<Predicate<CompoundTag>> getNbtMatchers(JsonObject obj, Logger logger) {
         JsonArray nbtArray = obj.getAsJsonArray("nbt");
         return getNbtMatchers(nbtArray, logger);
     }
 
-    private static List<Predicate<CompoundNBT>> getNbtMatchers(JsonArray nbtArray, Logger logger) {
-        List<Predicate<CompoundNBT>> nbtMatchers = new ArrayList<>();
+    private static List<Predicate<CompoundTag>> getNbtMatchers(JsonArray nbtArray, Logger logger) {
+        List<Predicate<CompoundTag>> nbtMatchers = new ArrayList<>();
         for (JsonElement element : nbtArray) {
             JsonObject o = element.getAsJsonObject();
             String tag = o.get("tag").getAsString();
             if (o.has("contains")) {
-                List<Predicate<CompoundNBT>> subMatchers = getNbtMatchers(o.getAsJsonArray("contains"), logger);
+                List<Predicate<CompoundTag>> subMatchers = getNbtMatchers(o.getAsJsonArray("contains"), logger);
                 nbtMatchers.add(tagCompound -> {
                     if (tagCompound != null) {
-                        ListNBT list = tagCompound.getList(tag, Constants.NBT.TAG_COMPOUND);
-                        for (INBT base : list) {
-                            for (Predicate<CompoundNBT> matcher : subMatchers) {
-                                if (matcher.test((CompoundNBT) base)) {
+                        ListTag list = tagCompound.getList(tag, Tag.TAG_COMPOUND);
+                        for (Tag base : list) {
+                            for (Predicate<CompoundTag> matcher : subMatchers) {
+                                if (matcher.test((CompoundTag) base)) {
                                     return true;
                                 }
                             }
@@ -992,27 +991,27 @@ public class CommonRuleEvaluator {
 
     public void addHelmetCheck(AttributeMap map) {
         List<Predicate<ItemStack>> items = getItems(map.getList(HELMET), logger);
-        addArmorCheck(items, EquipmentSlotType.HEAD);
+        addArmorCheck(items, EquipmentSlot.HEAD);
     }
 
     public void addChestplateCheck(AttributeMap map) {
         List<Predicate<ItemStack>> items = getItems(map.getList(CHESTPLATE), logger);
-        addArmorCheck(items, EquipmentSlotType.CHEST);
+        addArmorCheck(items, EquipmentSlot.CHEST);
     }
 
     public void addLeggingsCheck(AttributeMap map) {
         List<Predicate<ItemStack>> items = getItems(map.getList(LEGGINGS), logger);
-        addArmorCheck(items, EquipmentSlotType.LEGS);
+        addArmorCheck(items, EquipmentSlot.LEGS);
     }
 
     public void addBootsCheck(AttributeMap map) {
         List<Predicate<ItemStack>> items = getItems(map.getList(BOOTS), logger);
-        addArmorCheck(items, EquipmentSlotType.FEET);
+        addArmorCheck(items, EquipmentSlot.FEET);
     }
 
-    private void addArmorCheck(List<Predicate<ItemStack>> items, EquipmentSlotType slot) {
+    private void addArmorCheck(List<Predicate<ItemStack>> items, EquipmentSlot slot) {
         checks.add((event,query) -> {
-            PlayerEntity player = query.getPlayer(event);
+            Player player = query.getPlayer(event);
             if (player != null) {
                 ItemStack armorItem = player.getItemBySlot(slot);
                 if (!armorItem.isEmpty()) {
@@ -1030,7 +1029,7 @@ public class CommonRuleEvaluator {
     public void addHeldItemCheck(AttributeMap map, Key<String> key) {
         List<Predicate<ItemStack>> items = getItems(map.getList(key), logger);
         checks.add((event,query) -> {
-            PlayerEntity player = query.getPlayer(event);
+            Player player = query.getPlayer(event);
             if (player != null) {
                 ItemStack mainhand = player.getMainHandItem();
                 if (!mainhand.isEmpty()) {
@@ -1048,7 +1047,7 @@ public class CommonRuleEvaluator {
     public void addOffHandItemCheck(AttributeMap map) {
         List<Predicate<ItemStack>> items = getItems(map.getList(OFFHANDITEM), logger);
         checks.add((event,query) -> {
-            PlayerEntity player = query.getPlayer(event);
+            Player player = query.getPlayer(event);
             if (player != null) {
                 ItemStack offhand = player.getOffhandItem();
                 if (!offhand.isEmpty()) {
@@ -1066,7 +1065,7 @@ public class CommonRuleEvaluator {
     public void addBothHandsItemCheck(AttributeMap map) {
         List<Predicate<ItemStack>> items = getItems(map.getList(BOTHHANDSITEM), logger);
         checks.add((event,query) -> {
-            PlayerEntity player = query.getPlayer(event);
+            Player player = query.getPlayer(event);
             if (player != null) {
                 ItemStack offhand = player.getOffhandItem();
                 if (!offhand.isEmpty()) {
@@ -1181,7 +1180,7 @@ public class CommonRuleEvaluator {
     public void addBaubleCheck(AttributeMap map, Key<String> key, Supplier<int[]> slotSupplier) {
         List<Predicate<ItemStack>> items = getItems(map.getList(key), logger);
         checks.add((event,query) -> {
-            PlayerEntity player = query.getPlayer(event);
+            Player player = query.getPlayer(event);
             if (player != null) {
                 for (int slot : slotSupplier.get()) {
                     ItemStack stack = compatibility.getBaubleStack(player, slot);

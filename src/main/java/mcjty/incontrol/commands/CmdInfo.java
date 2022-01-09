@@ -6,42 +6,42 @@ import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import mcjty.tools.varia.Tools;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.Commands;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.Util;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.chunk.ChunkStatus;
-import net.minecraft.world.chunk.IChunk;
-import net.minecraft.world.gen.feature.structure.Structure;
-import net.minecraft.world.server.ServerWorld;
+import mcjty.incontrol.tools.varia.Tools;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.Util;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.world.level.chunk.ChunkStatus;
+import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.levelgen.feature.StructureFeature;
+import net.minecraft.server.level.ServerLevel;
 
 import java.util.Map;
 
-public class CmdInfo implements Command<CommandSource> {
+public class CmdInfo implements Command<CommandSourceStack> {
 
     private static final CmdInfo CMD = new CmdInfo();
 
-    public static ArgumentBuilder<CommandSource, ?> register(CommandDispatcher<CommandSource> dispatcher) {
+    public static ArgumentBuilder<CommandSourceStack, ?> register(CommandDispatcher<CommandSourceStack> dispatcher) {
         return Commands.literal("info")
                 .requires(cs -> cs.hasPermission(0))
                 .executes(CMD);
     }
 
     @Override
-    public int run(CommandContext<CommandSource> context) throws CommandSyntaxException {
-        ServerPlayerEntity player = context.getSource().getPlayerOrException();
+    public int run(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        ServerPlayer player = context.getSource().getPlayerOrException();
         if (player != null) {
             BlockPos pos = player.blockPosition();
-            ServerWorld sw = Tools.getServerWorld(player.level);
-            IChunk chunk = sw.getChunk(pos.getX() >> 4, pos.getZ() >> 4, ChunkStatus.STRUCTURE_REFERENCES, false);
+            ServerLevel sw = Tools.getServerWorld(player.level);
+            ChunkAccess chunk = sw.getChunk(pos.getX() >> 4, pos.getZ() >> 4, ChunkStatus.STRUCTURE_REFERENCES, false);
             if (chunk != null) {
-                Map<Structure<?>, LongSet> references = chunk.getAllReferences();
-                for (Structure<?> s : references.keySet()) {
+                Map<StructureFeature<?>, LongSet> references = chunk.getAllReferences();
+                for (StructureFeature<?> s : references.keySet()) {
                     LongSet longs = references.get(s);
-                    player.sendMessage(new StringTextComponent(s.getRegistryName().toString() + ": " + longs.size()), Util.NIL_UUID);
+                    player.sendMessage(new TextComponent(s.getRegistryName().toString() + ": " + longs.size()), Util.NIL_UUID);
                 }
             }
         }

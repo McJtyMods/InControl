@@ -3,13 +3,13 @@ package mcjty.incontrol.commands;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import mcjty.incontrol.InControl;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.Commands;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 
 public class ModCommands {
 
-    public static void register(CommandDispatcher<CommandSource> dispatcher) {
-        LiteralCommandNode<CommandSource> commands = dispatcher.register(
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
+        LiteralCommandNode<CommandSourceStack> commands = dispatcher.register(
                 Commands.literal(InControl.MODID)
                         .then(CmdDebug.register(dispatcher))
                         .then(CmdKillMobs.register(dispatcher))

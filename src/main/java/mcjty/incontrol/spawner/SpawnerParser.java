@@ -3,7 +3,7 @@ package mcjty.incontrol.spawner;
 import com.google.gson.JsonElement;
 import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.InControl;
-import mcjty.tools.varia.JSonTools;
+import mcjty.incontrol.tools.varia.JSonTools;
 import org.apache.logging.log4j.Level;
 
 import java.nio.file.Path;

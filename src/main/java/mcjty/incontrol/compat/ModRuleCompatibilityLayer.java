@@ -1,15 +1,14 @@
 package mcjty.incontrol.compat;
 
 import mcjty.incontrol.setup.ModSetup;
-import mcjty.tools.rules.IEventQuery;
-import mcjty.tools.rules.IModRuleCompatibilityLayer;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.IWorld;
-import net.minecraft.world.World;
-import net.minecraft.world.biome.Biome;
+import mcjty.incontrol.tools.rules.IEventQuery;
+import mcjty.incontrol.tools.rules.IModRuleCompatibilityLayer;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.biome.Biome;
 
 public class ModRuleCompatibilityLayer implements IModRuleCompatibilityLayer {
 
@@ -54,7 +53,7 @@ public class ModRuleCompatibilityLayer implements IModRuleCompatibilityLayer {
     }
 
     @Override
-    public ItemStack getBaubleStack(PlayerEntity player, int slot) {
+    public ItemStack getBaubleStack(Player player, int slot) {
         return BaublesSupport.getStack(player, slot);
     }
 
@@ -64,17 +63,17 @@ public class ModRuleCompatibilityLayer implements IModRuleCompatibilityLayer {
     }
 
     @Override
-    public boolean hasGameStage(PlayerEntity player, String stage) {
+    public boolean hasGameStage(Player player, String stage) {
         return GameStageSupport.hasGameStage(player, stage);
     }
 
     @Override
-    public void addGameStage(PlayerEntity player, String stage) {
+    public void addGameStage(Player player, String stage) {
         GameStageSupport.addGameStage(player, stage);
     }
 
     @Override
-    public void removeGameStage(PlayerEntity player, String stage) {
+    public void removeGameStage(Player player, String stage) {
         GameStageSupport.removeGameStage(player, stage);
     }
 
@@ -109,22 +108,22 @@ public class ModRuleCompatibilityLayer implements IModRuleCompatibilityLayer {
     }
 
     @Override
-    public boolean isSpring(IWorld world) {
+    public boolean isSpring(LevelAccessor world) {
         return SereneSeasonsSupport.isSpring(world);
     }
 
     @Override
-    public boolean isSummer(IWorld world) {
+    public boolean isSummer(LevelAccessor world) {
         return SereneSeasonsSupport.isSummer(world);
     }
 
     @Override
-    public boolean isWinter(IWorld world) {
+    public boolean isWinter(LevelAccessor world) {
         return SereneSeasonsSupport.isWinter(world);
     }
 
     @Override
-    public boolean isAutumn(IWorld world) {
+    public boolean isAutumn(LevelAccessor world) {
         return SereneSeasonsSupport.isAutumn(world);
     }
 
@@ -134,22 +133,22 @@ public class ModRuleCompatibilityLayer implements IModRuleCompatibilityLayer {
     }
 
     @Override
-    public String getPlayerState(PlayerEntity player, String statename) {
+    public String getPlayerState(Player player, String statename) {
         return null;
     }
 
     @Override
-    public String getState(IWorld world, String statename) {
+    public String getState(LevelAccessor world, String statename) {
         return null;
     }
 
     @Override
-    public void setPlayerState(PlayerEntity player, String statename, String statevalue) {
+    public void setPlayerState(Player player, String statename, String statevalue) {
         // Not supported by In Control
     }
 
     @Override
-    public void setState(IWorld world, String statename, String statevalue) {
+    public void setState(LevelAccessor world, String statename, String statevalue) {
         // Not supported by In Control
     }
 
@@ -157,6 +156,6 @@ public class ModRuleCompatibilityLayer implements IModRuleCompatibilityLayer {
     public String getBiomeName(Biome biome) {
         ResourceLocation resourceLocation = biome.getRegistryName();
         String s = "biome." + resourceLocation.getNamespace() + "." + resourceLocation.getPath();
-        return new TranslationTextComponent(s).getString();
+        return new TranslatableComponent(s).getString();
     }
 }

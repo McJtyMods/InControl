@@ -1,8 +1,8 @@
-package mcjty.tools.typed;
+package mcjty.incontrol.tools.typed;
 
 
-import net.minecraft.util.RegistryKey;
-import net.minecraft.world.World;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -23,7 +23,7 @@ public final class Type<V> {
     public static final Type<String> STRING = create(String.class);
     public static final Type<Boolean> BOOLEAN = create(Boolean.class);
     public static final Type<String> JSON = create(String.class);
-    public static final Type<RegistryKey<World>> DIMENSION_TYPE = create(RegistryKey.class);
+    public static final Type<ResourceKey<Level>> DIMENSION_TYPE = create(ResourceKey.class);
 
     // Map
     public static final Type<AttributeMap> MAP = create(AttributeMap.class);

@@ -1,19 +1,19 @@
 package mcjty.incontrol;
 
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.ChatFormatting;
+import net.minecraft.Util;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.Util;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.fml.server.ServerLifecycleHooks;
+import net.minecraftforge.server.ServerLifecycleHooks;
 
 import java.util.HashSet;
 import java.util.Set;
 
 public class ErrorHandler {
 
-    private static Set<String> errors = new HashSet<>();
+    private static final Set<String> errors = new HashSet<>();
 
     public static void clearErrors() {
         errors.clear();
@@ -26,15 +26,15 @@ public class ErrorHandler {
         // Notify all logged in players
         MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
         if (server != null) {
-            for (ServerPlayerEntity player : server.getPlayerList().getPlayers()) {
-                player.sendMessage(new StringTextComponent(TextFormatting.RED + "InControl Error: " + TextFormatting.GOLD + message), Util.NIL_UUID);
+            for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+                player.sendMessage(new TextComponent(ChatFormatting.RED + "InControl Error: " + ChatFormatting.GOLD + message), Util.NIL_UUID);
             }
         }
     }
 
     public static void onPlayerJoinWorld(PlayerEvent.PlayerLoggedInEvent event) {
         for (String error : errors) {
-            event.getPlayer().sendMessage(new StringTextComponent(TextFormatting.RED + "InControl Error: " + TextFormatting.GOLD + error), Util.NIL_UUID);
+            event.getPlayer().sendMessage(new TextComponent(ChatFormatting.RED + "InControl Error: " + ChatFormatting.GOLD + error), Util.NIL_UUID);
         }
     }
 }

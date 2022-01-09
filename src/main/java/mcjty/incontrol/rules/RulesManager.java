@@ -4,9 +4,8 @@ import com.google.gson.JsonElement;
 import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.data.DataStorage;
-import mcjty.tools.varia.JSonTools;
-import net.minecraft.world.World;
-import org.apache.logging.log4j.Level;
+import mcjty.incontrol.tools.varia.JSonTools;
+import net.minecraft.world.level.Level;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -18,26 +17,24 @@ import java.util.stream.Collectors;
 
 public class RulesManager {
 
-    private static List<SpawnRule> rules = new ArrayList<>();
+    private static final List<SpawnRule> rules = new ArrayList<>();
     private static List<SpawnRule> filteredRules = null;
 
-    private static List<SummonAidRule> summonAidRules = new ArrayList<>();
+    private static final List<SummonAidRule> summonAidRules = new ArrayList<>();
     private static List<SummonAidRule> filteredSummonAidRules = null;
 
-    private static List<LootRule> lootRules = new ArrayList<>();
+    private static final List<LootRule> lootRules = new ArrayList<>();
     private static List<LootRule> filteredLootRules = null;
 
-    private static List<ExperienceRule> experienceRules = new ArrayList<>();
+    private static final List<ExperienceRule> experienceRules = new ArrayList<>();
     private static List<ExperienceRule> filteredExperienceRuiles = null;
 
-    public static List<PotentialSpawnRule> potentialSpawnRules = new ArrayList<>();
     public static List<PhaseRule> phaseRules = new ArrayList<>();
     private static String path;
 
     public static void reloadRules() {
         rules.clear();
         summonAidRules.clear();
-        potentialSpawnRules.clear();
         lootRules.clear();
         experienceRules.clear();
         phaseRules.clear();
@@ -60,7 +57,7 @@ public class RulesManager {
         filteredExperienceRuiles = null;
     }
 
-    public static List<SpawnRule> getFilteredRules(World world) {
+    public static List<SpawnRule> getFilteredRules(Level world) {
         if (filteredRules == null) {
             Set<String> phases = DataStorage.getData(world).getPhases();
             filteredRules = rules.stream().filter(r -> phases.containsAll(r.getPhases())).collect(Collectors.toList());
@@ -68,7 +65,7 @@ public class RulesManager {
         return filteredRules;
     }
 
-    public static List<SummonAidRule> getFilteredSummonAidRules(World world) {
+    public static List<SummonAidRule> getFilteredSummonAidRules(Level world) {
         if (filteredSummonAidRules == null) {
             Set<String> phases = DataStorage.getData(world).getPhases();
             filteredSummonAidRules = summonAidRules.stream().filter(r -> phases.containsAll(r.getPhases())).collect(Collectors.toList());
@@ -76,7 +73,7 @@ public class RulesManager {
         return filteredSummonAidRules;
     }
 
-    public static List<LootRule> getFilteredLootRules(World world) {
+    public static List<LootRule> getFilteredLootRules(Level world) {
         if (filteredLootRules == null) {
             Set<String> phases = DataStorage.getData(world).getPhases();
             filteredLootRules = lootRules.stream().filter(r -> phases.containsAll(r.getPhases())).collect(Collectors.toList());
@@ -84,7 +81,7 @@ public class RulesManager {
         return filteredLootRules;
     }
 
-    public static List<ExperienceRule> getFilteredExperienceRuiles(World world) {
+    public static List<ExperienceRule> getFilteredExperienceRuiles(Level world) {
         if (filteredExperienceRuiles == null) {
             Set<String> phases = DataStorage.getData(world).getPhases();
             filteredExperienceRuiles = experienceRules.stream().filter(r -> phases.containsAll(r.getPhases())).collect(Collectors.toList());
@@ -116,15 +113,6 @@ public class RulesManager {
         return true;
     }
 
-    public static boolean readCustomPotentialSpawn(String file) {
-        if (!exists(file)) {
-            return false;
-        }
-        potentialSpawnRules.clear();
-        readRules(null, file, PotentialSpawnRule::parse, potentialSpawnRules);
-        return true;
-    }
-
     public static boolean readCustomLoot(String file) {
         if (!exists(file)) {
             return false;
@@ -142,7 +130,6 @@ public class RulesManager {
 
         safeCall("spawn.json", () -> readRules(path, "spawn.json", SpawnRule::parse, rules));
         safeCall("summonaid.json", () -> readRules(path, "summonaid.json", SummonAidRule::parse, summonAidRules));
-        safeCall("potentialspawn.json", () -> readRules(path, "potentialspawn.json", PotentialSpawnRule::parse, potentialSpawnRules));
         safeCall("loot.json", () -> readRules(path, "loot.json", LootRule::parse, lootRules));
         safeCall("experience.json", () -> readRules(path, "experience.json", ExperienceRule::parse, experienceRules));
         safeCall("phases.json", () -> readRules(path, "phases.json", PhaseRule::parse, phaseRules));
@@ -153,7 +140,7 @@ public class RulesManager {
             code.run();
         } catch (Exception e) {
             ErrorHandler.error("JSON error in '" + name + "': check log for details (" + e.getMessage() + ")");
-            InControl.setup.getLogger().log(Level.ERROR, "Error parsing '" + name + "'", e);
+            InControl.setup.getLogger().log(org.apache.logging.log4j.Level.ERROR, "Error parsing '" + name + "'", e);
         }
     }
 
@@ -168,7 +155,7 @@ public class RulesManager {
             if (rule != null) {
                 rules.add(rule);
             } else {
-                InControl.setup.getLogger().log(Level.ERROR, "Rule " + i + " in " + filename + " is invalid, skipping!");
+                InControl.setup.getLogger().log(org.apache.logging.log4j.Level.ERROR, "Rule " + i + " in " + filename + " is invalid, skipping!");
             }
             i++;
         }

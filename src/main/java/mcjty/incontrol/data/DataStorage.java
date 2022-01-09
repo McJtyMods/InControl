@@ -2,18 +2,18 @@ package mcjty.incontrol.data;
 
 import mcjty.incontrol.rules.PhaseRule;
 import mcjty.incontrol.rules.RulesManager;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
-import net.minecraft.world.storage.DimensionSavedDataManager;
-import net.minecraft.world.storage.WorldSavedData;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.storage.DimensionDataStorage;
 
 import javax.annotation.Nonnull;
 import java.util.HashSet;
 import java.util.Set;
 
-public class DataStorage extends WorldSavedData {
+public class DataStorage extends SavedData {
 
     private static final String NAME = "InControlData";
 
@@ -24,19 +24,27 @@ public class DataStorage extends WorldSavedData {
     private int checkCounter = 0;   // We only check every X ticks for efficiency
 
     public DataStorage() {
-        super(NAME);
+    }
+
+    public DataStorage(CompoundTag tag) {
+        daycounter = tag.getInt("daycounter");
+        if (tag.contains("isday")) {
+            isDay = tag.getBoolean("isday");
+        } else {
+            isDay = null;
+        }
     }
 
     @Nonnull
-    public static DataStorage getData(World world) {
+    public static DataStorage getData(Level world) {
         if (world.isClientSide()) {
             throw new RuntimeException("Don't access this client-side!");
         }
         MinecraftServer server = world.getServer();
-        ServerWorld overworld = server.getLevel(World.OVERWORLD);
+        ServerLevel overworld = server.getLevel(Level.OVERWORLD);
 
-        DimensionSavedDataManager storage = overworld.getDataStorage();
-        return storage.computeIfAbsent(DataStorage::new, NAME);
+        DimensionDataStorage storage = overworld.getDataStorage();
+        return storage.computeIfAbsent(DataStorage::new, DataStorage::new, NAME);
     }
 
     public int getDaycounter() {
@@ -59,7 +67,7 @@ public class DataStorage extends WorldSavedData {
         return phases;
     }
 
-    public void tick(World world) {
+    public void tick(Level world) {
         tickTime(world);
 
         checkCounter--;
@@ -69,7 +77,7 @@ public class DataStorage extends WorldSavedData {
         }
     }
 
-    private void tickTime(World world) {
+    private void tickTime(Level world) {
         long time = world.getDayTime() % 24000;
         boolean day = time >= 0 && time < 12000;
         if (isDay == null) {
@@ -86,7 +94,7 @@ public class DataStorage extends WorldSavedData {
         }
     }
 
-    private void tickPhases(World world) {
+    private void tickPhases(Level world) {
         boolean dirty = false;
         for (PhaseRule rule : RulesManager.phaseRules) {
             if (rule.match(world)) {
@@ -106,17 +114,7 @@ public class DataStorage extends WorldSavedData {
     }
 
     @Override
-    public void load(CompoundNBT tag) {
-        daycounter = tag.getInt("daycounter");
-        if (tag.contains("isday")) {
-            isDay = tag.getBoolean("isday");
-        } else {
-            isDay = null;
-        }
-    }
-
-    @Override
-    public CompoundNBT save(CompoundNBT tag) {
+    public CompoundTag save(CompoundTag tag) {
         tag.putInt("daycounter", daycounter);
         if (isDay != null) {
             tag.putBoolean("isday", isDay);

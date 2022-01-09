@@ -5,18 +5,18 @@ import mcjty.incontrol.InControl;
 import mcjty.incontrol.compat.ModRuleCompatibilityLayer;
 import mcjty.incontrol.data.PhaseTools;
 import mcjty.incontrol.rules.support.GenericRuleEvaluator;
-import mcjty.tools.rules.IEventQuery;
-import mcjty.tools.rules.IModRuleCompatibilityLayer;
-import mcjty.tools.rules.RuleBase;
-import mcjty.tools.typed.Attribute;
-import mcjty.tools.typed.AttributeMap;
-import mcjty.tools.typed.GenericAttributeMapFactory;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import mcjty.incontrol.tools.rules.IEventQuery;
+import mcjty.incontrol.tools.rules.IModRuleCompatibilityLayer;
+import mcjty.incontrol.tools.rules.RuleBase;
+import mcjty.incontrol.tools.typed.Attribute;
+import mcjty.incontrol.tools.typed.AttributeMap;
+import mcjty.incontrol.tools.typed.GenericAttributeMapFactory;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.event.entity.living.LivingExperienceDropEvent;
 import net.minecraftforge.eventbus.api.Event;
 
@@ -28,7 +28,7 @@ public class ExperienceRule extends RuleBase<RuleBase.EventGetter> {
 
     public static final IEventQuery<LivingExperienceDropEvent> EVENT_QUERY = new IEventQuery<LivingExperienceDropEvent>() {
         @Override
-        public World getWorld(LivingExperienceDropEvent o) {
+        public Level getWorld(LivingExperienceDropEvent o) {
             return o.getEntity().getCommandSenderWorld();
         }
 
@@ -63,7 +63,7 @@ public class ExperienceRule extends RuleBase<RuleBase.EventGetter> {
         }
 
         @Override
-        public PlayerEntity getPlayer(LivingExperienceDropEvent o) {
+        public Player getPlayer(LivingExperienceDropEvent o) {
             return o.getAttackingPlayer();
         }
 

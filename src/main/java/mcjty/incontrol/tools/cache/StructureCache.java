@@ -1,16 +1,16 @@
-package mcjty.tools.cache;
+package mcjty.incontrol.tools.cache;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
-import mcjty.tools.varia.Tools;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.IWorld;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.ChunkStatus;
-import net.minecraft.world.chunk.IChunk;
-import net.minecraft.world.gen.feature.structure.Structure;
-import net.minecraft.world.server.ServerWorld;
+import mcjty.incontrol.tools.varia.Tools;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.chunk.ChunkStatus;
+import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.levelgen.feature.StructureFeature;
+import net.minecraft.server.level.ServerLevel;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,8 +28,8 @@ public class StructureCache {
         structureCache.clear();
     }
 
-    public boolean isInStructure(IWorld world, String structure, BlockPos pos) {
-        RegistryKey<World> dimension = Tools.getDimensionKey(world);
+    public boolean isInStructure(LevelAccessor world, String structure, BlockPos pos) {
+        ResourceKey<Level> dimension = Tools.getDimensionKey(world);
         ChunkPos cp = new ChunkPos(pos);
         long cplong = ChunkPos.asLong(cp.x, cp.z);
         StructureCacheEntry entry = new StructureCacheEntry(structure, dimension, cplong);
@@ -37,13 +37,13 @@ public class StructureCache {
             return structureCache.get(entry);
         }
 
-        ServerWorld sw = Tools.getServerWorld(world);
-        IChunk chunk = sw.getChunk(pos.getX() >> 4, pos.getZ() >> 4, ChunkStatus.STRUCTURE_REFERENCES, false);
+        ServerLevel sw = Tools.getServerWorld(world);
+        ChunkAccess chunk = sw.getChunk(pos.getX() >> 4, pos.getZ() >> 4, ChunkStatus.STRUCTURE_REFERENCES, false);
         if (chunk == null) {
             return false;
         }
-        Map<Structure<?>, LongSet> references = chunk.getAllReferences();
-        for (Map.Entry<Structure<?>, LongSet> e : references.entrySet()) {
+        Map<StructureFeature<?>, LongSet> references = chunk.getAllReferences();
+        for (Map.Entry<StructureFeature<?>, LongSet> e : references.entrySet()) {
             LongSet longs = e.getValue();
             if (!longs.isEmpty()) {
                 structureCache.put(new StructureCacheEntry(e.getKey().getRegistryName().toString(), dimension, cplong), true);

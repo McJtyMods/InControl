@@ -1,6 +1,6 @@
-package mcjty.tools.varia;
+package mcjty.incontrol.tools.varia;
 
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
 
 import java.util.Random;
 

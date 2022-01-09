@@ -1,4 +1,4 @@
-package mcjty.tools.rules;
+package mcjty.incontrol.tools.rules;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -6,41 +6,40 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import mcjty.incontrol.ErrorHandler;
-import mcjty.tools.typed.AttributeMap;
-import mcjty.tools.typed.Key;
-import mcjty.tools.varia.LookAtTools;
-import mcjty.tools.varia.Tools;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.IAngerable;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.attributes.Attributes;
-import net.minecraft.entity.ai.attributes.ModifiableAttributeInstance;
-import net.minecraft.entity.item.ItemEntity;
-import net.minecraft.entity.monster.EndermanEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.EquipmentSlotType;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.JsonToNBT;
-import net.minecraft.potion.Effect;
-import net.minecraft.potion.EffectInstance;
-import net.minecraft.state.Property;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.Hand;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.Explosion;
-import net.minecraft.world.IWorld;
-import net.minecraft.world.World;
+import mcjty.incontrol.tools.typed.AttributeMap;
+import mcjty.incontrol.tools.typed.Key;
+import mcjty.incontrol.tools.varia.LookAtTools;
+import mcjty.incontrol.tools.varia.Tools;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.TagParser;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.NeutralMob;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.monster.EnderMan;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Explosion;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.Property;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
@@ -48,7 +47,7 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static mcjty.tools.rules.CommonRuleKeys.*;
+import static mcjty.incontrol.tools.rules.CommonRuleKeys.*;
 
 public class RuleBase<T extends RuleBase.EventGetter> {
 
@@ -109,9 +108,9 @@ public class RuleBase<T extends RuleBase.EventGetter> {
     public interface EventGetter {
         LivingEntity getEntityLiving();
 
-        PlayerEntity getPlayer();
+        Player getPlayer();
 
-        IWorld getWorld();
+        LevelAccessor getWorld();
 
         BlockPos getPosition();
     }
@@ -154,16 +153,16 @@ public class RuleBase<T extends RuleBase.EventGetter> {
             addHeldItem(map);
         }
         if (map.has(ACTION_ARMORBOOTS)) {
-            addArmorItem(map, ACTION_ARMORBOOTS, EquipmentSlotType.FEET);
+            addArmorItem(map, ACTION_ARMORBOOTS, EquipmentSlot.FEET);
         }
         if (map.has(ACTION_ARMORLEGS)) {
-            addArmorItem(map, ACTION_ARMORLEGS, EquipmentSlotType.LEGS);
+            addArmorItem(map, ACTION_ARMORLEGS, EquipmentSlot.LEGS);
         }
         if (map.has(ACTION_ARMORHELMET)) {
-            addArmorItem(map, ACTION_ARMORHELMET, EquipmentSlotType.HEAD);
+            addArmorItem(map, ACTION_ARMORHELMET, EquipmentSlot.HEAD);
         }
         if (map.has(ACTION_ARMORCHEST)) {
-            addArmorItem(map, ACTION_ARMORCHEST, EquipmentSlotType.CHEST);
+            addArmorItem(map, ACTION_ARMORCHEST, EquipmentSlot.CHEST);
         }
         if (map.has(ACTION_FIRE)) {
             addFireAction(map);
@@ -256,7 +255,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
     private void addAddStage(AttributeMap map, IModRuleCompatibilityLayer layer) {
         String stage = map.get(ACTION_ADDSTAGE);
         actions.add(event -> {
-            PlayerEntity player = event.getPlayer();
+            Player player = event.getPlayer();
             if (player != null) {
                 layer.addGameStage(player, stage);
             }
@@ -266,7 +265,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
     private void addRemoveStage(AttributeMap map, IModRuleCompatibilityLayer layer) {
         String stage = map.get(ACTION_REMOVESTAGE);
         actions.add(event -> {
-            PlayerEntity player = event.getPlayer();
+            Player player = event.getPlayer();
             if (player != null) {
                 layer.removeGameStage(player, stage);
             }
@@ -299,12 +298,12 @@ public class RuleBase<T extends RuleBase.EventGetter> {
     private void addDoMessageAction(AttributeMap map) {
         String message = map.get(ACTION_MESSAGE);
         actions.add(event -> {
-            PlayerEntity player = event.getPlayer();
+            Player player = event.getPlayer();
             if (player == null) {
                 player = event.getWorld().getNearestPlayer(event.getEntityLiving(), 100);
             }
             if (player != null) {
-                player.displayClientMessage(new StringTextComponent(message), false);
+                player.displayClientMessage(new TextComponent(message), false);
             }
         });
     }
@@ -318,9 +317,9 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         if (items.size() == 1) {
             ItemStack item = items.get(0).getRight();
             actions.add(event -> {
-                PlayerEntity player = event.getPlayer();
+                Player player = event.getPlayer();
                 if (player != null) {
-                    if (!player.inventory.add(item.copy())) {
+                    if (!player.getInventory().add(item.copy())) {
                         player.spawnAtLocation(item.copy(), 1.05f);
                     }
                 }
@@ -328,10 +327,10 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         } else {
             final float total = getTotal(items);
             actions.add(event -> {
-                PlayerEntity player = event.getPlayer();
+                Player player = event.getPlayer();
                 if (player != null) {
                     ItemStack item = getRandomItem(items, total);
-                    if (!player.inventory.add(item.copy())) {
+                    if (!player.getInventory().add(item.copy())) {
                         player.spawnAtLocation(item.copy(), 1.05f);
                     }
                 }
@@ -396,9 +395,9 @@ public class RuleBase<T extends RuleBase.EventGetter> {
 
         if (obj.has("look")) {
             return event -> {
-                RayTraceResult result = LookAtTools.getMovingObjectPositionFromPlayer(event.getWorld(), event.getPlayer(), false);
-                if (result instanceof BlockRayTraceResult) {
-                    return ((BlockRayTraceResult) result).getBlockPos().offset(offsetX, offsetY, offsetZ);
+                HitResult result = LookAtTools.getMovingObjectPositionFromPlayer(event.getWorld(), event.getPlayer(), false);
+                if (result instanceof BlockHitResult) {
+                    return ((BlockHitResult) result).getBlockPos().offset(offsetX, offsetY, offsetZ);
                 } else {
                     return event.getPosition().offset(offsetX, offsetY, offsetZ);
                 }
@@ -426,7 +425,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
             ErrorHandler.error("Item description '" + json + "' is not valid!");
             return;
         }
-        actions.add(event -> event.getPlayer().setItemInHand(Hand.MAIN_HAND, stack.copy()));
+        actions.add(event -> event.getPlayer().setItemInHand(InteractionHand.MAIN_HAND, stack.copy()));
     }
 
     private void addSetHeldAmountAction(AttributeMap map) {
@@ -448,7 +447,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
             actions.add(event -> {
                 ItemStack item = event.getPlayer().getMainHandItem();
                 item.setCount(finalSet);
-                event.getPlayer().setItemInHand(Hand.MAIN_HAND, item.copy());
+                event.getPlayer().setItemInHand(InteractionHand.MAIN_HAND, item.copy());
             });
         } else {
             int finalAdd = add;
@@ -461,7 +460,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
                     newCount = item.getMaxStackSize()-1;
                 }
                 item.setCount(newCount);
-                event.getPlayer().setItemInHand(Hand.MAIN_HAND, item.copy());
+                event.getPlayer().setItemInHand(InteractionHand.MAIN_HAND, item.copy());
             });
         }
     }
@@ -536,19 +535,19 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         if (items.size() == 1) {
             ItemStack item = items.get(0).getRight();
             actions.add(event -> {
-                if (event.getWorld() instanceof World) {
+                if (event.getWorld() instanceof Level) {
                     BlockPos pos = event.getPosition();
-                    ItemEntity entityItem = new ItemEntity((World)event.getWorld(), pos.getX(), pos.getY(), pos.getZ(), item.copy());
+                    ItemEntity entityItem = new ItemEntity((Level)event.getWorld(), pos.getX(), pos.getY(), pos.getZ(), item.copy());
                     event.getWorld().addFreshEntity(entityItem);
                 }
             });
         } else {
             final float total = getTotal(items);
             actions.add(event -> {
-                if (event.getWorld() instanceof World) {
+                if (event.getWorld() instanceof Level) {
                     BlockPos pos = event.getPosition();
                     ItemStack item = getRandomItem(items, total);
-                    ItemEntity entityItem = new ItemEntity((World)event.getWorld(), pos.getX(), pos.getY(), pos.getZ(), item.copy());
+                    ItemEntity entityItem = new ItemEntity((Level)event.getWorld(), pos.getX(), pos.getY(), pos.getZ(), item.copy());
                     event.getWorld().addFreshEntity(entityItem);
                 }
             });
@@ -600,8 +599,8 @@ public class RuleBase<T extends RuleBase.EventGetter> {
             if (pos != null) {
                 // @todo 1.15 check if this is right and what to do about finalSmoking
 //                event.getWorld().createExplosion(null, pos.getX() + .5, pos.getY() + .5, pos.getZ() + .5, finalStrength, finalFlaming, finalSmoking);
-                if (event.getWorld() instanceof World) {
-                    ((World)event.getWorld()).explode(null, pos.getX() + .5, pos.getY() + .5, pos.getZ() + .5, finalStrength, finalFlaming, Explosion.Mode.DESTROY);
+                if (event.getWorld() instanceof Level) {
+                    ((Level)event.getWorld()).explode(null, pos.getX() + .5, pos.getY() + .5, pos.getZ() + .5, finalStrength, finalFlaming, Explosion.BlockInteraction.DESTROY);
                 }
             }
         });
@@ -609,14 +608,14 @@ public class RuleBase<T extends RuleBase.EventGetter> {
 
 
     private void addPotionsAction(AttributeMap map) {
-        List<EffectInstance> effects = new ArrayList<>();
+        List<MobEffectInstance> effects = new ArrayList<>();
         for (String p : map.getList(ACTION_POTION)) {
             String[] splitted = StringUtils.split(p, ',');
             if (splitted == null || splitted.length != 3) {
                 ErrorHandler.error("Bad potion specifier '" + p + "'! Use <potion>,<duration>,<amplifier>");
                 continue;
             }
-            Effect potion = ForgeRegistries.POTIONS.getValue(new ResourceLocation(splitted[0]));
+            MobEffect potion = ForgeRegistries.MOB_EFFECTS.getValue(new ResourceLocation(splitted[0]));
             if (potion == null) {
                 ErrorHandler.error("Can't find potion '" + p + "'!");
                 continue;
@@ -630,14 +629,14 @@ public class RuleBase<T extends RuleBase.EventGetter> {
                 ErrorHandler.error("Bad duration or amplifier integer for '" + p + "'!");
                 continue;
             }
-            effects.add(new EffectInstance(potion, duration, amplifier));
+            effects.add(new MobEffectInstance(potion, duration, amplifier));
         }
         if (!effects.isEmpty()) {
             actions.add(event -> {
                 LivingEntity living = event.getEntityLiving();
                 if (living != null) {
-                    for (EffectInstance effect : effects) {
-                        EffectInstance neweffect = new EffectInstance(effect.getEffect(), effect.getDuration(), effect.getAmplifier());
+                    for (MobEffectInstance effect : effects) {
+                        MobEffectInstance neweffect = new MobEffectInstance(effect.getEffect(), effect.getDuration(), effect.getAmplifier());
                         living.addEffect(neweffect);
                     }
                 }
@@ -653,7 +652,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
             LivingEntity entityLiving = event.getEntityLiving();
             if (entityLiving != null) {
                 if (!entityLiving.getTags().contains("ctrlHealth")) {
-                    ModifiableAttributeInstance entityAttribute = entityLiving.getAttribute(Attributes.MAX_HEALTH);
+                    AttributeInstance entityAttribute = entityLiving.getAttribute(Attributes.MAX_HEALTH);
                     if (entityAttribute != null) {
                         double newMax = entityAttribute.getBaseValue() * m + a;
                         entityAttribute.setBaseValue(newMax);
@@ -672,7 +671,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
             LivingEntity entityLiving = event.getEntityLiving();
             if (entityLiving != null) {
                 if (!entityLiving.getTags().contains("ctrlSpeed")) {
-                    ModifiableAttributeInstance entityAttribute = entityLiving.getAttribute(Attributes.MOVEMENT_SPEED);
+                    AttributeInstance entityAttribute = entityLiving.getAttribute(Attributes.MOVEMENT_SPEED);
                     if (entityAttribute != null) {
                         double newMax = entityAttribute.getBaseValue() * m + a;
                         entityAttribute.setBaseValue(newMax);
@@ -703,7 +702,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
             LivingEntity entityLiving = event.getEntityLiving();
             if (entityLiving != null) {
                 if (!entityLiving.getTags().contains("ctrlDamage")) {
-                    ModifiableAttributeInstance entityAttribute = entityLiving.getAttribute(Attributes.ATTACK_DAMAGE);
+                    AttributeInstance entityAttribute = entityLiving.getAttribute(Attributes.ATTACK_DAMAGE);
                     if (entityAttribute != null) {
                         double newMax = entityAttribute.getBaseValue() * m + a;
                         entityAttribute.setBaseValue(newMax);
@@ -714,7 +713,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         });
     }
 
-    private void addArmorItem(AttributeMap map, Key<String> itemKey, EquipmentSlotType slot) {
+    private void addArmorItem(AttributeMap map, Key<String> itemKey, EquipmentSlot slot) {
         final List<Pair<Float, ItemStack>> items = getItemsWeighted(map.getList(itemKey));
         if (items.isEmpty()) {
             return;
@@ -748,14 +747,14 @@ public class RuleBase<T extends RuleBase.EventGetter> {
             actions.add(event -> {
                 LivingEntity entityLiving = event.getEntityLiving();
                 if (entityLiving != null) {
-                    if (entityLiving instanceof EndermanEntity) {
+                    if (entityLiving instanceof EnderMan) {
                         if (item.getItem() instanceof BlockItem) {
                             BlockItem b = (BlockItem) item.getItem();
                             // @todo 1.15 metadata
-                            ((EndermanEntity) entityLiving).setCarriedBlock(b.getBlock().defaultBlockState());
+                            ((EnderMan) entityLiving).setCarriedBlock(b.getBlock().defaultBlockState());
                         }
                     } else {
-                        entityLiving.setItemInHand(Hand.MAIN_HAND, item.copy());
+                        entityLiving.setItemInHand(InteractionHand.MAIN_HAND, item.copy());
                     }
                 }
             });
@@ -765,14 +764,14 @@ public class RuleBase<T extends RuleBase.EventGetter> {
                 LivingEntity entityLiving = event.getEntityLiving();
                 if (entityLiving != null) {
                     ItemStack item = getRandomItem(items, total);
-                    if (entityLiving instanceof EndermanEntity) {
+                    if (entityLiving instanceof EnderMan) {
                         if (item.getItem() instanceof BlockItem) {
                             BlockItem b = (BlockItem) item.getItem();
                             // @todo 1.15 metadata
-                            ((EndermanEntity) entityLiving).setCarriedBlock(b.getBlock().defaultBlockState());
+                            ((EnderMan) entityLiving).setCarriedBlock(b.getBlock().defaultBlockState());
                         }
                     } else {
-                        entityLiving.setItemInHand(Hand.MAIN_HAND, item.copy());
+                        entityLiving.setItemInHand(InteractionHand.MAIN_HAND, item.copy());
                     }
                 }
             });
@@ -782,9 +781,9 @@ public class RuleBase<T extends RuleBase.EventGetter> {
     private void addMobNBT(AttributeMap map) {
         String mobnbt = map.get(ACTION_MOBNBT);
         if (mobnbt != null) {
-            CompoundNBT tagCompound;
+            CompoundTag tagCompound;
             try {
-                tagCompound = JsonToNBT.parseTag(mobnbt);
+                tagCompound = TagParser.parseTag(mobnbt);
             } catch (CommandSyntaxException e) {
                 ErrorHandler.error("Bad NBT for mob!");
                 return;
@@ -801,7 +800,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         if (customName != null) {
             actions.add(event -> {
                 LivingEntity entityLiving = event.getEntityLiving();
-                entityLiving.setCustomName(new StringTextComponent(customName));
+                entityLiving.setCustomName(new TextComponent(customName));
             });
         }
     }
@@ -811,12 +810,12 @@ public class RuleBase<T extends RuleBase.EventGetter> {
             actions.add(event -> {
                 LivingEntity entityLiving = event.getEntityLiving();
                 if (entityLiving instanceof LivingEntity) {
-                    PlayerEntity player = event.getWorld().getNearestPlayer(entityLiving, 50);
+                    Player player = event.getWorld().getNearestPlayer(entityLiving, 50);
                     if (player != null) {
                         entityLiving.setLastHurtByMob(player);
                         entityLiving.setLastHurtMob(player);
-                        if (entityLiving instanceof IAngerable) {
-                            ((IAngerable) entityLiving).setTarget(player);
+                        if (entityLiving instanceof NeutralMob) {
+                            ((NeutralMob) entityLiving).setTarget(player);
                         }
                     }
                 }

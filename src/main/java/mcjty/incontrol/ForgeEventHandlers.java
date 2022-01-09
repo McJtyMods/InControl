@@ -4,13 +4,12 @@ import mcjty.incontrol.commands.ModCommands;
 import mcjty.incontrol.data.DataStorage;
 import mcjty.incontrol.rules.*;
 import mcjty.incontrol.spawner.SpawnerSystem;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.item.ItemEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraft.world.biome.MobSpawnInfo;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
@@ -18,13 +17,10 @@ import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.living.LivingExperienceDropEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import net.minecraftforge.event.entity.living.ZombieEvent;
-import net.minecraftforge.event.world.BiomeLoadingEvent;
-import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.logging.log4j.Level;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -47,7 +43,7 @@ public class ForgeEventHandlers {
         if (!(event.getEntity() instanceof LivingEntity)) {
             return;
         }
-        if (event.getEntity() instanceof PlayerEntity) {
+        if (event.getEntity() instanceof Player) {
             return;
         }
         if (event.getWorld().isClientSide) {
@@ -57,7 +53,7 @@ public class ForgeEventHandlers {
             if (rule.isOnJoin() && rule.match(event)) {
                 Event.Result result = rule.getResult();
                 if (debug) {
-                    InControl.setup.getLogger().log(Level.INFO, "Join Rule " + i + ": " + result
+                    InControl.setup.getLogger().log(org.apache.logging.log4j.Level.INFO, "Join Rule " + i + ": " + result
                             + " entity: " + event.getEntity().getName()
                             + " y: " + event.getEntity().blockPosition().getY());
                 }
@@ -79,7 +75,7 @@ public class ForgeEventHandlers {
         // We register spawns in a high priority event so that we take things that other mods
         // do into account
         if (!event.getWorld().isClientSide() && event.getEntity() instanceof LivingEntity) {
-            if (!(event.getEntity() instanceof PlayerEntity)) {
+            if (!(event.getEntity() instanceof Player)) {
                 InControl.setup.cache.registerSpawn(event.getWorld(), event.getEntity().getType());
             }
         }
@@ -96,7 +92,7 @@ public class ForgeEventHandlers {
                 SpawnerSystem.checkRules(event);
             }
 
-            if (event.world.dimension().equals(World.OVERWORLD)) {
+            if (event.world.dimension().equals(Level.OVERWORLD)) {
                 DataStorage.getData(event.world).tick(event.world);
             }
         }
@@ -110,7 +106,7 @@ public class ForgeEventHandlers {
             if (rule.match(event)) {
                 Event.Result result = rule.getResult();
                 if (debug) {
-                    InControl.setup.getLogger().log(Level.INFO, "Rule " + i + ": " + result
+                    InControl.setup.getLogger().log(org.apache.logging.log4j.Level.INFO, "Rule " + i + ": " + result
                             + " entity: " + event.getEntity().getName()
                             + " y: " + event.getY()
                             + " biome: " + event.getWorld().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ())).getRegistryName());
@@ -136,7 +132,7 @@ public class ForgeEventHandlers {
             if (rule.match(event)) {
                 Event.Result result = rule.getResult();
                 if (debug) {
-                    InControl.setup.getLogger().log(Level.INFO, "SummonAid " + i + ": " + result
+                    InControl.setup.getLogger().log(org.apache.logging.log4j.Level.INFO, "SummonAid " + i + ": " + result
                             + " entity: " + event.getEntity().getName()
                             + " y: " + event.getY()
                             + " biome: " + event.getWorld().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ())).getRegistryName());
@@ -152,43 +148,6 @@ public class ForgeEventHandlers {
 
     }
 
-    @SubscribeEvent(priority = EventPriority.HIGH)
-    public void onBiomeLoadingEvent(BiomeLoadingEvent event) {
-        // On 1.16.3 potentialspawn alone can't add spawns that are not supported by the biome. So we need to add all
-        // possible potential spawns to all possible biomes
-        for (PotentialSpawnRule rule : RulesManager.potentialSpawnRules) {
-            List<MobSpawnInfo.Spawners> spawnEntries = rule.getSpawnEntries();
-            for (MobSpawnInfo.Spawners entry : spawnEntries) {
-                event.getSpawns().addSpawn(entry.type.getCategory(), entry);
-            }
-        }
-    }
-
-    @SubscribeEvent(priority = EventPriority.LOWEST)
-    public void onPotentialSpawns(WorldEvent.PotentialSpawns event) {
-        int i = 0;
-        for (PotentialSpawnRule rule : RulesManager.potentialSpawnRules) {
-            if (rule.match(event)) {
-
-                // First remove mob entries if needed
-                for (int idx = event.getList().size() - 1; idx >= 0; idx--) {
-                    if (rule.getToRemoveMobs().contains(event.getList().get(idx).type)) {
-                        event.getList().remove(idx);
-                    }
-                }
-
-                List<MobSpawnInfo.Spawners> spawnEntries = rule.getSpawnEntries();
-                for (MobSpawnInfo.Spawners entry : spawnEntries) {
-                    if (debug) {
-                        InControl.setup.getLogger().log(Level.INFO, "Potential " + i + ": " + entry.type.getRegistryName().toString());
-                    }
-                    event.getList().add(entry);
-                }
-            }
-            i++;
-        }
-    }
-
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onLivingExperienceDrop(LivingExperienceDropEvent event) {
         int i = 0;
@@ -196,7 +155,7 @@ public class ForgeEventHandlers {
             if (rule.match(event)) {
                 Event.Result result = rule.getResult();
                 if (debug) {
-                    InControl.setup.getLogger().log(Level.INFO, "Experience Rule " + i + ": " + result
+                    InControl.setup.getLogger().log(org.apache.logging.log4j.Level.INFO, "Experience Rule " + i + ": " + result
                             + " entity: " + event.getEntity().getName()
                             + " y: " + event.getEntity().blockPosition().getY());
                 }
@@ -214,12 +173,12 @@ public class ForgeEventHandlers {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onLivingDrops(LivingDropsEvent event) {
-        World world = event.getEntity().getCommandSenderWorld();
+        Level world = event.getEntity().getCommandSenderWorld();
         int i = 0;
         for (LootRule rule : RulesManager.getFilteredLootRules(world)) {
             if (rule.match(event)) {
                 if (debug) {
-                    InControl.setup.getLogger().log(Level.INFO, "Loot " + i + ": "
+                    InControl.setup.getLogger().log(org.apache.logging.log4j.Level.INFO, "Loot " + i + ": "
                             + " entity: " + event.getEntity().getName());
                 }
 

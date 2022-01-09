@@ -3,9 +3,9 @@ package mcjty.incontrol.spawner;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import mcjty.incontrol.InControl;
-import net.minecraft.entity.EntityClassification;
-import net.minecraft.entity.EntityType;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.*;
@@ -14,7 +14,7 @@ public class SpawnerRule {
 
     private final List<EntityType<?>> mobs = new ArrayList<>();
     private final List<Float> weights = new ArrayList<>();
-    private final EntityClassification mobsFromBiome;
+    private final MobCategory mobsFromBiome;
 
     private final float maxWeight;
     private final float persecond;
@@ -54,7 +54,7 @@ public class SpawnerRule {
         return weights;
     }
 
-    public EntityClassification getMobsFromBiome() {
+    public MobCategory getMobsFromBiome() {
         return mobsFromBiome;
     }
 
@@ -119,7 +119,7 @@ public class SpawnerRule {
                 throw new RuntimeException("'mobsfrombiome' cannot be combined with manual mobs!");
             }
             String name = object.get("mobsfrombiome").getAsString().toLowerCase();
-            EntityClassification classification = EntityClassification.byName(name);
+            MobCategory classification = MobCategory.byName(name);
             if (classification == null) {
                 InControl.setup.getLogger().error("Unknown classification " + name + "!");
                 throw new RuntimeException("Unknown classification " + name + "!");
@@ -173,7 +173,7 @@ public class SpawnerRule {
     public static class Builder {
         private final List<EntityType<?>> mobs = new ArrayList<>();
         private final List<Float> weights = new ArrayList<>();
-        private EntityClassification mobsFromBiome = null;
+        private MobCategory mobsFromBiome = null;
 
         private final Set<String> phases = new HashSet<>();
         private float persecond = 1.0f;
@@ -192,7 +192,7 @@ public class SpawnerRule {
             return this;
         }
 
-        public Builder mobsFromBiome(EntityClassification mobsFromBiome) {
+        public Builder mobsFromBiome(MobCategory mobsFromBiome) {
             this.mobsFromBiome = mobsFromBiome;
             return this;
         }
