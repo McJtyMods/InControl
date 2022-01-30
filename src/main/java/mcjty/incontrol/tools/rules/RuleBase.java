@@ -125,13 +125,13 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         if (map.has(ACTION_REMOVESTAGE)) {
             addRemoveStage(map, layer);
         }
-        if (map.has(ACTION_HEALTHMULTIPLY) || map.has(ACTION_HEALTHADD)) {
+        if (map.has(ACTION_HEALTHSET) || map.has(ACTION_HEALTHMULTIPLY) || map.has(ACTION_HEALTHADD)) {
             addHealthAction(map);
         }
-        if (map.has(ACTION_SPEEDMULTIPLY) || map.has(ACTION_SPEEDADD)) {
+        if (map.has(ACTION_SPEEDSET) || map.has(ACTION_SPEEDMULTIPLY) || map.has(ACTION_SPEEDADD)) {
             addSpeedAction(map);
         }
-        if (map.has(ACTION_DAMAGEMULTIPLY) || map.has(ACTION_DAMAGEADD)) {
+        if (map.has(ACTION_DAMAGESET) || map.has(ACTION_DAMAGEMULTIPLY) || map.has(ACTION_DAMAGEADD)) {
             addDamageAction(map);
         }
         if (map.has(ACTION_SIZEMULTIPLY) || map.has(ACTION_SIZEADD)) {
@@ -646,40 +646,73 @@ public class RuleBase<T extends RuleBase.EventGetter> {
 
 
     private void addHealthAction(AttributeMap map) {
-        float m = map.has(ACTION_HEALTHMULTIPLY) ? map.get(ACTION_HEALTHMULTIPLY) : 1;
-        float a = map.has(ACTION_HEALTHADD) ? map.get(ACTION_HEALTHADD) : 0;
-        actions.add(event -> {
-            LivingEntity entityLiving = event.getEntityLiving();
-            if (entityLiving != null) {
-                if (!entityLiving.getTags().contains("ctrlHealth")) {
-                    AttributeInstance entityAttribute = entityLiving.getAttribute(Attributes.MAX_HEALTH);
-                    if (entityAttribute != null) {
-                        double newMax = entityAttribute.getBaseValue() * m + a;
-                        entityAttribute.setBaseValue(newMax);
-                        entityLiving.setHealth((float) newMax);
-                        entityLiving.addTag("ctrlHealth");
+        if (map.has(ACTION_HEALTHSET)) {
+            float s = map.get(ACTION_HEALTHSET);
+            actions.add(event -> {
+                LivingEntity entityLiving = event.getEntityLiving();
+                if (entityLiving != null) {
+                    if (!entityLiving.getTags().contains("ctrlHealth")) {
+                        AttributeInstance entityAttribute = entityLiving.getAttribute(Attributes.MAX_HEALTH);
+                        if (entityAttribute != null) {
+                            entityAttribute.setBaseValue(s);
+                            entityLiving.setHealth((float) (double) s);
+                            entityLiving.addTag("ctrlHealth");
+                        }
                     }
                 }
-            }
-        });
+            });
+        } else {
+            float m = map.has(ACTION_HEALTHMULTIPLY) ? map.get(ACTION_HEALTHMULTIPLY) : 1;
+            float a = map.has(ACTION_HEALTHADD) ? map.get(ACTION_HEALTHADD) : 0;
+            actions.add(event -> {
+                LivingEntity entityLiving = event.getEntityLiving();
+                if (entityLiving != null) {
+                    if (!entityLiving.getTags().contains("ctrlHealth")) {
+                        AttributeInstance entityAttribute = entityLiving.getAttribute(Attributes.MAX_HEALTH);
+                        if (entityAttribute != null) {
+                            double newMax = entityAttribute.getBaseValue() * m + a;
+                            entityAttribute.setBaseValue(newMax);
+                            entityLiving.setHealth((float) newMax);
+                            entityLiving.addTag("ctrlHealth");
+                        }
+                    }
+                }
+            });
+        }
     }
 
     private void addSpeedAction(AttributeMap map) {
-        float m = map.has(ACTION_SPEEDMULTIPLY) ? map.get(ACTION_SPEEDMULTIPLY) : 1;
-        float a = map.has(ACTION_SPEEDADD) ? map.get(ACTION_SPEEDADD) : 0;
-        actions.add(event -> {
-            LivingEntity entityLiving = event.getEntityLiving();
-            if (entityLiving != null) {
-                if (!entityLiving.getTags().contains("ctrlSpeed")) {
-                    AttributeInstance entityAttribute = entityLiving.getAttribute(Attributes.MOVEMENT_SPEED);
-                    if (entityAttribute != null) {
-                        double newMax = entityAttribute.getBaseValue() * m + a;
-                        entityAttribute.setBaseValue(newMax);
-                        entityLiving.addTag("ctrlSpeed");
+        if (map.has(ACTION_SPEEDSET)) {
+            float s = map.get(ACTION_SPEEDSET);
+            actions.add(event -> {
+                LivingEntity entityLiving = event.getEntityLiving();
+                if (entityLiving != null) {
+                    if (!entityLiving.getTags().contains("ctrlSpeed")) {
+                        AttributeInstance entityAttribute = entityLiving.getAttribute(Attributes.MOVEMENT_SPEED);
+                        if (entityAttribute != null) {
+                            entityAttribute.setBaseValue(s);
+                            entityLiving.addTag("ctrlSpeed");
+                        }
                     }
                 }
-            }
-        });
+            });
+        } else {
+            float m = map.has(ACTION_SPEEDMULTIPLY) ? map.get(ACTION_SPEEDMULTIPLY) : 1;
+            float a = map.has(ACTION_SPEEDADD) ? map.get(ACTION_SPEEDADD) : 0;
+            actions.add(event -> {
+                LivingEntity entityLiving = event.getEntityLiving();
+                if (entityLiving != null) {
+                    if (!entityLiving.getTags().contains("ctrlSpeed")) {
+                        AttributeInstance entityAttribute = entityLiving.getAttribute(Attributes.MOVEMENT_SPEED);
+                        if (entityAttribute != null) {
+                            double newMax = entityAttribute.getBaseValue() * m + a;
+                            entityAttribute.setBaseValue(newMax);
+                            entityLiving.addTag("ctrlSpeed");
+                        }
+                    }
+                }
+            });
+        }
     }
 
     private void addSizeActions(AttributeMap map) {
@@ -696,21 +729,37 @@ public class RuleBase<T extends RuleBase.EventGetter> {
     }
 
     private void addDamageAction(AttributeMap map) {
-        float m = map.has(ACTION_DAMAGEMULTIPLY) ? map.get(ACTION_DAMAGEMULTIPLY) : 1;
-        float a = map.has(ACTION_DAMAGEADD) ? map.get(ACTION_DAMAGEADD) : 0;
-        actions.add(event -> {
-            LivingEntity entityLiving = event.getEntityLiving();
-            if (entityLiving != null) {
-                if (!entityLiving.getTags().contains("ctrlDamage")) {
-                    AttributeInstance entityAttribute = entityLiving.getAttribute(Attributes.ATTACK_DAMAGE);
-                    if (entityAttribute != null) {
-                        double newMax = entityAttribute.getBaseValue() * m + a;
-                        entityAttribute.setBaseValue(newMax);
-                        entityLiving.addTag("ctrlDamage");
+        if (map.has(ACTION_DAMAGESET)) {
+            float s = map.get(ACTION_DAMAGESET);
+            actions.add(event -> {
+                LivingEntity entityLiving = event.getEntityLiving();
+                if (entityLiving != null) {
+                    if (!entityLiving.getTags().contains("ctrlDamage")) {
+                        AttributeInstance entityAttribute = entityLiving.getAttribute(Attributes.ATTACK_DAMAGE);
+                        if (entityAttribute != null) {
+                            entityAttribute.setBaseValue(s);
+                            entityLiving.addTag("ctrlDamage");
+                        }
                     }
                 }
-            }
-        });
+            });
+        } else {
+            float m = map.has(ACTION_DAMAGEMULTIPLY) ? map.get(ACTION_DAMAGEMULTIPLY) : 1;
+            float a = map.has(ACTION_DAMAGEADD) ? map.get(ACTION_DAMAGEADD) : 0;
+            actions.add(event -> {
+                LivingEntity entityLiving = event.getEntityLiving();
+                if (entityLiving != null) {
+                    if (!entityLiving.getTags().contains("ctrlDamage")) {
+                        AttributeInstance entityAttribute = entityLiving.getAttribute(Attributes.ATTACK_DAMAGE);
+                        if (entityAttribute != null) {
+                            double newMax = entityAttribute.getBaseValue() * m + a;
+                            entityAttribute.setBaseValue(newMax);
+                            entityLiving.addTag("ctrlDamage");
+                        }
+                    }
+                }
+            });
+        }
     }
 
     private void addArmorItem(AttributeMap map, Key<String> itemKey, EquipmentSlot slot) {
