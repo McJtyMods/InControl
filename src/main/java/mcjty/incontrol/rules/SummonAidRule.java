@@ -140,10 +140,13 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
 
                 .attribute(Attribute.create(ACTION_RESULT))
                 .attribute(Attribute.create(ACTION_MESSAGE))
+                .attribute(Attribute.create(ACTION_HEALTHSET))
                 .attribute(Attribute.create(ACTION_HEALTHMULTIPLY))
                 .attribute(Attribute.create(ACTION_HEALTHADD))
+                .attribute(Attribute.create(ACTION_SPEEDSET))
                 .attribute(Attribute.create(ACTION_SPEEDMULTIPLY))
                 .attribute(Attribute.create(ACTION_SPEEDADD))
+                .attribute(Attribute.create(ACTION_DAMAGESET))
                 .attribute(Attribute.create(ACTION_DAMAGEMULTIPLY))
                 .attribute(Attribute.create(ACTION_DAMAGEADD))
                 .attribute(Attribute.create(ACTION_SIZEMULTIPLY))

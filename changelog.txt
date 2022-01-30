@@ -1,3 +1,6 @@
+Upcoming:
+- Added new 'healthset', 'damageset', and 'speedset' keywords to specifically hard-set these attributes instead of modifying them
+
 1.16-5.2.2:
 - Attempt two to fix the spawner deadlock
 

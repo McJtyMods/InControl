@@ -71,10 +71,13 @@ public interface CommonRuleKeys {
     Key<String> ACTION_RESULT = Key.create(Type.STRING, "result");
     Key<Boolean> ACTION_CONTINUE = Key.create(Type.BOOLEAN, "continue");
 
+    Key<Float> ACTION_HEALTHSET = Key.create(Type.FLOAT, "healthset");
     Key<Float> ACTION_HEALTHMULTIPLY = Key.create(Type.FLOAT, "healthmultiply");
     Key<Float> ACTION_HEALTHADD = Key.create(Type.FLOAT, "healthadd");
+    Key<Float> ACTION_SPEEDSET = Key.create(Type.FLOAT, "speedset");
     Key<Float> ACTION_SPEEDMULTIPLY = Key.create(Type.FLOAT, "speedmultiply");
     Key<Float> ACTION_SPEEDADD = Key.create(Type.FLOAT, "speedadd");
+    Key<Float> ACTION_DAMAGESET = Key.create(Type.FLOAT, "damageset");
     Key<Float> ACTION_DAMAGEMULTIPLY = Key.create(Type.FLOAT, "damagemultiply");
     Key<Float> ACTION_DAMAGEADD = Key.create(Type.FLOAT, "damageadd");
     Key<Float> ACTION_SIZEMULTIPLY = Key.create(Type.FLOAT, "sizemultiply");
