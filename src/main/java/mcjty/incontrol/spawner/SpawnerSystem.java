@@ -357,7 +357,8 @@ public class SpawnerSystem {
     private static BlockPos getValidSpawnablePosition(LevelReader worldIn, int x, int z, int minHeight, int maxHeight) {
         int height = worldIn.getHeight(Heightmap.Types.WORLD_SURFACE, x, z) + 1;
         height = Math.min(height, maxHeight);
-        height = random.nextInt(height + 1);
+        int minBuildHeight = worldIn.getMinBuildHeight();
+        height = random.nextInt(height + 1 - minBuildHeight) + minBuildHeight;
         BlockPos blockPos = new BlockPos(x, height-1, z);
         while (blockPos.getY() >= minHeight && !isValidSpawnPos(worldIn, blockPos)) {
             blockPos = blockPos.below();
