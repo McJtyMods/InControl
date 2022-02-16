@@ -2,6 +2,7 @@ package mcjty.incontrol;
 
 import mcjty.incontrol.commands.ModCommands;
 import mcjty.incontrol.data.DataStorage;
+import mcjty.incontrol.data.Statistics;
 import mcjty.incontrol.rules.*;
 import mcjty.incontrol.spawner.SpawnerSystem;
 import net.minecraft.entity.LivingEntity;
@@ -62,8 +63,10 @@ public class ForgeEventHandlers {
                             + " y: " + event.getEntity().blockPosition().getY());
                 }
                 if (result != Event.Result.DENY) {
+                    Statistics.addSpawnStat(i, false);
                     rule.action(event);
                 } else {
+                    Statistics.addSpawnStat(i, true);
                     event.setCanceled(true);
                 }
                 if (!rule.isDoContinue()) {
@@ -119,7 +122,10 @@ public class ForgeEventHandlers {
                     event.setResult(result);
                 }
                 if (result != Event.Result.DENY) {
+                    Statistics.addSpawnStat(i, false);
                     rule.action(event);
+                } else {
+                    Statistics.addSpawnStat(i, true);
                 }
                 if (!rule.isDoContinue()) {
                     return;

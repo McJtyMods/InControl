@@ -2,6 +2,7 @@ package mcjty.incontrol.spawner;
 
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.data.DataStorage;
+import mcjty.incontrol.data.Statistics;
 import mcjty.tools.varia.Box;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.*;
@@ -61,13 +62,15 @@ public class SpawnerSystem {
         if (spawnerData.counter <= 0) {
             spawnerData.counter = 20;
             DataStorage data = DataStorage.getData(world);
+            int i = 0;
             for (SpawnerRule rule : spawnerData.rules) {
-                executeRule(rule, world, data);
+                executeRule(i, rule, world, data);
+                i++;
             }
         }
     }
 
-    private static void executeRule(SpawnerRule rule, World world, DataStorage data) {
+    private static void executeRule(int ruleNr, SpawnerRule rule, World world, DataStorage data) {
         if (!data.getPhases().containsAll(rule.getPhases())) {
             return;
         }
@@ -105,7 +108,7 @@ public class SpawnerSystem {
         }
 
         if (rule.getMobsFromBiome() != null) {
-            executeRule(rule, (ServerWorld) world, null, rule.getMobsFromBiome(), 1.0f);
+            executeRule(ruleNr, rule, (ServerWorld) world, null, rule.getMobsFromBiome(), 1.0f);
         } else {
             List<EntityType<?>> mobs = rule.getMobs();
             List<Float> weights = rule.getWeights();
@@ -113,13 +116,13 @@ public class SpawnerSystem {
             for (int i = 0; i < mobs.size(); i++) {
                 EntityType<?> mob = mobs.get(i);
                 float weight = i < weights.size() ? weights.get(i) : 1.0f;
-                executeRule(rule, (ServerWorld) world, mob, null, weight / maxWeight);
+                executeRule(ruleNr, rule, (ServerWorld) world, mob, null, weight / maxWeight);
             }
         }
     }
 
     // Note: if 'mob' is null we spawn a random mob from the biome spawn list
-    private static void executeRule(SpawnerRule rule, ServerWorld world, @Nullable EntityType<?> mob, @Nullable EntityClassification classification, float weight) {
+    private static void executeRule(int ruleNr, SpawnerRule rule, ServerWorld world, @Nullable EntityType<?> mob, @Nullable EntityClassification classification, float weight) {
         if (random.nextFloat() > rule.getPersecond()) {
             return;
         }
@@ -163,6 +166,7 @@ public class SpawnerSystem {
                                     if (canSpawn(world, mobEntity, conditions) && isNotColliding(world, mobEntity, conditions)) {
                                         mobEntity.finalizeSpawn(world, world.getCurrentDifficultyAt(entity.blockPosition()), SpawnReason.NATURAL, null, null);
                                         world.addFreshEntityWithPassengers(entity);
+                                        Statistics.addSpawnerStat(ruleNr);
                                         spawned++;
                                         if (spawned >= desiredAmount) {
                                             return;

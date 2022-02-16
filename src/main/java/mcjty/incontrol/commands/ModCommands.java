@@ -15,6 +15,8 @@ public class ModCommands {
                         .then(CmdKillMobs.register(dispatcher))
                         .then(CmdReload.register(dispatcher))
                         .then(CmdShowMobs.register(dispatcher))
+                        .then(CmdShowStats.register(dispatcher))
+                        .then(CmdClearStats.register(dispatcher))
                         .then(CmdList.register(dispatcher))
                         .then(CmdInfo.register(dispatcher))
                         .then(CmdDays.register(dispatcher))
