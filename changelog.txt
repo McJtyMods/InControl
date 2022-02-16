@@ -3,6 +3,7 @@ Upcoming:
 - Fixed a problem with the spawner and negative heights
 - Added protection to spawner so it doesn't try forever to find a suitable place to spawn a mob in case the box has a weird shape
 - New statistics for spawn.json and spawner.json. These can help with debugging. Use the commands /incontrol showstats or /incontrol clearstats
+- Fixed a problem where setting the current day (using /incontrol days) didn't get persisted correctly
 
 1.18-6.0.0:
 - First port to 1.18

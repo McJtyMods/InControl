@@ -53,6 +53,7 @@ public class DataStorage extends SavedData {
 
     public void setDaycounter(int daycounter) {
         this.daycounter = daycounter;
+        setDirty();
     }
 
     public Boolean getDay() {
