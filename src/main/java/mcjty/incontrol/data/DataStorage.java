@@ -45,6 +45,7 @@ public class DataStorage extends WorldSavedData {
 
     public void setDaycounter(int daycounter) {
         this.daycounter = daycounter;
+        setDirty();
     }
 
     public Boolean getDay() {
