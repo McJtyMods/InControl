@@ -1,5 +1,6 @@
 Upcoming:
 - Added new 'healthset', 'damageset', and 'speedset' keywords to specifically hard-set these attributes instead of modifying them
+- Added protection to spawner so it doesn't try forever to find a suitable place to spawn a mob in case the box has a weird shape
 
 1.16-5.2.2:
 - Attempt two to fix the spawner deadlock

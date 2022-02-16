@@ -283,46 +283,14 @@ public class SpawnerSystem {
         BlockPos pos = box.randomPos(random);
         double sqdist = pos.distSqr(player.blockPosition().getX(), player.blockPosition().getY(), player.blockPosition().getZ(), true);
 
+        int counter = 100;
         while (sqdist < mindist * mindist || sqdist > maxdist * maxdist) {
             pos = box.randomPos(random);
             sqdist = pos.distSqr(player.blockPosition().getX(), player.blockPosition().getY(), player.blockPosition().getZ(), true);
-        }
-
-        return pos;
-    }
-
-    public static void main(String[] args) {
-        int cnt = 0;
-        for (;;) {
-            int min = random.nextInt(100) + 10;
-            int max = min + random.nextInt(90) + 5;
-            SpawnerConditions conditions = SpawnerConditions.create()
-                    .distance(min, max)
-                    .build();
-            getRandomPositionInBoxTest(conditions);
-            cnt++;
-            if (cnt % 10 == 0) {
-                System.out.print("."); System.out.flush();
+            counter--;
+            if (counter <= 0) {
+                return null;
             }
-        }
-    }
-
-    private static BlockPos getRandomPositionInBoxTest(SpawnerConditions conditions) {
-        int mindist = conditions.getMindist();
-        int maxdist = conditions.getMaxdist();
-        BlockPos playerPos = new BlockPos(random.nextInt(2000) - 1000, random.nextInt(1024)-256, random.nextInt(2000) - 1000);
-        Box box = createSpawnBox(conditions, playerPos);
-
-        if (!box.isValid()) {
-            return null;
-        }
-
-        BlockPos pos = box.randomPos(random);
-        double sqdist = pos.distSqr(playerPos.getX(), playerPos.getY(), playerPos.getZ(), true);
-
-        while (sqdist < mindist * mindist || sqdist > maxdist * maxdist) {
-            pos = box.randomPos(random);
-            sqdist = pos.distSqr(playerPos.getX(), playerPos.getY(), playerPos.getZ(), true);
         }
 
         return pos;
