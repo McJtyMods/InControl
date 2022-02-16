@@ -284,9 +284,14 @@ public class SpawnerSystem {
         BlockPos pos = box.randomPos(random);
         double sqdist = pos.distSqr(player.blockPosition().getX(), player.blockPosition().getY(), player.blockPosition().getZ(), true);
 
+        int counter = 100;
         while (sqdist < mindist * mindist || sqdist > maxdist * maxdist) {
             pos = box.randomPos(random);
             sqdist = pos.distSqr(player.blockPosition().getX(), player.blockPosition().getY(), player.blockPosition().getZ(), true);
+            counter--;
+            if (counter <= 0) {
+                return null;
+            }
         }
 
         return pos;
