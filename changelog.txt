@@ -1,3 +1,6 @@
+Upcoming:
+- Fixed illegal limits on minheight/maxheight. They can now go negative
+
 1.18-6.0.1:
 - Added new 'healthset', 'damageset', and 'speedset' keywords to specifically hard-set these attributes instead of modifying them
 - Fixed a problem with the spawner and negative heights

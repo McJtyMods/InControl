@@ -70,12 +70,6 @@ public class SpawnerConditions {
         if (maxdist < 0) {
             throw new IllegalStateException("Invalid negative maximum distance!");
         }
-        if (minheight < 0) {
-            throw new IllegalStateException("Invalid negative minimum height!");
-        }
-        if (maxheight < 0) {
-            throw new IllegalStateException("Invalid negative maximum height!");
-        }
         if (mindist >= maxdist) {
             throw new IllegalStateException("Minimum distance must be smaller then maximum!");
         }
