@@ -1,6 +1,7 @@
 package mcjty.incontrol.rules;
 
 import com.google.gson.JsonElement;
+import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.compat.ModRuleCompatibilityLayer;
 import mcjty.incontrol.data.PhaseTools;
@@ -180,7 +181,7 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
         if (element == null) {
             return null;
         } else {
-            AttributeMap map = FACTORY.parse(element);
+            AttributeMap map = FACTORY.parse(element, "summonaid.json");
             return new SummonAidRule(map, PhaseTools.getPhases(element));
         }
     }
@@ -189,8 +190,7 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
     protected void addActions(AttributeMap map, IModRuleCompatibilityLayer layer) {
         super.addActions(map, layer);
 
-        if (map.has(ACTION_RESULT)) {
-            String br = map.get(ACTION_RESULT);
+        map.consumeOrElse(ACTION_RESULT, br -> {
             if ("default".equals(br) || br.startsWith("def")) {
                 this.result = Event.Result.DEFAULT;
             } else if ("allow".equals(br) || "true".equals(br)) {
@@ -198,36 +198,21 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
             } else {
                 this.result = Event.Result.DENY;
             }
-        } else {
-            this.result = Event.Result.DEFAULT;
-        }
+        }, () -> {
+            this.result = null;
+        });
 
-        if (map.has(ACTION_ANGRY)) {
-            addAngryAction(map);
-        }
-        if (map.has(ACTION_HELDITEM)) {
-            addHeldItem(map);
-        }
-        if (map.has(ACTION_ARMORBOOTS)) {
-            addArmorItem(map, ACTION_ARMORBOOTS, EquipmentSlotType.FEET);
-        }
-        if (map.has(ACTION_ARMORLEGS)) {
-            addArmorItem(map, ACTION_ARMORLEGS, EquipmentSlotType.LEGS);
-        }
-        if (map.has(ACTION_ARMORHELMET)) {
-            addArmorItem(map, ACTION_ARMORHELMET, EquipmentSlotType.HEAD);
-        }
-        if (map.has(ACTION_ARMORCHEST)) {
-            addArmorItem(map, ACTION_ARMORCHEST, EquipmentSlotType.CHEST);
-        }
-        if (map.has(ACTION_POTION)) {
-            addPotionsAction(map);
+        if (!map.isEmpty()) {
+            StringBuffer buffer = new StringBuffer();
+            map.getKeys().forEach(k -> buffer.append(k).append(' '));
+            ErrorHandler.error("Invalid keywords in additional spawn rule: " + buffer);
         }
     }
 
-    private void addPotionsAction(AttributeMap map) {
+    @Override
+    protected void addPotionsAction(List<String> potions) {
         List<EffectInstance> effects = new ArrayList<>();
-        for (String p : map.getList(ACTION_POTION)) {
+        for (String p : potions) {
             String[] splitted = StringUtils.split(p, ',');
             if (splitted == null || splitted.length != 3) {
                 InControl.setup.getLogger().log(Level.ERROR, "Bad potion specifier '" + p + "'! Use <potion>,<duration>,<amplifier>");
@@ -260,8 +245,9 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
         }
     }
 
-    private void addArmorItem(AttributeMap map, Key<String> itemKey, EquipmentSlotType slot) {
-        List<Pair<Float, ItemStack>> items = getItemsWeighted(map.getList(itemKey));
+    @Override
+    protected void addArmorItem(List<String> itemList, EquipmentSlotType slot) {
+        List<Pair<Float, ItemStack>> items = getItemsWeighted(itemList);
         if (items.isEmpty()) {
             return;
         }
@@ -281,8 +267,9 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
         }
     }
 
-    private void addHeldItem(AttributeMap map) {
-        List<Pair<Float, ItemStack>> items = getItemsWeighted(map.getList(ACTION_HELDITEM));
+    @Override
+    protected void addHeldItem(List<String> heldItems) {
+        List<Pair<Float, ItemStack>> items = getItemsWeighted(heldItems);
         if (items.isEmpty()) {
             return;
         }
@@ -302,8 +289,9 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
         }
     }
 
-    private void addAngryAction(AttributeMap map) {
-        if (map.get(ACTION_ANGRY)) {
+    @Override
+    protected void addAngryAction(boolean angry) {
+        if (angry) {
             actions.add(event -> {
                 ZombieEntity helper = event.getZombieHelper();
                 PlayerEntity player = event.getWorld().getNearestPlayer(helper, 50);
@@ -312,57 +300,6 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
                 }
             });
         }
-    }
-
-    private void addHealthAction(AttributeMap map) {
-        float m = map.has(ACTION_HEALTHMULTIPLY) ? map.get(ACTION_HEALTHMULTIPLY) : 1;
-        float a = map.has(ACTION_HEALTHADD) ? map.get(ACTION_HEALTHADD) : 0;
-        actions.add(event -> {
-            ZombieEntity helper = event.getZombieHelper();
-            ModifiableAttributeInstance entityAttribute = helper.getAttribute(Attributes.MAX_HEALTH);
-            if (entityAttribute != null) {
-                double newMax = entityAttribute.getBaseValue() * m + a;
-                entityAttribute.setBaseValue(newMax);
-                helper.setHealth((float) newMax);
-            }
-        });
-    }
-
-    private void addSpeedAction(AttributeMap map) {
-        float m = map.has(ACTION_SPEEDMULTIPLY) ? map.get(ACTION_SPEEDMULTIPLY) : 1;
-        float a = map.has(ACTION_SPEEDADD) ? map.get(ACTION_SPEEDADD) : 0;
-        actions.add(event -> {
-            ZombieEntity helper = event.getZombieHelper();
-            ModifiableAttributeInstance entityAttribute = helper.getAttribute(Attributes.MOVEMENT_SPEED);
-            if (entityAttribute != null) {
-                double newMax = entityAttribute.getBaseValue() * m + a;
-                entityAttribute.setBaseValue(newMax);
-            }
-        });
-    }
-
-    private void addSizeActions(AttributeMap map) {
-        InControl.setup.getLogger().log(Level.WARN, "Mob resizing not implemented yet!");
-        float m = map.has(ACTION_SIZEMULTIPLY) ? map.get(ACTION_SIZEMULTIPLY) : 1;
-        float a = map.has(ACTION_SIZEADD) ? map.get(ACTION_SIZEADD) : 0;
-        actions.add(event -> {
-            ZombieEntity helper = event.getZombieHelper();
-            // Not implemented yet
-//                entityLiving.setSize(entityLiving.width * m + a, entityLiving.height * m + a);
-        });
-    }
-
-    private void addDamageAction(AttributeMap map) {
-        float m = map.has(ACTION_DAMAGEMULTIPLY) ? map.get(ACTION_DAMAGEMULTIPLY) : 1;
-        float a = map.has(ACTION_DAMAGEADD) ? map.get(ACTION_DAMAGEADD) : 0;
-        actions.add(event -> {
-            ZombieEntity helper = event.getZombieHelper();
-            ModifiableAttributeInstance entityAttribute = helper.getAttribute(Attributes.ATTACK_DAMAGE);
-            if (entityAttribute != null) {
-                double newMax = entityAttribute.getBaseValue() * m + a;
-                entityAttribute.setBaseValue(newMax);
-            }
-        });
     }
 
     public boolean match(ZombieEvent.SummonAidEvent event) {

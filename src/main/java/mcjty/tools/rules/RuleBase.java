@@ -7,7 +7,6 @@ import com.google.gson.JsonParser;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import mcjty.incontrol.ErrorHandler;
 import mcjty.tools.typed.AttributeMap;
-import mcjty.tools.typed.Key;
 import mcjty.tools.varia.LookAtTools;
 import mcjty.tools.varia.Tools;
 import net.minecraft.block.Block;
@@ -58,7 +57,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         this.logger = logger;
     }
 
-    private static Random rnd = new Random();
+    private static final Random rnd = new Random();
 
     protected List<Pair<Float, ItemStack>> getItemsWeighted(List<String> itemNames) {
         List<Pair<Float, ItemStack>> items = new ArrayList<>();
@@ -116,98 +115,49 @@ public class RuleBase<T extends RuleBase.EventGetter> {
     }
 
     protected void addActions(AttributeMap map, IModRuleCompatibilityLayer layer) {
-        if (map.has(ACTION_COMMAND)) {
-            addCommandAction(map);
-        }
-        if (map.has(ACTION_ADDSTAGE)) {
-            addAddStage(map, layer);
-        }
-        if (map.has(ACTION_REMOVESTAGE)) {
-            addRemoveStage(map, layer);
-        }
-        if (map.has(ACTION_HEALTHSET) || map.has(ACTION_HEALTHMULTIPLY) || map.has(ACTION_HEALTHADD)) {
-            addHealthAction(map);
-        }
-        if (map.has(ACTION_SPEEDSET) || map.has(ACTION_SPEEDMULTIPLY) || map.has(ACTION_SPEEDADD)) {
-            addSpeedAction(map);
-        }
-        if (map.has(ACTION_DAMAGESET) || map.has(ACTION_DAMAGEMULTIPLY) || map.has(ACTION_DAMAGEADD)) {
-            addDamageAction(map);
-        }
-        if (map.has(ACTION_SIZEMULTIPLY) || map.has(ACTION_SIZEADD)) {
-            addSizeActions(map);
-        }
-        if (map.has(ACTION_POTION)) {
-            addPotionsAction(map);
-        }
-        if (map.has(ACTION_ANGRY)) {
-            addAngryAction(map);
-        }
-        if (map.has(ACTION_CUSTOMNAME)) {
-            addCustomName(map);
-        }
-        if (map.has(ACTION_MOBNBT)) {
-            addMobNBT(map);
-        }
-        if (map.has(ACTION_HELDITEM)) {
-            addHeldItem(map);
-        }
-        if (map.has(ACTION_ARMORBOOTS)) {
-            addArmorItem(map, ACTION_ARMORBOOTS, EquipmentSlotType.FEET);
-        }
-        if (map.has(ACTION_ARMORLEGS)) {
-            addArmorItem(map, ACTION_ARMORLEGS, EquipmentSlotType.LEGS);
-        }
-        if (map.has(ACTION_ARMORHELMET)) {
-            addArmorItem(map, ACTION_ARMORHELMET, EquipmentSlotType.HEAD);
-        }
-        if (map.has(ACTION_ARMORCHEST)) {
-            addArmorItem(map, ACTION_ARMORCHEST, EquipmentSlotType.CHEST);
-        }
-        if (map.has(ACTION_FIRE)) {
-            addFireAction(map);
-        }
-        if (map.has(ACTION_EXPLOSION)) {
-            addExplosionAction(map);
-        }
-        if (map.has(ACTION_CLEAR)) {
-            addClearAction(map);
-        }
-        if (map.has(ACTION_DAMAGE)) {
-            addDoDamageAction(map);
-        }
-        if (map.has(ACTION_MESSAGE)) {
-            addDoMessageAction(map);
-        }
-        if (map.has(ACTION_GIVE)) {
-            addGiveAction(map);
-        }
-        if (map.has(ACTION_DROP)) {
-            addDropAction(map);
-        }
-        if (map.has(ACTION_SETBLOCK)) {
-            addSetBlockAction(map);
-        }
-        if (map.has(ACTION_SETHELDITEM)) {
-            addSetHeldItemAction(map);
-        }
-        if (map.has(ACTION_SETHELDAMOUNT)) {
-            addSetHeldAmountAction(map);
-        }
-        if (map.has(ACTION_SETSTATE)) {
+        map.consume(ACTION_COMMAND, this::addCommandAction);
+        map.consume(ACTION_ADDSTAGE, stage -> addAddStage(stage, layer));
+        map.consume(ACTION_REMOVESTAGE, stage -> addRemoveStage(stage, layer));
+        map.consume(ACTION_HEALTHSET, this::addHealthSetAction);
+        map.consume2(ACTION_HEALTHMULTIPLY, ACTION_HEALTHADD, this::addHealthAction);
+        map.consume(ACTION_SPEEDSET, this::addSpeedSetAction);
+        map.consume2(ACTION_SPEEDMULTIPLY, ACTION_SPEEDADD, this::addSpeedAction);
+        map.consume(ACTION_DAMAGESET, this::addDamageSetAction);
+        map.consume2(ACTION_DAMAGEMULTIPLY, ACTION_DAMAGEADD, this::addDamageAction);
+        map.consume2(ACTION_SIZEMULTIPLY, ACTION_SIZEADD, this::addSizeActions);
+        map.consumeAsList(ACTION_POTION, this::addPotionsAction);
+        map.consume(ACTION_ANGRY, this::addAngryAction);
+        map.consume(ACTION_CUSTOMNAME, this::addCustomName);
+        map.consume(ACTION_MOBNBT, this::addMobNBT);
+        map.consumeAsList(ACTION_HELDITEM, this::addHeldItem);
+        map.consumeAsList(ACTION_ARMORBOOTS, items -> addArmorItem(items, EquipmentSlotType.FEET));
+        map.consumeAsList(ACTION_ARMORLEGS, items -> addArmorItem(items, EquipmentSlotType.LEGS));
+        map.consumeAsList(ACTION_ARMORHELMET, items -> addArmorItem(items, EquipmentSlotType.HEAD));
+        map.consumeAsList(ACTION_ARMORCHEST, items -> addArmorItem(items, EquipmentSlotType.CHEST));
+        map.consume(ACTION_FIRE, this::addFireAction);
+        map.consume(ACTION_EXPLOSION, this::addExplosionAction);
+        map.consume(ACTION_CLEAR, this::addClearAction);
+        map.consume(ACTION_DAMAGE, this::addDoDamageAction);
+        map.consume(ACTION_MESSAGE, this::addDoMessageAction);
+        map.consumeAsList(ACTION_GIVE, this::addGiveAction);
+        map.consumeAsList(ACTION_DROP, this::addDropAction);
+        map.consume2(ACTION_SETBLOCK, BLOCKOFFSET, this::addSetBlockAction);
+        map.consume(ACTION_SETHELDITEM, this::addSetHeldItemAction);
+        map.consume(ACTION_SETHELDAMOUNT, this::addSetHeldAmountAction);
+        map.consume(ACTION_SETSTATE, state -> {
             if (layer.hasEnigmaScript()) {
-                addStateAction(map, layer);
+                addStateAction(state, layer);
             } else {
                 logger.warn("EnigmaScript is missing: this action cannot work!");
             }
-        }
-        if (map.has(ACTION_SETPSTATE)) {
+        });
+        map.consume(ACTION_SETPSTATE, state -> {
             if (layer.hasEnigmaScript()) {
-                addPStateAction(map, layer);
+                addPStateAction(state, layer);
             } else {
                 logger.warn("EnigmaScript is missing: this action cannot work!");
             }
-        }
+        });
     }
 
     private static Map<String, DamageSource> damageMap = null;
@@ -242,8 +192,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         }
     }
 
-    private void addCommandAction(AttributeMap map) {
-        String command = map.get(ACTION_COMMAND);
+    private void addCommandAction(String command) {
         actions.add(event -> {
             // @todo 1.15 new command system
 //            MinecraftServer server = event.getWorld().getServer();
@@ -252,8 +201,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         });
     }
 
-    private void addAddStage(AttributeMap map, IModRuleCompatibilityLayer layer) {
-        String stage = map.get(ACTION_ADDSTAGE);
+    private void addAddStage(String stage, IModRuleCompatibilityLayer layer) {
         actions.add(event -> {
             PlayerEntity player = event.getPlayer();
             if (player != null) {
@@ -262,8 +210,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         });
     }
 
-    private void addRemoveStage(AttributeMap map, IModRuleCompatibilityLayer layer) {
-        String stage = map.get(ACTION_REMOVESTAGE);
+    private void addRemoveStage(String stage, IModRuleCompatibilityLayer layer) {
         actions.add(event -> {
             PlayerEntity player = event.getPlayer();
             if (player != null) {
@@ -272,8 +219,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         });
     }
 
-    private void addDoDamageAction(AttributeMap map) {
-        String damage = map.get(ACTION_DAMAGE);
+    private void addDoDamageAction(String damage) {
         createDamageMap();
         String[] split = StringUtils.split(damage, "=");
         DamageSource source = damageMap.get(split[0]);
@@ -295,8 +241,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         });
     }
 
-    private void addDoMessageAction(AttributeMap map) {
-        String message = map.get(ACTION_MESSAGE);
+    private void addDoMessageAction(String message) {
         actions.add(event -> {
             PlayerEntity player = event.getPlayer();
             if (player == null) {
@@ -309,8 +254,8 @@ public class RuleBase<T extends RuleBase.EventGetter> {
     }
 
 
-    private void addGiveAction(AttributeMap map) {
-        final List<Pair<Float, ItemStack>> items = getItemsWeighted(map.getList(ACTION_GIVE));
+    private void addGiveAction(List<String> itemList) {
+        final List<Pair<Float, ItemStack>> items = getItemsWeighted(itemList);
         if (items.isEmpty()) {
             return;
         }
@@ -338,8 +283,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         }
     }
 
-    private void addStateAction(AttributeMap map, IModRuleCompatibilityLayer layer) {
-        String s = map.get(ACTION_SETSTATE);
+    private void addStateAction(String s, IModRuleCompatibilityLayer layer) {
         String[] split = StringUtils.split(s, '=');
         String state;
         String value;
@@ -355,8 +299,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         actions.add(event -> layer.setState(event.getWorld(), finalState, finalValue));
     }
 
-    private void addPStateAction(AttributeMap map, IModRuleCompatibilityLayer layer) {
-        String s = map.get(ACTION_SETPSTATE);
+    private void addPStateAction(String s, IModRuleCompatibilityLayer layer) {
         String[] split = StringUtils.split(s, '=');
         String state;
         String value;
@@ -407,8 +350,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         return event -> event.getPosition().offset(offsetX, offsetY, offsetZ);
     }
 
-    private void addSetHeldItemAction(AttributeMap map) {
-        String json = map.get(ACTION_SETHELDITEM);
+    private void addSetHeldItemAction(String json) {
         JsonParser parser = new JsonParser();
         JsonElement element = parser.parse(json);
         ItemStack stack;
@@ -428,8 +370,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         actions.add(event -> event.getPlayer().setItemInHand(Hand.MAIN_HAND, stack.copy()));
     }
 
-    private void addSetHeldAmountAction(AttributeMap map) {
-        String amount = map.get(ACTION_SETHELDAMOUNT);
+    private void addSetHeldAmountAction(String amount) {
         int add = 0;
         int set = -1;
         if (amount.startsWith("+")) {
@@ -457,7 +398,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
                 if (newCount < 0) {
                     newCount = 0;
                 } else if (newCount >= item.getMaxStackSize()) {
-                    newCount = item.getMaxStackSize()-1;
+                    newCount = item.getMaxStackSize() - 1;
                 }
                 item.setCount(newCount);
                 event.getPlayer().setItemInHand(Hand.MAIN_HAND, item.copy());
@@ -465,15 +406,14 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         }
     }
 
-    private void addSetBlockAction(AttributeMap map) {
+    private void addSetBlockAction(String json, String bo) {
         Function<EventGetter, BlockPos> posFunction;
-        if (map.has(BLOCKOFFSET)) {
-            posFunction = parseOffset(map.get(BLOCKOFFSET));
+        if (bo != null) {
+            posFunction = parseOffset(bo);
         } else {
             posFunction = EventGetter::getPosition;
         }
 
-        String json = map.get(ACTION_SETBLOCK);
         JsonParser parser = new JsonParser();
         JsonElement element = parser.parse(json);
         if (element.isJsonPrimitive()) {
@@ -527,8 +467,8 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         }
     }
 
-    private void addDropAction(AttributeMap map) {
-        final List<Pair<Float, ItemStack>> items = getItemsWeighted(map.getList(ACTION_DROP));
+    private void addDropAction(List<String> itemList) {
+        final List<Pair<Float, ItemStack>> items = getItemsWeighted(itemList);
         if (items.isEmpty()) {
             return;
         }
@@ -555,8 +495,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
     }
 
 
-    private void addClearAction(AttributeMap map) {
-        Boolean clear = map.get(ACTION_CLEAR);
+    private void addClearAction(boolean clear) {
         if (clear) {
             actions.add(event -> {
                 LivingEntity living = event.getEntityLiving();
@@ -567,8 +506,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         }
     }
 
-    private void addFireAction(AttributeMap map) {
-        Integer fireAction = map.get(ACTION_FIRE);
+    private void addFireAction(int fireAction) {
         actions.add(event -> {
             LivingEntity living = event.getEntityLiving();
             if (living != null) {
@@ -578,8 +516,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         });
     }
 
-    private void addExplosionAction(AttributeMap map) {
-        String fireAction = map.get(ACTION_EXPLOSION);
+    private void addExplosionAction(String fireAction) {
         String[] split = StringUtils.split(fireAction, ",");
         float strength = 1.0f;
         boolean flaming = false;
@@ -607,9 +544,9 @@ public class RuleBase<T extends RuleBase.EventGetter> {
     }
 
 
-    private void addPotionsAction(AttributeMap map) {
+    protected void addPotionsAction(List<String> potions) {
         List<EffectInstance> effects = new ArrayList<>();
-        for (String p : map.getList(ACTION_POTION)) {
+        for (String p : potions) {
             String[] splitted = StringUtils.split(p, ',');
             if (splitted == null || splitted.length != 3) {
                 ErrorHandler.error("Bad potion specifier '" + p + "'! Use <potion>,<duration>,<amplifier>");
@@ -644,81 +581,78 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         }
     }
 
-
-    private void addHealthAction(AttributeMap map) {
-        if (map.has(ACTION_HEALTHSET)) {
-            float s = map.get(ACTION_HEALTHSET);
-            actions.add(event -> {
-                LivingEntity entityLiving = event.getEntityLiving();
-                if (entityLiving != null) {
-                    if (!entityLiving.getTags().contains("ctrlHealth")) {
-                        ModifiableAttributeInstance entityAttribute = entityLiving.getAttribute(Attributes.MAX_HEALTH);
-                        if (entityAttribute != null) {
-                            entityAttribute.setBaseValue(s);
-                            entityLiving.setHealth((float) (double) s);
-                            entityLiving.addTag("ctrlHealth");
-                        }
+    private void addHealthSetAction(float s) {
+        actions.add(event -> {
+            LivingEntity entityLiving = event.getEntityLiving();
+            if (entityLiving != null) {
+                if (!entityLiving.getTags().contains("ctrlHealth")) {
+                    ModifiableAttributeInstance entityAttribute = entityLiving.getAttribute(Attributes.MAX_HEALTH);
+                    if (entityAttribute != null) {
+                        entityAttribute.setBaseValue(s);
+                        entityLiving.setHealth((float) (double) s);
+                        entityLiving.addTag("ctrlHealth");
                     }
                 }
-            });
-        } else {
-            float m = map.has(ACTION_HEALTHMULTIPLY) ? map.get(ACTION_HEALTHMULTIPLY) : 1;
-            float a = map.has(ACTION_HEALTHADD) ? map.get(ACTION_HEALTHADD) : 0;
-            actions.add(event -> {
-                LivingEntity entityLiving = event.getEntityLiving();
-                if (entityLiving != null) {
-                    if (!entityLiving.getTags().contains("ctrlHealth")) {
-                        ModifiableAttributeInstance entityAttribute = entityLiving.getAttribute(Attributes.MAX_HEALTH);
-                        if (entityAttribute != null) {
-                            double newMax = entityAttribute.getBaseValue() * m + a;
-                            entityAttribute.setBaseValue(newMax);
-                            entityLiving.setHealth((float) newMax);
-                            entityLiving.addTag("ctrlHealth");
-                        }
-                    }
-                }
-            });
-        }
+            }
+        });
     }
 
-    private void addSpeedAction(AttributeMap map) {
-        if (map.has(ACTION_SPEEDSET)) {
-            float s = map.get(ACTION_SPEEDSET);
-            actions.add(event -> {
-                LivingEntity entityLiving = event.getEntityLiving();
-                if (entityLiving != null) {
-                    if (!entityLiving.getTags().contains("ctrlSpeed")) {
-                        ModifiableAttributeInstance entityAttribute = entityLiving.getAttribute(Attributes.MOVEMENT_SPEED);
-                        if (entityAttribute != null) {
-                            entityAttribute.setBaseValue(s);
-                            entityLiving.addTag("ctrlSpeed");
-                        }
+    private void addHealthAction(Float m, Float a) {
+        float finalM = m == null ? 1 : m;
+        float finalA = a == null ? 0 : a;
+        actions.add(event -> {
+            LivingEntity entityLiving = event.getEntityLiving();
+            if (entityLiving != null) {
+                if (!entityLiving.getTags().contains("ctrlHealth")) {
+                    ModifiableAttributeInstance entityAttribute = entityLiving.getAttribute(Attributes.MAX_HEALTH);
+                    if (entityAttribute != null) {
+                        double newMax = entityAttribute.getBaseValue() * finalM + finalA;
+                        entityAttribute.setBaseValue(newMax);
+                        entityLiving.setHealth((float) newMax);
+                        entityLiving.addTag("ctrlHealth");
                     }
                 }
-            });
-        } else {
-            float m = map.has(ACTION_SPEEDMULTIPLY) ? map.get(ACTION_SPEEDMULTIPLY) : 1;
-            float a = map.has(ACTION_SPEEDADD) ? map.get(ACTION_SPEEDADD) : 0;
-            actions.add(event -> {
-                LivingEntity entityLiving = event.getEntityLiving();
-                if (entityLiving != null) {
-                    if (!entityLiving.getTags().contains("ctrlSpeed")) {
-                        ModifiableAttributeInstance entityAttribute = entityLiving.getAttribute(Attributes.MOVEMENT_SPEED);
-                        if (entityAttribute != null) {
-                            double newMax = entityAttribute.getBaseValue() * m + a;
-                            entityAttribute.setBaseValue(newMax);
-                            entityLiving.addTag("ctrlSpeed");
-                        }
-                    }
-                }
-            });
-        }
+            }
+        });
     }
 
-    private void addSizeActions(AttributeMap map) {
+    private void addSpeedSetAction(float s) {
+        actions.add(event -> {
+            LivingEntity entityLiving = event.getEntityLiving();
+            if (entityLiving != null) {
+                if (!entityLiving.getTags().contains("ctrlSpeed")) {
+                    ModifiableAttributeInstance entityAttribute = entityLiving.getAttribute(Attributes.MOVEMENT_SPEED);
+                    if (entityAttribute != null) {
+                        entityAttribute.setBaseValue(s);
+                        entityLiving.addTag("ctrlSpeed");
+                    }
+                }
+            }
+        });
+    }
+
+    private void addSpeedAction(Float m, Float a) {
+        float finalM = m == null ? 1 : m;
+        float finalA = a == null ? 0 : a;
+        actions.add(event -> {
+            LivingEntity entityLiving = event.getEntityLiving();
+            if (entityLiving != null) {
+                if (!entityLiving.getTags().contains("ctrlSpeed")) {
+                    ModifiableAttributeInstance entityAttribute = entityLiving.getAttribute(Attributes.MOVEMENT_SPEED);
+                    if (entityAttribute != null) {
+                        double newMax = entityAttribute.getBaseValue() * finalM + finalA;
+                        entityAttribute.setBaseValue(newMax);
+                        entityLiving.addTag("ctrlSpeed");
+                    }
+                }
+            }
+        });
+    }
+
+    private void addSizeActions(Float m, Float a) {
+        m = m == null ? 1 : m;
+        a = a == null ? 0 : a;
         ErrorHandler.error("Mob resizing not implemented yet!");
-        float m = map.has(ACTION_SIZEMULTIPLY) ? map.get(ACTION_SIZEMULTIPLY) : 1;
-        float a = map.has(ACTION_SIZEADD) ? map.get(ACTION_SIZEADD) : 0;
         actions.add(event -> {
             LivingEntity entityLiving = event.getEntityLiving();
             if (entityLiving != null) {
@@ -728,42 +662,41 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         });
     }
 
-    private void addDamageAction(AttributeMap map) {
-        if (map.has(ACTION_DAMAGESET)) {
-            float s = map.get(ACTION_DAMAGESET);
-            actions.add(event -> {
-                LivingEntity entityLiving = event.getEntityLiving();
-                if (entityLiving != null) {
-                    if (!entityLiving.getTags().contains("ctrlDamage")) {
-                        ModifiableAttributeInstance entityAttribute = entityLiving.getAttribute(Attributes.ATTACK_DAMAGE);
-                        if (entityAttribute != null) {
-                            entityAttribute.setBaseValue(s);
-                            entityLiving.addTag("ctrlDamage");
-                        }
+    private void addDamageSetAction(float s) {
+        actions.add(event -> {
+            LivingEntity entityLiving = event.getEntityLiving();
+            if (entityLiving != null) {
+                if (!entityLiving.getTags().contains("ctrlDamage")) {
+                    ModifiableAttributeInstance entityAttribute = entityLiving.getAttribute(Attributes.ATTACK_DAMAGE);
+                    if (entityAttribute != null) {
+                        entityAttribute.setBaseValue(s);
+                        entityLiving.addTag("ctrlDamage");
                     }
                 }
-            });
-        } else {
-            float m = map.has(ACTION_DAMAGEMULTIPLY) ? map.get(ACTION_DAMAGEMULTIPLY) : 1;
-            float a = map.has(ACTION_DAMAGEADD) ? map.get(ACTION_DAMAGEADD) : 0;
-            actions.add(event -> {
-                LivingEntity entityLiving = event.getEntityLiving();
-                if (entityLiving != null) {
-                    if (!entityLiving.getTags().contains("ctrlDamage")) {
-                        ModifiableAttributeInstance entityAttribute = entityLiving.getAttribute(Attributes.ATTACK_DAMAGE);
-                        if (entityAttribute != null) {
-                            double newMax = entityAttribute.getBaseValue() * m + a;
-                            entityAttribute.setBaseValue(newMax);
-                            entityLiving.addTag("ctrlDamage");
-                        }
-                    }
-                }
-            });
-        }
+            }
+        });
     }
 
-    private void addArmorItem(AttributeMap map, Key<String> itemKey, EquipmentSlotType slot) {
-        final List<Pair<Float, ItemStack>> items = getItemsWeighted(map.getList(itemKey));
+    private void addDamageAction(Float m, Float a) {
+        float finalM = m == null ? 1 : m;
+        float finalA = a == null ? 0 : a;
+        actions.add(event -> {
+            LivingEntity entityLiving = event.getEntityLiving();
+            if (entityLiving != null) {
+                if (!entityLiving.getTags().contains("ctrlDamage")) {
+                    ModifiableAttributeInstance entityAttribute = entityLiving.getAttribute(Attributes.ATTACK_DAMAGE);
+                    if (entityAttribute != null) {
+                        double newMax = entityAttribute.getBaseValue() * finalM + finalA;
+                        entityAttribute.setBaseValue(newMax);
+                        entityLiving.addTag("ctrlDamage");
+                    }
+                }
+            }
+        });
+    }
+
+    protected void addArmorItem(List<String> itemList, EquipmentSlotType slot) {
+        final List<Pair<Float, ItemStack>> items = getItemsWeighted(itemList);
         if (items.isEmpty()) {
             return;
         }
@@ -786,8 +719,8 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         }
     }
 
-    private void addHeldItem(AttributeMap map) {
-        final List<Pair<Float, ItemStack>> items = getItemsWeighted(map.getList(ACTION_HELDITEM));
+    protected void addHeldItem(List<String> heldItems) {
+        final List<Pair<Float, ItemStack>> items = getItemsWeighted(heldItems);
         if (items.isEmpty()) {
             return;
         }
@@ -827,8 +760,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         }
     }
 
-    private void addMobNBT(AttributeMap map) {
-        String mobnbt = map.get(ACTION_MOBNBT);
+    private void addMobNBT(String mobnbt) {
         if (mobnbt != null) {
             CompoundNBT tagCompound;
             try {
@@ -844,8 +776,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         }
     }
 
-    private void addCustomName(AttributeMap map) {
-        String customName = map.get(ACTION_CUSTOMNAME);
+    private void addCustomName(String customName) {
         if (customName != null) {
             actions.add(event -> {
                 LivingEntity entityLiving = event.getEntityLiving();
@@ -854,8 +785,8 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         }
     }
 
-    private void addAngryAction(AttributeMap map) {
-        if (map.get(ACTION_ANGRY)) {
+    protected void addAngryAction(boolean angry) {
+        if (angry) {
             actions.add(event -> {
                 LivingEntity entityLiving = event.getEntityLiving();
                 if (entityLiving instanceof LivingEntity) {

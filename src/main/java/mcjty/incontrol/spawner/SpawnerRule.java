@@ -2,6 +2,7 @@ package mcjty.incontrol.spawner;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.InControl;
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntityType;
@@ -23,6 +24,24 @@ public class SpawnerRule {
     private final int maxSpawn;
     private final Set<String> phases;
     private final SpawnerConditions conditions;
+
+    enum Cmd {
+        MOB,
+        WEIGHTS,
+        MOBSFROMBIOME,
+        PHASE,
+        PERSECOND,
+        ATTEMPTS,
+        AMOUNT,
+        CONDITIONS
+    }
+
+    private static final Map<String, Cmd> COMMANDS = new HashMap<>();
+    static {
+        for (Cmd cmd : Cmd.values()) {
+            COMMANDS.put(cmd.name().toLowerCase(), cmd);
+        }
+    }
 
     private SpawnerRule(Builder builder) {
         mobs.addAll(builder.mobs);
@@ -91,73 +110,88 @@ public class SpawnerRule {
     }
 
     public static void parse(JsonObject object, Builder builder) {
-        if (object.has("mob")) {
-            JsonElement mob = object.get("mob");
-            if (mob.isJsonArray()) {
-                for (JsonElement element : mob.getAsJsonArray()) {
-                    addMob(builder, element);
+        for (Map.Entry<String, JsonElement> pair : object.entrySet()) {
+            String attr = pair.getKey();
+            Cmd cmd = COMMANDS.get(attr);
+            if (cmd == null) {
+                ErrorHandler.error("Invalid command '" + attr + "' for spawner rule!");
+                return;
+            }
+
+            switch (cmd) {
+                case MOB: {
+                    JsonElement mob = object.get("mob");
+                    if (mob.isJsonArray()) {
+                        for (JsonElement element : mob.getAsJsonArray()) {
+                            addMob(builder, element);
+                        }
+                    } else {
+                        addMob(builder, mob);
+                    }
+                    break;
                 }
-            } else {
-                addMob(builder, mob);
-            }
-        }
-
-        if (object.has("weights")) {
-            JsonElement weights = object.get("weights");
-            if (weights.isJsonArray()) {
-                for (JsonElement element : weights.getAsJsonArray()) {
-                    builder.weights(element.getAsFloat());
+                case WEIGHTS: {
+                    JsonElement weights = object.get("weights");
+                    if (weights.isJsonArray()) {
+                        for (JsonElement element : weights.getAsJsonArray()) {
+                            builder.weights(element.getAsFloat());
+                        }
+                    } else {
+                        builder.weights(weights.getAsFloat());
+                    }
+                    break;
                 }
-            } else {
-                builder.weights(weights.getAsFloat());
-            }
-        }
-
-        if (object.has("mobsfrombiome")) {
-            if (!builder.mobs.isEmpty()) {
-                InControl.setup.getLogger().error("'mobsfrombiome' cannot be combined with manual mobs!");
-                throw new RuntimeException("'mobsfrombiome' cannot be combined with manual mobs!");
-            }
-            String name = object.get("mobsfrombiome").getAsString().toLowerCase();
-            EntityClassification classification = EntityClassification.byName(name);
-            if (classification == null) {
-                InControl.setup.getLogger().error("Unknown classification " + name + "!");
-                throw new RuntimeException("Unknown classification " + name + "!");
-            }
-            builder.mobsFromBiome(classification);
-        }
-
-        if (object.has("phase")) {
-            JsonElement phaseElement = object.get("phase");
-            if (phaseElement.isJsonArray()) {
-                for (JsonElement element : phaseElement.getAsJsonArray()) {
-                    builder.phases(element.getAsString());
+                case MOBSFROMBIOME: {
+                    if (!builder.mobs.isEmpty()) {
+                        InControl.setup.getLogger().error("'mobsfrombiome' cannot be combined with manual mobs!");
+                        throw new RuntimeException("'mobsfrombiome' cannot be combined with manual mobs!");
+                    }
+                    String name = object.get("mobsfrombiome").getAsString().toLowerCase();
+                    EntityClassification classification = EntityClassification.byName(name);
+                    if (classification == null) {
+                        InControl.setup.getLogger().error("Unknown classification " + name + "!");
+                        throw new RuntimeException("Unknown classification " + name + "!");
+                    }
+                    builder.mobsFromBiome(classification);
+                    break;
                 }
-            } else {
-                builder.phases(phaseElement.getAsString());
+                case PHASE: {
+                    JsonElement phaseElement = object.get("phase");
+                    if (phaseElement.isJsonArray()) {
+                        for (JsonElement element : phaseElement.getAsJsonArray()) {
+                            builder.phases(element.getAsString());
+                        }
+                    } else {
+                        builder.phases(phaseElement.getAsString());
+                    }
+                    break;
+                }
+                case PERSECOND: {
+                    builder.perSecond(object.getAsJsonPrimitive("persecond").getAsFloat());
+                    break;
+                }
+                case ATTEMPTS: {
+                    builder.attempts(object.getAsJsonPrimitive("attempts").getAsInt());
+                    break;
+                }
+                case AMOUNT: {
+                    JsonObject amount = object.getAsJsonObject("amount");
+                    if (amount.has("minimum")) {
+                        builder.minSpawn(amount.getAsJsonPrimitive("minimum").getAsInt());
+                    }
+                    if (amount.has("maximum")) {
+                        builder.maxSpawn(amount.getAsJsonPrimitive("maximum").getAsInt());
+                    }
+                    break;
+                }
+                case CONDITIONS: {
+                    JsonObject conditions = object.getAsJsonObject("conditions");
+                    SpawnerConditions.Builder conditionsBuilder = SpawnerConditions.create();
+                    SpawnerConditions.parse(conditions, conditionsBuilder);
+                    builder.conditions(conditionsBuilder.build());
+                    break;
+                }
             }
-        }
-
-        if (object.has("persecond")) {
-            builder.perSecond(object.getAsJsonPrimitive("persecond").getAsFloat());
-        }
-        if (object.has("attempts")) {
-            builder.attempts(object.getAsJsonPrimitive("attempts").getAsInt());
-        }
-        if (object.has("amount")) {
-            JsonObject amount = object.getAsJsonObject("amount");
-            if (amount.has("minimum")) {
-                builder.minSpawn(amount.getAsJsonPrimitive("minimum").getAsInt());
-            }
-            if (amount.has("maximum")) {
-                builder.maxSpawn(amount.getAsJsonPrimitive("maximum").getAsInt());
-            }
-        }
-        if (object.has("conditions")) {
-            JsonObject conditions = object.getAsJsonObject("conditions");
-            SpawnerConditions.Builder conditionsBuilder = SpawnerConditions.create();
-            SpawnerConditions.parse(conditions, conditionsBuilder);
-            builder.conditions(conditionsBuilder.build());
         }
     }
 

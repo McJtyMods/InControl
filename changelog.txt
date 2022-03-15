@@ -1,3 +1,6 @@
+Upcoming:
+- Added checks everywhere to see if invalid keywords are being used. When a keyword is not recognized you will get a warning
+
 1.16-5.2.3:
 - Added new 'healthset', 'damageset', and 'speedset' keywords to specifically hard-set these attributes instead of modifying them
 - Added protection to spawner so it doesn't try forever to find a suitable place to spawn a mob in case the box has a weird shape

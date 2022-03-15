@@ -2,14 +2,13 @@ package mcjty.incontrol.spawner;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import mcjty.incontrol.ErrorHandler;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class SpawnerConditions {
 
@@ -33,6 +32,35 @@ public class SpawnerConditions {
     private final int maxneutral;
 
     public static final SpawnerConditions DEFAULT = SpawnerConditions.create().build();
+
+    enum Cmd {
+        DIMENSION,
+        MINDIST,
+        MAXDIST,
+        MINDAYCOUNT,
+        MAXDAYCOUNT,
+        MINHEIGHT,
+        MAXHEIGHT,
+        INWATER,
+        INLAVA,
+        INLIQUID,
+        INAIR,
+        NORESTRICTIONS,
+        MAXTHIS,
+        MAXLOCAL,
+        MAXTOTAL,
+        MAXHOSTILE,
+        MAXPEACEFUL,
+        MAXNEUTRAL
+    }
+
+    private static final Map<String, Cmd> CONDITIONS = new HashMap<>();
+    static {
+        for (Cmd cmd : Cmd.values()) {
+            CONDITIONS.put(cmd.name().toLowerCase(), cmd);
+        }
+    }
+
 
     private SpawnerConditions(Builder builder) {
         dimensions = new HashSet<>(builder.dimensions);
@@ -161,68 +189,97 @@ public class SpawnerConditions {
     }
 
     public static void parse(JsonObject object, Builder builder) {
-        if (object.has("dimension")) {
-            JsonElement dimension = object.get("dimension");
-            if (dimension.isJsonArray()) {
-                for (JsonElement element : dimension.getAsJsonArray()) {
-                    RegistryKey<World> key = RegistryKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(element.getAsString()));
-                    builder.dimensions(key);
-                }
-            } else {
-                RegistryKey<World> key = RegistryKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(dimension.getAsString()));
-                builder.dimensions(key);
+        for (Map.Entry<String, JsonElement> entry : object.entrySet()) {
+            String attr = entry.getKey();
+            Cmd cmd = CONDITIONS.get(attr);
+            if (cmd == null) {
+                ErrorHandler.error("Invalid condition '" + attr + "' for spawner rule!");
+                return;
             }
-        }
-        if (object.has("mindist")) {
-            builder.distance(object.getAsJsonPrimitive("mindist").getAsInt(), builder.maxdist);
-        }
-        if (object.has("maxdist")) {
-            builder.distance(builder.mindist, object.getAsJsonPrimitive("maxdist").getAsInt());
-        }
-        if (object.has("mindaycount")) {
-            builder.daycount(object.getAsJsonPrimitive("mindaycount").getAsInt(), builder.maxdaycount);
-        }
-        if (object.has("maxdaycount")) {
-            builder.daycount(builder.mindaycount, object.getAsJsonPrimitive("maxdaycount").getAsInt());
-        }
-        if (object.has("minheight")) {
-            builder.height(object.getAsJsonPrimitive("minheight").getAsInt(), builder.maxheight);
-        }
-        if (object.has("maxheight")) {
-            builder.height(builder.minheight, object.getAsJsonPrimitive("maxheight").getAsInt());
-        }
-        if (object.has("inwater")) {
-            builder.inWater(object.getAsJsonPrimitive("inwater").getAsBoolean());
-        }
-        if (object.has("inlava")) {
-            builder.inLava(object.getAsJsonPrimitive("inlava").getAsBoolean());
-        }
-        if (object.has("inliquid")) {
-            builder.inLiquid(object.getAsJsonPrimitive("inliquid").getAsBoolean());
-        }
-        if (object.has("inair")) {
-            builder.inAir(object.getAsJsonPrimitive("inair").getAsBoolean());
-        }
-        if (object.has("norestrictions")) {
-            builder.noRestrictions(object.getAsJsonPrimitive("norestrictions").getAsBoolean());
-        }
-        if (object.has("maxthis")) {
-            builder.maxThis(object.getAsJsonPrimitive("maxthis").getAsInt());
-        }
-        if (object.has("maxlocal")) {
-            builder.maxLocal(object.getAsJsonPrimitive("maxlocal").getAsInt());
-        }
-        if (object.has("maxtotal")) {
-            builder.maxTotal(object.getAsJsonPrimitive("maxtotal").getAsInt());
-        }
-        if (object.has("maxhostile")) {
-            builder.maxHostile(object.getAsJsonPrimitive("maxhostile").getAsInt());
-        }
-        if (object.has("maxpeaceful")) {
-            builder.maxPeaceful(object.getAsJsonPrimitive("maxpeaceful").getAsInt());
-        }
-        if (object.has("maxneutral")) {
-            builder.maxNeutral(object.getAsJsonPrimitive("maxneutral").getAsInt());
+
+            switch (cmd) {
+                case DIMENSION: {
+                    JsonElement value = object.get(attr);
+                    if (value.isJsonArray()) {
+                        for (JsonElement element : value.getAsJsonArray()) {
+                            RegistryKey<World> key = RegistryKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(element.getAsString()));
+                            builder.dimensions(key);
+                        }
+                    } else {
+                        RegistryKey<World> key = RegistryKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(value.getAsString()));
+                        builder.dimensions(key);
+                    }
+                    break;
+                }
+                case MINDIST: {
+                    builder.distance(object.getAsJsonPrimitive("mindist").getAsInt(), builder.maxdist);
+                    break;
+                }
+                case MAXDIST: {
+                    builder.distance(builder.mindist, object.getAsJsonPrimitive("maxdist").getAsInt());
+                    break;
+                }
+                case MINDAYCOUNT: {
+                    builder.daycount(object.getAsJsonPrimitive("mindaycount").getAsInt(), builder.maxdaycount);
+                    break;
+                }
+                case MAXDAYCOUNT: {
+                    builder.daycount(builder.mindaycount, object.getAsJsonPrimitive("maxdaycount").getAsInt());
+                    break;
+                }
+                case MINHEIGHT: {
+                    builder.height(object.getAsJsonPrimitive("minheight").getAsInt(), builder.maxheight);
+                    break;
+                }
+                case MAXHEIGHT: {
+                    builder.height(builder.minheight, object.getAsJsonPrimitive("maxheight").getAsInt());
+                    break;
+                }
+                case INWATER: {
+                    builder.inWater(object.getAsJsonPrimitive("inwater").getAsBoolean());
+                    break;
+                }
+                case INLAVA: {
+                    builder.inLava(object.getAsJsonPrimitive("inlava").getAsBoolean());
+                    break;
+                }
+                case INLIQUID: {
+                    builder.inLiquid(object.getAsJsonPrimitive("inliquid").getAsBoolean());
+                    break;
+                }
+                case INAIR: {
+                    builder.inAir(object.getAsJsonPrimitive("inair").getAsBoolean());
+                    break;
+                }
+                case NORESTRICTIONS: {
+                    builder.noRestrictions(object.getAsJsonPrimitive("norestrictions").getAsBoolean());
+                    break;
+                }
+                case MAXTHIS: {
+                    builder.maxThis(object.getAsJsonPrimitive("maxthis").getAsInt());
+                    break;
+                }
+                case MAXLOCAL: {
+                    builder.maxLocal(object.getAsJsonPrimitive("maxlocal").getAsInt());
+                    break;
+                }
+                case MAXTOTAL: {
+                    builder.maxTotal(object.getAsJsonPrimitive("maxtotal").getAsInt());
+                    break;
+                }
+                case MAXHOSTILE: {
+                    builder.maxHostile(object.getAsJsonPrimitive("maxhostile").getAsInt());
+                    break;
+                }
+                case MAXPEACEFUL: {
+                    builder.maxPeaceful(object.getAsJsonPrimitive("maxpeaceful").getAsInt());
+                    break;
+                }
+                case MAXNEUTRAL: {
+                    builder.maxNeutral(object.getAsJsonPrimitive("maxneutral").getAsInt());
+                    break;
+                }
+            }
         }
     }
 

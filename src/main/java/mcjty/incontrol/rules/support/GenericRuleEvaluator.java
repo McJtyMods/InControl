@@ -4,10 +4,10 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import mcjty.incontrol.data.DataStorage;
 import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.compat.ModRuleCompatibilityLayer;
+import mcjty.incontrol.data.DataStorage;
 import mcjty.incontrol.spawner.SpawnerSystem;
 import mcjty.tools.rules.CommonRuleEvaluator;
 import mcjty.tools.rules.IEventQuery;
@@ -26,7 +26,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.IWorld;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
-import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 
@@ -51,73 +50,29 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
     protected void addChecks(AttributeMap map) {
         super.addChecks(map);
 
-        if (map.has(HOSTILE)) {
-            addHostileCheck(map);
-        }
-        if (map.has(PASSIVE)) {
-            addPassiveCheck(map);
-        }
-
-        if (map.has(CANSPAWNHERE)) {
-            addCanSpawnHereCheck(map);
-        }
-        if (map.has(NOTCOLLIDING)) {
-            addNotCollidingCheck(map);
-        }
-        if (map.has(SPAWNER)) {
-            addSpawnerCheck(map);
-        }
-        if (map.has(INCONTROL)) {
-            addInControlCheck(map);
-        }
-
-        if (map.has(MOB)) {
-            addMobsCheck(map);
-        }
-        if (map.has(PLAYER)) {
-            addPlayerCheck(map);
-        }
-        if (map.has(REALPLAYER)) {
-            addRealPlayerCheck(map);
-        }
-        if (map.has(FAKEPLAYER)) {
-            addFakePlayerCheck(map);
-        }
-        if (map.has(EXPLOSION)) {
-            addExplosionCheck(map);
-        }
-        if (map.has(PROJECTILE)) {
-            addProjectileCheck(map);
-        }
-        if (map.has(FIRE)) {
-            addFireCheck(map);
-        }
-        if (map.has(MAGIC)) {
-            addMagicCheck(map);
-        }
-
-        if (map.has(SOURCE)) {
-            addSourceCheck(map);
-        }
-        if (map.has(MOD)) {
-            addModsCheck(map);
-        }
-        if (map.has(MINCOUNT)) {
-            addMinCountCheck(map);
-        }
-        if (map.has(MAXCOUNT)) {
-            addMaxCountCheck(map);
-        }
-        if (map.has(MINDAYCOUNT)) {
-            addMinDayCountCheck(map);
-        }
-        if (map.has(MAXDAYCOUNT)) {
-            addMaxDayCountCheck(map);
-        }
+        map.consume(HOSTILE, this::addHostileCheck);
+        map.consume(PASSIVE, this::addPassiveCheck);
+        map.consume(CANSPAWNHERE, this::addCanSpawnHereCheck);
+        map.consume(NOTCOLLIDING, this::addNotCollidingCheck);
+        map.consume(SPAWNER, this::addSpawnerCheck);
+        map.consume(INCONTROL, this::addInControlCheck);
+        map.consumeAsList(MOB, this::addMobsCheck);
+        map.consume(PLAYER, this::addPlayerCheck);
+        map.consume(REALPLAYER, this::addRealPlayerCheck);
+        map.consume(FAKEPLAYER, this::addFakePlayerCheck);
+        map.consume(EXPLOSION, this::addExplosionCheck);
+        map.consume(PROJECTILE, this::addProjectileCheck);
+        map.consume(FIRE, this::addFireCheck);
+        map.consume(MAGIC, this::addMagicCheck);
+        map.consumeAsList(SOURCE, this::addSourceCheck);
+        map.consumeAsList(MOD, this::addModsCheck);
+        map.consume(MINCOUNT, this::addMinCountCheck);
+        map.consume(MAXCOUNT, this::addMaxCountCheck);
+        map.consume(MINDAYCOUNT, this::addMinDayCountCheck);
+        map.consume(MAXDAYCOUNT, this::addMaxDayCountCheck);
     }
 
-    private void addCanSpawnHereCheck(AttributeMap map) {
-        boolean c = map.get(CANSPAWNHERE);
+    private void addCanSpawnHereCheck(boolean c) {
         if (c) {
             checks.add((event, query) -> {
                 Entity entity = query.getEntity(event);
@@ -139,8 +94,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         }
     }
 
-    private void addNotCollidingCheck(AttributeMap map) {
-        boolean c = map.get(NOTCOLLIDING);
+    private void addNotCollidingCheck(boolean c) {
         if (c) {
             checks.add((event, query) -> {
                 Entity entity = query.getEntity(event);
@@ -162,13 +116,11 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         }
     }
 
-    private void addInControlCheck(AttributeMap map) {
-        boolean c = map.get(INCONTROL);
+    private void addInControlCheck(boolean c) {
         checks.add((event, query) -> c == (SpawnerSystem.busySpawning != null));
     }
 
-    private void addSpawnerCheck(AttributeMap map) {
-        boolean c = map.get(SPAWNER);
+    private void addSpawnerCheck(boolean c) {
         if (c) {
             checks.add((event, query) -> {
                 if (event instanceof LivingSpawnEvent.CheckSpawn) {
@@ -190,24 +142,23 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         }
     }
 
-    private void addHostileCheck(AttributeMap map) {
-        if (map.get(HOSTILE)) {
+    private void addHostileCheck(boolean hostile) {
+        if (hostile) {
             checks.add((event, query) -> query.getEntity(event) instanceof IMob);
         } else {
             checks.add((event, query) -> !(query.getEntity(event) instanceof IMob));
         }
     }
 
-    private void addPassiveCheck(AttributeMap map) {
-        if (map.get(PASSIVE)) {
+    private void addPassiveCheck(boolean passive) {
+        if (passive) {
             checks.add((event, query) -> (query.getEntity(event) instanceof AnimalEntity && !(query.getEntity(event) instanceof IMob)));
         } else {
             checks.add((event, query) -> !(query.getEntity(event) instanceof AnimalEntity && !(query.getEntity(event) instanceof IMob)));
         }
     }
 
-    private void addMobsCheck(AttributeMap map) {
-        List<String> mobs = map.getList(MOB);
+    private void addMobsCheck(List<String> mobs) {
         if (mobs.size() == 1) {
             String id = mobs.get(0);
             if (!ForgeRegistries.ENTITIES.containsKey(new ResourceLocation(id))) {
@@ -233,8 +184,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         }
     }
 
-    private void addModsCheck(AttributeMap map) {
-        List<String> mods = map.getList(MOD);
+    private void addModsCheck(List<String> mods) {
         if (mods.size() == 1) {
             String modid = mods.get(0);
             checks.add((event, query) -> {
@@ -410,8 +360,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
     }
 
 
-    private void addMinCountCheck(AttributeMap map) {
-        final String json = map.get(MINCOUNT);
+    private void addMinCountCheck(String json) {
         CountInfo info = parseCountInfo(json);
         if (info == null) {
             return;
@@ -429,8 +378,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         });
     }
 
-    private void addMaxCountCheck(AttributeMap map) {
-        final String json = map.get(MAXCOUNT);
+    private void addMaxCountCheck(String json) {
         CountInfo info = parseCountInfo(json);
 
         BiFunction<IWorld, Entity, Integer> counter = getCounter(info);
@@ -445,8 +393,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         });
     }
 
-    private void addMinDayCountCheck(AttributeMap map) {
-        final Integer count = map.get(MINDAYCOUNT);
+    private void addMinDayCountCheck(Integer count) {
         if (count == null) {
             return;
         }
@@ -459,8 +406,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         });
     }
 
-    private void addMaxDayCountCheck(AttributeMap map) {
-        final Integer count = map.get(MAXDAYCOUNT);
+    private void addMaxDayCountCheck(Integer count) {
         if (count == null) {
             return;
         }
@@ -522,8 +468,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
     }
 
 
-    private void addPlayerCheck(AttributeMap map) {
-        boolean asPlayer = map.get(PLAYER);
+    private void addPlayerCheck(boolean asPlayer) {
         if (asPlayer) {
             checks.add((event, query) -> query.getAttacker(event) instanceof PlayerEntity);
         } else {
@@ -560,8 +505,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         return !isFakePlayer(entity);
     }
 
-    private void addRealPlayerCheck(AttributeMap map) {
-        boolean asPlayer = map.get(REALPLAYER);
+    private void addRealPlayerCheck(boolean asPlayer) {
         if (asPlayer) {
             checks.add((event, query) -> query.getAttacker(event) == null ? false : isRealPlayer(query.getAttacker(event)));
         } else {
@@ -569,8 +513,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         }
     }
 
-    private void addFakePlayerCheck(AttributeMap map) {
-        boolean asPlayer = map.get(FAKEPLAYER);
+    private void addFakePlayerCheck(boolean asPlayer) {
         if (asPlayer) {
             checks.add((event, query) -> query.getAttacker(event) == null ? false : isFakePlayer(query.getAttacker(event)));
         } else {
@@ -578,8 +521,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         }
     }
 
-    private void addExplosionCheck(AttributeMap map) {
-        boolean explosion = map.get(EXPLOSION);
+    private void addExplosionCheck(boolean explosion) {
         if (explosion) {
             checks.add((event, query) -> query.getSource(event) == null ? false : query.getSource(event).isExplosion());
         } else {
@@ -587,8 +529,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         }
     }
 
-    private void addProjectileCheck(AttributeMap map) {
-        boolean projectile = map.get(PROJECTILE);
+    private void addProjectileCheck(boolean projectile) {
         if (projectile) {
             checks.add((event, query) -> query.getSource(event) == null ? false : query.getSource(event).isProjectile());
         } else {
@@ -596,8 +537,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         }
     }
 
-    private void addFireCheck(AttributeMap map) {
-        boolean fire = map.get(FIRE);
+    private void addFireCheck(boolean fire) {
         if (fire) {
             checks.add((event, query) -> query.getSource(event) == null ? false : query.getSource(event).isFire());
         } else {
@@ -605,8 +545,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         }
     }
 
-    private void addMagicCheck(AttributeMap map) {
-        boolean magic = map.get(MAGIC);
+    private void addMagicCheck(boolean magic) {
         if (magic) {
             checks.add((event, query) -> query.getSource(event) == null ? false : query.getSource(event).isMagic());
         } else {
@@ -614,8 +553,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         }
     }
 
-    private void addSourceCheck(AttributeMap map) {
-        List<String> sources = map.getList(SOURCE);
+    private void addSourceCheck(List<String> sources) {
         Set<String> sourceSet = new HashSet<>(sources);
         checks.add((event, query) -> {
             if (query.getSource(event) == null) {

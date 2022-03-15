@@ -11,11 +11,15 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class GenericAttributeMapFactory {
 
@@ -26,10 +30,30 @@ public class GenericAttributeMapFactory {
         return this;
     }
 
+    private boolean validate(JsonObject object, String file) {
+        Set<String> validKeys = attributes.stream().map(a -> a.getKey().getName()).collect(Collectors.toSet());
+        Set<String> errors = new HashSet<>();
+        object.entrySet().forEach(entry -> {
+            String attr = entry.getKey();
+            if (!validKeys.contains(attr)) {
+                errors.add(attr);
+            }
+        });
+        if (!errors.isEmpty()) {
+            ErrorHandler.error("Invalid keywords for " + file + ": " + StringUtils.join(errors, ' '));
+            return false;
+        }
+        return true;
+    }
+
     @Nonnull
-    public AttributeMap parse(@Nonnull JsonElement element) {
+    public AttributeMap parse(@Nonnull JsonElement element, String file) {
         JsonObject jsonObject = element.getAsJsonObject();
         AttributeMap map = new AttributeMap();
+
+        if (!validate(jsonObject, file)) {
+            return map;
+        }
 
         for (Attribute attribute : attributes) {
             Key key = attribute.getKey();

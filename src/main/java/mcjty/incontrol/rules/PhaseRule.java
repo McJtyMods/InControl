@@ -107,7 +107,7 @@ public class PhaseRule {
         }
         JsonObject object = element.getAsJsonObject();
         JsonElement conditions = object.get("conditions");
-        AttributeMap map = FACTORY.parse(conditions);
+        AttributeMap map = FACTORY.parse(conditions, "phases.json");
 
         return new PhaseRule(object.get("name").getAsString(), map);
     }

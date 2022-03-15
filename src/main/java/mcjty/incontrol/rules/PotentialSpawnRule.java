@@ -154,12 +154,12 @@ public class PotentialSpawnRule extends RuleBase<RuleBase.EventGetter> {
                 return null;
             }
 
-            AttributeMap map = FACTORY.parse(element);
+            AttributeMap map = FACTORY.parse(element, "potentialspawn.json");
 
             if (jsonObject.has("mobs")) {
                 JsonArray mobs = jsonObject.get("mobs").getAsJsonArray();
                 for (JsonElement mob : mobs) {
-                    AttributeMap mobMap = MOB_FACTORY.parse(mob);
+                    AttributeMap mobMap = MOB_FACTORY.parse(mob, "potentialspawn.json (mob)");
                     map.addList(ACTION_MOBS, mobMap);
                 }
             }
