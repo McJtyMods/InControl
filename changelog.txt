@@ -1,5 +1,6 @@
 Upcoming:
 - Added checks everywhere to see if invalid keywords are being used. When a keyword is not recognized you will get a warning
+- Added new 'daycount' condition for phases and normal rules. This condition will evaluate true every 'N'th day. For example, "daycount": 10 will be true on day 0, day 10, day 20, and so on
 
 1.18-6.0.2:
 - Fixed illegal limits on minheight/maxheight. They can now go negative

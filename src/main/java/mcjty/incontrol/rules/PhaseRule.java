@@ -14,8 +14,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.LevelAccessor;
 
-import static mcjty.incontrol.rules.support.RuleKeys.MAXDAYCOUNT;
-import static mcjty.incontrol.rules.support.RuleKeys.MINDAYCOUNT;
+import static mcjty.incontrol.rules.support.RuleKeys.*;
 import static mcjty.incontrol.tools.rules.CommonRuleKeys.*;
 
 public class PhaseRule {
@@ -76,6 +75,7 @@ public class PhaseRule {
         FACTORY
                 .attribute(Attribute.create(MINTIME))
                 .attribute(Attribute.create(MAXTIME))
+                .attribute(Attribute.create(DAYCOUNT))
                 .attribute(Attribute.create(MINDAYCOUNT))
                 .attribute(Attribute.create(MAXDAYCOUNT))
                 .attribute(Attribute.create(WEATHER))

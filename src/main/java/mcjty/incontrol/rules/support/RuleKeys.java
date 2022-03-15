@@ -10,6 +10,7 @@ public interface RuleKeys extends CommonRuleKeys {
     // Inputs
     Key<String> MINCOUNT = Key.create(Type.JSON, "mincount");
     Key<String> MAXCOUNT = Key.create(Type.JSON, "maxcount");
+    Key<Integer> DAYCOUNT = Key.create(Type.INTEGER, "daycount");
     Key<Integer> MINDAYCOUNT = Key.create(Type.INTEGER, "mindaycount");
     Key<Integer> MAXDAYCOUNT = Key.create(Type.INTEGER, "maxdaycount");
     Key<Boolean> CANSPAWNHERE = Key.create(Type.BOOLEAN, "canspawnhere");

@@ -68,6 +68,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         map.consumeAsList(MOD, this::addModsCheck);
         map.consume(MINCOUNT, this::addMinCountCheck);
         map.consume(MAXCOUNT, this::addMaxCountCheck);
+        map.consume(DAYCOUNT, this::addDayCountCheck);
         map.consume(MINDAYCOUNT, this::addMinDayCountCheck);
         map.consume(MAXDAYCOUNT, this::addMaxDayCountCheck);
     }
@@ -390,6 +391,19 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             int count = counter.apply(world, entity);
             int amount = amountAdjuster.apply(world);
             return count < amount;
+        });
+    }
+
+    private void addDayCountCheck(Integer count) {
+        if (count == null) {
+            return;
+        }
+
+        checks.add((event, query) -> {
+            LevelAccessor world = query.getWorld(event);
+            DataStorage data = DataStorage.getData(Tools.getServerWorld(world));
+            int amount = data.getDaycounter();
+            return amount % count == 0;
         });
     }
 
