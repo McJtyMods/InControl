@@ -7,7 +7,6 @@ import com.google.gson.JsonParser;
 import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.tools.cache.StructureCache;
 import mcjty.incontrol.tools.typed.AttributeMap;
-import mcjty.incontrol.tools.typed.Key;
 import mcjty.incontrol.tools.varia.LookAtTools;
 import mcjty.incontrol.tools.varia.Tools;
 import net.minecraft.core.BlockPos;
@@ -66,247 +65,75 @@ public class CommonRuleEvaluator {
 
     // Rules in this routine are sorted so that the more expensive checks are added later
     protected void addChecks(AttributeMap map) {
-        if (map.has(RANDOM)) {
-            addRandomCheck(map);
-        }
-        if (map.has(DIMENSION)) {
-            addDimensionCheck(map);
-        }
-        if (map.has(DIMENSION_MOD)) {
-            addDimensionModCheck(map);
-        }
-        if (map.has(MINTIME)) {
-            addMinTimeCheck(map);
-        }
-        if (map.has(MAXTIME)) {
-            addMaxTimeCheck(map);
-        }
+        map.consume(RANDOM, this::addRandomCheck);
+        map.consumeAsList(DIMENSION, this::addDimensionCheck);
+        map.consumeAsList(DIMENSION_MOD, this::addDimensionModCheck);
+        map.consume(MINTIME, this::addMinTimeCheck);
+        map.consume(MAXTIME, this::addMaxTimeCheck);
+        map.consume(MINHEIGHT, this::addMinHeightCheck);
+        map.consume(MAXHEIGHT, this::addMaxHeightCheck);
+        map.consume(WEATHER, this::addWeatherCheck);
+        map.consumeAsList(CATEGORY, this::addCategoryCheck);
+        map.consume(DIFFICULTY, this::addDifficultyCheck);
+        map.consume(MINSPAWNDIST, this::addMinSpawnDistCheck);
+        map.consume(MAXSPAWNDIST, this::addMaxSpawnDistCheck);
+        map.consume(MINLIGHT, this::addMinLightCheck);
+        map.consume(MAXLIGHT, this::addMaxLightCheck);
+        map.consume(MINDIFFICULTY, this::addMinAdditionalDifficultyCheck);
+        map.consume(MAXDIFFICULTY, this::addMaxAdditionalDifficultyCheck);
+        map.consume(SEESKY, this::addSeeSkyCheck);
+        map.consumeAsList(BLOCK, b -> addBlocksCheck(map, b));
+        map.consumeAsList(BIOME, this::addBiomesCheck);
+        map.consumeAsList(BIOMETYPE, this::addBiomeTypesCheck);
+        map.consumeAsList(HELMET, this::addHelmetCheck);
+        map.consumeAsList(CHESTPLATE, this::addChestplateCheck);
+        map.consumeAsList(LEGGINGS, this::addLeggingsCheck);
+        map.consumeAsList(BOOTS, this::addBootsCheck);
+        map.consumeAsList(PLAYER_HELDITEM, this::addHeldItemCheck);
+        map.consumeAsList(HELDITEM, this::addHeldItemCheck);
+        map.consumeAsList(OFFHANDITEM, this::addOffHandItemCheck);
+        map.consumeAsList(BOTHHANDSITEM, this::addBothHandsItemCheck);
+        map.consume(STRUCTURE, this::addStructureCheck);
 
-        if (map.has(MINHEIGHT)) {
-            addMinHeightCheck(map);
-        }
-        if (map.has(MAXHEIGHT)) {
-            addMaxHeightCheck(map);
-        }
-        if (map.has(WEATHER)) {
-            addWeatherCheck(map);
-        }
-        if (map.has(CATEGORY)) {
-            addCategoryCheck(map);
-        }
-        if (map.has(DIFFICULTY)) {
-            addDifficultyCheck(map);
-        }
+        map.consume(STATE, this::addStateCheck);
+        map.consume(PSTATE, this::addPStateCheck);
 
-        if (map.has(MINSPAWNDIST)) {
-            addMinSpawnDistCheck(map);
-        }
-        if (map.has(MAXSPAWNDIST)) {
-            addMaxSpawnDistCheck(map);
-        }
+        map.consume(SUMMER, this::addSummerCheck);
+        map.consume(WINTER, this::addWinterCheck);
+        map.consume(SPRING, this::addSpringCheck);
+        map.consume(AUTUMN, this::addAutumnCheck);
 
-        if (map.has(MINLIGHT)) {
-            addMinLightCheck(map);
-        }
-        if (map.has(MAXLIGHT)) {
-            addMaxLightCheck(map);
-        }
+        map.consume(GAMESTAGE, this::addGameStageCheck);
 
-        if (map.has(MINDIFFICULTY)) {
-            addMinAdditionalDifficultyCheck(map);
-        }
-        if (map.has(MAXDIFFICULTY)) {
-            addMaxAdditionalDifficultyCheck(map);
-        }
+        map.consume(INCITY, this::addInCityCheck);
+        map.consume(INSTREET, this::addInStreetCheck);
+        map.consume(INSPHERE, this::addInSphereCheck);
+        map.consume(INBUILDING, this::addInBuildingCheck);
 
-        if (map.has(SEESKY)) {
-            addSeeSkyCheck(map);
-        }
-        if (map.has(BLOCK)) {
-            addBlocksCheck(map);
-        }
-        if (map.has(BIOME)) {
-            addBiomesCheck(map);
-        }
-        if (map.has(BIOMETYPE)) {
-            addBiomeTypesCheck(map);
-        }
-        if (map.has(HELMET)) {
-            addHelmetCheck(map);
-        }
-        if (map.has(CHESTPLATE)) {
-            addChestplateCheck(map);
-        }
-        if (map.has(LEGGINGS)) {
-            addLeggingsCheck(map);
-        }
-        if (map.has(BOOTS)) {
-            addBootsCheck(map);
-        }
-        if (map.has(PLAYER_HELDITEM)) {
-            addHeldItemCheck(map, PLAYER_HELDITEM);
-        }
-        if (map.has(HELDITEM)) {
-            addHeldItemCheck(map, HELDITEM);
-        }
-        if (map.has(OFFHANDITEM)) {
-            addOffHandItemCheck(map);
-        }
-        if (map.has(BOTHHANDSITEM)) {
-            addBothHandsItemCheck(map);
-        }
-
-        if (map.has(STRUCTURE)) {
-            addStructureCheck(map);
-        }
-
-        if (map.has(STATE)) {
-            if (compatibility.hasEnigmaScript()) {
-                addStateCheck(map);
-            } else {
-                logger.warn("EnigmaScript is missing: this test cannot work!");
-            }
-        }
-        if (map.has(PSTATE)) {
-            if (compatibility.hasEnigmaScript()) {
-                addPStateCheck(map);
-            } else {
-                logger.warn("EnigmaScript is missing: this test cannot work!");
-            }
-        }
-
-        if (map.has(SUMMER)) {
-            if (compatibility.hasSereneSeasons()) {
-                addSummerCheck(map);
-            } else {
-                logger.warn("Serene Seaons is missing: this test cannot work!");
-            }
-        }
-        if (map.has(WINTER)) {
-            if (compatibility.hasSereneSeasons()) {
-                addWinterCheck(map);
-            } else {
-                logger.warn("Serene Seaons is missing: this test cannot work!");
-            }
-        }
-        if (map.has(SPRING)) {
-            if (compatibility.hasSereneSeasons()) {
-                addSpringCheck(map);
-            } else {
-                logger.warn("Serene Seaons is missing: this test cannot work!");
-            }
-        }
-        if (map.has(AUTUMN)) {
-            if (compatibility.hasSereneSeasons()) {
-                addAutumnCheck(map);
-            } else {
-                logger.warn("Serene Seaons is missing: this test cannot work!");
-            }
-        }
-        if (map.has(GAMESTAGE)) {
-            if (compatibility.hasGameStages()) {
-                addGameStageCheck(map);
-            } else {
-                logger.warn("Game Stages is missing: the 'gamestage' test cannot work!");
-            }
-        }
-        if (map.has(INCITY)) {
-            if (compatibility.hasLostCities()) {
-                addInCityCheck(map);
-            } else {
-                logger.warn("The Lost Cities is missing: the 'incity' test cannot work!");
-            }
-        }
-        if (map.has(INSTREET)) {
-            if (compatibility.hasLostCities()) {
-                addInStreetCheck(map);
-            } else {
-                logger.warn("The Lost Cities is missing: the 'instreet' test cannot work!");
-            }
-        }
-        if (map.has(INSPHERE)) {
-            if (compatibility.hasLostCities()) {
-                addInSphereCheck(map);
-            } else {
-                logger.warn("The Lost Cities is missing: the 'insphere' test cannot work!");
-            }
-        }
-        if (map.has(INBUILDING)) {
-            if (compatibility.hasLostCities()) {
-                addInBuildingCheck(map);
-            } else {
-                logger.warn("The Lost Cities is missing: the 'inbuilding' test cannot work!");
-            }
-        }
-
-        if (map.has(AMULET)) {
-            if (compatibility.hasBaubles()) {
-                addBaubleCheck(map, AMULET, compatibility::getAmuletSlots);
-            } else {
-                logger.warn("Baubles is missing: this test cannot work!");
-            }
-        }
-        if (map.has(RING)) {
-            if (compatibility.hasBaubles()) {
-                addBaubleCheck(map, RING, compatibility::getRingSlots);
-            } else {
-                logger.warn("Baubles is missing: this test cannot work!");
-            }
-        }
-        if (map.has(BELT)) {
-            if (compatibility.hasBaubles()) {
-                addBaubleCheck(map, BELT, compatibility::getBeltSlots);
-            } else {
-                logger.warn("Baubles is missing: this test cannot work!");
-            }
-        }
-        if (map.has(TRINKET)) {
-            if (compatibility.hasBaubles()) {
-                addBaubleCheck(map, TRINKET, compatibility::getTrinketSlots);
-            } else {
-                logger.warn("Baubles is missing: this test cannot work!");
-            }
-        }
-        if (map.has(HEAD)) {
-            if (compatibility.hasBaubles()) {
-                addBaubleCheck(map, HEAD, compatibility::getHeadSlots);
-            } else {
-                logger.warn("Baubles is missing: this test cannot work!");
-            }
-        }
-        if (map.has(BODY)) {
-            if (compatibility.hasBaubles()) {
-                addBaubleCheck(map, BODY, compatibility::getBodySlots);
-            } else {
-                logger.warn("Baubles is missing: this test cannot work!");
-            }
-        }
-        if (map.has(CHARM)) {
-            if (compatibility.hasBaubles()) {
-                addBaubleCheck(map, CHARM, compatibility::getCharmSlots);
-            } else {
-                logger.warn("Baubles is missing: this test cannot work!");
-            }
-        }
+        map.consumeAsList(AMULET, v -> addBaubleCheck(v, compatibility::getAmuletSlots));
+        map.consumeAsList(RING, v -> addBaubleCheck(v, compatibility::getRingSlots));
+        map.consumeAsList(BELT, v -> addBaubleCheck(v, compatibility::getBeltSlots));
+        map.consumeAsList(TRINKET, v -> addBaubleCheck(v, compatibility::getTrinketSlots));
+        map.consumeAsList(HEAD, v -> addBaubleCheck(v, compatibility::getHeadSlots));
+        map.consumeAsList(BODY, v -> addBaubleCheck(v, compatibility::getBodySlots));
+        map.consumeAsList(CHARM, v -> addBaubleCheck(v, compatibility::getCharmSlots));
     }
 
     private static final Random rnd = new Random();
 
-    private void addRandomCheck(AttributeMap map) {
-        final float r = map.get(RANDOM);
+    private void addRandomCheck(float r) {
         checks.add((event,query) -> rnd.nextFloat() < r);
     }
 
-    private void addSeeSkyCheck(AttributeMap map) {
-        if (map.get(SEESKY)) {
+    private void addSeeSkyCheck(boolean seesky) {
+        if (seesky) {
             checks.add((event,query) -> query.getWorld(event).canSeeSkyFromBelowWater(query.getPos(event)));
         } else {
             checks.add((event,query) -> !query.getWorld(event).canSeeSkyFromBelowWater(query.getPos(event)));
         }
     }
 
-    private void addDimensionCheck(AttributeMap map) {
-        List<ResourceKey<Level>> dimensions = map.getList(DIMENSION);
+    private void addDimensionCheck(List<ResourceKey<Level>> dimensions) {
         if (dimensions.size() == 1) {
             ResourceKey<Level> dim = dimensions.get(0);
             checks.add((event,query) -> Tools.getDimensionKey(query.getWorld(event)).equals(dim));
@@ -316,8 +143,7 @@ public class CommonRuleEvaluator {
         }
     }
 
-    private void addDimensionModCheck(AttributeMap map) {
-        List<String> dimensions = map.getList(DIMENSION_MOD);
+    private void addDimensionModCheck(List<String> dimensions) {
         if (dimensions.size() == 1) {
             String dimmod = dimensions.get(0);
             checks.add((event,query) -> Tools.getDimensionKey(query.getWorld(event)).location().getNamespace().equals(dimmod));
@@ -327,8 +153,8 @@ public class CommonRuleEvaluator {
         }
     }
 
-    private void addDifficultyCheck(AttributeMap map) {
-        String difficulty = map.get(DIFFICULTY).toLowerCase();
+    private void addDifficultyCheck(String difficulty) {
+        difficulty = difficulty.toLowerCase();
         Difficulty diff = Difficulty.byName(difficulty);
         if (diff != null) {
             Difficulty finalDiff = diff;
@@ -338,8 +164,7 @@ public class CommonRuleEvaluator {
         }
     }
 
-    private void addWeatherCheck(AttributeMap map) {
-        String weather = map.get(WEATHER);
+    private void addWeatherCheck(String weather) {
         boolean raining = weather.toLowerCase().startsWith("rain");
         boolean thunder = weather.toLowerCase().startsWith("thunder");
         if (raining) {
@@ -365,8 +190,7 @@ public class CommonRuleEvaluator {
         }
     }
 
-    private void addCategoryCheck(AttributeMap map) {
-        List<String> list = map.getList(CATEGORY);
+    private void addCategoryCheck(List<String> list) {
         Set<Biome.BiomeCategory> categories = list.stream().map(s -> Biome.BiomeCategory.byName(s.toLowerCase())).collect(Collectors.toSet());
         checks.add((event,query) -> {
             Biome biome = query.getWorld(event).getBiome(query.getPos(event));
@@ -375,13 +199,11 @@ public class CommonRuleEvaluator {
     }
 
 
-    private void addStructureCheck(AttributeMap map) {
-        String structure = map.get(STRUCTURE);
+    private void addStructureCheck(String structure) {
         checks.add((event,query) -> StructureCache.CACHE.isInStructure(query.getWorld(event), structure, query.getPos(event)));
     }
 
-    private void addBiomesCheck(AttributeMap map) {
-        List<String> biomes = map.getList(BIOME);
+    private void addBiomesCheck(List<String> biomes) {
         if (biomes.size() == 1) {
             String biomename = biomes.get(0);
             checks.add((event,query) -> {
@@ -405,8 +227,7 @@ public class CommonRuleEvaluator {
         }
     }
 
-    private void addBiomeTypesCheck(AttributeMap map) {
-        List<String> biomeTypes = map.getList(BIOMETYPE);
+    private void addBiomeTypesCheck(List<String> biomeTypes) {
         Set<Biome> biomes = new HashSet<>();
         biomeTypes.stream().map(s -> BiomeManager.BiomeType.valueOf(s.toUpperCase())).
                 forEach(type -> BiomeManager.getBiomes(type).stream().forEach(t -> biomes.add(ForgeRegistries.BIOMES.getValue(t.getKey().getRegistryName()))));
@@ -417,15 +238,9 @@ public class CommonRuleEvaluator {
         });
     }
 
-    private static final int[] EMPTYINTS = new int[0];
-
     public static <T extends Comparable<T>> BlockState set(BlockState state, Property<T> property, String value) {
         Optional<T> optionalValue = property.getValue(value);
-        if (optionalValue.isPresent()) {
-            return state.setValue(property, optionalValue.get());
-        } else {
-            return state;
-        }
+        return optionalValue.map(t -> state.setValue(property, t)).orElse(state);
     }
 
     @Nonnull
@@ -612,16 +427,16 @@ public class CommonRuleEvaluator {
         return false;
     }
 
-    private void addBlocksCheck(AttributeMap map) {
+    private void addBlocksCheck(AttributeMap map, List<String> blocks) {
 
         BiFunction<Object, IEventQuery, BlockPos> posFunction;
-        if (map.has(BLOCKOFFSET)) {
+        String bo = map.consumeAndFetch(BLOCKOFFSET);
+        if (bo != null) {
             posFunction = parseOffset(map.get(BLOCKOFFSET));
         } else {
             posFunction = (event, query) -> query.getValidBlockPos(event);
         }
 
-        List<String> blocks = map.getList(BLOCK);
         if (blocks.size() == 1) {
             String json = blocks.get(0);
             BiPredicate<LevelAccessor, BlockPos> blockMatcher = parseBlock(json);
@@ -668,8 +483,7 @@ public class CommonRuleEvaluator {
     }
 
 
-    private void addMinTimeCheck(AttributeMap map) {
-        final int mintime = map.get(MINTIME);
+    private void addMinTimeCheck(int mintime) {
         checks.add((event,query) -> {
             LevelAccessor world = query.getWorld(event);
             if (world instanceof Level) {
@@ -681,8 +495,7 @@ public class CommonRuleEvaluator {
         });
     }
 
-    private void addMaxTimeCheck(AttributeMap map) {
-        final int maxtime = map.get(MAXTIME);
+    private void addMaxTimeCheck(int maxtime) {
         checks.add((event,query) -> {
             LevelAccessor world = query.getWorld(event);
             if (world instanceof Level) {
@@ -694,8 +507,8 @@ public class CommonRuleEvaluator {
         });
     }
 
-    private void addMinSpawnDistCheck(AttributeMap map) {
-        final float d = map.get(MINSPAWNDIST) * map.get(MINSPAWNDIST);
+    private void addMinSpawnDistCheck(float v) {
+        final float d = v * v;
         checks.add((event,query) -> {
             BlockPos pos = query.getPos(event);
             ServerLevel sw = Tools.getServerWorld(query.getWorld(event));
@@ -704,8 +517,8 @@ public class CommonRuleEvaluator {
         });
     }
 
-    private void addMaxSpawnDistCheck(AttributeMap map) {
-        final float d = map.get(MAXSPAWNDIST) * map.get(MAXSPAWNDIST);
+    private void addMaxSpawnDistCheck(float v) {
+        final float d = v * v;
         checks.add((event,query) -> {
             BlockPos pos = query.getPos(event);
             ServerLevel sw = Tools.getServerWorld(query.getWorld(event));
@@ -715,39 +528,33 @@ public class CommonRuleEvaluator {
     }
 
 
-    private void addMinLightCheck(AttributeMap map) {
-        final int minlight = map.get(MINLIGHT);
+    private void addMinLightCheck(int minlight) {
         checks.add((event,query) -> {
             BlockPos pos = query.getPos(event);
             return query.getWorld(event).getMaxLocalRawBrightness(pos) >= minlight;
         });
     }
 
-    private void addMaxLightCheck(AttributeMap map) {
-        final int maxlight = map.get(MAXLIGHT);
+    private void addMaxLightCheck(int maxlight) {
         checks.add((event,query) -> {
             BlockPos pos = query.getPos(event);
             return query.getWorld(event).getMaxLocalRawBrightness(pos) <= maxlight;
         });
     }
 
-    private void addMinAdditionalDifficultyCheck(AttributeMap map) {
-        final Float mindifficulty = map.get(MINDIFFICULTY);
+    private void addMinAdditionalDifficultyCheck(Float mindifficulty) {
         checks.add((event,query) -> query.getWorld(event).getCurrentDifficultyAt(query.getPos(event)).getEffectiveDifficulty() >= mindifficulty);
     }
 
-    private void addMaxAdditionalDifficultyCheck(AttributeMap map) {
-        final Float maxdifficulty = map.get(MAXDIFFICULTY);
+    private void addMaxAdditionalDifficultyCheck(Float maxdifficulty) {
         checks.add((event,query) -> query.getWorld(event).getCurrentDifficultyAt(query.getPos(event)).getEffectiveDifficulty() <= maxdifficulty);
     }
 
-    private void addMaxHeightCheck(AttributeMap map) {
-        final int maxheight = map.get(MAXHEIGHT);
+    private void addMaxHeightCheck(int maxheight) {
         checks.add((event,query) -> query.getY(event) <= maxheight);
     }
 
-    private void addMinHeightCheck(AttributeMap map) {
-        final int minheight = map.get(MINHEIGHT);
+    private void addMinHeightCheck(int minheight) {
         checks.add((event,query) -> query.getY(event) >= minheight);
     }
 
@@ -989,23 +796,23 @@ public class CommonRuleEvaluator {
         return items;
     }
 
-    public void addHelmetCheck(AttributeMap map) {
-        List<Predicate<ItemStack>> items = getItems(map.getList(HELMET), logger);
+    public void addHelmetCheck(List<String> itemList) {
+        List<Predicate<ItemStack>> items = getItems(itemList, logger);
         addArmorCheck(items, EquipmentSlot.HEAD);
     }
 
-    public void addChestplateCheck(AttributeMap map) {
-        List<Predicate<ItemStack>> items = getItems(map.getList(CHESTPLATE), logger);
+    public void addChestplateCheck(List<String> itemList) {
+        List<Predicate<ItemStack>> items = getItems(itemList, logger);
         addArmorCheck(items, EquipmentSlot.CHEST);
     }
 
-    public void addLeggingsCheck(AttributeMap map) {
-        List<Predicate<ItemStack>> items = getItems(map.getList(LEGGINGS), logger);
+    public void addLeggingsCheck(List<String> itemList) {
+        List<Predicate<ItemStack>> items = getItems(itemList, logger);
         addArmorCheck(items, EquipmentSlot.LEGS);
     }
 
-    public void addBootsCheck(AttributeMap map) {
-        List<Predicate<ItemStack>> items = getItems(map.getList(BOOTS), logger);
+    public void addBootsCheck(List<String> itemList) {
+        List<Predicate<ItemStack>> items = getItems(itemList, logger);
         addArmorCheck(items, EquipmentSlot.FEET);
     }
 
@@ -1026,8 +833,8 @@ public class CommonRuleEvaluator {
         });
     }
 
-    public void addHeldItemCheck(AttributeMap map, Key<String> key) {
-        List<Predicate<ItemStack>> items = getItems(map.getList(key), logger);
+    public void addHeldItemCheck(List<String> itemList) {
+        List<Predicate<ItemStack>> items = getItems(itemList, logger);
         checks.add((event,query) -> {
             Player player = query.getPlayer(event);
             if (player != null) {
@@ -1044,8 +851,8 @@ public class CommonRuleEvaluator {
         });
     }
 
-    public void addOffHandItemCheck(AttributeMap map) {
-        List<Predicate<ItemStack>> items = getItems(map.getList(OFFHANDITEM), logger);
+    public void addOffHandItemCheck(List<String> itemList) {
+        List<Predicate<ItemStack>> items = getItems(itemList, logger);
         checks.add((event,query) -> {
             Player player = query.getPlayer(event);
             if (player != null) {
@@ -1062,8 +869,8 @@ public class CommonRuleEvaluator {
         });
     }
 
-    public void addBothHandsItemCheck(AttributeMap map) {
-        List<Predicate<ItemStack>> items = getItems(map.getList(BOTHHANDSITEM), logger);
+    public void addBothHandsItemCheck(List<String> itemList) {
+        List<Predicate<ItemStack>> items = getItems(itemList, logger);
         checks.add((event,query) -> {
             Player player = query.getPlayer(event);
             if (player != null) {
@@ -1088,8 +895,11 @@ public class CommonRuleEvaluator {
         });
     }
 
-    private void addStateCheck(AttributeMap map) {
-        String s = map.get(STATE);
+    private void addStateCheck(String s) {
+        if (!compatibility.hasEnigmaScript()) {
+            logger.warn("EnigmaScript is missing: this test cannot work!");
+            return;
+        }
         String[] split = StringUtils.split(s, '=');
         String state;
         String value;
@@ -1104,8 +914,11 @@ public class CommonRuleEvaluator {
         checks.add((event, query) -> value.equals(compatibility.getState(query.getWorld(event), state)));
     }
 
-    private void addPStateCheck(AttributeMap map) {
-        String s = map.get(PSTATE);
+    private void addPStateCheck(String s) {
+        if (!compatibility.hasEnigmaScript()) {
+            logger.warn("EnigmaScript is missing: this test cannot work!");
+            return;
+        }
         String[] split = StringUtils.split(s, '=');
         String state;
         String value;
@@ -1120,65 +933,101 @@ public class CommonRuleEvaluator {
         checks.add((event, query) -> value.equals(compatibility.getPlayerState(query.getPlayer(event), state)));
     }
 
-    private void addSummerCheck(AttributeMap map) {
-        Boolean s = map.get(SUMMER);
+    private void addSummerCheck(Boolean s) {
+        if (!compatibility.hasSereneSeasons()) {
+            logger.warn("Serene Seasons is missing: this test cannot work!");
+            return;
+        }
         checks.add((event, query) -> s == compatibility.isSummer(query.getWorld(event)));
     }
 
-    private void addWinterCheck(AttributeMap map) {
-        Boolean s = map.get(WINTER);
+    private void addWinterCheck(Boolean s) {
+        if (!compatibility.hasSereneSeasons()) {
+            logger.warn("Serene Seasons is missing: this test cannot work!");
+            return;
+        }
         checks.add((event, query) -> s == compatibility.isWinter(query.getWorld(event)));
     }
 
-    private void addSpringCheck(AttributeMap map) {
-        Boolean s = map.get(SPRING);
+    private void addSpringCheck(Boolean s) {
+        if (!compatibility.hasSereneSeasons()) {
+            logger.warn("Serene Seasons is missing: this test cannot work!");
+            return;
+        }
         checks.add((event, query) -> s == compatibility.isSpring(query.getWorld(event)));
     }
 
-    private void addAutumnCheck(AttributeMap map) {
-        Boolean s = map.get(AUTUMN);
+    private void addAutumnCheck(Boolean s) {
+        if (!compatibility.hasSereneSeasons()) {
+            logger.warn("Serene Seasons is missing: this test cannot work!");
+            return;
+        }
         checks.add((event, query) -> s == compatibility.isAutumn(query.getWorld(event)));
     }
 
-    private void addGameStageCheck(AttributeMap map) {
-        String stage = map.get(GAMESTAGE);
+    private void addGameStageCheck(String stage) {
+        if (!compatibility.hasGameStages()) {
+            logger.warn("Game Stages is missing: the 'gamestage' test cannot work!");
+            return;
+        }
         checks.add((event, query) -> compatibility.hasGameStage(query.getPlayer(event), stage));
     }
 
-    private void addInCityCheck(AttributeMap map) {
-        if (map.get(INCITY)) {
+    private void addInCityCheck(boolean incity) {
+        if (!compatibility.hasLostCities()) {
+            logger.warn("The Lost Cities is missing: the 'incity' test cannot work!");
+            return;
+        }
+        if (incity) {
             checks.add((event,query) -> compatibility.isCity(query, event));
         } else {
             checks.add((event,query) -> !compatibility.isCity(query, event));
         }
     }
 
-    private void addInStreetCheck(AttributeMap map) {
-        if (map.get(INSTREET)) {
+    private void addInStreetCheck(boolean instreet) {
+        if (!compatibility.hasLostCities()) {
+            logger.warn("The Lost Cities is missing: the 'instreet' test cannot work!");
+            return;
+        }
+        if (instreet) {
             checks.add((event,query) -> compatibility.isStreet(query, event));
         } else {
             checks.add((event,query) -> !compatibility.isStreet(query, event));
         }
     }
 
-    private void addInSphereCheck(AttributeMap map) {
-        if (map.get(INSPHERE)) {
+    private void addInSphereCheck(boolean insphere) {
+        if (!compatibility.hasLostCities()) {
+            logger.warn("The Lost Cities is missing: the 'insphere' test cannot work!");
+            return;
+        }
+        if (insphere) {
             checks.add((event,query) -> compatibility.inSphere(query, event));
         } else {
             checks.add((event,query) -> !compatibility.inSphere(query, event));
         }
     }
 
-    private void addInBuildingCheck(AttributeMap map) {
-        if (map.get(INBUILDING)) {
+    private void addInBuildingCheck(boolean inbuilding) {
+        if (!compatibility.hasLostCities()) {
+            logger.warn("The Lost Cities is missing: the 'inbuilding' test cannot work!");
+            return;
+        }
+        if (inbuilding) {
             checks.add((event,query) -> compatibility.isBuilding(query, event));
         } else {
             checks.add((event,query) -> !compatibility.isBuilding(query, event));
         }
     }
 
-    public void addBaubleCheck(AttributeMap map, Key<String> key, Supplier<int[]> slotSupplier) {
-        List<Predicate<ItemStack>> items = getItems(map.getList(key), logger);
+    public void addBaubleCheck(List<String> itemList, Supplier<int[]> slotSupplier) {
+        if (!compatibility.hasBaubles()) {
+            logger.warn("Baubles is missing: this test cannot work!");
+            return;
+        }
+
+        List<Predicate<ItemStack>> items = getItems(itemList, logger);
         checks.add((event,query) -> {
             Player player = query.getPlayer(event);
             if (player != null) {

@@ -1,6 +1,7 @@
 package mcjty.incontrol.rules;
 
 import com.google.gson.JsonElement;
+import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.compat.ModRuleCompatibilityLayer;
 import mcjty.incontrol.data.PhaseTools;
@@ -11,11 +12,11 @@ import mcjty.incontrol.tools.rules.RuleBase;
 import mcjty.incontrol.tools.typed.Attribute;
 import mcjty.incontrol.tools.typed.AttributeMap;
 import mcjty.incontrol.tools.typed.GenericAttributeMapFactory;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.event.entity.living.LivingExperienceDropEvent;
 import net.minecraftforge.eventbus.api.Event;
@@ -149,7 +150,7 @@ public class ExperienceRule extends RuleBase<RuleBase.EventGetter> {
         if (element == null) {
             return null;
         } else {
-            AttributeMap map = FACTORY.parse(element);
+            AttributeMap map = FACTORY.parse(element, "experience.json");
             return new ExperienceRule(map, PhaseTools.getPhases(element));
         }
     }
@@ -165,8 +166,7 @@ public class ExperienceRule extends RuleBase<RuleBase.EventGetter> {
     protected void addActions(AttributeMap map, IModRuleCompatibilityLayer layer) {
         super.addActions(map, layer);
 
-        if (map.has(ACTION_RESULT)) {
-            String br = map.get(ACTION_RESULT);
+        map.consumeOrElse(ACTION_RESULT, br -> {
             if ("default".equals(br) || br.startsWith("def")) {
                 this.result = Event.Result.DEFAULT;
             } else if ("allow".equals(br) || "true".equals(br)) {
@@ -174,19 +174,19 @@ public class ExperienceRule extends RuleBase<RuleBase.EventGetter> {
             } else {
                 this.result = Event.Result.DENY;
             }
-        } else {
+        }, () -> {
             this.result = Event.Result.DEFAULT;
-        }
-        if (map.has(ACTION_SETXP)) {
-            xp = map.get(ACTION_SETXP);
-        }
-        if (map.has(ACTION_ADDXP)) {
-            addxp = map.get(ACTION_ADDXP);
-        }
-        if (map.has(ACTION_MULTXP)) {
-            multxp = map.get(ACTION_MULTXP);
-        }
+        });
 
+        map.consume(ACTION_SETXP, v -> xp = v);
+        map.consume(ACTION_ADDXP, v -> addxp = v);
+        map.consume(ACTION_MULTXP, v -> multxp = v);
+
+        if (!map.isEmpty()) {
+            StringBuffer buffer = new StringBuffer();
+            map.getKeys().forEach(k -> buffer.append(k).append(' '));
+            ErrorHandler.error("Invalid keywords in experience rule: " + buffer);
+        }
     }
 
     public boolean match(LivingExperienceDropEvent event) {

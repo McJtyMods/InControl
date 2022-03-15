@@ -5,17 +5,21 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.tools.varia.JSonTools;
-import net.minecraft.server.MinecraftServer;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.core.Registry;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.server.ServerLifecycleHooks;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class GenericAttributeMapFactory {
 
@@ -26,10 +30,29 @@ public class GenericAttributeMapFactory {
         return this;
     }
 
+    private boolean validate(JsonObject object, String file) {
+        Set<String> validKeys = attributes.stream().map(a -> a.key().name()).collect(Collectors.toSet());
+        Set<String> errors = new HashSet<>();
+        object.keySet().forEach(attr -> {
+            if (!validKeys.contains(attr)) {
+                errors.add(attr);
+            }
+        });
+        if (!errors.isEmpty()) {
+            ErrorHandler.error("Invalid keywords for " + file + ": " + StringUtils.join(errors, ' '));
+            return false;
+        }
+        return true;
+    }
+
     @Nonnull
-    public AttributeMap parse(@Nonnull JsonElement element) {
+    public AttributeMap parse(@Nonnull JsonElement element, String file) {
         JsonObject jsonObject = element.getAsJsonObject();
         AttributeMap map = new AttributeMap();
+
+        if (!validate(jsonObject, file)) {
+            return map;
+        }
 
         for (Attribute attribute : attributes) {
             Key key = attribute.key();

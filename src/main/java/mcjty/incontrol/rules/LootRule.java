@@ -2,6 +2,7 @@ package mcjty.incontrol.rules;
 
 import com.google.gson.JsonElement;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.compat.ModRuleCompatibilityLayer;
 import mcjty.incontrol.data.PhaseTools;
@@ -182,7 +183,7 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
         if (element == null) {
             return null;
         } else {
-            AttributeMap map = FACTORY.parse(element);
+            AttributeMap map = FACTORY.parse(element, "loot.json");
             return new LootRule(map, PhaseTools.getPhases(element));
         }
     }
@@ -191,14 +192,14 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
     protected void addActions(AttributeMap map, IModRuleCompatibilityLayer layer) {
         super.addActions(map, layer);
 
-        if (map.has(ACTION_ITEM)) {
-            addItem(map);
-        }
-        if (map.has(ACTION_REMOVE)) {
-            removeItem(map);
-        }
-        if (map.has(ACTION_REMOVEALL)) {
-            removeAll = map.get(ACTION_REMOVEALL);
+        map.consumeAsList(ACTION_ITEM, itemList -> addItem(map, itemList));
+        map.consumeAsList(ACTION_REMOVE, this::removeItem);
+        map.consume(ACTION_REMOVEALL, v -> removeAll = v);
+
+        if (!map.isEmpty()) {
+            StringBuffer buffer = new StringBuffer();
+            map.getKeys().forEach(k -> buffer.append(k).append(' '));
+            ErrorHandler.error("Invalid keywords in loot rule: " + buffer);
         }
     }
 
@@ -287,14 +288,14 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
         return items;
     }
 
-    private void addItem(AttributeMap map) {
-        String nbt = map.get(ACTION_ITEMNBT);
-        String itemcount = map.get(ACTION_ITEMCOUNT);
-        toAddItems.addAll(getItems(map.getList(ACTION_ITEM), nbt, itemcount));
+    private void addItem(AttributeMap map, List<String> itemList) {
+        String nbt = map.consumeAndFetch(ACTION_ITEMNBT);
+        String itemcount = map.consumeAndFetch(ACTION_ITEMCOUNT);
+        toAddItems.addAll(getItems(itemList, nbt, itemcount));
     }
 
-    private void removeItem(AttributeMap map) {
-        toRemoveItems.addAll(CommonRuleEvaluator.getItems(map.getList(ACTION_REMOVE), logger));
+    private void removeItem(List<String> itemList) {
+        toRemoveItems.addAll(CommonRuleEvaluator.getItems(itemList, logger));
     }
 
     public boolean match(LivingDropsEvent event) {
