@@ -50,6 +50,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
     protected void addChecks(AttributeMap map) {
         super.addChecks(map);
 
+        map.consume(ONJOIN, b -> {});
         map.consume(HOSTILE, this::addHostileCheck);
         map.consume(PASSIVE, this::addPassiveCheck);
         map.consume(CANSPAWNHERE, this::addCanSpawnHereCheck);

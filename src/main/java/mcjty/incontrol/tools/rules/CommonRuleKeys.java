@@ -7,6 +7,8 @@ import net.minecraft.world.level.Level;
 
 public interface CommonRuleKeys {
 
+    Key<Boolean> ONJOIN = Key.create(Type.BOOLEAN, "onjoin");
+
     // Inputs
     Key<Integer> MINTIME = Key.create(Type.INTEGER, "mintime");
     Key<Integer> MAXTIME = Key.create(Type.INTEGER, "maxtime");
