@@ -1,5 +1,6 @@
 Upcoming:
 - Made InControl compatible with FxControl again
+- Fixed the 'phase' keyword for spawn rules
 
 1.16-5.2.5:
 - Bugfix with onjoin

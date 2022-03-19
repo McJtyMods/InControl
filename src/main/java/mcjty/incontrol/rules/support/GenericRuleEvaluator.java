@@ -51,6 +51,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         super.addChecks(map);
 
         map.consume(ONJOIN, b -> {});
+        map.consume(PHASE, b -> {});
         map.consume(HOSTILE, this::addHostileCheck);
         map.consume(PASSIVE, this::addPassiveCheck);
         map.consume(CANSPAWNHERE, this::addCanSpawnHereCheck);
