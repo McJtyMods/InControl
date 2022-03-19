@@ -1,9 +1,8 @@
-package mcjty.tools.rules;
+package mcjty.incontrol.tools.rules;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.IWorld;
-import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 
 public interface IModRuleCompatibilityLayer {

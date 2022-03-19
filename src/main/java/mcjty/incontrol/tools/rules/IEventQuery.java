@@ -1,4 +1,4 @@
-package mcjty.tools.rules;
+package mcjty.incontrol.tools.rules;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -6,7 +6,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IWorld;
-import net.minecraft.world.World;
 
 public interface IEventQuery<T> {
 

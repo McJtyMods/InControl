@@ -1,7 +1,7 @@
-package mcjty.tools.rules;
+package mcjty.incontrol.tools.rules;
 
-import mcjty.tools.typed.Key;
-import mcjty.tools.typed.Type;
+import mcjty.incontrol.tools.typed.Key;
+import mcjty.incontrol.tools.typed.Type;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.world.World;
 

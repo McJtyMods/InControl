@@ -2,7 +2,7 @@ package mcjty.incontrol;
 
 
 import mcjty.incontrol.setup.ModSetup;
-import mcjty.tools.cache.StructureCache;
+import mcjty.incontrol.tools.cache.StructureCache;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;

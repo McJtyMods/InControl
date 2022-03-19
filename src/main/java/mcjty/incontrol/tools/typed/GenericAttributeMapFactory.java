@@ -1,10 +1,10 @@
-package mcjty.tools.typed;
+package mcjty.incontrol.tools.typed;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import mcjty.incontrol.ErrorHandler;
-import mcjty.tools.varia.JSonTools;
+import mcjty.incontrol.tools.varia.JSonTools;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;

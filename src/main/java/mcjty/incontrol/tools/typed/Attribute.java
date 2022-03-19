@@ -1,4 +1,4 @@
-package mcjty.tools.typed;
+package mcjty.incontrol.tools.typed;
 
 public class Attribute<T> {
 

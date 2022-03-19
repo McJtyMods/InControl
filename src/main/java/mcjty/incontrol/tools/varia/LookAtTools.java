@@ -1,4 +1,4 @@
-package mcjty.tools.varia;
+package mcjty.incontrol.tools.varia;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -7,7 +7,6 @@ import net.minecraft.util.math.RayTraceContext;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.IWorld;
-import net.minecraft.world.World;
 
 public class LookAtTools {
 

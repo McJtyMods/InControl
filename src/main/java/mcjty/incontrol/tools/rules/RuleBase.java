@@ -1,4 +1,4 @@
-package mcjty.tools.rules;
+package mcjty.incontrol.tools.rules;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -6,9 +6,9 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import mcjty.incontrol.ErrorHandler;
-import mcjty.tools.typed.AttributeMap;
-import mcjty.tools.varia.LookAtTools;
-import mcjty.tools.varia.Tools;
+import mcjty.incontrol.tools.typed.AttributeMap;
+import mcjty.incontrol.tools.varia.LookAtTools;
+import mcjty.incontrol.tools.varia.Tools;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.IAngerable;
@@ -46,7 +46,7 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static mcjty.tools.rules.CommonRuleKeys.*;
+import static mcjty.incontrol.tools.rules.CommonRuleKeys.*;
 
 public class RuleBase<T extends RuleBase.EventGetter> {
 

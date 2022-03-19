@@ -1,4 +1,4 @@
-package mcjty.tools.typed;
+package mcjty.incontrol.tools.typed;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

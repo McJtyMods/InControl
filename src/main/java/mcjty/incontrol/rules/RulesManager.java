@@ -4,7 +4,7 @@ import com.google.gson.JsonElement;
 import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.data.DataStorage;
-import mcjty.tools.varia.JSonTools;
+import mcjty.incontrol.tools.varia.JSonTools;
 import net.minecraft.world.World;
 import org.apache.logging.log4j.Level;
 

@@ -3,7 +3,7 @@ package mcjty.incontrol.spawner;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.data.DataStorage;
 import mcjty.incontrol.data.Statistics;
-import mcjty.tools.varia.Box;
+import mcjty.incontrol.tools.varia.Box;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.*;
 import net.minecraft.entity.monster.IMob;

@@ -1,6 +1,6 @@
 package mcjty.incontrol.rules;
 
-import mcjty.tools.varia.Tools;
+import mcjty.incontrol.tools.varia.Tools;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.monster.IMob;

@@ -1,4 +1,4 @@
-package mcjty.tools.varia;
+package mcjty.incontrol.tools.varia;
 
 import com.google.gson.*;
 import org.apache.commons.lang3.tuple.Pair;

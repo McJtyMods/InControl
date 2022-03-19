@@ -1,7 +1,7 @@
-package mcjty.tools.cache;
+package mcjty.incontrol.tools.cache;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
-import mcjty.tools.varia.Tools;
+import mcjty.incontrol.tools.varia.Tools;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;

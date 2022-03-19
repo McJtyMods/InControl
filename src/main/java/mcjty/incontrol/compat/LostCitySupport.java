@@ -4,7 +4,7 @@ import mcjty.incontrol.InControl;
 import mcjty.lostcities.api.ILostChunkInfo;
 import mcjty.lostcities.api.ILostCities;
 import mcjty.lostcities.api.ILostCityInformation;
-import mcjty.tools.rules.IEventQuery;
+import mcjty.incontrol.tools.rules.IEventQuery;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IServerWorld;
 import net.minecraft.world.IWorld;

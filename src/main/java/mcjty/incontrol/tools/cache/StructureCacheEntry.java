@@ -1,4 +1,4 @@
-package mcjty.tools.cache;
+package mcjty.incontrol.tools.cache;
 
 import net.minecraft.util.RegistryKey;
 import net.minecraft.world.World;

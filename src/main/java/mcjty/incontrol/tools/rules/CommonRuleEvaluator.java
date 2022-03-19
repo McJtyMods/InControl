@@ -1,15 +1,14 @@
-package mcjty.tools.rules;
+package mcjty.incontrol.tools.rules;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import mcjty.incontrol.ErrorHandler;
-import mcjty.tools.cache.StructureCache;
-import mcjty.tools.typed.AttributeMap;
-import mcjty.tools.typed.Key;
-import mcjty.tools.varia.LookAtTools;
-import mcjty.tools.varia.Tools;
+import mcjty.incontrol.tools.cache.StructureCache;
+import mcjty.incontrol.tools.typed.AttributeMap;
+import mcjty.incontrol.tools.varia.LookAtTools;
+import mcjty.incontrol.tools.varia.Tools;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
@@ -51,7 +50,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import static mcjty.tools.rules.CommonRuleKeys.*;
+import static mcjty.incontrol.tools.rules.CommonRuleKeys.*;
 
 public class CommonRuleEvaluator {
 

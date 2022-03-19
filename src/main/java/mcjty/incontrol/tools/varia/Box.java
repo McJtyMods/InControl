@@ -1,4 +1,4 @@
-package mcjty.tools.varia;
+package mcjty.incontrol.tools.varia;
 
 import net.minecraft.util.math.BlockPos;
 
