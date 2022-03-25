@@ -9,6 +9,7 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.levelgen.feature.ConfiguredStructureFeature;
 import net.minecraft.world.level.levelgen.feature.StructureFeature;
 import net.minecraft.server.level.ServerLevel;
 
@@ -42,11 +43,11 @@ public class StructureCache {
         if (chunk == null) {
             return false;
         }
-        Map<StructureFeature<?>, LongSet> references = chunk.getAllReferences();
-        for (Map.Entry<StructureFeature<?>, LongSet> e : references.entrySet()) {
+        Map<ConfiguredStructureFeature<?, ?>, LongSet> references = chunk.getAllReferences();
+        for (Map.Entry<ConfiguredStructureFeature<?, ?>, LongSet> e : references.entrySet()) {
             LongSet longs = e.getValue();
             if (!longs.isEmpty()) {
-                structureCache.put(new StructureCacheEntry(e.getKey().getRegistryName().toString(), dimension, cplong), true);
+                structureCache.put(new StructureCacheEntry(e.getKey().feature.getRegistryName().toString(), dimension, cplong), true);
             }
         }
 

@@ -56,7 +56,7 @@ archivesBaseName = "incontrol"
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 minecraft {
-    mappings channel: 'parchment' , version: '2021.12.19-1.18.1'
+    mappings channel: 'parchment', version: "2022.03.13-1.18.2"
     accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
 
     runs {

@@ -8,7 +8,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.FluidTags;
-import net.minecraft.tags.Tag;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.random.WeightedRandomList;
 import net.minecraft.world.Difficulty;
@@ -185,7 +185,7 @@ public class SpawnerSystem {
     private static EntityType<?> selectMob(ServerLevel world, EntityType<?> mob, MobCategory classification, SpawnerConditions conditions, BlockPos pos) {
         EntityType<?> spawnable = mob;
         if (spawnable == null && classification != null) {
-            WeightedRandomList<MobSpawnSettings.SpawnerData> spawners = world.getBiome(pos).getMobSettings().getMobs(classification);
+            WeightedRandomList<MobSpawnSettings.SpawnerData> spawners = world.getBiome(pos).value().getMobSettings().getMobs(classification);
             if (spawners.isEmpty()) {
                 return null;
             }
@@ -231,7 +231,7 @@ public class SpawnerSystem {
         }
     }
 
-    private static boolean containsLiquid(Level world, AABB box, Tag.Named<Fluid> liquid) {
+    private static boolean containsLiquid(Level world, AABB box, TagKey<Fluid> liquid) {
         int x1 = Mth.floor(box.minX);
         int x2 = Mth.ceil(box.maxX);
         int y1 = Mth.floor(box.minY);
@@ -286,12 +286,12 @@ public class SpawnerSystem {
         }
 
         BlockPos pos = box.randomPos(random);
-        double sqdist = pos.distSqr(player.blockPosition().getX(), player.blockPosition().getY(), player.blockPosition().getZ(), true);
+        double sqdist = pos.distToCenterSqr(player.blockPosition().getX(), player.blockPosition().getY(), player.blockPosition().getZ());
 
         int counter = 100;
         while (sqdist < mindist * mindist || sqdist > maxdist * maxdist) {
             pos = box.randomPos(random);
-            sqdist = pos.distSqr(player.blockPosition().getX(), player.blockPosition().getY(), player.blockPosition().getZ(), true);
+            sqdist = pos.distToCenterSqr(player.blockPosition().getX(), player.blockPosition().getY(), player.blockPosition().getZ());
             counter--;
             if (counter <= 0) {
                 return null;
@@ -323,13 +323,13 @@ public class SpawnerSystem {
 
         BlockPos pos = box.randomPos(random);
         pos = getValidSpawnablePosition(world, pos.getX(), pos.getZ(), minheight, maxheight);
-        double sqdist = pos == null ? Double.MAX_VALUE : pos.distSqr(player.blockPosition().getX(), player.blockPosition().getY(), player.blockPosition().getZ(), true);
+        double sqdist = pos == null ? Double.MAX_VALUE : pos.distToCenterSqr(player.blockPosition().getX(), player.blockPosition().getY(), player.blockPosition().getZ());
 
         int counter = 100;
         while (sqdist < mindist * mindist || sqdist > maxdist * maxdist) {
             pos = box.randomPos(random);
             pos = getValidSpawnablePosition(world, pos.getX(), pos.getZ(), minheight, maxheight);
-            sqdist = pos == null ? Double.MAX_VALUE : pos.distSqr(player.blockPosition().getX(), player.blockPosition().getY(), player.blockPosition().getZ(), true);
+            sqdist = pos == null ? Double.MAX_VALUE : pos.distToCenterSqr(player.blockPosition().getX(), player.blockPosition().getY(), player.blockPosition().getZ());
             counter--;
             if (counter <= 0) {
                 return null;

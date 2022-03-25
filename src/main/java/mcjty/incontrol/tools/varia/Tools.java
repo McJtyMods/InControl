@@ -42,7 +42,7 @@ public class Tools {
     @Nonnull
     public static String getBiomeId(Biome biome) {
         if (biome.getRegistryName() == null) {
-            Optional<? extends Registry<Biome>> biomeRegistry = RegistryAccess.builtin().registry(Registry.BIOME_REGISTRY);
+            Optional<? extends Registry<Biome>> biomeRegistry = RegistryAccess.builtinCopy().registry(Registry.BIOME_REGISTRY);
             return biomeRegistry.map(r -> r.getResourceKey(biome).map(key -> key.location().toString()).orElse("")).orElse("");
         } else {
             return biome.getRegistryName().toString();

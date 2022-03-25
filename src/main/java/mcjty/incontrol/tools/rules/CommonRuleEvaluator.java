@@ -11,6 +11,7 @@ import mcjty.incontrol.tools.varia.LookAtTools;
 import mcjty.incontrol.tools.varia.Tools;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -193,8 +194,8 @@ public class CommonRuleEvaluator {
     private void addCategoryCheck(List<String> list) {
         Set<Biome.BiomeCategory> categories = list.stream().map(s -> Biome.BiomeCategory.byName(s.toLowerCase())).collect(Collectors.toSet());
         checks.add((event,query) -> {
-            Biome biome = query.getWorld(event).getBiome(query.getPos(event));
-            return categories.contains(biome.getBiomeCategory());
+            Holder<Biome> biome = query.getWorld(event).getBiome(query.getPos(event));
+            return categories.contains(Biome.getBiomeCategory(biome));
         });
     }
 
@@ -207,21 +208,21 @@ public class CommonRuleEvaluator {
         if (biomes.size() == 1) {
             String biomename = biomes.get(0);
             checks.add((event,query) -> {
-                Biome biome = query.getWorld(event).getBiome(query.getPos(event));
-                if (Tools.getBiomeId(biome).equals(biomename)) {
+                Holder<Biome> biome = query.getWorld(event).getBiome(query.getPos(event));
+                if (Tools.getBiomeId(biome.value()).equals(biomename)) {
                     return true;
                 } else {
-                    return biomename.equals(compatibility.getBiomeName(biome));
+                    return biomename.equals(compatibility.getBiomeName(biome.value()));
                 }
             });
         } else {
             Set<String> biomenames = new HashSet<>(biomes);
             checks.add((event,query) -> {
-                Biome biome = query.getWorld(event).getBiome(query.getPos(event));
-                if (biomenames.contains(biome.getRegistryName().toString())) {
+                Holder<Biome> biome = query.getWorld(event).getBiome(query.getPos(event));
+                if (biomenames.contains(biome.value().getRegistryName().toString())) {
                     return true;
                 } else {
-                    return biomenames.contains(compatibility.getBiomeName(biome));
+                    return biomenames.contains(compatibility.getBiomeName(biome.value()));
                 }
             });
         }
@@ -230,11 +231,11 @@ public class CommonRuleEvaluator {
     private void addBiomeTypesCheck(List<String> biomeTypes) {
         Set<Biome> biomes = new HashSet<>();
         biomeTypes.stream().map(s -> BiomeManager.BiomeType.valueOf(s.toUpperCase())).
-                forEach(type -> BiomeManager.getBiomes(type).stream().forEach(t -> biomes.add(ForgeRegistries.BIOMES.getValue(t.getKey().getRegistryName()))));
+                forEach(type -> BiomeManager.getBiomes(type).forEach(t -> biomes.add(ForgeRegistries.BIOMES.getValue(t.getKey().getRegistryName()))));
 
         checks.add((event,query) -> {
-            Biome biome = query.getWorld(event).getBiome(query.getPos(event));
-            return biomes.contains(biome);
+            Holder<Biome> biome = query.getWorld(event).getBiome(query.getPos(event));
+            return biomes.contains(biome.value());
         });
     }
 

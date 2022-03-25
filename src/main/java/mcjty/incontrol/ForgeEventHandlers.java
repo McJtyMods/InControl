@@ -112,7 +112,7 @@ public class ForgeEventHandlers {
                     InControl.setup.getLogger().log(org.apache.logging.log4j.Level.INFO, "Rule " + i + ": " + result
                             + " entity: " + event.getEntity().getName()
                             + " y: " + event.getY()
-                            + " biome: " + event.getWorld().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ())).getRegistryName());
+                            + " biome: " + event.getWorld().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ())).value().getRegistryName());
                 }
                 if (result != null) {
                     event.setResult(result);
@@ -141,7 +141,7 @@ public class ForgeEventHandlers {
                     InControl.setup.getLogger().log(org.apache.logging.log4j.Level.INFO, "SummonAid " + i + ": " + result
                             + " entity: " + event.getEntity().getName()
                             + " y: " + event.getY()
-                            + " biome: " + event.getWorld().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ())).getRegistryName());
+                            + " biome: " + event.getWorld().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ())).value().getRegistryName());
                 }
                 event.setResult(result);
                 if (result != Event.Result.DENY) {
