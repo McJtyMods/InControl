@@ -1,5 +1,6 @@
 Upcoming:
 - Mrbysco re-enabled GameStages support
+- Re-enabled Lost Cities support
 - 'helditem' as an action no longer worked
 
 1.18-6.0.6:

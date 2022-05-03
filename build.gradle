@@ -130,9 +130,9 @@ dependencies {
 
     compileOnly fg.deobf("net.darkhax.bookshelf:Bookshelf-Forge-${bookshelf_version}")
     compileOnly fg.deobf("net.darkhax.gamestages:GameStages-Forge-${gamestages_version}")
-    //implementation fg.deobf (project.dependencies.create("com.github.mcjty:lostcities:${lostcities_version}") {
-        //transitive = false
-    //})
+    implementation fg.deobf (project.dependencies.create("com.github.mcjty:lostcities:${lostcities_version}") {
+        transitive = false
+    })
     //compile "serene-seasons:SereneSeasons-1.12.2:1.2.15:universal"
 }
 

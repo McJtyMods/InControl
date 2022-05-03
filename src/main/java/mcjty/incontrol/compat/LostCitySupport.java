@@ -1,18 +1,23 @@
 package mcjty.incontrol.compat;
 
+import mcjty.incontrol.InControl;
 import mcjty.incontrol.tools.rules.IEventQuery;
+import mcjty.lostcities.api.ILostChunkInfo;
+import mcjty.lostcities.api.ILostCities;
+import mcjty.lostcities.api.ILostCityInformation;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraftforge.fml.InterModComms;
 import net.minecraftforge.fml.ModList;
 
-//import ILostCities;
+import java.util.function.Function;
 
 public class LostCitySupport {
 
     private static boolean registered = false;
-    // @todo 1.18
-//    private static ILostCities lostCities;
+    private static ILostCities lostCities;
 
     public static void register() {
         if (ModList.get().isLoaded("lostcities")) {
@@ -25,9 +30,8 @@ public class LostCitySupport {
             return;
         }
         registered = true;
-        // @todo 1.18
-//        InterModComms.sendTo("lostcities", "getLostCities", GetLostCities::new);
-//        InControl.setup.getLogger().info("Enabling support for Lost Cities");
+        InterModComms.sendTo("lostcities", "getLostCities", GetLostCities::new);
+        InControl.setup.getLogger().info("Enabling support for Lost Cities");
     }
 
     private static <T> Level getWorld(IEventQuery<T> query, T event) {
@@ -48,73 +52,69 @@ public class LostCitySupport {
 
 
     public static <T> boolean isCity(IEventQuery<T> query, T event) {
-        // @todo 1.18
-//        Level w = getWorld(query, event);
-//        if (w == null) {
-//            return false;   // This test don't work client side
-//        }
-//        ILostCityInformation info = lostCities.getLostInfo(w);
-//        if (info != null) {
-//            BlockPos pos = query.getPos(event);
-//            ILostChunkInfo chunkInfo = info.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
-//            return chunkInfo.isCity();
-//        }
+        Level w = getWorld(query, event);
+        if (w == null) {
+            return false;   // This test don't work client side
+        }
+        ILostCityInformation info = lostCities.getLostInfo(w);
+        if (info != null) {
+            BlockPos pos = query.getPos(event);
+            ILostChunkInfo chunkInfo = info.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
+            return chunkInfo.isCity();
+        }
         return false;
     }
 
     public static <T> boolean isStreet(IEventQuery<T> query, T event) {
-        // @todo 1.18
-//        World w = getWorld(query, event);
-//        if (w == null) {
-//            return false;   // This test don't work client side
-//        }
-//        ILostCityInformation info = lostCities.getLostInfo(w);
-//        if (info != null) {
-//            BlockPos pos = query.getPos(event);
-//            ILostChunkInfo chunkInfo = info.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
-//            return chunkInfo.isCity() && chunkInfo.getBuildingType() == null;
-//        }
+        Level w = getWorld(query, event);
+        if (w == null) {
+            return false;   // This test don't work client side
+        }
+        ILostCityInformation info = lostCities.getLostInfo(w);
+        if (info != null) {
+            BlockPos pos = query.getPos(event);
+            ILostChunkInfo chunkInfo = info.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
+            return chunkInfo.isCity() && chunkInfo.getBuildingType() == null;
+        }
         return false;
     }
 
     public static <T> boolean inSphere(IEventQuery<T> query, T event) {
-        // @todo 1.18
-//        World w = getWorld(query, event);
-//        if (w == null) {
-//            return false;   // This test don't work client side
-//        }
-//        ILostCityInformation info = lostCities.getLostInfo(w);
-//        if (info != null) {
-//            BlockPos pos = query.getPos(event);
-//            ILostChunkInfo chunkInfo = info.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
-//            return chunkInfo.getSphere() != null;
-//        }
+        Level w = getWorld(query, event);
+        if (w == null) {
+            return false;   // This test don't work client side
+        }
+        ILostCityInformation info = lostCities.getLostInfo(w);
+        if (info != null) {
+            BlockPos pos = query.getPos(event);
+            ILostChunkInfo chunkInfo = info.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
+            return chunkInfo.getSphere() != null;
+        }
         return false;
     }
 
     public static <T> boolean isBuilding(IEventQuery<T> query, T event) {
-        // @todo 1.18
-//        World w = getWorld(query, event);
-//        if (w == null) {
-//            return false;   // This test don't work client side
-//        }
-//        ILostCityInformation info = lostCities.getLostInfo(w);
-//        if (info != null) {
-//            BlockPos pos = query.getPos(event);
-//            ILostChunkInfo chunkInfo = info.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
-//            return chunkInfo.isCity() && chunkInfo.getBuildingType() != null;
-//        }
+        Level w = getWorld(query, event);
+        if (w == null) {
+            return false;   // This test don't work client side
+        }
+        ILostCityInformation info = lostCities.getLostInfo(w);
+        if (info != null) {
+            BlockPos pos = query.getPos(event);
+            ILostChunkInfo chunkInfo = info.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
+            return chunkInfo.isCity() && chunkInfo.getBuildingType() != null;
+        }
         return false;
     }
 
-//    public static class GetLostCities implements Function<ILostCities, Void> {
-//
-//        @Override
-//        public Void apply(ILostCities lc) {
-//            lostCities = lc;
-//            return null;
-//        }
-//    }
+    public static class GetLostCities implements Function<ILostCities, Void> {
+
+        @Override
+        public Void apply(ILostCities lc) {
+            lostCities = lc;
+            return null;
+        }
+    }
 
 }
 
