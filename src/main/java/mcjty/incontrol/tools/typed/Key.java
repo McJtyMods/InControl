@@ -15,4 +15,9 @@ public record Key<V>(@Nonnull Type<V> type, @Nonnull String name) {
     public String toString() {
         return "Key(" + name + ')';
     }
+
+    @Override
+    public boolean equals(Object o) {
+        return o == this;
+    }
 }
