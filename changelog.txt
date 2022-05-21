@@ -1,4 +1,4 @@
-Upcoming:
+1.18-6.0.8:
 - Fixed the 'continue' keyword in spawn.json
 
 1.18-6.0.7:
