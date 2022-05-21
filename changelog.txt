@@ -1,3 +1,6 @@
+Upcoming:
+- Fixed the 'continue' keyword in spawn.json
+
 1.16-5.2.6:
 - Made InControl compatible with FxControl again
 - Fixed the 'phase' keyword for spawn rules
