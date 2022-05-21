@@ -195,6 +195,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.createMulti(OFFHANDITEM))
                 .attribute(Attribute.createMulti(BOTHHANDSITEM))
 
+                .attribute(Attribute.create(ACTION_CONTINUE))
                 .attribute(Attribute.create(ACTION_RESULT))
                 .attribute(Attribute.create(ACTION_MESSAGE))
                 .attribute(Attribute.create(ACTION_HEALTHSET))
