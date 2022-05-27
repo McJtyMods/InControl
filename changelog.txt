@@ -1,5 +1,6 @@
 Upcoming:
 - Fixed a deadlock problem with minlight/maxlight for chunks that were being generated
+- Fixed a deadlock problem with the spawner
 
 1.18-6.0.8:
 - Fixed the 'continue' keyword in spawn.json

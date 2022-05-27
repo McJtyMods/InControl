@@ -19,6 +19,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.ChunkStatus;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.entity.LevelEntityGetter;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.material.Fluid;
@@ -285,13 +287,16 @@ public class SpawnerSystem {
             return null;
         }
 
-        BlockPos pos = box.randomPos(random);
-        double sqdist = pos.distToCenterSqr(player.blockPosition().getX(), player.blockPosition().getY(), player.blockPosition().getZ());
+        BlockPos pos = null;
+        double sqdist = Double.MAX_VALUE;
 
-        int counter = 100;
-        while (sqdist < mindist * mindist || sqdist > maxdist * maxdist) {
+        int counter = 40;
+        while (pos == null || sqdist < mindist * mindist || sqdist > maxdist * maxdist) {
             pos = box.randomPos(random);
-            sqdist = pos.distToCenterSqr(player.blockPosition().getX(), player.blockPosition().getY(), player.blockPosition().getZ());
+            LevelChunk c = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
+            if (c != null && c.getStatus() == ChunkStatus.FULL) {
+                sqdist = pos.distToCenterSqr(player.blockPosition().getX(), player.blockPosition().getY(), player.blockPosition().getZ());
+            }
             counter--;
             if (counter <= 0) {
                 return null;
@@ -321,15 +326,17 @@ public class SpawnerSystem {
             return null;
         }
 
-        BlockPos pos = box.randomPos(random);
-        pos = getValidSpawnablePosition(world, pos.getX(), pos.getZ(), minheight, maxheight);
-        double sqdist = pos == null ? Double.MAX_VALUE : pos.distToCenterSqr(player.blockPosition().getX(), player.blockPosition().getY(), player.blockPosition().getZ());
+        BlockPos pos = null;
+        double sqdist = Double.MAX_VALUE;
 
-        int counter = 100;
-        while (sqdist < mindist * mindist || sqdist > maxdist * maxdist) {
+        int counter = 40;
+        while (pos == null || sqdist < mindist * mindist || sqdist > maxdist * maxdist) {
             pos = box.randomPos(random);
-            pos = getValidSpawnablePosition(world, pos.getX(), pos.getZ(), minheight, maxheight);
-            sqdist = pos == null ? Double.MAX_VALUE : pos.distToCenterSqr(player.blockPosition().getX(), player.blockPosition().getY(), player.blockPosition().getZ());
+            LevelChunk c = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
+            if (c != null && c.getStatus() == ChunkStatus.FULL) {
+                pos = getValidSpawnablePosition(world, pos.getX(), pos.getZ(), minheight, maxheight);
+                sqdist = pos == null ? Double.MAX_VALUE : pos.distToCenterSqr(player.blockPosition().getX(), player.blockPosition().getY(), player.blockPosition().getZ());
+            }
             counter--;
             if (counter <= 0) {
                 return null;
