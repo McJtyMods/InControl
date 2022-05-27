@@ -12,6 +12,7 @@ import mcjty.incontrol.tools.varia.Tools;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
+import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -30,6 +31,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
+import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -532,13 +535,23 @@ public class CommonRuleEvaluator {
     private void addMinLightCheck(int minlight) {
         checks.add((event,query) -> {
             BlockPos pos = query.getPos(event);
-            return query.getWorld(event).getMaxLocalRawBrightness(pos) >= minlight;
+            LevelAccessor world = query.getWorld(event);
+            LevelChunk chunk = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
+            if (chunk == null || chunk.getStatus() != ChunkStatus.FULL) {
+                return false;
+            }
+            return world.getMaxLocalRawBrightness(pos) >= minlight;
         });
     }
 
     private void addMaxLightCheck(int maxlight) {
         checks.add((event,query) -> {
             BlockPos pos = query.getPos(event);
+            LevelAccessor world = query.getWorld(event);
+            LevelChunk chunk = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
+            if (chunk == null || chunk.getStatus() != ChunkStatus.FULL) {
+                return false;
+            }
             return query.getWorld(event).getMaxLocalRawBrightness(pos) <= maxlight;
         });
     }
