@@ -275,8 +275,6 @@ public class SpawnerSystem {
         List<? extends Player> players = world.players();
         Player player = players.get(random.nextInt(players.size()));
 
-        int mindist = conditions.getMindist();
-        int maxdist = conditions.getMaxdist();
         Box box = createSpawnBox(conditions, player.blockPosition());
 
         if (!box.isValid()) {
@@ -286,6 +284,9 @@ public class SpawnerSystem {
         if (checkLocalCount((ServerLevel) world, mob, conditions, box)) {
             return null;
         }
+
+        int mindist = conditions.getMindist();
+        int maxdist = conditions.getMaxdist();
 
         BlockPos pos = null;
         double sqdist = Double.MAX_VALUE;
@@ -311,11 +312,6 @@ public class SpawnerSystem {
         List<? extends Player> players = world.players();
         Player player = players.get(random.nextInt(players.size()));
 
-        int minheight = conditions.getMinheight();
-        int maxheight = conditions.getMaxheight();
-
-        int mindist = conditions.getMindist();
-        int maxdist = conditions.getMaxdist();
         Box box = createSpawnBox(conditions, player.blockPosition());
 
         if (!box.isValid()) {
@@ -325,6 +321,12 @@ public class SpawnerSystem {
         if (checkLocalCount((ServerLevel) world, mob, conditions, box)) {
             return null;
         }
+
+        int minheight = conditions.getMinheight();
+        int maxheight = conditions.getMaxheight();
+
+        int mindist = conditions.getMindist();
+        int maxdist = conditions.getMaxdist();
 
         BlockPos pos = null;
         double sqdist = Double.MAX_VALUE;
@@ -364,10 +366,15 @@ public class SpawnerSystem {
 
     private static Box createSpawnBox(SpawnerConditions conditions, BlockPos center) {
         int maxdist = conditions.getMaxdist();
-        return Box.create()
-                .center(center, maxdist+1, maxdist+1, maxdist+1)
-                .clampY(conditions.getMinheight()-1, conditions.getMaxheight()+1)
-                .build();
+        int minX = center.getX() - (maxdist+1);
+        int minY = center.getY() - (maxdist+1);
+        int minZ = center.getZ() - (maxdist+1);
+        int maxX = center.getX() + (maxdist+1);
+        int maxY = center.getY() + (maxdist+1);
+        int maxZ = center.getZ() + (maxdist+1);
+        minY = Math.max(minY, conditions.getMinheight()-1);
+        maxY = Math.min(maxY, conditions.getMaxheight()+1);
+        return new Box(minX, minY, minZ, maxX, maxY, maxZ);
     }
 
     private static BlockPos getValidSpawnablePosition(LevelReader worldIn, int x, int z, int minHeight, int maxHeight) {
