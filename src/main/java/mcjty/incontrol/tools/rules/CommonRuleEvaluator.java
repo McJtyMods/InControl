@@ -537,7 +537,7 @@ public class CommonRuleEvaluator {
             BlockPos pos = query.getPos(event);
             LevelAccessor world = query.getWorld(event);
             LevelChunk chunk = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
-            if (chunk == null || chunk.getStatus() != ChunkStatus.FULL) {
+            if (chunk == null || !chunk.getStatus().isOrAfter(ChunkStatus.FULL)) {
                 return false;
             }
             return world.getMaxLocalRawBrightness(pos) >= minlight;
@@ -549,7 +549,7 @@ public class CommonRuleEvaluator {
             BlockPos pos = query.getPos(event);
             LevelAccessor world = query.getWorld(event);
             LevelChunk chunk = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
-            if (chunk == null || chunk.getStatus() != ChunkStatus.FULL) {
+            if (chunk == null || !chunk.getStatus().isOrAfter(ChunkStatus.FULL)) {
                 return false;
             }
             return query.getWorld(event).getMaxLocalRawBrightness(pos) <= maxlight;
