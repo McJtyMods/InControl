@@ -1,4 +1,4 @@
-Upcoming:
+1.18-6.0.10:
 - New feature where you can specify 'all': true in a counting rule (similar to hostile/passive)
 
 1.18-6.0.9:
