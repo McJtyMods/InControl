@@ -36,6 +36,11 @@ public class RuleCache {
         return cache.getValidPlayers(world);
     }
 
+    public int getCountAll(IWorld world) {
+        CachePerWorld cache = getOrCreateCache(world);
+        return cache.getCountAll(world);
+    }
+
     public int getCountPassive(IWorld world) {
         CachePerWorld cache = getOrCreateCache(world);
         return cache.getCountPassive(world);
@@ -74,6 +79,12 @@ public class RuleCache {
         CachePerWorld cache = getOrCreateCache(world);
         CountPerMod countPerMod = cache.getCountPerMod(world, mod);
         return countPerMod == null ? 0 : countPerMod.passive;
+    }
+
+    public int getCountPerModAll(IWorld world, String mod) {
+        CachePerWorld cache = getOrCreateCache(world);
+        CountPerMod countPerMod = cache.getCountPerMod(world, mod);
+        return countPerMod == null ? 0 : countPerMod.total;
     }
 
     public void registerSpawn(IWorld world, EntityType entityType) {
@@ -153,6 +164,11 @@ public class RuleCache {
         private int countValidSpawnChunks(IWorld world) {
             ServerWorld sw = Tools.getServerWorld(world);
             return sw.getChunkSource().chunkMap.size();
+        }
+
+        public int getCountAll(IWorld world) {
+            count(world);
+            return countHostile + countPassive + countNeutral;
         }
 
         public int getCountPassive(IWorld world) {
