@@ -1,15 +1,15 @@
 package mcjty.incontrol.rules;
 
 import mcjty.incontrol.tools.varia.Tools;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.Level;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.LevelAccessor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,6 +34,11 @@ public class RuleCache {
     public int getValidPlayers(LevelAccessor world) {
         CachePerWorld cache = getOrCreateCache(world);
         return cache.getValidPlayers(world);
+    }
+
+    public int getCountAll(LevelAccessor world) {
+        CachePerWorld cache = getOrCreateCache(world);
+        return cache.getCountAll(world);
     }
 
     public int getCountPassive(LevelAccessor world) {
@@ -73,6 +78,12 @@ public class RuleCache {
         CachePerWorld cache = getOrCreateCache(world);
         CountPerMod countPerMod = cache.getCountPerMod(world, mod);
         return countPerMod == null ? 0 : countPerMod.passive;
+    }
+
+    public int getCountPerModAll(LevelAccessor world, String mod) {
+        CachePerWorld cache = getOrCreateCache(world);
+        CountPerMod countPerMod = cache.getCountPerMod(world, mod);
+        return countPerMod == null ? 0 : countPerMod.total;
     }
 
     public void registerSpawn(LevelAccessor world, EntityType entityType) {
@@ -152,6 +163,11 @@ public class RuleCache {
         private int countValidSpawnChunks(LevelAccessor world) {
             ServerLevel sw = Tools.getServerWorld(world);
             return sw.getChunkSource().chunkMap.size();
+        }
+
+        public int getCountAll(LevelAccessor world) {
+            count(world);
+            return countHostile + countPassive + countNeutral;
         }
 
         public int getCountPassive(LevelAccessor world) {

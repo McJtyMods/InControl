@@ -213,6 +213,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         private boolean scaledPerChunk = false;
         private boolean passive = false;
         private boolean hostile = false;
+        private boolean all = false;
         private String mod = null;
 
         public CountInfo() {
@@ -240,6 +241,11 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             return this;
         }
 
+        public CountInfo setAll(boolean all) {
+            this.all = all;
+            return this;
+        }
+
         public CountInfo setPassive(boolean passive) {
             this.passive = passive;
             return this;
@@ -262,11 +268,11 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             if (mod != null && !entityTypes.isEmpty()) {
                 return "You cannot combine 'mod' with 'mob'!";
             }
-            if (passive && hostile) {
-                return "Don't use passive and hostile at the same time!";
+            if ((passive && hostile) || (all && passive) || (all && hostile)) {
+                return "Don't use all, passive, and hostile at the same time!";
             }
-            if ((passive || hostile) && !entityTypes.isEmpty()) {
-                return "You cannot combine 'passive' or 'hostile' with 'mob'!";
+            if ((passive || hostile || all) && !entityTypes.isEmpty()) {
+                return "You cannot combine 'all', 'passive', or 'hostile' with 'mob'!";
             }
             return null;
         }
@@ -337,6 +343,9 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             }
             if (obj.has("passive")) {
                 info.setPassive(obj.get("passive").getAsBoolean());
+            }
+            if (obj.has("all")) {
+                info.setAll(obj.get("all").getAsBoolean());
             }
             if (obj.has("hostile")) {
                 info.setHostile(obj.get("hostile").getAsBoolean());
@@ -454,6 +463,8 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
                 counter = (world, entity) -> InControl.setup.cache.getCountPerModHostile(world, info.mod);
             } else if (info.passive) {
                 counter = (world, entity) -> InControl.setup.cache.getCountPerModPassive(world, info.mod);
+            } else if (info.all) {
+                counter = (world, entity) -> InControl.setup.cache.getCountPerModAll(world, info.mod);
             } else {
                 counter = (world, entity) -> InControl.setup.cache.getCountPerMod(world, info.mod);
             }
@@ -461,6 +472,8 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             counter = (world, entity) -> InControl.setup.cache.getCountHostile(world);
         } else if (info.passive) {
             counter = (world, entity) -> InControl.setup.cache.getCountPassive(world);
+        } else if (info.all) {
+            counter = (world, entity) -> InControl.setup.cache.getCountAll(world);
         } else {
             List<EntityType> infoEntityType = info.entityTypes;
             if (infoEntityType.isEmpty()) {
