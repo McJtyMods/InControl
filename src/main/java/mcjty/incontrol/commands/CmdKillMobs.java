@@ -7,19 +7,19 @@ import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import mcjty.incontrol.InControl;
+import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.monster.Enemy;
-import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.Util;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.ChatFormatting;
-import net.minecraft.world.level.Level;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.monster.Enemy;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.List;
 
@@ -40,7 +40,7 @@ public class CmdKillMobs  implements Command<CommandSourceStack> {
         if (player != null) {
             String type = context.getArgument("type", String.class);
             if (type == null || type.trim().isEmpty()) {
-                player.sendMessage(new TextComponent(ChatFormatting.RED + "Use 'all', 'passive', 'hostile' or name of the mob followed by optional dimension id"), Util.NIL_UUID);
+                player.sendSystemMessage(Component.literal(ChatFormatting.RED + "Use 'all', 'passive', 'hostile' or name of the mob followed by optional dimension id"));
                 InControl.setup.getLogger().error("Use 'all', 'passive', 'hostile', 'entity' or name of the mob followed by optional dimension id");
                 return 0;
             }
@@ -64,14 +64,14 @@ public class CmdKillMobs  implements Command<CommandSourceStack> {
                 } else if (entity) {
                     return !(input instanceof Animal) && !(input instanceof Player);
                 } else {
-                    String id = input.getType().getRegistryName().toString();
+                    String id = ForgeRegistries.ENTITIES.getKey(input.getType()).toString();
                     return type.equals(id);
                 }
             });
             for (Entity e : entities) {
-                worldServer.removeEntity(e);
+                e.setRemoved(Entity.RemovalReason.KILLED);
             }
-            player.sendMessage(new TextComponent(ChatFormatting.YELLOW + "Removed " + entities.size() + " entities!"), Util.NIL_UUID);
+            player.sendSystemMessage(Component.literal(ChatFormatting.YELLOW + "Removed " + entities.size() + " entities!"));
         }
         return 0;
     }

@@ -12,7 +12,7 @@ import mcjty.incontrol.tools.varia.Tools;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
@@ -248,7 +248,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
                 player = event.getWorld().getNearestPlayer(event.getEntityLiving(), 100);
             }
             if (player != null) {
-                player.displayClientMessage(new TextComponent(message), false);
+                player.displayClientMessage(Component.literal(message), false);
             }
         });
     }
@@ -780,7 +780,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         if (customName != null) {
             actions.add(event -> {
                 LivingEntity entityLiving = event.getEntityLiving();
-                entityLiving.setCustomName(new TextComponent(customName));
+                entityLiving.setCustomName(Component.literal(customName));
             });
         }
     }

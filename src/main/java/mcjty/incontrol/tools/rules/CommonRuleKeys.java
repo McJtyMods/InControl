@@ -24,7 +24,7 @@ public interface CommonRuleKeys {
     Key<Float> RANDOM = Key.create(Type.FLOAT, "random");
     Key<Boolean> SEESKY = Key.create(Type.BOOLEAN, "seesky");
     Key<String> WEATHER = Key.create(Type.STRING, "weather");
-    Key<String> CATEGORY = Key.create(Type.STRING, "category");
+    Key<String> BIOMETAGS = Key.create(Type.STRING, "biometags");
     Key<String> DIFFICULTY = Key.create(Type.STRING, "difficulty");
     Key<String> BLOCK = Key.create(Type.JSON, "block");
     Key<String> BLOCKOFFSET = Key.create(Type.JSON, "blockoffset");

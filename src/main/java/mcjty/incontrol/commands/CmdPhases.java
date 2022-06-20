@@ -6,7 +6,7 @@ import com.mojang.brigadier.context.CommandContext;
 import mcjty.incontrol.data.DataStorage;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 
 public class CmdPhases {
 
@@ -22,7 +22,7 @@ public class CmdPhases {
         for (String phase : data.getPhases()) {
             phases += phase + " ";
         }
-        context.getSource().sendSuccess(new TextComponent("Current phases: " + phases), false);
+        context.getSource().sendSuccess(Component.literal("Current phases: " + phases), false);
         return 0;
     }
 }

@@ -164,7 +164,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(BABY))
                 .attribute(Attribute.create(SEESKY))
                 .attribute(Attribute.create(WEATHER))
-                .attribute(Attribute.createMulti(CATEGORY))
+                .attribute(Attribute.createMulti(BIOMETAGS))
                 .attribute(Attribute.create(DIFFICULTY))
                 .attribute(Attribute.create(STRUCTURE))
                 .attribute(Attribute.create(WINTER))

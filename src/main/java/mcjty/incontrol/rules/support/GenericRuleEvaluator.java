@@ -199,7 +199,8 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         if (mods.size() == 1) {
             String modid = mods.get(0);
             checks.add((event, query) -> {
-                String mod = query.getEntity(event).getType().getRegistryName().getNamespace();
+                EntityType<?> type = query.getEntity(event).getType();
+                String mod = ForgeRegistries.ENTITIES.getKey(type).getNamespace();
                 return modid.equals(mod);
             });
         } else {
@@ -208,7 +209,8 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
                 modids.add(modid);
             }
             checks.add((event, query) -> {
-                String mod = query.getEntity(event).getType().getRegistryName().getNamespace();
+                EntityType<?> type = query.getEntity(event).getType();
+                String mod = ForgeRegistries.ENTITIES.getKey(type).getNamespace();
                 return modids.contains(mod);
             });
         }

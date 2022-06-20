@@ -41,11 +41,11 @@ public class Tools {
     /// Returns empty string on invalid biomes
     @Nonnull
     public static String getBiomeId(Biome biome) {
-        if (biome.getRegistryName() == null) {
+        if (ForgeRegistries.BIOMES.getKey(biome) == null) {
             Optional<? extends Registry<Biome>> biomeRegistry = RegistryAccess.builtinCopy().registry(Registry.BIOME_REGISTRY);
             return biomeRegistry.map(r -> r.getResourceKey(biome).map(key -> key.location().toString()).orElse("")).orElse("");
         } else {
-            return biome.getRegistryName().toString();
+            return ForgeRegistries.BIOMES.getKey(biome).toString();
         }
     }
 

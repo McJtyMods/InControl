@@ -10,6 +10,7 @@ import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -203,7 +204,7 @@ public class RuleCache {
                     int cnt = cachedCounters.getOrDefault(entity.getType(), 0)+1;
                     cachedCounters.put(entity.getType(), cnt);
 
-                    String mod = entity.getType().getRegistryName().getNamespace();
+                    String mod = ForgeRegistries.ENTITIES.getKey(entity.getType()).getNamespace();
                     CountPerMod count = countPerMod.computeIfAbsent(mod, s -> new CountPerMod());
                     count.total++;
 

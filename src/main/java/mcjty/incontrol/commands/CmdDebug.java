@@ -8,9 +8,8 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import mcjty.incontrol.ForgeEventHandlers;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.Util;
-import net.minecraft.network.chat.TextComponent;
 
 public class CmdDebug implements Command<CommandSourceStack> {
 
@@ -28,9 +27,9 @@ public class CmdDebug implements Command<CommandSourceStack> {
         if (player != null) {
             ForgeEventHandlers.debug = !ForgeEventHandlers.debug;
             if (ForgeEventHandlers.debug) {
-                player.sendMessage(new TextComponent("Enabled InControl debug mode"), Util.NIL_UUID);
+                player.sendSystemMessage(Component.literal("Enabled InControl debug mode"));
             } else {
-                player.sendMessage(new TextComponent("Disabled InControl debug mode"), Util.NIL_UUID);
+                player.sendSystemMessage(Component.literal("Disabled InControl debug mode"));
             }
         }
         return 0;

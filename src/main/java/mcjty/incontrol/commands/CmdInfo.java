@@ -7,16 +7,17 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import mcjty.incontrol.tools.varia.Tools;
-import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.core.Registry;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkStatus;
-import net.minecraft.world.level.levelgen.feature.ConfiguredStructureFeature;
+import net.minecraft.world.level.levelgen.structure.Structure;
 
 import java.util.Map;
 
@@ -37,10 +38,11 @@ public class CmdInfo implements Command<CommandSourceStack> {
         ServerLevel sw = Tools.getServerWorld(player.level);
         ChunkAccess chunk = sw.getChunk(pos.getX() >> 4, pos.getZ() >> 4, ChunkStatus.STRUCTURE_REFERENCES, false);
         if (chunk != null) {
-            Map<ConfiguredStructureFeature<?, ?>, LongSet> references = chunk.getAllReferences();
-            for (ConfiguredStructureFeature<?, ?> s : references.keySet()) {
+            Map<Structure, LongSet> references = chunk.getAllReferences();
+            for (Structure s : references.keySet()) {
                 LongSet longs = references.get(s);
-                player.sendMessage(new TextComponent(s.feature.getRegistryName().toString() + ": " + longs.size()), Util.NIL_UUID);
+                ResourceLocation key = sw.registryAccess().registryOrThrow(Registry.STRUCTURE_REGISTRY).getKey(s);
+                player.sendSystemMessage(Component.literal(key.toString() + ": " + longs.size()));
             }
         }
         return 0;

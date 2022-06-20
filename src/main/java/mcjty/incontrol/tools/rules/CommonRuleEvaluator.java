@@ -12,13 +12,14 @@ import mcjty.incontrol.tools.varia.Tools;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
-import net.minecraft.core.SectionPos;
+import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
@@ -31,7 +32,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
-import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.BlockHitResult;
@@ -77,7 +77,7 @@ public class CommonRuleEvaluator {
         map.consume(MINHEIGHT, this::addMinHeightCheck);
         map.consume(MAXHEIGHT, this::addMaxHeightCheck);
         map.consume(WEATHER, this::addWeatherCheck);
-        map.consumeAsList(CATEGORY, this::addCategoryCheck);
+        map.consumeAsList(BIOMETAGS, this::addBiomeTagCheck);
         map.consume(DIFFICULTY, this::addDifficultyCheck);
         map.consume(MINSPAWNDIST, this::addMinSpawnDistCheck);
         map.consume(MAXSPAWNDIST, this::addMaxSpawnDistCheck);
@@ -194,12 +194,25 @@ public class CommonRuleEvaluator {
         }
     }
 
-    private void addCategoryCheck(List<String> list) {
-        Set<Biome.BiomeCategory> categories = list.stream().map(s -> Biome.BiomeCategory.byName(s.toLowerCase())).collect(Collectors.toSet());
-        checks.add((event,query) -> {
-            Holder<Biome> biome = query.getWorld(event).getBiome(query.getPos(event));
-            return categories.contains(Biome.getBiomeCategory(biome));
-        });
+    private void addBiomeTagCheck(List<String> list) {
+        Set<TagKey<Biome>> tags = list.stream().map(s -> TagKey.create(Registry.BIOME_REGISTRY, new ResourceLocation(s))).collect(Collectors.toSet());
+        if (tags.size() == 1) {
+            TagKey<Biome> key = tags.iterator().next();
+            checks.add((event,query) -> {
+                Holder<Biome> biome = query.getWorld(event).getBiome(query.getPos(event));
+                return biome.is(key);
+            });
+        } else {
+            checks.add((event, query) -> {
+                Holder<Biome> biome = query.getWorld(event).getBiome(query.getPos(event));
+                for (TagKey<Biome> tag : tags) {
+                    if (biome.is(tag)) {
+                        return true;
+                    }
+                }
+                return false;
+            });
+        }
     }
 
 
@@ -222,7 +235,7 @@ public class CommonRuleEvaluator {
             Set<String> biomenames = new HashSet<>(biomes);
             checks.add((event,query) -> {
                 Holder<Biome> biome = query.getWorld(event).getBiome(query.getPos(event));
-                if (biomenames.contains(biome.value().getRegistryName().toString())) {
+                if (biomenames.contains(ForgeRegistries.BIOMES.getKey(biome.value()).toString())) {
                     return true;
                 } else {
                     return biomenames.contains(compatibility.getBiomeName(biome.value()));
@@ -234,7 +247,7 @@ public class CommonRuleEvaluator {
     private void addBiomeTypesCheck(List<String> biomeTypes) {
         Set<Biome> biomes = new HashSet<>();
         biomeTypes.stream().map(s -> BiomeManager.BiomeType.valueOf(s.toUpperCase())).
-                forEach(type -> BiomeManager.getBiomes(type).forEach(t -> biomes.add(ForgeRegistries.BIOMES.getValue(t.getKey().getRegistryName()))));
+                forEach(type -> BiomeManager.getBiomes(type).forEach(t -> biomes.add(ForgeRegistries.BIOMES.getValue(t.getKey().registry()))));
 
         checks.add((event,query) -> {
             Holder<Biome> biome = query.getWorld(event).getBiome(query.getPos(event));
@@ -364,7 +377,7 @@ public class CommonRuleEvaluator {
                 test = (world, pos) -> {
                     LevelChunk chunk = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
                     if (chunk != null) {
-                        return finalTest.test(world, pos) && mod.equals(world.getBlockState(pos).getBlock().getRegistryName().getNamespace());
+                        return finalTest.test(world, pos) && mod.equals(ForgeRegistries.BLOCKS.getKey(world.getBlockState(pos).getBlock()).getNamespace());
                     } else {
                         return false;
                     }
@@ -696,7 +709,7 @@ public class CommonRuleEvaluator {
         if (obj.has("mod")) {
             String mod = obj.get("mod").getAsString();
             Predicate<ItemStack> finalTest = test;
-            test = s -> finalTest.test(s) && "mod".equals(s.getItem().getRegistryName().getNamespace());
+            test = s -> finalTest.test(s) && "mod".equals(ForgeRegistries.ITEMS.getKey(s.getItem()).getNamespace());
         }
         if (obj.has("nbt")) {
             List<Predicate<CompoundTag>> nbtMatchers = getNbtMatchers(obj, logger);

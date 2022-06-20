@@ -5,17 +5,17 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.Util;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.ChatFormatting;
-import net.minecraft.world.level.Level;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Map;
 
@@ -38,10 +38,10 @@ public class CmdList implements Command<CommandSourceStack> {
             ServerLevel worldServer = player.getCommandSenderWorld().getServer().getLevel(dimension);
             Counter<ResourceLocation> counter = new Counter<>();
             worldServer.getEntities(null, e -> e instanceof Mob).forEach(input -> {
-                counter.add(input.getType().getRegistryName());
+                counter.add(ForgeRegistries.ENTITIES.getKey(input.getType()));
             });
             for (Map.Entry<ResourceLocation, Integer> entry : counter.getMap().entrySet()) {
-                player.sendMessage(new TextComponent(ChatFormatting.YELLOW + "Mob " + entry.getKey().toString() + ": " + entry.getValue()), Util.NIL_UUID);
+                player.sendSystemMessage(Component.literal(ChatFormatting.YELLOW + "Mob " + entry.getKey().toString() + ": " + entry.getValue()));
             }
         }
         return 0;

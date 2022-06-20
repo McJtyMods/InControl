@@ -7,7 +7,7 @@ import com.mojang.brigadier.context.CommandContext;
 import mcjty.incontrol.data.DataStorage;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 
 public class CmdDays {
 
@@ -20,7 +20,7 @@ public class CmdDays {
 
     private static int showDays(CommandContext<CommandSourceStack> context) {
         DataStorage data = DataStorage.getData(context.getSource().getLevel());
-        context.getSource().sendSuccess(new TextComponent("Current day is " + data.getDaycounter()), false);
+        context.getSource().sendSuccess(Component.literal("Current day is " + data.getDaycounter()), false);
         return 0;
     }
 
