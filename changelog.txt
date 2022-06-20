@@ -1,3 +1,6 @@
+Upcoming:
+- Added support for babies (new 'baby' keyword)
+
 1.16-5.2.8:
 - New feature where you can specify 'all': true in a counting rule (similar to hostile/passive)
 

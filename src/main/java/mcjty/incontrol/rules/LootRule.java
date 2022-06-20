@@ -113,6 +113,7 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(INSPHERE))
                 .attribute(Attribute.create(PASSIVE))
                 .attribute(Attribute.create(HOSTILE))
+                .attribute(Attribute.create(BABY))
                 .attribute(Attribute.create(SEESKY))
                 .attribute(Attribute.create(WEATHER))
                 .attribute(Attribute.createMulti(CATEGORY))

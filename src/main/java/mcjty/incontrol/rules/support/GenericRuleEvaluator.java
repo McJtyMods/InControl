@@ -13,10 +13,7 @@ import mcjty.incontrol.tools.rules.CommonRuleEvaluator;
 import mcjty.incontrol.tools.rules.IEventQuery;
 import mcjty.incontrol.tools.typed.AttributeMap;
 import mcjty.incontrol.tools.varia.Tools;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.MobEntity;
-import net.minecraft.entity.SpawnReason;
+import net.minecraft.entity.*;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -54,6 +51,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         map.consume(PHASE, b -> {});
         map.consume(HOSTILE, this::addHostileCheck);
         map.consume(PASSIVE, this::addPassiveCheck);
+        map.consume(BABY, this::addBabyCheck);
         map.consume(CANSPAWNHERE, this::addCanSpawnHereCheck);
         map.consume(NOTCOLLIDING, this::addNotCollidingCheck);
         map.consume(SPAWNER, this::addSpawnerCheck);
@@ -143,6 +141,16 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
                 }
             });
         }
+    }
+
+    private void addBabyCheck(boolean baby) {
+        checks.add((event, query) -> {
+            Entity entity = query.getEntity(event);
+            if (entity instanceof LivingEntity) {
+                return ((LivingEntity)entity).isBaby() == baby;
+            }
+            return false;
+        });
     }
 
     private void addHostileCheck(boolean hostile) {

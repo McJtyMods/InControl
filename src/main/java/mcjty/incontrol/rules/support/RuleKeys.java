@@ -17,6 +17,7 @@ public interface RuleKeys extends CommonRuleKeys {
     Key<Boolean> NOTCOLLIDING = Key.create(Type.BOOLEAN, "notcolliding");
     Key<Boolean> PASSIVE = Key.create(Type.BOOLEAN, "passive");
     Key<Boolean> HOSTILE = Key.create(Type.BOOLEAN, "hostile");
+    Key<Boolean> BABY = Key.create(Type.BOOLEAN, "baby");
     Key<String> MOB = Key.create(Type.STRING, "mob");
     Key<String> MOD = Key.create(Type.STRING, "mod");
 
