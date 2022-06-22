@@ -1,3 +1,6 @@
+Upcoming:
+- Fixed a problem with the biome test. It would crash occasionally
+
 1.19-7.0.0:
 - First port to 1.19
 
