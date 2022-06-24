@@ -1,5 +1,6 @@
 Upcoming:
 - Fixed the list and kill commands
+- Fixed minlight/maxlight
 
 1.18-6.0.11:
 - Added support for babies (new 'baby' keyword)
