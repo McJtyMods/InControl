@@ -13,8 +13,10 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Map;
@@ -22,6 +24,16 @@ import java.util.Map;
 public class CmdList implements Command<CommandSourceStack> {
 
     private static final CmdList CMD = new CmdList();
+
+    public static final EntityTypeTest<Entity, ?> ANY_TYPE = new EntityTypeTest<>() {
+        public Entity tryCast(Entity entity) {
+            return entity;
+        }
+        public Class<? extends Entity> getBaseClass() {
+            return Entity.class;
+        }
+    };
+
 
     public static ArgumentBuilder<CommandSourceStack, ?> register(CommandDispatcher<CommandSourceStack> dispatcher) {
         return Commands.literal("list")
@@ -37,7 +49,7 @@ public class CmdList implements Command<CommandSourceStack> {
 
             ServerLevel worldServer = player.getCommandSenderWorld().getServer().getLevel(dimension);
             Counter<ResourceLocation> counter = new Counter<>();
-            worldServer.getEntities(null, e -> e instanceof Mob).forEach(input -> {
+            worldServer.getEntities(ANY_TYPE, e -> e instanceof Mob).forEach(input -> {
                 counter.add(ForgeRegistries.ENTITIES.getKey(input.getType()));
             });
             for (Map.Entry<ResourceLocation, Integer> entry : counter.getMap().entrySet()) {
