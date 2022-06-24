@@ -1,3 +1,6 @@
+Upcoming:
+- Fixed minlight/maxlight
+
 1.19-7.0.1:
 - Fixed a problem with the biome test. It would crash occasionally
 
