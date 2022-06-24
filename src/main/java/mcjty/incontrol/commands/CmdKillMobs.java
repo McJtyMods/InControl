@@ -23,6 +23,8 @@ import net.minecraft.server.level.ServerLevel;
 
 import java.util.List;
 
+import static mcjty.incontrol.commands.CmdList.ANY_TYPE;
+
 public class CmdKillMobs  implements Command<CommandSourceStack> {
 
     private static final CmdKillMobs CMD = new CmdKillMobs();
@@ -54,7 +56,7 @@ public class CmdKillMobs  implements Command<CommandSourceStack> {
             boolean entity = "entity".equals(type);
 
             ServerLevel worldServer = player.getCommandSenderWorld().getServer().getLevel(dimension);
-            List<? extends Entity> entities = worldServer.getEntities(null, input -> {
+            List<? extends Entity> entities = worldServer.getEntities(ANY_TYPE, input -> {
                 if (all) {
                     return !(input instanceof Player);
                 } else if (passive) {
