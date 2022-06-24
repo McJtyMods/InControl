@@ -1,4 +1,4 @@
-Upcoming:
+1.19-7.0.2:
 - Fixed the list and kill commands
 - Fixed minlight/maxlight
 
