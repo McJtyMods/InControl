@@ -28,6 +28,7 @@ import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.IWorld;
+import net.minecraft.world.LightType;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
@@ -532,14 +533,14 @@ public class CommonRuleEvaluator {
     private void addMinLightCheck(int minlight) {
         checks.add((event,query) -> {
             BlockPos pos = query.getPos(event);
-            return query.getWorld(event).getMaxLocalRawBrightness(pos) >= minlight;
+            return query.getWorld(event).getBrightness(LightType.BLOCK, pos) >= minlight;
         });
     }
 
     private void addMaxLightCheck(int maxlight) {
         checks.add((event,query) -> {
             BlockPos pos = query.getPos(event);
-            return query.getWorld(event).getMaxLocalRawBrightness(pos) <= maxlight;
+            return query.getWorld(event).getBrightness(LightType.BLOCK, pos) <= maxlight;
         });
     }
 

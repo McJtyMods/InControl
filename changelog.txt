@@ -1,3 +1,6 @@
+Upcoming:
+- Fixed minlight/maxlight
+
 1.16-5.2.9:
 - Added support for babies (new 'baby' keyword)
 
