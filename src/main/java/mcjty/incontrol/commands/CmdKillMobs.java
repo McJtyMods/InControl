@@ -39,42 +39,40 @@ public class CmdKillMobs  implements Command<CommandSourceStack> {
     @Override
     public int run(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         ServerPlayer player = context.getSource().getPlayerOrException();
-        if (player != null) {
-            String type = context.getArgument("type", String.class);
-            if (type == null || type.trim().isEmpty()) {
-                player.sendSystemMessage(Component.literal(ChatFormatting.RED + "Use 'all', 'passive', 'hostile' or name of the mob followed by optional dimension id"));
-                InControl.setup.getLogger().error("Use 'all', 'passive', 'hostile', 'entity' or name of the mob followed by optional dimension id");
-                return 0;
-            }
-            ResourceKey<Level> dimension = player.getCommandSenderWorld().dimension();
+        String type = context.getArgument("type", String.class);
+        if (type == null || type.trim().isEmpty()) {
+            player.sendSystemMessage(Component.literal(ChatFormatting.RED + "Use 'all', 'passive', 'hostile' or name of the mob followed by optional dimension id"));
+            InControl.setup.getLogger().error("Use 'all', 'passive', 'hostile', 'entity' or name of the mob followed by optional dimension id");
+            return 0;
+        }
+        ResourceKey<Level> dimension = player.getCommandSenderWorld().dimension();
 //            if (args.length > 1) {
 //                dimension = Integer.parseInt(args[1]);
 //            }
-            boolean all = "all".equals(type);
-            boolean passive = "passive".equals(type);
-            boolean hostile = "hostile".equals(type);
-            boolean entity = "entity".equals(type);
+        boolean all = "all".equals(type);
+        boolean passive = "passive".equals(type);
+        boolean hostile = "hostile".equals(type);
+        boolean entity = "entity".equals(type);
 
-            ServerLevel worldServer = player.getCommandSenderWorld().getServer().getLevel(dimension);
-            List<? extends Entity> entities = worldServer.getEntities(ANY_TYPE, input -> {
-                if (all) {
-                    return !(input instanceof Player);
-                } else if (passive) {
-                    return input instanceof Animal && !(input instanceof Enemy);
-                } else if (hostile) {
-                    return input instanceof Enemy;
-                } else if (entity) {
-                    return !(input instanceof Animal) && !(input instanceof Player);
-                } else {
-                    String id = ForgeRegistries.ENTITIES.getKey(input.getType()).toString();
-                    return type.equals(id);
-                }
-            });
-            for (Entity e : entities) {
-                e.setRemoved(Entity.RemovalReason.KILLED);
+        ServerLevel worldServer = player.getCommandSenderWorld().getServer().getLevel(dimension);
+        List<? extends Entity> entities = worldServer.getEntities(ANY_TYPE, input -> {
+            if (all) {
+                return !(input instanceof Player);
+            } else if (passive) {
+                return input instanceof Animal && !(input instanceof Enemy);
+            } else if (hostile) {
+                return input instanceof Enemy;
+            } else if (entity) {
+                return !(input instanceof Animal) && !(input instanceof Player);
+            } else {
+                String id = ForgeRegistries.ENTITY_TYPES.getKey(input.getType()).toString();
+                return type.equals(id);
             }
-            player.sendSystemMessage(Component.literal(ChatFormatting.YELLOW + "Removed " + entities.size() + " entities!"));
+        });
+        for (Entity e : entities) {
+            e.setRemoved(Entity.RemovalReason.KILLED);
         }
+        player.sendSystemMessage(Component.literal(ChatFormatting.YELLOW + "Removed " + entities.size() + " entities!"));
         return 0;
     }
 }

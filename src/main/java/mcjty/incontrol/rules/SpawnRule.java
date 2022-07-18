@@ -20,7 +20,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import net.minecraftforge.eventbus.api.Event;
 
@@ -35,7 +35,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
     public static final IEventQuery<LivingSpawnEvent.CheckSpawn> EVENT_QUERY = new IEventQuery<LivingSpawnEvent.CheckSpawn>() {
         @Override
         public LevelAccessor getWorld(LivingSpawnEvent.CheckSpawn o) {
-            return o.getWorld();
+            return o.getLevel();
         }
 
         @Override
@@ -70,7 +70,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
 
         @Override
         public Player getPlayer(LivingSpawnEvent.CheckSpawn o) {
-            return getClosestPlayer(o.getWorld(), new BlockPos(o.getX(), o.getY(), o.getZ()));
+            return getClosestPlayer(o.getLevel(), new BlockPos(o.getX(), o.getY(), o.getZ()));
         }
 
         @Override
@@ -78,49 +78,49 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
             return ItemStack.EMPTY;
         }
     };
-    public static final IEventQuery<EntityJoinWorldEvent> EVENT_QUERY_JOIN = new IEventQuery<EntityJoinWorldEvent>() {
+    public static final IEventQuery<EntityJoinLevelEvent> EVENT_QUERY_JOIN = new IEventQuery<EntityJoinLevelEvent>() {
         @Override
-        public Level getWorld(EntityJoinWorldEvent o) {
-            return o.getWorld();
+        public Level getWorld(EntityJoinLevelEvent o) {
+            return o.getLevel();
         }
 
         @Override
-        public BlockPos getPos(EntityJoinWorldEvent o) {
+        public BlockPos getPos(EntityJoinLevelEvent o) {
             return o.getEntity().blockPosition();
         }
 
         @Override
-        public BlockPos getValidBlockPos(EntityJoinWorldEvent o) {
+        public BlockPos getValidBlockPos(EntityJoinLevelEvent o) {
             return o.getEntity().blockPosition().below();
         }
 
         @Override
-        public int getY(EntityJoinWorldEvent o) {
+        public int getY(EntityJoinLevelEvent o) {
             return o.getEntity().blockPosition().getY();
         }
 
         @Override
-        public Entity getEntity(EntityJoinWorldEvent o) {
+        public Entity getEntity(EntityJoinLevelEvent o) {
             return o.getEntity();
         }
 
         @Override
-        public DamageSource getSource(EntityJoinWorldEvent o) {
+        public DamageSource getSource(EntityJoinLevelEvent o) {
             return null;
         }
 
         @Override
-        public Entity getAttacker(EntityJoinWorldEvent o) {
+        public Entity getAttacker(EntityJoinLevelEvent o) {
             return null;
         }
 
         @Override
-        public Player getPlayer(EntityJoinWorldEvent o) {
-            return getClosestPlayer(o.getWorld(), o.getEntity().blockPosition());
+        public Player getPlayer(EntityJoinLevelEvent o) {
+            return getClosestPlayer(o.getLevel(), o.getEntity().blockPosition());
         }
 
         @Override
-        public ItemStack getItem(EntityJoinWorldEvent o) {
+        public ItemStack getItem(EntityJoinLevelEvent o) {
             return ItemStack.EMPTY;
         }
     };
@@ -277,7 +277,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
         return ruleEvaluator.match(event, EVENT_QUERY);
     }
 
-    public boolean match(EntityJoinWorldEvent event) {
+    public boolean match(EntityJoinLevelEvent event) {
         return ruleEvaluator.match(event, EVENT_QUERY_JOIN);
     }
 
@@ -285,7 +285,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
         EventGetter getter = new EventGetter() {
             @Override
             public LivingEntity getEntityLiving() {
-                return event.getEntityLiving();
+                return event.getEntity();
             }
 
             @Override
@@ -295,12 +295,12 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
 
             @Override
             public LevelAccessor getWorld() {
-                return event.getWorld();
+                return event.getLevel();
             }
 
             @Override
             public BlockPos getPosition() {
-                return event.getEntityLiving().blockPosition();
+                return event.getEntity().blockPosition();
             }
         };
         for (Consumer<EventGetter> action : actions) {
@@ -308,7 +308,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
         }
     }
 
-    public void action(EntityJoinWorldEvent event) {
+    public void action(EntityJoinLevelEvent event) {
         EventGetter getter = new EventGetter() {
             @Override
             public LivingEntity getEntityLiving() {
@@ -322,7 +322,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
 
             @Override
             public Level getWorld() {
-                return event.getWorld();
+                return event.getLevel();
             }
 
             @Override

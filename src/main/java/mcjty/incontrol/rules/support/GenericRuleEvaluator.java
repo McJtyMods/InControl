@@ -172,17 +172,17 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
     private void addMobsCheck(List<String> mobs) {
         if (mobs.size() == 1) {
             String id = mobs.get(0);
-            if (!ForgeRegistries.ENTITIES.containsKey(new ResourceLocation(id))) {
+            if (!ForgeRegistries.ENTITY_TYPES.containsKey(new ResourceLocation(id))) {
                 ErrorHandler.error("Unknown mob '" + id + "'!");
             }
-            EntityType<?> type = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(id));
+            EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(new ResourceLocation(id));
             if (type != null) {
                 checks.add((event, query) -> type.equals(query.getEntity(event).getType()));
             }
         } else {
             Set<EntityType> classes = new HashSet<>();
             for (String id : mobs) {
-                EntityType<?> type = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(id));
+                EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(new ResourceLocation(id));
                 if (type != null) {
                     classes.add(type);
                 } else {
@@ -200,7 +200,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             String modid = mods.get(0);
             checks.add((event, query) -> {
                 EntityType<?> type = query.getEntity(event).getType();
-                String mod = ForgeRegistries.ENTITIES.getKey(type).getNamespace();
+                String mod = ForgeRegistries.ENTITY_TYPES.getKey(type).getNamespace();
                 return modid.equals(mod);
             });
         } else {
@@ -210,7 +210,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             }
             checks.add((event, query) -> {
                 EntityType<?> type = query.getEntity(event).getType();
-                String mod = ForgeRegistries.ENTITIES.getKey(type).getNamespace();
+                String mod = ForgeRegistries.ENTITY_TYPES.getKey(type).getNamespace();
                 return modids.contains(mod);
             });
         }
@@ -373,7 +373,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
     }
 
     private EntityType findEntity(String id) {
-        EntityType<?> ee = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(id));
+        EntityType<?> ee = ForgeRegistries.ENTITY_TYPES.getValue(new ResourceLocation(id));
         if (ee == null) {
             ErrorHandler.error("Unknown mob '" + id + "'!");
             return null;

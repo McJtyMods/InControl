@@ -187,7 +187,7 @@ public class SpawnerRule {
     }
 
     private static void addMob(Builder builder, JsonElement element) {
-        EntityType<?> value = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(element.getAsString()));
+        EntityType<?> value = ForgeRegistries.ENTITY_TYPES.getValue(new ResourceLocation(element.getAsString()));
         if (value == null) {
             InControl.setup.getLogger().error("Error finding entity " + element.getAsString() + "!");
             throw new RuntimeException("Error finding entity " + element.getAsString() + "!");

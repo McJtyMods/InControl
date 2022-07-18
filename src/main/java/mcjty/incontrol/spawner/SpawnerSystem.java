@@ -51,8 +51,8 @@ public class SpawnerSystem {
         }
     }
 
-    public static void checkRules(TickEvent.WorldTickEvent event) {
-        Level world = event.world;
+    public static void checkRules(TickEvent.LevelTickEvent event) {
+        Level world = event.level;
         WorldSpawnerData spawnerData = worldData.get(world.dimension());
         if (spawnerData == null) {
             return;

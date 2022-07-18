@@ -8,8 +8,8 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import mcjty.incontrol.InControl;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Set;
@@ -27,10 +27,8 @@ public class CmdShowMobs  implements Command<CommandSourceStack> {
     @Override
     public int run(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         ServerPlayer player = context.getSource().getPlayerOrException();
-        if (player != null) {
-            Set<ResourceLocation> keys = ForgeRegistries.ENTITIES.getKeys();
-            keys.forEach(s -> InControl.setup.getLogger().info(("Mob:" + s)));
-        }
+        Set<ResourceLocation> keys = ForgeRegistries.ENTITY_TYPES.getKeys();
+        keys.forEach(s -> InControl.setup.getLogger().info(("Mob:" + s)));
         return 0;
     }
 }

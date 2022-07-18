@@ -45,7 +45,7 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
     public static final IEventQuery<ZombieEvent.SummonAidEvent> EVENT_QUERY = new IEventQuery<ZombieEvent.SummonAidEvent>() {
         @Override
         public Level getWorld(ZombieEvent.SummonAidEvent o) {
-            return o.getWorld();
+            return o.getLevel();
         }
 
         @Override
@@ -318,7 +318,7 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
 
             @Override
             public Level getWorld() {
-                return event.getWorld();
+                return event.getLevel();
             }
 
             @Override
@@ -330,7 +330,7 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
             public Zombie getZombieHelper() {
                 Zombie helper = event.getCustomSummonedAid();
                 if (helper == null) {
-                    helper = new Zombie(event.getWorld());
+                    helper = new Zombie(event.getLevel());
                 }
                 return helper;
             }

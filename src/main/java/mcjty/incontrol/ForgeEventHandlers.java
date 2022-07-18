@@ -14,7 +14,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.living.LivingExperienceDropEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
@@ -41,7 +41,7 @@ public class ForgeEventHandlers {
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
-    public void onEntityJoinWorld(EntityJoinWorldEvent event) {
+    public void onEntityJoinWorld(EntityJoinLevelEvent event) {
         int i = 0;
         if (!(event.getEntity() instanceof LivingEntity)) {
             return;
@@ -49,10 +49,10 @@ public class ForgeEventHandlers {
         if (event.getEntity() instanceof Player) {
             return;
         }
-        if (event.getWorld().isClientSide) {
+        if (event.getLevel().isClientSide) {
             return;
         }
-        for (SpawnRule rule : RulesManager.getFilteredRules(event.getWorld())) {
+        for (SpawnRule rule : RulesManager.getFilteredRules(event.getLevel())) {
             if (rule.isOnJoin() && rule.match(event)) {
                 Event.Result result = rule.getResult();
                 if (debug) {
@@ -76,29 +76,29 @@ public class ForgeEventHandlers {
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
-    public void onEntityJoinWorldLast(EntityJoinWorldEvent event) {
+    public void onEntityJoinWorldLast(EntityJoinLevelEvent event) {
         // We register spawns in a high priority event so that we take things that other mods
         // do into account
-        if (!event.getWorld().isClientSide() && event.getEntity() instanceof LivingEntity) {
+        if (!event.getLevel().isClientSide() && event.getEntity() instanceof LivingEntity) {
             if (!(event.getEntity() instanceof Player)) {
-                InControl.setup.cache.registerSpawn(event.getWorld(), event.getEntity().getType());
+                InControl.setup.cache.registerSpawn(event.getLevel(), event.getEntity().getType());
             }
         }
     }
 
     @SubscribeEvent
-    public void onWorldTick(TickEvent.WorldTickEvent event) {
-        if (event.phase == TickEvent.Phase.START && !event.world.isClientSide) {
+    public void onWorldTick(TickEvent.LevelTickEvent event) {
+        if (event.phase == TickEvent.Phase.START && !event.level.isClientSide) {
             // For every world tick we reset the cache
-            InControl.setup.cache.reset(event.world);
+            InControl.setup.cache.reset(event.level);
 
-            if (!event.world.players().isEmpty()) {
+            if (!event.level.players().isEmpty()) {
                 // If a world has players we do mob spawning in it
                 SpawnerSystem.checkRules(event);
             }
 
-            if (event.world.dimension().equals(Level.OVERWORLD)) {
-                DataStorage.getData(event.world).tick(event.world);
+            if (event.level.dimension().equals(Level.OVERWORLD)) {
+                DataStorage.getData(event.level).tick(event.level);
             }
         }
     }
@@ -111,7 +111,7 @@ public class ForgeEventHandlers {
             if (rule.match(event)) {
                 Event.Result result = rule.getResult();
                 if (debug) {
-                    Biome biome = event.getWorld().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ())).value();
+                    Biome biome = event.getLevel().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ())).value();
                     InControl.setup.getLogger().log(org.apache.logging.log4j.Level.INFO, "Rule " + i + ": " + result
                             + " entity: " + event.getEntity().getName()
                             + " y: " + event.getY()
@@ -137,11 +137,11 @@ public class ForgeEventHandlers {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onSummonAidEvent(ZombieEvent.SummonAidEvent event) {
         int i = 0;
-        for (SummonAidRule rule : RulesManager.getFilteredSummonAidRules(event.getWorld())) {
+        for (SummonAidRule rule : RulesManager.getFilteredSummonAidRules(event.getLevel())) {
             if (rule.match(event)) {
                 Event.Result result = rule.getResult();
                 if (debug) {
-                    Biome biome = event.getWorld().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ())).value();
+                    Biome biome = event.getLevel().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ())).value();
                     InControl.setup.getLogger().log(org.apache.logging.log4j.Level.INFO, "SummonAid " + i + ": " + result
                             + " entity: " + event.getEntity().getName()
                             + " y: " + event.getY()

@@ -33,7 +33,7 @@ public class ErrorHandler {
 
     public static void onPlayerJoinWorld(PlayerEvent.PlayerLoggedInEvent event) {
         for (String error : errors) {
-            event.getPlayer().sendSystemMessage(Component.literal(ChatFormatting.RED + "InControl Error: " + ChatFormatting.GOLD + error));
+            event.getEntity().sendSystemMessage(Component.literal(ChatFormatting.RED + "InControl Error: " + ChatFormatting.GOLD + error));
         }
     }
 }

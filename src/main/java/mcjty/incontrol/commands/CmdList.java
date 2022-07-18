@@ -26,9 +26,11 @@ public class CmdList implements Command<CommandSourceStack> {
     private static final CmdList CMD = new CmdList();
 
     public static final EntityTypeTest<Entity, ?> ANY_TYPE = new EntityTypeTest<>() {
+        @Override
         public Entity tryCast(Entity entity) {
             return entity;
         }
+        @Override
         public Class<? extends Entity> getBaseClass() {
             return Entity.class;
         }
@@ -50,7 +52,7 @@ public class CmdList implements Command<CommandSourceStack> {
             ServerLevel worldServer = player.getCommandSenderWorld().getServer().getLevel(dimension);
             Counter<ResourceLocation> counter = new Counter<>();
             worldServer.getEntities(ANY_TYPE, e -> e instanceof Mob).forEach(input -> {
-                counter.add(ForgeRegistries.ENTITIES.getKey(input.getType()));
+                counter.add(ForgeRegistries.ENTITY_TYPES.getKey(input.getType()));
             });
             for (Map.Entry<ResourceLocation, Integer> entry : counter.getMap().entrySet()) {
                 player.sendSystemMessage(Component.literal(ChatFormatting.YELLOW + "Mob " + entry.getKey().toString() + ": " + entry.getValue()));
