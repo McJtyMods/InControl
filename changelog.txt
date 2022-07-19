@@ -1,4 +1,4 @@
-Upcoming:
+1.18-6.0.13:
 - Fixed a bug with nbt matching (comparing any given tag with 'value'). It would only work for numeric values. Now strings and boolean values are also supported
 
 1.18-6.0.12:
