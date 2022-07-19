@@ -369,7 +369,7 @@ public class CommonRuleEvaluator {
                 };
             }
             if (obj.has("energy")) {
-                Predicate<Integer> energy = getExpression(obj.get("energy"), logger);
+                Predicate<Integer> energy = getExpression(obj.get("energy"));
                 if (energy != null) {
                     Direction side;
                     if (obj.has("side")) {
@@ -570,7 +570,7 @@ public class CommonRuleEvaluator {
         return true;
     }
 
-    private static Predicate<Integer> getExpression(String expression, Logger logger) {
+    private static Predicate<Integer> getExpressionInteger(String expression, boolean onlyInt) {
         try {
             if (expression.startsWith(">=")) {
                 int amount = Integer.parseInt(expression.substring(2));
@@ -607,24 +607,49 @@ public class CommonRuleEvaluator {
             int amount = Integer.parseInt(expression);
             return i -> i == amount;
         } catch (NumberFormatException e) {
-            ErrorHandler.error("Bad expression '" + expression + "'!");
+            if (onlyInt) {
+                ErrorHandler.error("Bad expression '" + expression + "'!");
+            }
             return null;
         }
     }
 
-    private static Predicate<Integer> getExpression(JsonElement element, Logger logger) {
+    private static Predicate<Integer> getExpression(JsonElement element) {
         if (element.isJsonPrimitive()) {
             if (element.getAsJsonPrimitive().isNumber()) {
                 int amount = element.getAsInt();
                 return i -> i == amount;
             } else {
-                return getExpression(element.getAsString(), logger);
+                return getExpressionInteger(element.getAsString(), true);
             }
         } else {
             ErrorHandler.error("Bad expression!");
             return null;
         }
     }
+
+    private static Predicate<CompoundNBT> getExpressionOrString(JsonElement element, String tag) {
+        if (element.isJsonPrimitive()) {
+            if (element.getAsJsonPrimitive().isNumber()) {
+                int amount = element.getAsInt();
+                return tagCompound -> tagCompound.getInt(tag) == amount;
+            } else if (element.getAsJsonPrimitive().isBoolean()) {
+                boolean v = element.getAsBoolean();
+                return tagCompound -> tagCompound.getBoolean(tag) == v;
+            } else {
+                String str = element.getAsString();
+                Predicate<Integer> predicate = getExpressionInteger(str, false);
+                if (predicate == null) {
+                    return tagCompound -> str.equals(tagCompound.getString(tag));
+                }
+                return tagCompound -> predicate.test(tagCompound.getInt(tag));
+            }
+        } else {
+            ErrorHandler.error("Bad expression!");
+            return null;
+        }
+    }
+
 
     private static Predicate<ItemStack> getMatcher(String name, Logger logger) {
         ItemStack stack = Tools.parseStack(name, logger);
@@ -658,7 +683,7 @@ public class CommonRuleEvaluator {
 
         Predicate<ItemStack> test;
         if (obj.has("damage")) {
-            Predicate<Integer> damage = getExpression(obj.get("damage"), logger);
+            Predicate<Integer> damage = getExpression(obj.get("damage"));
             if (damage == null) {
                 return null;
             }
@@ -668,7 +693,7 @@ public class CommonRuleEvaluator {
         }
 
         if (obj.has("count")) {
-            Predicate<Integer> count = getExpression(obj.get("count"), logger);
+            Predicate<Integer> count = getExpression(obj.get("count"));
             if (count != null) {
                 Predicate<ItemStack> finalTest = test;
                 test = s -> finalTest.test(s) && count.test(s.getCount());
@@ -694,7 +719,7 @@ public class CommonRuleEvaluator {
             }
         }
         if (obj.has("energy")) {
-            Predicate<Integer> energy = getExpression(obj.get("energy"), logger);
+            Predicate<Integer> energy = getExpression(obj.get("energy"));
             if (energy != null) {
                 Predicate<ItemStack> finalTest = test;
                 test = s -> finalTest.test(s) && energy.test(getEnergy(s));
@@ -762,11 +787,10 @@ public class CommonRuleEvaluator {
                     return false;
                 });
             } else {
-                Predicate<Integer> nbt = getExpression(o.get("value"), logger);
-                if (nbt == null) {
-                    return null;
+                Predicate<CompoundNBT> nbt = getExpressionOrString(o.get("value"), "value");
+                if (nbt != null) {
+                    nbtMatchers.add(nbt);
                 }
-                nbtMatchers.add(tagCompound -> nbt.test(tagCompound.getInt(tag)));
             }
 
         }
