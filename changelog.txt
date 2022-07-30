@@ -1,3 +1,6 @@
+Upcoming:
+- Fixed a potential incompatibility with fake worlds
+
 1.19-7.0.4:
 - Fixed a bug with nbt matching (comparing any given tag with 'value'). It would only work for numeric values. Now strings and boolean values are also supported
 
