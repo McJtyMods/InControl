@@ -1,4 +1,4 @@
-Upcoming:
+1.19-7.0.5:
 - Fixed a potential incompatibility with fake worlds
 
 1.19-7.0.4:
