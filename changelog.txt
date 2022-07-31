@@ -1,4 +1,4 @@
-Upcoming:
+1.16-5.2.12:
 - Fixed a potential incompatibility with fake worlds
 
 1.16-5.2.11:
