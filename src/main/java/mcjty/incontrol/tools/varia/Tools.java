@@ -165,8 +165,8 @@ public class Tools {
         ServerWorld sw;
         if (world instanceof ServerWorld) {
             sw = (ServerWorld) world;
-        } else if (world instanceof WorldGenRegion) {
-            sw = ((WorldGenRegion) world).getLevel();
+        } else if (world instanceof IServerWorld) {
+            sw = ((IServerWorld) world).getLevel();
         } else {
             throw new IllegalStateException("No world found!");
         }
