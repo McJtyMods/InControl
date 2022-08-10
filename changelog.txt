@@ -1,3 +1,6 @@
+Upcoming:
+- Nbt 'value' matching was broken
+
 1.19-7.0.5:
 - Fixed a potential incompatibility with fake worlds
 

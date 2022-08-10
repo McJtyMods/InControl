@@ -808,7 +808,7 @@ public class CommonRuleEvaluator {
                     return false;
                 });
             } else {
-                Predicate<CompoundTag> nbt = getExpressionOrString(o.get("value"), "value");
+                Predicate<CompoundTag> nbt = getExpressionOrString(o.get("value"), tag);
                 if (nbt != null) {
                     nbtMatchers.add(nbt);
                 }
