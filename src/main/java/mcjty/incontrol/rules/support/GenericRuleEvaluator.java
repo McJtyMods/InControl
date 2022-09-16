@@ -13,6 +13,7 @@ import mcjty.incontrol.tools.rules.CommonRuleEvaluator;
 import mcjty.incontrol.tools.rules.IEventQuery;
 import mcjty.incontrol.tools.typed.AttributeMap;
 import mcjty.incontrol.tools.varia.Tools;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
@@ -20,7 +21,10 @@ import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.chunk.ChunkStatus;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -78,7 +82,13 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             checks.add((event, query) -> {
                 Entity entity = query.getEntity(event);
                 if (entity instanceof Mob) {
-                    return Mob.checkMobSpawnRules((EntityType<? extends Mob>) entity.getType(), entity.getCommandSenderWorld(), MobSpawnType.NATURAL, entity.blockPosition(), null);
+                    BlockPos pos = entity.blockPosition();
+                    Level world = entity.getCommandSenderWorld();
+                    LevelChunk chunk = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
+                    if (chunk == null || !chunk.getStatus().isOrAfter(ChunkStatus.FULL)) {
+                        return false;
+                    }
+                    return Mob.checkMobSpawnRules((EntityType<? extends Mob>) entity.getType(), world, MobSpawnType.NATURAL, pos, null);
                 } else {
                     return false;
                 }
@@ -87,7 +97,13 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             checks.add((event, query) -> {
                 Entity entity = query.getEntity(event);
                 if (entity instanceof Mob) {
-                    return !Mob.checkMobSpawnRules((EntityType<? extends Mob>) entity.getType(), entity.getCommandSenderWorld(), MobSpawnType.NATURAL, entity.blockPosition(), null);
+                    BlockPos pos = entity.blockPosition();
+                    Level world = entity.getCommandSenderWorld();
+                    LevelChunk chunk = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
+                    if (chunk == null || !chunk.getStatus().isOrAfter(ChunkStatus.FULL)) {
+                        return false;
+                    }
+                    return !Mob.checkMobSpawnRules((EntityType<? extends Mob>) entity.getType(), world, MobSpawnType.NATURAL, pos, null);
                 } else {
                     return true;
                 }
@@ -100,7 +116,13 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             checks.add((event, query) -> {
                 Entity entity = query.getEntity(event);
                 if (entity instanceof Mob) {
-                    return ((Mob) entity).checkSpawnObstruction(entity.getCommandSenderWorld());
+                    BlockPos pos = entity.blockPosition();
+                    Level world = entity.getCommandSenderWorld();
+                    LevelChunk chunk = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
+                    if (chunk == null || !chunk.getStatus().isOrAfter(ChunkStatus.FULL)) {
+                        return false;
+                    }
+                    return ((Mob) entity).checkSpawnObstruction(world);
                 } else {
                     return false;
                 }
@@ -109,7 +131,13 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
             checks.add((event, query) -> {
                 Entity entity = query.getEntity(event);
                 if (entity instanceof Mob) {
-                    return !((Mob) entity).checkSpawnObstruction(entity.getCommandSenderWorld());
+                    BlockPos pos = entity.blockPosition();
+                    Level world = entity.getCommandSenderWorld();
+                    LevelChunk chunk = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
+                    if (chunk == null || !chunk.getStatus().isOrAfter(ChunkStatus.FULL)) {
+                        return false;
+                    }
+                    return !((Mob) entity).checkSpawnObstruction(world);
                 } else {
                     return true;
                 }
