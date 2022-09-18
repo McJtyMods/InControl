@@ -1,4 +1,4 @@
-Upcoming:
+1.18-6.0.16:
 - Fixed a problem with 'canspawnhere' and 'notcolliding' potentially locking up worldgen
 
 1.18-6.0.15:
