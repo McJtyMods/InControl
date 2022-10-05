@@ -19,3 +19,9 @@ Be in control of spawns
     versionRange="[43.1.30,)"
     ordering="NONE"
     side="BOTH"
+[[dependencies.incontrol]]
+    modId="lostcities"
+    mandatory=false
+    versionRange="[1.19-6.0.6,)"
+    ordering="NONE"
+    side="BOTH"

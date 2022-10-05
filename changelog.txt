@@ -1,3 +1,6 @@
+Upcoming:
+- Better 'insphere' test using newer version of Lost Cities
+
 1.19-7.0.7:
 - Fixed a problem with 'canspawnhere' and 'notcolliding' potentially locking up worldgen
 

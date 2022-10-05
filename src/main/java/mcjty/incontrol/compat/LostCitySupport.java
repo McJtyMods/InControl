@@ -5,6 +5,7 @@ import mcjty.incontrol.tools.rules.IEventQuery;
 import mcjty.lostcities.api.ILostChunkInfo;
 import mcjty.lostcities.api.ILostCities;
 import mcjty.lostcities.api.ILostCityInformation;
+import mcjty.lostcities.api.ILostSphere;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -87,8 +88,8 @@ public class LostCitySupport {
         ILostCityInformation info = lostCities.getLostInfo(w);
         if (info != null) {
             BlockPos pos = query.getPos(event);
-            ILostChunkInfo chunkInfo = info.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
-            return chunkInfo.getSphere() != null;
+            ILostSphere sphere = info.getSphere(pos.getX(), pos.getZ());
+            return sphere != null;
         }
         return false;
     }
