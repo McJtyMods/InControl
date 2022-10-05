@@ -1,10 +1,8 @@
 modLoader="javafml"
-loaderVersion="[41,)"
+loaderVersion="[43,)"
 license="MIT License https://github.com/McJtyMods/FXControl/blob/1.16/LICENCE"
 issueTrackerURL="http://github.com/McJtyMods/InControl/issues"
 displayURL="http://github.com/McJtyMods/InControl/"
-#logoFile="examplemod.png" #optional
-#credits="Thanks for this example mod goes to Java" #optional
 authors="McJty"
 
 [[mods]]
@@ -18,6 +16,6 @@ Be in control of spawns
 [[dependencies.incontrol]]
     modId="forge"
     mandatory=true
-    versionRange="[41.0.99,)"
+    versionRange="[43.1.30,)"
     ordering="NONE"
     side="BOTH"
