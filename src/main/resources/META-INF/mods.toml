@@ -18,6 +18,12 @@ Be in control of spawns
 [[dependencies.incontrol]]
     modId="forge"
     mandatory=true
-    versionRange="[33,)"
+    versionRange="[40,)"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.incontrol]]
+    modId="lostcities"
+    mandatory=false
+    versionRange="[1.18-5.3.10,)"
     ordering="NONE"
     side="BOTH"
