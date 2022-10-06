@@ -119,6 +119,7 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
                 .attribute(Attribute.create(HOSTILE))
                 .attribute(Attribute.create(BABY))
                 .attribute(Attribute.create(SEESKY))
+                .attribute(Attribute.create(SLIME))
                 .attribute(Attribute.create(WEATHER))
                 .attribute(Attribute.createMulti(BIOMETAGS))
                 .attribute(Attribute.create(DIFFICULTY))

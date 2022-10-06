@@ -25,9 +25,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.level.*;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -35,6 +33,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.common.BiomeManager;
@@ -87,6 +86,7 @@ public class CommonRuleEvaluator {
         map.consume(MINDIFFICULTY, this::addMinAdditionalDifficultyCheck);
         map.consume(MAXDIFFICULTY, this::addMaxAdditionalDifficultyCheck);
         map.consume(SEESKY, this::addSeeSkyCheck);
+        map.consume(SLIME, this::addSlimeChunkCheck);
         map.consumeAsList(BLOCK, b -> addBlocksCheck(map, b));
         map.consumeAsList(BIOME, this::addBiomesCheck);
         map.consumeAsList(BIOMETYPE, this::addBiomeTypesCheck);
@@ -136,6 +136,22 @@ public class CommonRuleEvaluator {
         } else {
             checks.add((event,query) -> !query.getWorld(event).canSeeSkyFromBelowWater(query.getPos(event)));
         }
+    }
+
+    private void addSlimeChunkCheck(boolean slime) {
+        if (slime) {
+            checks.add((event,query) -> isSlimeChunk(new ChunkPos(query.getPos(event)), query.getWorld(event)));
+        } else {
+            checks.add((event,query) -> !isSlimeChunk(new ChunkPos(query.getPos(event)), query.getWorld(event)));
+        }
+    }
+
+    private boolean isSlimeChunk(ChunkPos cp, LevelAccessor world) {
+        long seed = 0;
+        if (world instanceof WorldGenLevel level) {
+            seed = level.getSeed();
+        }
+        return WorldgenRandom.seedSlimeChunk(cp.x, cp.z, seed, 987234911L).nextInt(10) == 0;
     }
 
     private void addDimensionCheck(List<ResourceKey<Level>> dimensions) {
