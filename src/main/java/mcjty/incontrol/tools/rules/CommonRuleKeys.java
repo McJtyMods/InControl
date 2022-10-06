@@ -23,6 +23,7 @@ public interface CommonRuleKeys {
     Key<Float> MAXSPAWNDIST = Key.create(Type.FLOAT, "maxspawndist");
     Key<Float> RANDOM = Key.create(Type.FLOAT, "random");
     Key<Boolean> SEESKY = Key.create(Type.BOOLEAN, "seesky");
+    Key<Boolean> SLIME = Key.create(Type.BOOLEAN, "slime");
     Key<String> WEATHER = Key.create(Type.STRING, "weather");
     Key<String> CATEGORY = Key.create(Type.STRING, "category");
     Key<String> DIFFICULTY = Key.create(Type.STRING, "difficulty");

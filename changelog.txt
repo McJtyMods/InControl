@@ -1,5 +1,6 @@
 Upcoming:
 - Better 'insphere' test using newer version of Lost Cities
+- Added new 'slime' test to test if a position is in a slime chunk
 
 1.18-6.0.16:
 - Fixed a problem with 'canspawnhere' and 'notcolliding' potentially locking up worldgen
