@@ -1,3 +1,6 @@
+Upcoming:
+- Fixed major slowdown in biome testing
+
 1.19-7.0.8:
 - Better 'insphere' test using newer version of Lost Cities
 - Added new 'slime' test to test if a position is in a slime chunk

@@ -3,6 +3,7 @@ package mcjty.incontrol.tools.varia;
 import com.google.gson.JsonObject;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import mcjty.incontrol.ErrorHandler;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
@@ -38,9 +39,13 @@ public class Tools {
         }
     }
 
+    public static String getBiomeId(Holder<Biome> biomeHolder) {
+        return biomeHolder.unwrap().map((key) -> key.location().toString(), (key) -> "[unregistered " + key + "]");
+    }
+
     /// Returns empty string on invalid biomes
     @Nonnull
-    public static String getBiomeId(Biome biome) {
+    public static String getBiomeIdSlowAndOldAndProbablySomewhatWrong(Biome biome) {
         if (ForgeRegistries.BIOMES.getKey(biome) == null) {
             Optional<? extends Registry<Biome>> biomeRegistry = RegistryAccess.builtinCopy().registry(Registry.BIOME_REGISTRY);
             return biomeRegistry.map(r -> r.getResourceKey(biome).map(key -> key.location().toString()).orElse("")).orElse("");
