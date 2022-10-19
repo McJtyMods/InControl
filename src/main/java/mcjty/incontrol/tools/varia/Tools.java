@@ -18,7 +18,6 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraftforge.registries.ForgeRegistries;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Logger;
 
@@ -66,7 +65,7 @@ public class Tools {
             } catch (NumberFormatException e) {
                 v = 1.0f;
             }
-            return Pair.of(v, parseStack(name.substring(i+1), logger));
+            return Pair.of(v, parseStack(name.substring(i + 1), logger));
         }
 
         return Pair.of(1.0f, parseStack(name, logger));
@@ -86,15 +85,30 @@ public class Tools {
 
     @Nonnull
     public static ItemStack parseStack(String name, Logger logger) {
-        if (name.contains("/")) {
-            String[] split = StringUtils.split(name, "/");
-            ItemStack stack = parseStackNoNBT(split[0], logger);
+        if (name.contains("{")) {
+            int idx = name.indexOf('{');
+            ItemStack stack = parseStackNoNBT(name.substring(0, idx), logger);
             if (stack.isEmpty()) {
                 return stack;
             }
             CompoundTag nbt;
             try {
-                nbt = TagParser.parseTag(split[1]);
+                nbt = TagParser.parseTag(name.substring(idx));
+            } catch (CommandSyntaxException e) {
+                ErrorHandler.error("Error parsing NBT in '" + name + "'!");
+                return ItemStack.EMPTY;
+            }
+            stack.setTag(nbt);
+            return stack;
+        } else if (name.contains("/")) {
+            int idx = name.indexOf('/');
+            ItemStack stack = parseStackNoNBT(name.substring(0, idx), logger);
+            if (stack.isEmpty()) {
+                return stack;
+            }
+            CompoundTag nbt;
+            try {
+                nbt = TagParser.parseTag(name.substring(idx + 1));
             } catch (CommandSyntaxException e) {
                 ErrorHandler.error("Error parsing NBT in '" + name + "'!");
                 return ItemStack.EMPTY;
@@ -139,28 +153,11 @@ public class Tools {
     }
 
     private static ItemStack parseStackNoNBT(String name, Logger logger) {
-        if (name.contains("@")) {
-            String[] split = StringUtils.split(name, "@");
-            Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(split[0]));
-            if (item == null) {
-                return ItemStack.EMPTY;
-            }
-            int meta = 0;
-            try {
-                meta = Integer.parseInt(split[1]);
-            } catch (NumberFormatException e) {
-                ErrorHandler.error("Unknown item '" + name + "'!");
-                return ItemStack.EMPTY;
-            }
-            // @todo 1.15 Meta? Support properties?
-            return new ItemStack(item, 1);
-        } else {
-            Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(name));
-            if (item == null) {
-                return ItemStack.EMPTY;
-            }
-            return new ItemStack(item);
+        Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(name));
+        if (item == null) {
+            return ItemStack.EMPTY;
         }
+        return new ItemStack(item);
     }
 
 
