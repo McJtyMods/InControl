@@ -93,6 +93,7 @@ minecraft {
 }
 
 jar {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
     manifest {
         attributes 'FMLAT': 'accesstransformer.cfg',
         "Specification-Title": "incontrol",
