@@ -1,5 +1,6 @@
-Upcoming:
+1.18-6.0.20:
 - Technical change: mobs spawned through the spawner system will now correctly fire the SpecialSpawn event
+- New feature 'groupdistance' for spawner.json (in the 'amount' section). If this is set to 0 or greater mobs will spawn in groups (with the groupdistance used as the maximum distance between them)
 
 1.18-6.0.19:
 - Improved parsing of itemstacks. Removed the obsolete @ notation (metadata). Instead of the InControl <itemid>/<nbtjson> syntax you can now also use the vanilla syntax <itemid>{<nbtjson>}. Also / is no longer restricted in the nbt string

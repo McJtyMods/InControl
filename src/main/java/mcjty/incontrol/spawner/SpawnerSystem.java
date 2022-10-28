@@ -146,11 +146,14 @@ public class SpawnerSystem {
 
         int minspawn = rule.getMinSpawn();
         int maxspawn = rule.getMaxSpawn();
+        int groupDistance = rule.getGroupDistance();
         int desiredAmount = minspawn + ((minspawn == maxspawn) ? 0 : random.nextInt(maxspawn-minspawn));
         int spawned = 0;
 
+        BlockPos groupCenterPos = null;
+
         for (int i = 0 ; i < rule.getAttempts() ; i++) {
-            BlockPos pos = getRandomPosition(world, mob, conditions);
+            BlockPos pos = getRandomPosition(world, mob, conditions, groupCenterPos, groupDistance);
             if (pos != null) {
                 if (world.hasChunkAt(pos)) {
                     EntityType<?> spawnable = selectMob(world, mob, classification, conditions, pos);
@@ -174,6 +177,9 @@ public class SpawnerSystem {
                                             world.addFreshEntityWithPassengers(entity);
                                             Statistics.addSpawnerStat(ruleNr);
                                             spawned++;
+                                            if (groupCenterPos == null) {
+                                                groupCenterPos = pos;
+                                            }
                                             if (spawned >= desiredAmount) {
                                                 return;
                                             }
@@ -261,21 +267,23 @@ public class SpawnerSystem {
     }
 
     @Nullable
-    private static BlockPos getRandomPosition(Level world, EntityType<?> mob, SpawnerConditions conditions) {
+    private static BlockPos getRandomPosition(Level world, EntityType<?> mob, SpawnerConditions conditions,
+                                              @Nullable BlockPos groupCenterPos, int groupDistance) {
         boolean inAir = conditions.isInAir();
         boolean inWater = conditions.isInWater();
         boolean inLava = conditions.isInLava();
         boolean inLiquid = conditions.isInLiquid();
 
         if (inAir || inWater || inLava || inLiquid) {
-            return getRandomPositionInBox(world, mob, conditions);
+            return getRandomPositionInBox(world, mob, conditions, groupCenterPos, groupDistance);
         } else {
-            return getRandomPositionOnGround(world, mob, conditions);
+            return getRandomPositionOnGround(world, mob, conditions, groupCenterPos, groupDistance);
         }
     }
 
     @Nullable
-    private static BlockPos getRandomPositionInBox(Level world, EntityType<?> mob, SpawnerConditions conditions) {
+    private static BlockPos getRandomPositionInBox(Level world, EntityType<?> mob, SpawnerConditions conditions,
+                                                   @Nullable BlockPos groupCenterPos, int groupDistance) {
         List<? extends Player> players = world.players();
         Player player = players.get(random.nextInt(players.size()));
 
@@ -297,7 +305,7 @@ public class SpawnerSystem {
 
         int counter = 40;
         while (pos == null || sqdist < mindist * mindist || sqdist > maxdist * maxdist) {
-            pos = box.randomPos(random);
+            pos = box.randomPos(random, groupCenterPos, groupDistance);
             LevelChunk c = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
             if (c != null && c.getStatus() == ChunkStatus.FULL) {
                 sqdist = pos.distToCenterSqr(player.blockPosition().getX(), player.blockPosition().getY(), player.blockPosition().getZ());
@@ -312,7 +320,8 @@ public class SpawnerSystem {
     }
 
     @Nullable
-    private static BlockPos getRandomPositionOnGround(Level world, EntityType<?> mob, SpawnerConditions conditions) {
+    private static BlockPos getRandomPositionOnGround(Level world, EntityType<?> mob, SpawnerConditions conditions,
+                                                      @Nullable BlockPos groupCenterPos, int groupDistance) {
         List<? extends Player> players = world.players();
         Player player = players.get(random.nextInt(players.size()));
 
@@ -337,7 +346,7 @@ public class SpawnerSystem {
 
         int counter = 40;
         while (pos == null || sqdist < mindist * mindist || sqdist > maxdist * maxdist) {
-            pos = box.randomPos(random);
+            pos = box.randomPos(random, groupCenterPos, groupDistance);
             LevelChunk c = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
             if (c != null && c.getStatus() == ChunkStatus.FULL) {
                 pos = getValidSpawnablePosition(world, pos.getX(), pos.getZ(), minheight, maxheight);

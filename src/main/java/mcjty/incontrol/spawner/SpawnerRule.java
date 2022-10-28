@@ -22,6 +22,7 @@ public class SpawnerRule {
     private final int attempts;
     private final int minSpawn;
     private final int maxSpawn;
+    private final int groupDistance;
     private final Set<String> phases;
     private final SpawnerConditions conditions;
 
@@ -54,6 +55,7 @@ public class SpawnerRule {
         conditions = builder.conditions;
         minSpawn = builder.minSpawn;
         maxSpawn = builder.maxSpawn;
+        groupDistance = builder.groupDistance;
         float w = 0;
         for (Float weight : weights) {
             w += weight;
@@ -99,6 +101,10 @@ public class SpawnerRule {
 
     public int getMaxSpawn() {
         return maxSpawn;
+    }
+
+    public int getGroupDistance() {
+        return groupDistance;
     }
 
     public SpawnerConditions getConditions() {
@@ -175,6 +181,9 @@ public class SpawnerRule {
                     if (amount.has("maximum")) {
                         builder.maxSpawn(amount.getAsJsonPrimitive("maximum").getAsInt());
                     }
+                    if (amount.has("groupdistance")) {
+                        builder.groupDistance(amount.getAsJsonPrimitive("groupdistance").getAsInt());
+                    }
                 }
                 case CONDITIONS -> {
                     JsonObject conditions = object.getAsJsonObject("conditions");
@@ -205,6 +214,7 @@ public class SpawnerRule {
         private int attempts = 1;
         private int minSpawn = 1;
         private int maxSpawn = 1;
+        private int groupDistance = -1;
         private SpawnerConditions conditions = SpawnerConditions.DEFAULT;
 
         public Builder mobs(EntityType<?>... mobs) {
@@ -244,6 +254,11 @@ public class SpawnerRule {
 
         public Builder maxSpawn(int maxSpawn) {
             this.maxSpawn = maxSpawn;
+            return this;
+        }
+
+        public Builder groupDistance(int groupDistance) {
+            this.groupDistance = groupDistance;
             return this;
         }
 
