@@ -174,15 +174,15 @@ public class SpawnerSystem {
                                     if (canSpawn(world, mobEntity, conditions) && isNotColliding(world, mobEntity, conditions)) {
                                         if (!ForgeEventFactory.doSpecialSpawn(mobEntity, (LevelAccessor) world, pos.getX(), pos.getY(), pos.getZ(), null, MobSpawnType.NATURAL)) {
                                             mobEntity.finalizeSpawn(world, world.getCurrentDifficultyAt(entity.blockPosition()), MobSpawnType.NATURAL, null, null);
-                                            world.addFreshEntityWithPassengers(entity);
-                                            Statistics.addSpawnerStat(ruleNr);
-                                            spawned++;
-                                            if (groupCenterPos == null) {
-                                                groupCenterPos = pos;
-                                            }
-                                            if (spawned >= desiredAmount) {
-                                                return;
-                                            }
+                                        }
+                                        world.addFreshEntityWithPassengers(entity);
+                                        Statistics.addSpawnerStat(ruleNr);
+                                        spawned++;
+                                        if (groupCenterPos == null) {
+                                            groupCenterPos = pos;
+                                        }
+                                        if (spawned >= desiredAmount) {
+                                            return;
                                         }
                                     }
                                 }
