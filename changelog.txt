@@ -1,3 +1,6 @@
+Upcoming:
+- Technical change: mobs spawned through the spawner system will now correctly fire the SpecialSpawn event
+
 1.19-7.0.10:
 - Improved parsing of itemstacks. Removed the obsolete @ notation (metadata). Instead of the InControl <itemid>/<nbtjson> syntax you can now also use the vanilla syntax <itemid>{<nbtjson>}. Also / is no longer restricted in the nbt string
 

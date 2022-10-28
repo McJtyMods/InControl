@@ -16,6 +16,7 @@ import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraft.world.level.block.state.BlockState;
@@ -27,6 +28,7 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.common.ForgeHooks;
+import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.TickEvent;
 
 import javax.annotation.Nullable;
@@ -167,12 +169,14 @@ public class SpawnerSystem {
                                 busySpawning = null;
                                 if (result != -1) {
                                     if (canSpawn(world, mobEntity, conditions) && isNotColliding(world, mobEntity, conditions)) {
-                                        mobEntity.finalizeSpawn(world, world.getCurrentDifficultyAt(entity.blockPosition()), MobSpawnType.NATURAL, null, null);
-                                        world.addFreshEntityWithPassengers(entity);
-                                        Statistics.addSpawnerStat(ruleNr);
-                                        spawned++;
-                                        if (spawned >= desiredAmount) {
-                                            return;
+                                        if (!ForgeEventFactory.doSpecialSpawn(mobEntity, (LevelAccessor) world, pos.getX(), pos.getY(), pos.getZ(), null, MobSpawnType.NATURAL)) {
+                                            mobEntity.finalizeSpawn(world, world.getCurrentDifficultyAt(entity.blockPosition()), MobSpawnType.NATURAL, null, null);
+                                            world.addFreshEntityWithPassengers(entity);
+                                            Statistics.addSpawnerStat(ruleNr);
+                                            spawned++;
+                                            if (spawned >= desiredAmount) {
+                                                return;
+                                            }
                                         }
                                     }
                                 }
