@@ -47,7 +47,7 @@ public record Box(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
     }
 
     public BlockPos randomPos(Random random, @Nullable BlockPos groupCenterPos, int groupDistance) {
-        if (groupCenterPos != null) {
+        if (groupCenterPos != null && groupDistance >= 0) {
             if (groupDistance == 0) {
                 return groupCenterPos;  // All spawn on the same position
             }
