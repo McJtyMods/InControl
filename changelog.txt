@@ -1,3 +1,6 @@
+Upcoming:
+- Fixed a bug in the new groupdistance feature
+
 1.19-7.0.12:
 - Technical change: wrong interpretation of SpecialSpawn
 
