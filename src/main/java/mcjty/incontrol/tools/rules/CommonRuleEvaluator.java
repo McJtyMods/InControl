@@ -1001,7 +1001,7 @@ public class CommonRuleEvaluator {
             logger.warn("Serene Seasons is missing: this test cannot work!");
             return;
         }
-        checks.add((event, query) -> s == compatibility.isSummer(query.getWorld(event)));
+        checks.add((event, query) -> s == compatibility.isSummer(Tools.getServerWorld(query.getWorld(event))));
     }
 
     private void addWinterCheck(Boolean s) {
@@ -1009,7 +1009,7 @@ public class CommonRuleEvaluator {
             logger.warn("Serene Seasons is missing: this test cannot work!");
             return;
         }
-        checks.add((event, query) -> s == compatibility.isWinter(query.getWorld(event)));
+        checks.add((event, query) -> s == compatibility.isWinter(Tools.getServerWorld(query.getWorld(event))));
     }
 
     private void addSpringCheck(Boolean s) {
@@ -1017,7 +1017,7 @@ public class CommonRuleEvaluator {
             logger.warn("Serene Seasons is missing: this test cannot work!");
             return;
         }
-        checks.add((event, query) -> s == compatibility.isSpring(query.getWorld(event)));
+        checks.add((event, query) -> s == compatibility.isSpring(Tools.getServerWorld(query.getWorld(event))));
     }
 
     private void addAutumnCheck(Boolean s) {
@@ -1025,7 +1025,7 @@ public class CommonRuleEvaluator {
             logger.warn("Serene Seasons is missing: this test cannot work!");
             return;
         }
-        checks.add((event, query) -> s == compatibility.isAutumn(query.getWorld(event)));
+        checks.add((event, query) -> s == compatibility.isAutumn(Tools.getServerWorld(query.getWorld(event))));
     }
 
     private void addGameStageCheck(String stage) {

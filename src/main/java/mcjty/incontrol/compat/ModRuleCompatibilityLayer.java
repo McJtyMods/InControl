@@ -7,6 +7,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -109,22 +110,22 @@ public class ModRuleCompatibilityLayer implements IModRuleCompatibilityLayer {
     }
 
     @Override
-    public boolean isSpring(LevelAccessor world) {
+    public boolean isSpring(Level world) {
         return SereneSeasonsSupport.isSpring(world);
     }
 
     @Override
-    public boolean isSummer(LevelAccessor world) {
+    public boolean isSummer(Level world) {
         return SereneSeasonsSupport.isSummer(world);
     }
 
     @Override
-    public boolean isWinter(LevelAccessor world) {
+    public boolean isWinter(Level world) {
         return SereneSeasonsSupport.isWinter(world);
     }
 
     @Override
-    public boolean isAutumn(LevelAccessor world) {
+    public boolean isAutumn(Level world) {
         return SereneSeasonsSupport.isAutumn(world);
     }
 

@@ -46,6 +46,9 @@ repositories {
         name = "sonatype"
         url = "https://oss.sonatype.org/content/repositories/snapshots/"
     }
+    repositories {
+        maven { url = 'https://maven.minecraftforge.net/' }
+    }
 }
 
 
@@ -137,7 +140,7 @@ dependencies {
     compileOnly fg.deobf (project.dependencies.create("com.github.mcjty:lostcities:${lostcities_version}") {
         transitive = false
     })
-    //compile "serene-seasons:SereneSeasons-1.12.2:1.2.15:universal"
+    compileOnly "com.github.glitchfiend:SereneSeasons:1.19.2-8.1.0.24"
 }
 
 String getChangelogText() {
