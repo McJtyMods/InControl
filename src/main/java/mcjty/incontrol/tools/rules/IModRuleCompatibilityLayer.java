@@ -2,6 +2,7 @@ package mcjty.incontrol.tools.rules;
 
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.biome.Biome;
 
@@ -61,13 +62,13 @@ public interface IModRuleCompatibilityLayer {
 
     boolean hasSereneSeasons();
 
-    boolean isSpring(LevelAccessor world);
+    boolean isSpring(Level world);
 
-    boolean isSummer(LevelAccessor world);
+    boolean isSummer(Level world);
 
-    boolean isWinter(LevelAccessor world);
+    boolean isWinter(Level world);
 
-    boolean isAutumn(LevelAccessor world);
+    boolean isAutumn(Level world);
 
     // --------------------
     // EnigmaScript
