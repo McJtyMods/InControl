@@ -286,9 +286,9 @@ public class CommonRuleEvaluator {
             offsetY = offset.has("y") ? offset.get("y").getAsInt() : 0;
             offsetZ = offset.has("z") ? offset.get("z").getAsInt() : 0;
         } else {
-            offsetX = 0;
-            offsetY = 0;
-            offsetZ = 0;
+            offsetX = obj.has("x") ? obj.get("x").getAsInt() : 0;
+            offsetY = obj.has("y") ? obj.get("y").getAsInt() : 0;
+            offsetZ = obj.has("z") ? obj.get("z").getAsInt() : 0;
         }
 
         if (obj.has("look")) {
@@ -459,7 +459,7 @@ public class CommonRuleEvaluator {
         BiFunction<Object, IEventQuery, BlockPos> posFunction;
         String bo = map.consumeAndFetch(BLOCKOFFSET);
         if (bo != null) {
-            posFunction = parseOffset(map.get(BLOCKOFFSET));
+            posFunction = parseOffset(bo);
         } else {
             posFunction = (event, query) -> query.getValidBlockPos(event);
         }
