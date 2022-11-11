@@ -1,4 +1,4 @@
-Upcoming:
+1.18-6.0.24:
 - Fixed 'blockoffset' and also allow "x", "y", "z" to be specified directly inside 'blockoffset' tag (in addition to being supported inside the 'offset' child tag)
 
 1.18-6.0.23:
