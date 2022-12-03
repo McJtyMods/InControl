@@ -1,3 +1,6 @@
+Upcoming:
+- Fixed a potential hang when using the new groupdistance feature
+
 1.19-7.0.15:
 - Fixed 'blockoffset' and also allow "x", "y", "z" to be specified directly inside 'blockoffset' tag (in addition to being supported inside the 'offset' child tag)
 
