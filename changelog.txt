@@ -1,4 +1,4 @@
-Upcoming:
+1.19-7.0.16:
 - Fixed a potential hang when using the new groupdistance feature
 
 1.19-7.0.15:
