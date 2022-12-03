@@ -1,4 +1,4 @@
-Upcoming:
+1.18-6.0.25:
 - Fixed a potential hang when using the new groupdistance feature
 
 1.18-6.0.24:
