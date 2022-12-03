@@ -52,7 +52,8 @@ public record Box(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
                 return groupCenterPos;  // All spawn on the same position
             }
             // Try to find a position near the center that's also in the box (or near to it)
-            while (true) {
+            int counter = 100;
+            while (counter > 0) {
                 BlockPos attempt = new BlockPos(
                         groupCenterPos.getX() - groupDistance + random.nextInt(groupDistance * 2),
                         groupCenterPos.getY() - groupDistance + random.nextInt(groupDistance * 2),
@@ -60,7 +61,9 @@ public record Box(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
                 if (in(attempt, 2)) {
                     return attempt;
                 }
+                counter--;
             }
+            return groupCenterPos;
         }
         return new BlockPos(
                 minX + random.nextInt(maxX - minX+1),
