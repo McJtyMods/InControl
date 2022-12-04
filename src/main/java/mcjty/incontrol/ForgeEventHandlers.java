@@ -6,7 +6,9 @@ import mcjty.incontrol.data.Statistics;
 import mcjty.incontrol.rules.*;
 import mcjty.incontrol.spawner.SpawnerSystem;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -103,6 +105,43 @@ public class ForgeEventHandlers {
         }
     }
 
+    @SubscribeEvent
+    public void onEntitySpecialSpawnEvent(LivingSpawnEvent.SpecialSpawn event) {
+        int i = 0;
+        ServerLevel world = (ServerLevel) event.getEntity().getCommandSenderWorld();
+        for (SpecialRule rule : RulesManager.getFilteredSpecialRules(world)) {
+            if (rule.match(event)) {
+                SpecialRule.SpecialResult result = rule.getResult();
+                if (debug) {
+                    Biome biome = event.getLevel().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ())).value();
+                    InControl.setup.getLogger().log(org.apache.logging.log4j.Level.INFO, "Special " + i + ": " + result
+                            + " entity: " + event.getEntity().getName()
+                            + " y: " + event.getY()
+                            + " biome: " + ForgeRegistries.BIOMES.getKey(biome));
+                }
+
+                switch (result) {
+                    case BEFORE -> {
+                        event.setCanceled(false);
+                    }
+                    case AFTER -> {
+                        event.getEntity().finalizeSpawn(world, world.getCurrentDifficultyAt(event.getEntity().blockPosition()),
+                                MobSpawnType.NATURAL, null, null);
+                        event.setCanceled(true);
+                    }
+                    case REPLACE -> {
+                        event.setCanceled(true);
+                    }
+                }
+                rule.action(event);
+
+                if (!rule.isDoContinue()) {
+                    return;
+                }
+            }
+            i++;
+        }
+    }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onEntitySpawnEvent(LivingSpawnEvent.CheckSpawn event) {
