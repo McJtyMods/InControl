@@ -23,7 +23,7 @@ public class PhaseRule {
     private final GenericRuleEvaluator ruleEvaluator;
 
 
-    public static final IEventQuery<LevelAccessor> EVENT_QUERY = new IEventQuery<LevelAccessor>() {
+    public static final IEventQuery<LevelAccessor> EVENT_QUERY = new IEventQuery<>() {
         @Override
         public LevelAccessor getWorld(LevelAccessor o) {
             return o;

@@ -18,112 +18,64 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
-import net.minecraftforge.eventbus.api.Event;
 
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 import java.util.Set;
 import java.util.function.Consumer;
 
 import static mcjty.incontrol.rules.support.RuleKeys.*;
 
-public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
+public class SpecialRule extends RuleBase<RuleBase.EventGetter> {
 
-    public static final IEventQuery<LivingSpawnEvent.CheckSpawn> EVENT_QUERY = new IEventQuery<>() {
+    public static final IEventQuery<LivingSpawnEvent.SpecialSpawn> EVENT_QUERY = new IEventQuery<>() {
         @Override
-        public LevelAccessor getWorld(LivingSpawnEvent.CheckSpawn o) {
+        public LevelAccessor getWorld(LivingSpawnEvent.SpecialSpawn o) {
             return o.getWorld();
         }
 
         @Override
-        public BlockPos getPos(LivingSpawnEvent.CheckSpawn o) {
+        public BlockPos getPos(LivingSpawnEvent.SpecialSpawn o) {
             return new BlockPos(o.getX(), o.getY(), o.getZ());
         }
 
         @Override
-        public BlockPos getValidBlockPos(LivingSpawnEvent.CheckSpawn o) {
+        public BlockPos getValidBlockPos(LivingSpawnEvent.SpecialSpawn o) {
             return new BlockPos(o.getX(), o.getY() - 1, o.getZ());
         }
 
         @Override
-        public int getY(LivingSpawnEvent.CheckSpawn o) {
+        public int getY(LivingSpawnEvent.SpecialSpawn o) {
             return (int) o.getY();
         }
 
         @Override
-        public Entity getEntity(LivingSpawnEvent.CheckSpawn o) {
+        public Entity getEntity(LivingSpawnEvent.SpecialSpawn o) {
             return o.getEntity();
         }
 
         @Override
-        public DamageSource getSource(LivingSpawnEvent.CheckSpawn o) {
+        public DamageSource getSource(LivingSpawnEvent.SpecialSpawn o) {
             return null;
         }
 
         @Override
-        public Entity getAttacker(LivingSpawnEvent.CheckSpawn o) {
+        public Entity getAttacker(LivingSpawnEvent.SpecialSpawn o) {
             return null;
         }
 
         @Override
-        public Player getPlayer(LivingSpawnEvent.CheckSpawn o) {
+        public Player getPlayer(LivingSpawnEvent.SpecialSpawn o) {
             return getClosestPlayer(o.getWorld(), new BlockPos(o.getX(), o.getY(), o.getZ()));
         }
 
         @Override
-        public ItemStack getItem(LivingSpawnEvent.CheckSpawn o) {
+        public ItemStack getItem(LivingSpawnEvent.SpecialSpawn o) {
             return ItemStack.EMPTY;
         }
     };
-    public static final IEventQuery<EntityJoinWorldEvent> EVENT_QUERY_JOIN = new IEventQuery<>() {
-        @Override
-        public Level getWorld(EntityJoinWorldEvent o) {
-            return o.getWorld();
-        }
 
-        @Override
-        public BlockPos getPos(EntityJoinWorldEvent o) {
-            return o.getEntity().blockPosition();
-        }
-
-        @Override
-        public BlockPos getValidBlockPos(EntityJoinWorldEvent o) {
-            return o.getEntity().blockPosition().below();
-        }
-
-        @Override
-        public int getY(EntityJoinWorldEvent o) {
-            return o.getEntity().blockPosition().getY();
-        }
-
-        @Override
-        public Entity getEntity(EntityJoinWorldEvent o) {
-            return o.getEntity();
-        }
-
-        @Override
-        public DamageSource getSource(EntityJoinWorldEvent o) {
-            return null;
-        }
-
-        @Override
-        public Entity getAttacker(EntityJoinWorldEvent o) {
-            return null;
-        }
-
-        @Override
-        public Player getPlayer(EntityJoinWorldEvent o) {
-            return getClosestPlayer(o.getWorld(), o.getEntity().blockPosition());
-        }
-
-        @Override
-        public ItemStack getItem(EntityJoinWorldEvent o) {
-            return ItemStack.EMPTY;
-        }
-    };
     private static final GenericAttributeMapFactory FACTORY = new GenericAttributeMapFactory();
 
     private static Player getClosestPlayer(LevelAccessor world, BlockPos pos) {
@@ -132,7 +84,6 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
 
     static {
         FACTORY
-                .attribute(Attribute.create(ONJOIN))
                 .attribute(Attribute.create(PHASE))
                 .attribute(Attribute.create(MINTIME))
                 .attribute(Attribute.create(MAXTIME))
@@ -165,7 +116,6 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(SEESKY))
                 .attribute(Attribute.create(SLIME))
                 .attribute(Attribute.create(WEATHER))
-                .attribute(Attribute.createMulti(CATEGORY))
                 .attribute(Attribute.create(DIFFICULTY))
                 .attribute(Attribute.create(STRUCTURE))
                 .attribute(Attribute.create(WINTER))
@@ -223,22 +173,27 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
         ;
     }
 
-    private final boolean onJoin;
+    public enum SpecialResult {
+        BEFORE,
+        AFTER,
+        REPLACE
+    }
+
+
     private final GenericRuleEvaluator ruleEvaluator;
     private final Set<String> phases;
-    private Event.Result result = null;
+    private SpecialResult result = SpecialResult.AFTER;
     private boolean doContinue = false;
 
-    private SpawnRule(AttributeMap map, boolean onJoin, Set<String> phases) {
+    private SpecialRule(AttributeMap map, Set<String> phases) {
         super(InControl.setup.getLogger());
-        this.onJoin = onJoin;
         this.phases = phases;
         ruleEvaluator = new GenericRuleEvaluator(map);
         addActions(map, new ModRuleCompatibilityLayer());
         if (!map.isEmpty()) {
             StringBuffer buffer = new StringBuffer();
             map.getKeys().forEach(k -> buffer.append(k).append(' '));
-            ErrorHandler.error("Invalid keywords in spawn rule: " + buffer);
+            ErrorHandler.error("Invalid keywords in special rule: " + buffer);
         }
     }
 
@@ -246,13 +201,12 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
         return phases;
     }
 
-    public static SpawnRule parse(JsonElement element) {
+    public static SpecialRule parse(JsonElement element) {
         if (element == null) {
             return null;
         } else {
             AttributeMap map = FACTORY.parse(element, "spawn.json");
-            boolean onJoin = element.getAsJsonObject().has("onjoin") && element.getAsJsonObject().get("onjoin").getAsBoolean();
-            return new SpawnRule(map, onJoin, PhaseTools.getPhases(element));
+            return new SpecialRule(map, PhaseTools.getPhases(element));
         }
     }
 
@@ -261,28 +215,24 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
         super.addActions(map, layer);
 
         map.consumeOrElse(ACTION_RESULT, br -> {
-            if ("default".equals(br) || br.startsWith("def")) {
-                this.result = Event.Result.DEFAULT;
-            } else if ("allow".equals(br) || "true".equals(br)) {
-                this.result = Event.Result.ALLOW;
+            if ("before".equals(br)) {
+                this.result = SpecialResult.BEFORE;
+            } else if ("replace".equals(br)) {
+                this.result = SpecialResult.REPLACE;
             } else {
-                this.result = Event.Result.DENY;
+                this.result = SpecialResult.AFTER;
             }
         }, () -> {
-            this.result = null;
+            this.result = SpecialResult.AFTER;
         });
         map.consume(ACTION_CONTINUE, v -> this.doContinue = v);
     }
 
-    public boolean match(LivingSpawnEvent.CheckSpawn event) {
+    public boolean match(LivingSpawnEvent.SpecialSpawn event) {
         return ruleEvaluator.match(event, EVENT_QUERY);
     }
 
-    public boolean match(EntityJoinWorldEvent event) {
-        return ruleEvaluator.match(event, EVENT_QUERY_JOIN);
-    }
-
-    public void action(LivingSpawnEvent.CheckSpawn event) {
+    public void action(LivingSpawnEvent.SpecialSpawn event) {
         EventGetter getter = new EventGetter() {
             @Override
             public LivingEntity getEntityLiving() {
@@ -301,7 +251,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
 
             @Override
             public BlockPos getPosition() {
-                return event.getEntityLiving().blockPosition();
+                return event.getEntity().blockPosition();
             }
         };
         for (Consumer<EventGetter> action : actions) {
@@ -309,43 +259,12 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
         }
     }
 
-    public void action(EntityJoinWorldEvent event) {
-        EventGetter getter = new EventGetter() {
-            @Override
-            public LivingEntity getEntityLiving() {
-                return event.getEntity() instanceof LivingEntity ? (LivingEntity) event.getEntity() : null;
-            }
-
-            @Override
-            public Player getPlayer() {
-                return null;
-            }
-
-            @Override
-            public Level getWorld() {
-                return event.getWorld();
-            }
-
-            @Override
-            public BlockPos getPosition() {
-                return event.getEntity() != null ? event.getEntity().blockPosition() : null;
-            }
-        };
-        for (Consumer<EventGetter> action : actions) {
-            action.accept(getter);
-        }
-    }
-
-    @Nullable
-    public Event.Result getResult() {
+    @Nonnull
+    public SpecialResult getResult() {
         return result;
     }
 
     public boolean isDoContinue() {
         return doContinue;
-    }
-
-    public boolean isOnJoin() {
-        return onJoin;
     }
 }

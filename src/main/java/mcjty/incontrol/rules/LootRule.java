@@ -38,7 +38,7 @@ import static mcjty.incontrol.rules.support.RuleKeys.*;
 
 public class LootRule extends RuleBase<RuleBase.EventGetter> {
 
-    public static final IEventQuery<LivingDropsEvent> EVENT_QUERY = new IEventQuery<LivingDropsEvent>() {
+    public static final IEventQuery<LivingDropsEvent> EVENT_QUERY = new IEventQuery<>() {
         @Override
         public Level getWorld(LivingDropsEvent o) {
             return o.getEntity().getCommandSenderWorld();

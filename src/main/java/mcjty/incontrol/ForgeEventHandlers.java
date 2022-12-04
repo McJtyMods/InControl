@@ -6,11 +6,15 @@ import mcjty.incontrol.data.Statistics;
 import mcjty.incontrol.rules.*;
 import mcjty.incontrol.spawner.SpawnerSystem;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
@@ -21,6 +25,7 @@ import net.minecraftforge.event.entity.living.ZombieEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
@@ -101,6 +106,45 @@ public class ForgeEventHandlers {
         }
     }
 
+    @SubscribeEvent
+    public void onEntitySpecialSpawnEvent(LivingSpawnEvent.SpecialSpawn event) {
+        int i = 0;
+        ServerLevel world = (ServerLevel) event.getEntity().getCommandSenderWorld();
+        for (SpecialRule rule : RulesManager.getFilteredSpecialRules(world)) {
+            if (rule.match(event)) {
+                SpecialRule.SpecialResult result = rule.getResult();
+                if (debug) {
+                    Biome biome = event.getWorld().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ())).value();
+                    InControl.setup.getLogger().log(org.apache.logging.log4j.Level.INFO, "Special " + i + ": " + result
+                            + " entity: " + event.getEntity().getName()
+                            + " y: " + event.getY()
+                            + " biome: " + ForgeRegistries.BIOMES.getKey(biome));
+                }
+
+                switch (result) {
+                    case BEFORE -> {
+                        event.setCanceled(false);
+                    }
+                    case AFTER -> {
+                        if (event.getEntity() instanceof Mob mob) {
+                            mob.finalizeSpawn(world, world.getCurrentDifficultyAt(event.getEntity().blockPosition()),
+                                    MobSpawnType.NATURAL, null, null);
+                        }
+                        event.setCanceled(true);
+                    }
+                    case REPLACE -> {
+                        event.setCanceled(true);
+                    }
+                }
+                rule.action(event);
+
+                if (!rule.isDoContinue()) {
+                    return;
+                }
+            }
+            i++;
+        }
+    }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onEntitySpawnEvent(LivingSpawnEvent.CheckSpawn event) {

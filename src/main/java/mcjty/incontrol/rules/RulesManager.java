@@ -27,7 +27,10 @@ public class RulesManager {
     private static List<LootRule> filteredLootRules = null;
 
     private static final List<ExperienceRule> experienceRules = new ArrayList<>();
-    private static List<ExperienceRule> filteredExperienceRuiles = null;
+    private static List<ExperienceRule> filteredExperienceRules = null;
+
+    private static final List<SpecialRule> specialRules = new ArrayList<>();
+    private static List<SpecialRule> filteredSpecialRules = null;
 
     public static List<PhaseRule> phaseRules = new ArrayList<>();
     private static String path;
@@ -38,6 +41,7 @@ public class RulesManager {
         lootRules.clear();
         experienceRules.clear();
         phaseRules.clear();
+        specialRules.clear();
         onPhaseChange();
         readAllRules();
     }
@@ -54,7 +58,8 @@ public class RulesManager {
         filteredRules = null;
         filteredSummonAidRules = null;
         filteredLootRules = null;
-        filteredExperienceRuiles = null;
+        filteredExperienceRules = null;
+        filteredSpecialRules = null;
     }
 
     public static List<SpawnRule> getFilteredRules(Level world) {
@@ -63,6 +68,14 @@ public class RulesManager {
             filteredRules = rules.stream().filter(r -> phases.containsAll(r.getPhases())).collect(Collectors.toList());
         }
         return filteredRules;
+    }
+
+    public static List<SpecialRule> getFilteredSpecialRules(Level world) {
+        if (filteredSpecialRules == null) {
+            Set<String> phases = DataStorage.getData(world).getPhases();
+            filteredSpecialRules = specialRules.stream().filter(r -> phases.containsAll(r.getPhases())).collect(Collectors.toList());
+        }
+        return filteredSpecialRules;
     }
 
     public static List<SummonAidRule> getFilteredSummonAidRules(Level world) {
@@ -82,44 +95,16 @@ public class RulesManager {
     }
 
     public static List<ExperienceRule> getFilteredExperienceRuiles(Level world) {
-        if (filteredExperienceRuiles == null) {
+        if (filteredExperienceRules == null) {
             Set<String> phases = DataStorage.getData(world).getPhases();
-            filteredExperienceRuiles = experienceRules.stream().filter(r -> phases.containsAll(r.getPhases())).collect(Collectors.toList());
+            filteredExperienceRules = experienceRules.stream().filter(r -> phases.containsAll(r.getPhases())).collect(Collectors.toList());
         }
-        return filteredExperienceRuiles;
+        return filteredExperienceRules;
     }
 
     private static boolean exists(String file) {
         File f = new File(file);
         return f.exists() && !f.isDirectory();
-    }
-
-    public static boolean readCustomSpawn(String file) {
-        System.out.println("file = " + file);
-        if (!exists(file)) {
-            return false;
-        }
-        rules.clear();
-        readRules(null, file, SpawnRule::parse, rules);
-        return true;
-    }
-
-    public static boolean readCustomSummonAid(String file) {
-        if (!exists(file)) {
-            return false;
-        }
-        summonAidRules.clear();
-        readRules(null, file, SummonAidRule::parse, summonAidRules);
-        return true;
-    }
-
-    public static boolean readCustomLoot(String file) {
-        if (!exists(file)) {
-            return false;
-        }
-        lootRules.clear();
-        readRules(null, file, LootRule::parse, lootRules);
-        return true;
     }
 
     private static void readAllRules() {
@@ -133,6 +118,7 @@ public class RulesManager {
         safeCall("loot.json", () -> readRules(path, "loot.json", LootRule::parse, lootRules));
         safeCall("experience.json", () -> readRules(path, "experience.json", ExperienceRule::parse, experienceRules));
         safeCall("phases.json", () -> readRules(path, "phases.json", PhaseRule::parse, phaseRules));
+        safeCall("special.json", () -> readRules(path, "special.json", SpecialRule::parse, specialRules));
     }
 
     private static void safeCall(String name, Runnable code) {

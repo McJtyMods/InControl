@@ -42,7 +42,7 @@ import static mcjty.incontrol.rules.support.RuleKeys.*;
 
 public class SummonAidRule extends RuleBase<SummonEventGetter> {
 
-    public static final IEventQuery<ZombieEvent.SummonAidEvent> EVENT_QUERY = new IEventQuery<ZombieEvent.SummonAidEvent>() {
+    public static final IEventQuery<ZombieEvent.SummonAidEvent> EVENT_QUERY = new IEventQuery<>() {
         @Override
         public Level getWorld(ZombieEvent.SummonAidEvent o) {
             return o.getWorld();
