@@ -1,3 +1,6 @@
+Upcoming:
+- The 'spawner' check works correctly for special.json too now
+
 1.19-7.1.0:
 - Added an entirely new rule file (special.json). This rule file has 100% the same capabilities as the default spawn.json. However you don't control spawns in this rulie file but instead you have the option to control the equipment in a proper way. Rules in special.spawn have the following three results: "replace", "before", or "after". This way you can either replace or change the default vanilla behaviour with regards to setting default equipment, random follow range and handedness
 
