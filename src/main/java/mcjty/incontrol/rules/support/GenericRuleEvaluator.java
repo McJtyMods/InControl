@@ -152,18 +152,20 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
     private void addSpawnerCheck(boolean c) {
         if (c) {
             checks.add((event, query) -> {
-                if (event instanceof LivingSpawnEvent.CheckSpawn) {
-                    LivingSpawnEvent.CheckSpawn checkSpawn = (LivingSpawnEvent.CheckSpawn) event;
+                if (event instanceof LivingSpawnEvent.CheckSpawn checkSpawn) {
                     return checkSpawn.isSpawner();
+                } else if (event instanceof LivingSpawnEvent.SpecialSpawn specialSpawn) {
+                    return specialSpawn.getSpawnReason() == MobSpawnType.SPAWNER;
                 } else {
                     return false;
                 }
             });
         } else {
             checks.add((event, query) -> {
-                if (event instanceof LivingSpawnEvent.CheckSpawn) {
-                    LivingSpawnEvent.CheckSpawn checkSpawn = (LivingSpawnEvent.CheckSpawn) event;
+                if (event instanceof LivingSpawnEvent.CheckSpawn checkSpawn) {
                     return !checkSpawn.isSpawner();
+                } else if (event instanceof LivingSpawnEvent.SpecialSpawn specialSpawn) {
+                    return specialSpawn.getSpawnReason() != MobSpawnType.SPAWNER;
                 } else {
                     return false;
                 }
