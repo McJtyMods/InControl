@@ -10,7 +10,7 @@ import mcjty.incontrol.tools.varia.Tools;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -41,7 +41,7 @@ public class CmdInfo implements Command<CommandSourceStack> {
             Map<Structure, LongSet> references = chunk.getAllReferences();
             for (Structure s : references.keySet()) {
                 LongSet longs = references.get(s);
-                ResourceLocation key = sw.registryAccess().registryOrThrow(Registry.STRUCTURE_REGISTRY).getKey(s);
+                ResourceLocation key = sw.registryAccess().registryOrThrow(Registries.STRUCTURE).getKey(s);
                 player.sendSystemMessage(Component.literal(key.toString() + ": " + longs.size()));
             }
         }

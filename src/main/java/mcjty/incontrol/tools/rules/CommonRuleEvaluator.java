@@ -13,6 +13,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -228,7 +229,7 @@ public class CommonRuleEvaluator {
     }
 
     private void addBiomeTagCheck(List<String> list) {
-        Set<TagKey<Biome>> tags = list.stream().map(s -> TagKey.create(Registry.BIOME_REGISTRY, new ResourceLocation(s))).collect(Collectors.toSet());
+        Set<TagKey<Biome>> tags = list.stream().map(s -> TagKey.create(Registries.BIOME, new ResourceLocation(s))).collect(Collectors.toSet());
         if (tags.size() == 1) {
             TagKey<Biome> key = tags.iterator().next();
             checks.add((event,query) -> {
@@ -711,7 +712,7 @@ public class CommonRuleEvaluator {
             if (name.contains("/") && name.contains("@")) {
                 return s -> ItemStack.isSame(s, stack) && ItemStack.tagMatches(s, stack);
             } else if (name.contains("/")) {
-                return s -> ItemStack.isSameIgnoreDurability(s, stack) && ItemStack.tagMatches(s, stack);
+                return s -> ItemStack.isSameItemSameTags(s, stack) && ItemStack.tagMatches(s, stack);
             } else if (name.contains("@")) {
                 return s -> ItemStack.isSame(s, stack);
             } else {

@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import mcjty.incontrol.tools.varia.Tools;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -49,7 +50,7 @@ public class StructureCache {
             LongSet longs = e.getValue();
             if (!longs.isEmpty()) {
                 Structure struct = e.getKey();
-                ResourceLocation key = sw.registryAccess().registryOrThrow(Registry.STRUCTURE_REGISTRY).getKey(struct);
+                ResourceLocation key = sw.registryAccess().registryOrThrow(Registries.STRUCTURE).getKey(struct);
                 structureCache.put(new StructureCacheEntry(key.toString(), dimension, cplong), true);
             }
         }

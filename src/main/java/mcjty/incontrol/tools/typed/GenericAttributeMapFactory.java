@@ -6,6 +6,7 @@ import com.google.gson.JsonPrimitive;
 import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.tools.varia.JSonTools;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -72,7 +73,7 @@ public class GenericAttributeMapFactory {
                     transformer = JsonElement::toString;
                 } else if (type == Type.DIMENSION_TYPE) {
                     transformer = jsonElement -> {
-                        ResourceKey<Level> worldkey = ResourceKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(jsonElement.getAsString()));
+                        ResourceKey<Level> worldkey = ResourceKey.create(Registries.DIMENSION, new ResourceLocation(jsonElement.getAsString()));
                         MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
                         if (server != null) {
                             if (!server.levelKeys().contains(worldkey)) {
@@ -107,7 +108,7 @@ public class GenericAttributeMapFactory {
                 } else if (type == Type.DIMENSION_TYPE) {
                     if (jsonObject.has(key.name())) {
                         JsonElement jsonElement = jsonObject.get(key.name());
-                        map.setNonnull(key, ResourceKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(jsonElement.getAsString())));
+                        map.setNonnull(key, ResourceKey.create(Registries.DIMENSION, new ResourceLocation(jsonElement.getAsString())));
                     }
                 } else if (type == Type.JSON) {
                     if (jsonObject.has(key.name())) {

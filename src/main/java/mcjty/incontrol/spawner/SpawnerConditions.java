@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import mcjty.incontrol.ErrorHandler;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
@@ -195,11 +196,11 @@ public class SpawnerConditions {
                     JsonElement value = object.get(attr);
                     if (value.isJsonArray()) {
                         for (JsonElement element : value.getAsJsonArray()) {
-                            ResourceKey<Level> key = ResourceKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(element.getAsString()));
+                            ResourceKey<Level> key = ResourceKey.create(Registries.DIMENSION, new ResourceLocation(element.getAsString()));
                             builder.dimensions(key);
                         }
                     } else {
-                        ResourceKey<Level> key = ResourceKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(value.getAsString()));
+                        ResourceKey<Level> key = ResourceKey.create(Registries.DIMENSION, new ResourceLocation(value.getAsString()));
                         builder.dimensions(key);
                     }
                 }
