@@ -132,9 +132,25 @@ public class CommonRuleEvaluator {
 
     private void addSeeSkyCheck(boolean seesky) {
         if (seesky) {
-            checks.add((event,query) -> query.getWorld(event).canSeeSkyFromBelowWater(query.getPos(event)));
+            checks.add((event,query) -> {
+                LevelAccessor world = query.getWorld(event);
+                BlockPos pos = query.getPos(event);
+                LevelChunk chunk = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
+                if (chunk == null || !chunk.getStatus().isOrAfter(ChunkStatus.FULL)) {
+                    return false;
+                }
+                return world.canSeeSkyFromBelowWater(pos);
+            });
         } else {
-            checks.add((event,query) -> !query.getWorld(event).canSeeSkyFromBelowWater(query.getPos(event)));
+            checks.add((event,query) -> {
+                LevelAccessor world = query.getWorld(event);
+                BlockPos pos = query.getPos(event);
+                LevelChunk chunk = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
+                if (chunk == null || !chunk.getStatus().isOrAfter(ChunkStatus.FULL)) {
+                    return false;
+                }
+                return !world.canSeeSkyFromBelowWater(pos);
+            });
         }
     }
 
