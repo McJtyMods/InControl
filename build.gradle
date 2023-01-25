@@ -27,6 +27,7 @@ repositories {
     maven { url "https://maven.blamejared.com" }    // Patchouli, bookshelf, gamestages
     maven { url "https://dvs1.progwml6.com/files/maven" } // JEI
     maven { url "https://maven.k-4u.nl" } // McJtyLib, TOP
+    maven { url 'https://maven.minecraftforge.net/' } // Serene Seasons
 }
 
 group= "com.github.mcjty"
