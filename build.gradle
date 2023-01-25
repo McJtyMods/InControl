@@ -50,4 +50,4 @@ dependencies {
 }
 
 tasks.curseforge.enabled = project.hasProperty('curseforge_key')
-cfdeps(['game-stages', 'lost-cities'], [], [])
+cfdeps(['game-stages', 'the-lost-cities'], [], [])
