@@ -5,6 +5,7 @@ import mcjty.incontrol.data.DataStorage;
 import mcjty.incontrol.data.Statistics;
 import mcjty.incontrol.tools.varia.Box;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.FluidTags;
@@ -30,9 +31,11 @@ import net.minecraft.world.phys.AABB;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.TickEvent;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.Predicate;
 
 public class SpawnerSystem {
 
@@ -344,12 +347,14 @@ public class SpawnerSystem {
         BlockPos pos = null;
         double sqdist = Double.MAX_VALUE;
 
+        Predicate<BlockPos> validSpawn = getValidPosConditions(world, mob, conditions);
+
         int counter = 40;
         while (pos == null || sqdist < mindist * mindist || sqdist > maxdist * maxdist) {
             pos = box.randomPos(random, groupCenterPos, groupDistance);
             LevelChunk c = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
             if (c != null && c.getStatus() == ChunkStatus.FULL) {
-                pos = getValidSpawnablePosition(world, pos.getX(), pos.getZ(), minheight, maxheight);
+                pos = getValidSpawnablePosition(world, pos.getX(), pos.getZ(), minheight, maxheight, validSpawn);
                 sqdist = pos == null ? Double.MAX_VALUE : pos.distToCenterSqr(player.blockPosition().getX(), player.blockPosition().getY(), player.blockPosition().getZ());
             }
             counter--;
@@ -359,6 +364,29 @@ public class SpawnerSystem {
         }
 
         return pos;
+    }
+
+    @NotNull
+    private static Predicate<BlockPos> getValidPosConditions(Level world, EntityType<?> mob, SpawnerConditions conditions) {
+        Predicate<BlockPos> validSpawn;
+        if (conditions.isValidSpawn()) {
+            validSpawn = blockPos -> {
+                if (!isValidSpawnPos(world, blockPos)) {
+                    return false;
+                }
+                return isValidSpawn(world, blockPos, mob);
+            };
+        } else if (conditions.isSturdy()) {
+            validSpawn = blockPos -> {
+                if (!isValidSpawnPos(world, blockPos)) {
+                    return false;
+                }
+                return isPositionSturdy(world, blockPos);
+            };
+        } else {
+            validSpawn = blockPos -> isValidSpawnPos(world, blockPos);
+        }
+        return validSpawn;
     }
 
     private static boolean checkLocalCount(ServerLevel world, EntityType<?> mob, SpawnerConditions conditions, Box box) {
@@ -390,16 +418,25 @@ public class SpawnerSystem {
         return new Box(minX, minY, minZ, maxX, maxY, maxZ);
     }
 
-    private static BlockPos getValidSpawnablePosition(LevelReader worldIn, int x, int z, int minHeight, int maxHeight) {
+    private static BlockPos getValidSpawnablePosition(LevelReader worldIn, int x, int z, int minHeight, int maxHeight, Predicate<BlockPos> validSpawn) {
         int height = worldIn.getHeight(Heightmap.Types.WORLD_SURFACE, x, z) + 1;
         height = Math.min(height, maxHeight);
         int minBuildHeight = worldIn.getMinBuildHeight();
         height = random.nextInt(height + 1 - minBuildHeight) + minBuildHeight;
         BlockPos blockPos = new BlockPos(x, height-1, z);
-        while (blockPos.getY() >= minHeight && !isValidSpawnPos(worldIn, blockPos)) {
+//        while (blockPos.getY() >= minHeight && !isValidSpawnPos(worldIn, blockPos)) {
+            while (blockPos.getY() >= minHeight && !validSpawn.test(blockPos)) {
             blockPos = blockPos.below();
         }
         return blockPos.getY() < minHeight ? null : blockPos;
+    }
+
+    private static boolean isValidSpawn(LevelReader world, BlockPos pos, EntityType<?> entityType) {
+        return world.getBlockState(pos.below()).isValidSpawn(world, pos.below(), entityType);
+    }
+
+    private static boolean isPositionSturdy(LevelReader world, BlockPos pos) {
+        return world.getBlockState(pos.below()).isFaceSturdy(world, pos.below(), Direction.UP);
     }
 
     private static boolean isValidSpawnPos(LevelReader world, BlockPos pos) {

@@ -6,6 +6,7 @@ import mcjty.incontrol.ErrorHandler;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.level.Level;
 
 import java.util.*;
@@ -30,6 +31,8 @@ public class SpawnerConditions {
     private final int maxhostile;
     private final int maxpeaceful;
     private final int maxneutral;
+    private final boolean validSpawn;
+    private final boolean sturdy;
 
     public static final SpawnerConditions DEFAULT = SpawnerConditions.create().build();
 
@@ -51,7 +54,9 @@ public class SpawnerConditions {
         MAXTOTAL,
         MAXHOSTILE,
         MAXPEACEFUL,
-        MAXNEUTRAL
+        MAXNEUTRAL,
+        VALIDSPAWN,
+        STURDY
     }
 
     private static final Map<String, Cmd> CONDITIONS = new HashMap<>();
@@ -81,6 +86,8 @@ public class SpawnerConditions {
         maxpeaceful = builder.maxpeaceful;
         maxneutral = builder.maxneutral;
         noRestrictions = builder.noRestrictions;
+        validSpawn = builder.validSpawn;
+        sturdy = builder.sturdy;
 
         validate();
     }
@@ -178,6 +185,14 @@ public class SpawnerConditions {
         return maxneutral;
     }
 
+    public boolean isValidSpawn() {
+        return validSpawn;
+    }
+
+    public boolean isSturdy() {
+        return sturdy;
+    }
+
     public static Builder create() {
         return new Builder();
     }
@@ -254,6 +269,12 @@ public class SpawnerConditions {
                 case MAXNEUTRAL -> {
                     builder.maxNeutral(object.getAsJsonPrimitive("maxneutral").getAsInt());
                 }
+                case VALIDSPAWN -> {
+                    builder.validSpawn(object.getAsJsonPrimitive("validspawn").getAsBoolean());
+                }
+                case STURDY -> {
+                    builder.sturdy(object.getAsJsonPrimitive("sturdy").getAsBoolean());
+                }
             }
         }
     }
@@ -272,6 +293,8 @@ public class SpawnerConditions {
         private boolean inLava = false;
         private boolean inAir = false;
         private boolean noRestrictions = false;
+        private boolean validSpawn = false;
+        private boolean sturdy = false;
 
         private int maxthis = -1;
         private int maxlocal = -1;
@@ -355,6 +378,16 @@ public class SpawnerConditions {
 
         public Builder maxNeutral(int maxNeutral) {
             this.maxneutral = maxNeutral;
+            return this;
+        }
+
+        public Builder validSpawn(boolean validSpawn) {
+            this.validSpawn = validSpawn;
+            return this;
+        }
+
+        public Builder sturdy(boolean sturdy) {
+            this.sturdy = sturdy;
             return this;
         }
 
