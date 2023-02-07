@@ -1,3 +1,6 @@
+Upcoming:
+- Added new 'validspawn' and 'sturdy' conditions to the spawner system. This avoids spawning mobs on slabs for example
+
 1.19-7.1.2:
 - Fixed a problem with 'seesky' potentially locking the world in combination with onjoin: true
 
