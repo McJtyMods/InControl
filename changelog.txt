@@ -1,4 +1,4 @@
-Upcoming:
+1.18-6.1.3:
 - Added new 'validspawn' and 'sturdy' conditions to the spawner system. This avoids spawning mobs on slabs for example
 
 1.18-6.1.2:
