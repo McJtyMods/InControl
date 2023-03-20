@@ -17,6 +17,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.monster.Enemy;
@@ -592,33 +593,33 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
 
     private void addExplosionCheck(boolean explosion) {
         if (explosion) {
-            checks.add((event, query) -> query.getSource(event) == null ? false : query.getSource(event).isExplosion());
+            checks.add((event, query) -> query.getSource(event) == null ? false : query.getSource(event).is(DamageTypes.EXPLOSION));
         } else {
-            checks.add((event, query) -> query.getSource(event) == null ? true : !query.getSource(event).isExplosion());
+            checks.add((event, query) -> query.getSource(event) == null ? true : !query.getSource(event).is(DamageTypes.EXPLOSION));
         }
     }
 
     private void addProjectileCheck(boolean projectile) {
         if (projectile) {
-            checks.add((event, query) -> query.getSource(event) == null ? false : query.getSource(event).isProjectile());
+            checks.add((event, query) -> query.getSource(event) == null ? false : query.getSource(event).is(DamageTypes.EXPLOSION));
         } else {
-            checks.add((event, query) -> query.getSource(event) == null ? true : !query.getSource(event).isProjectile());
+            checks.add((event, query) -> query.getSource(event) == null ? true : !query.getSource(event).is(DamageTypes.EXPLOSION));
         }
     }
 
     private void addFireCheck(boolean fire) {
         if (fire) {
-            checks.add((event, query) -> query.getSource(event) == null ? false : query.getSource(event).isFire());
+            checks.add((event, query) -> query.getSource(event) == null ? false : query.getSource(event).is(DamageTypes.IN_FIRE));
         } else {
-            checks.add((event, query) -> query.getSource(event) == null ? true : !query.getSource(event).isFire());
+            checks.add((event, query) -> query.getSource(event) == null ? true : !query.getSource(event).is(DamageTypes.IN_FIRE));
         }
     }
 
     private void addMagicCheck(boolean magic) {
         if (magic) {
-            checks.add((event, query) -> query.getSource(event) == null ? false : query.getSource(event).isMagic());
+            checks.add((event, query) -> query.getSource(event) == null ? false : query.getSource(event).is(DamageTypes.MAGIC));
         } else {
-            checks.add((event, query) -> query.getSource(event) == null ? true : !query.getSource(event).isMagic());
+            checks.add((event, query) -> query.getSource(event) == null ? true : !query.getSource(event).is(DamageTypes.MAGIC));
         }
     }
 

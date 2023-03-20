@@ -169,25 +169,27 @@ public class RuleBase<T extends RuleBase.EventGetter> {
     private void createDamageMap() {
         if (damageMap == null) {
             damageMap = new HashMap<>();
-            addSource(DamageSource.IN_FIRE);
-            addSource(DamageSource.LIGHTNING_BOLT);
-            addSource(DamageSource.ON_FIRE);
-            addSource(DamageSource.LAVA);
-            addSource(DamageSource.HOT_FLOOR);
-            addSource(DamageSource.IN_WALL);
-            addSource(DamageSource.CRAMMING);
-            addSource(DamageSource.DROWN);
-            addSource(DamageSource.STARVE);
-            addSource(DamageSource.CACTUS);
-            addSource(DamageSource.FALL);
-            addSource(DamageSource.FLY_INTO_WALL);
-            addSource(DamageSource.OUT_OF_WORLD);
-            addSource(DamageSource.GENERIC);
-            addSource(DamageSource.MAGIC);
-            addSource(DamageSource.WITHER);
+            // @todo 1.19.4
+//            addSource(DamageSource.IN_FIRE);
+//            addSource(DamageSource.LIGHTNING_BOLT);
+//            addSource(DamageSource.ON_FIRE);
+//            addSource(DamageSource.LAVA);
+//            addSource(DamageSource.HOT_FLOOR);
+//            addSource(DamageSource.IN_WALL);
+//            addSource(DamageSource.CRAMMING);
+//            addSource(DamageSource.DROWN);
+//            addSource(DamageSource.STARVE);
+//            addSource(DamageSource.CACTUS);
+//            addSource(DamageSource.FALL);
+//            addSource(DamageSource.FLY_INTO_WALL);
+//            addSource(DamageSource.OUT_OF_WORLD);
+//            addSource(DamageSource.GENERIC);
+//            addSource(DamageSource.MAGIC);
+//            addSource(DamageSource.WITHER);
+//            addSource(DamageSource.DRAGON_BREATH);
+
 //            addSource(DamageSource.ANVIL);    // @todo 1.19.3
 //            addSource(DamageSource.FALLING_BLOCK);
-            addSource(DamageSource.DRAGON_BREATH);
 //            addSource(DamageSource.FIREWORKS);    // @todo 1.16
         }
     }
@@ -510,7 +512,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         actions.add(event -> {
             LivingEntity living = event.getEntityLiving();
             if (living != null) {
-                living.hurt(DamageSource.ON_FIRE, 0.1f);
+                living.hurt(living.damageSources().onFire(), 0.1f);
                 living.setSecondsOnFire(fireAction);
             }
         });

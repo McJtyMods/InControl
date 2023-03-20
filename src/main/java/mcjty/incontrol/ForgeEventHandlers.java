@@ -113,7 +113,7 @@ public class ForgeEventHandlers {
             if (rule.match(event)) {
                 SpecialRule.SpecialResult result = rule.getResult();
                 if (debug) {
-                    Biome biome = event.getLevel().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ())).value();
+                    Biome biome = event.getLevel().getBiome(new BlockPos((int) event.getX(), (int) event.getY(), (int) event.getZ())).value();
                     InControl.setup.getLogger().log(org.apache.logging.log4j.Level.INFO, "Special " + i + ": " + result
                             + " entity: " + event.getEntity().getName()
                             + " y: " + event.getY()
@@ -150,7 +150,7 @@ public class ForgeEventHandlers {
             if (rule.match(event)) {
                 Event.Result result = rule.getResult();
                 if (debug) {
-                    Biome biome = event.getLevel().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ())).value();
+                    Biome biome = event.getLevel().getBiome(new BlockPos((int) event.getX(), (int) event.getY(), (int) event.getZ())).value();
                     InControl.setup.getLogger().log(org.apache.logging.log4j.Level.INFO, "Rule " + i + ": " + result
                             + " entity: " + event.getEntity().getName()
                             + " y: " + event.getY()
