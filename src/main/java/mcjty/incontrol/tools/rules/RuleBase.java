@@ -10,12 +10,17 @@ import mcjty.incontrol.tools.typed.AttributeMap;
 import mcjty.incontrol.tools.varia.LookAtTools;
 import mcjty.incontrol.tools.varia.Tools;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -28,7 +33,6 @@ import net.minecraft.world.entity.monster.EnderMan;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
@@ -37,12 +41,16 @@ import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.server.ServerLifecycleHooks;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -160,40 +168,6 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         });
     }
 
-    private static Map<String, DamageSource> damageMap = null;
-
-    private static void addSource(DamageSource source) {
-        damageMap.put(source.getMsgId(), source);
-    }
-
-    private void createDamageMap() {
-        if (damageMap == null) {
-            damageMap = new HashMap<>();
-            // @todo 1.19.4
-//            addSource(DamageSource.IN_FIRE);
-//            addSource(DamageSource.LIGHTNING_BOLT);
-//            addSource(DamageSource.ON_FIRE);
-//            addSource(DamageSource.LAVA);
-//            addSource(DamageSource.HOT_FLOOR);
-//            addSource(DamageSource.IN_WALL);
-//            addSource(DamageSource.CRAMMING);
-//            addSource(DamageSource.DROWN);
-//            addSource(DamageSource.STARVE);
-//            addSource(DamageSource.CACTUS);
-//            addSource(DamageSource.FALL);
-//            addSource(DamageSource.FLY_INTO_WALL);
-//            addSource(DamageSource.OUT_OF_WORLD);
-//            addSource(DamageSource.GENERIC);
-//            addSource(DamageSource.MAGIC);
-//            addSource(DamageSource.WITHER);
-//            addSource(DamageSource.DRAGON_BREATH);
-
-//            addSource(DamageSource.ANVIL);    // @todo 1.19.3
-//            addSource(DamageSource.FALLING_BLOCK);
-//            addSource(DamageSource.FIREWORKS);    // @todo 1.16
-        }
-    }
-
     private void addCommandAction(String command) {
         actions.add(event -> {
             // @todo 1.15 new command system
@@ -222,13 +196,14 @@ public class RuleBase<T extends RuleBase.EventGetter> {
     }
 
     private void addDoDamageAction(String damage) {
-        createDamageMap();
         String[] split = StringUtils.split(damage, "=");
-        DamageSource source = damageMap.get(split[0]);
-        if (source == null) {
+        Registry<DamageType> damageTypes = ServerLifecycleHooks.getCurrentServer().registryAccess().registryOrThrow(Registries.DAMAGE_TYPE);
+        Optional<Holder.Reference<DamageType>> type = damageTypes.getHolder(ResourceKey.create(Registries.DAMAGE_TYPE, new ResourceLocation(split[0])));
+        if (!type.isPresent()) {
             ErrorHandler.error("Can't find damage source '" + split[0] + "'!");
             return;
         }
+        DamageSource source = new DamageSource(type.get());
         float amount = 1.0f;
         if (split.length > 1) {
             amount = Float.parseFloat(split[1]);
