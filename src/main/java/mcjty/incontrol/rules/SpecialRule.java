@@ -19,7 +19,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraftforge.event.entity.living.LivingSpawnEvent;
+import net.minecraftforge.event.entity.living.MobSpawnEvent;
 
 import javax.annotation.Nonnull;
 import java.util.Set;
@@ -29,49 +29,49 @@ import static mcjty.incontrol.rules.support.RuleKeys.*;
 
 public class SpecialRule extends RuleBase<RuleBase.EventGetter> {
 
-    public static final IEventQuery<LivingSpawnEvent.SpecialSpawn> EVENT_QUERY = new IEventQuery<>() {
+    public static final IEventQuery<MobSpawnEvent.FinalizeSpawn> EVENT_QUERY = new IEventQuery<>() {
         @Override
-        public LevelAccessor getWorld(LivingSpawnEvent.SpecialSpawn o) {
+        public LevelAccessor getWorld(MobSpawnEvent.FinalizeSpawn o) {
             return o.getLevel();
         }
 
         @Override
-        public BlockPos getPos(LivingSpawnEvent.SpecialSpawn o) {
+        public BlockPos getPos(MobSpawnEvent.FinalizeSpawn o) {
             return new BlockPos((int) o.getX(), (int) o.getY(), (int) o.getZ());
         }
 
         @Override
-        public BlockPos getValidBlockPos(LivingSpawnEvent.SpecialSpawn o) {
+        public BlockPos getValidBlockPos(MobSpawnEvent.FinalizeSpawn o) {
             return new BlockPos((int) o.getX(), (int) (o.getY() - 1), (int) o.getZ());
         }
 
         @Override
-        public int getY(LivingSpawnEvent.SpecialSpawn o) {
+        public int getY(MobSpawnEvent.FinalizeSpawn o) {
             return (int) o.getY();
         }
 
         @Override
-        public Entity getEntity(LivingSpawnEvent.SpecialSpawn o) {
+        public Entity getEntity(MobSpawnEvent.FinalizeSpawn o) {
             return o.getEntity();
         }
 
         @Override
-        public DamageSource getSource(LivingSpawnEvent.SpecialSpawn o) {
+        public DamageSource getSource(MobSpawnEvent.FinalizeSpawn o) {
             return null;
         }
 
         @Override
-        public Entity getAttacker(LivingSpawnEvent.SpecialSpawn o) {
+        public Entity getAttacker(MobSpawnEvent.FinalizeSpawn o) {
             return null;
         }
 
         @Override
-        public Player getPlayer(LivingSpawnEvent.SpecialSpawn o) {
+        public Player getPlayer(MobSpawnEvent.FinalizeSpawn o) {
             return getClosestPlayer(o.getLevel(), new BlockPos((int) o.getX(), (int) o.getY(), (int) o.getZ()));
         }
 
         @Override
-        public ItemStack getItem(LivingSpawnEvent.SpecialSpawn o) {
+        public ItemStack getItem(MobSpawnEvent.FinalizeSpawn o) {
             return ItemStack.EMPTY;
         }
     };
@@ -229,11 +229,11 @@ public class SpecialRule extends RuleBase<RuleBase.EventGetter> {
         map.consume(ACTION_CONTINUE, v -> this.doContinue = v);
     }
 
-    public boolean match(LivingSpawnEvent.SpecialSpawn event) {
+    public boolean match(MobSpawnEvent.FinalizeSpawn event) {
         return ruleEvaluator.match(event, EVENT_QUERY);
     }
 
-    public void action(LivingSpawnEvent.SpecialSpawn event) {
+    public void action(MobSpawnEvent.FinalizeSpawn event) {
         EventGetter getter = new EventGetter() {
             @Override
             public LivingEntity getEntityLiving() {

@@ -27,7 +27,7 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.common.util.FakePlayer;
-import net.minecraftforge.event.entity.living.LivingSpawnEvent;
+import net.minecraftforge.event.entity.living.MobSpawnEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 
@@ -153,20 +153,16 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
     private void addSpawnerCheck(boolean c) {
         if (c) {
             checks.add((event, query) -> {
-                if (event instanceof LivingSpawnEvent.CheckSpawn checkSpawn) {
-                    return checkSpawn.isSpawner();
-                } else if (event instanceof LivingSpawnEvent.SpecialSpawn specialSpawn) {
-                    return specialSpawn.getSpawnReason() == MobSpawnType.SPAWNER;
+                if (event instanceof MobSpawnEvent.FinalizeSpawn checkSpawn) {
+                    return checkSpawn.getSpawnType().equals(MobSpawnType.SPAWNER);
                 } else {
                     return false;
                 }
             });
         } else {
             checks.add((event, query) -> {
-                if (event instanceof LivingSpawnEvent.CheckSpawn checkSpawn) {
-                    return !checkSpawn.isSpawner();
-                } else if (event instanceof LivingSpawnEvent.SpecialSpawn specialSpawn) {
-                    return specialSpawn.getSpawnReason() != MobSpawnType.SPAWNER;
+                if (event instanceof MobSpawnEvent.FinalizeSpawn checkSpawn) {
+                    return !checkSpawn.getSpawnType().equals(MobSpawnType.SPAWNER);
                 } else {
                     return false;
                 }

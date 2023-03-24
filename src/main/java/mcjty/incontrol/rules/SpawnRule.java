@@ -21,7 +21,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
-import net.minecraftforge.event.entity.living.LivingSpawnEvent;
+import net.minecraftforge.event.entity.living.MobSpawnEvent;
 import net.minecraftforge.eventbus.api.Event;
 
 import javax.annotation.Nullable;
@@ -32,49 +32,49 @@ import static mcjty.incontrol.rules.support.RuleKeys.*;
 
 public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
 
-    public static final IEventQuery<LivingSpawnEvent.CheckSpawn> EVENT_QUERY = new IEventQuery<>() {
+    public static final IEventQuery<MobSpawnEvent.FinalizeSpawn> EVENT_QUERY = new IEventQuery<>() {
         @Override
-        public LevelAccessor getWorld(LivingSpawnEvent.CheckSpawn o) {
+        public LevelAccessor getWorld(MobSpawnEvent.FinalizeSpawn o) {
             return o.getLevel();
         }
 
         @Override
-        public BlockPos getPos(LivingSpawnEvent.CheckSpawn o) {
+        public BlockPos getPos(MobSpawnEvent.FinalizeSpawn o) {
             return new BlockPos((int) o.getX(), (int) o.getY(), (int) o.getZ());
         }
 
         @Override
-        public BlockPos getValidBlockPos(LivingSpawnEvent.CheckSpawn o) {
+        public BlockPos getValidBlockPos(MobSpawnEvent.FinalizeSpawn o) {
             return new BlockPos((int) o.getX(), (int) (o.getY() - 1), (int) o.getZ());
         }
 
         @Override
-        public int getY(LivingSpawnEvent.CheckSpawn o) {
+        public int getY(MobSpawnEvent.FinalizeSpawn o) {
             return (int) o.getY();
         }
 
         @Override
-        public Entity getEntity(LivingSpawnEvent.CheckSpawn o) {
+        public Entity getEntity(MobSpawnEvent.FinalizeSpawn o) {
             return o.getEntity();
         }
 
         @Override
-        public DamageSource getSource(LivingSpawnEvent.CheckSpawn o) {
+        public DamageSource getSource(MobSpawnEvent.FinalizeSpawn o) {
             return null;
         }
 
         @Override
-        public Entity getAttacker(LivingSpawnEvent.CheckSpawn o) {
+        public Entity getAttacker(MobSpawnEvent.FinalizeSpawn o) {
             return null;
         }
 
         @Override
-        public Player getPlayer(LivingSpawnEvent.CheckSpawn o) {
+        public Player getPlayer(MobSpawnEvent.FinalizeSpawn o) {
             return getClosestPlayer(o.getLevel(), new BlockPos((int) o.getX(), (int) o.getY(), (int) o.getZ()));
         }
 
         @Override
-        public ItemStack getItem(LivingSpawnEvent.CheckSpawn o) {
+        public ItemStack getItem(MobSpawnEvent.FinalizeSpawn o) {
             return ItemStack.EMPTY;
         }
     };
@@ -274,7 +274,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
         map.consume(ACTION_CONTINUE, v -> this.doContinue = v);
     }
 
-    public boolean match(LivingSpawnEvent.CheckSpawn event) {
+    public boolean match(MobSpawnEvent.FinalizeSpawn event) {
         return ruleEvaluator.match(event, EVENT_QUERY);
     }
 
@@ -282,7 +282,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
         return ruleEvaluator.match(event, EVENT_QUERY_JOIN);
     }
 
-    public void action(LivingSpawnEvent.CheckSpawn event) {
+    public void action(MobSpawnEvent.FinalizeSpawn event) {
         EventGetter getter = new EventGetter() {
             @Override
             public LivingEntity getEntityLiving() {

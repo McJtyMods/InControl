@@ -19,7 +19,7 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.living.LivingExperienceDropEvent;
-import net.minecraftforge.event.entity.living.LivingSpawnEvent;
+import net.minecraftforge.event.entity.living.MobSpawnEvent;
 import net.minecraftforge.event.entity.living.ZombieEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -106,7 +106,7 @@ public class ForgeEventHandlers {
     }
 
     @SubscribeEvent
-    public void onEntitySpecialSpawnEvent(LivingSpawnEvent.SpecialSpawn event) {
+    public void onEntitySpecialSpawnEvent(MobSpawnEvent.FinalizeSpawn event) {
         int i = 0;
         ServerLevel world = (ServerLevel) event.getEntity().getCommandSenderWorld();
         for (SpecialRule rule : RulesManager.getFilteredSpecialRules(world)) {
@@ -144,7 +144,7 @@ public class ForgeEventHandlers {
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
-    public void onEntitySpawnEvent(LivingSpawnEvent.CheckSpawn event) {
+    public void onEntitySpawnEvent(MobSpawnEvent.FinalizeSpawn event) {
         int i = 0;
         for (SpawnRule rule : RulesManager.getFilteredRules(event.getEntity().getCommandSenderWorld())) {
             if (rule.match(event)) {
