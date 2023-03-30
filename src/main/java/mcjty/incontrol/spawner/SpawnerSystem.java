@@ -171,13 +171,14 @@ public class SpawnerSystem {
                                 Mob mobEntity = (Mob) entity;
                                 entity.moveTo(pos.getX(), pos.getY(), pos.getZ(), random.nextFloat() * 360.0F, 0.0F);
                                 busySpawning = mobEntity;   // @todo check in spawn rule
-                                int result = ForgeHooks.canEntitySpawn(mobEntity, world, pos.getX(), pos.getY(), pos.getZ(), null, MobSpawnType.NATURAL);
+                                int result = 0;// @todo 1.19.4 ForgeHooks.canEntitySpawn(mobEntity, world, pos.getX(), pos.getY(), pos.getZ(), null, MobSpawnType.NATURAL);
                                 busySpawning = null;
                                 if (result != -1) {
                                     if (canSpawn(world, mobEntity, conditions) && isNotColliding(world, mobEntity, conditions)) {
-                                        if (!ForgeEventFactory.doSpecialSpawn(mobEntity, (LevelAccessor) world, pos.getX(), pos.getY(), pos.getZ(), null, MobSpawnType.NATURAL)) {
-                                            mobEntity.finalizeSpawn(world, world.getCurrentDifficultyAt(entity.blockPosition()), MobSpawnType.NATURAL, null, null);
-                                        }
+                                        // @todo 1.19.4
+//                                        if (!ForgeEventFactory.doSpecialSpawn(mobEntity, (LevelAccessor) world, pos.getX(), pos.getY(), pos.getZ(), null, MobSpawnType.NATURAL)) {
+//                                            mobEntity.finalizeSpawn(world, world.getCurrentDifficultyAt(entity.blockPosition()), MobSpawnType.NATURAL, null, null);
+//                                        }
                                         world.addFreshEntityWithPassengers(entity);
                                         Statistics.addSpawnerStat(ruleNr);
                                         spawned++;
