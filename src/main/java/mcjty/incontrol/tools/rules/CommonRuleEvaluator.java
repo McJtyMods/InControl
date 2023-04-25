@@ -39,7 +39,6 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.common.BiomeManager;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.energy.IEnergyStorage;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -347,11 +346,13 @@ public class CommonRuleEvaluator {
         JsonElement element = parser.parse(json);
         if (element.isJsonPrimitive()) {
             String blockname = element.getAsString();
-            if (blockname.startsWith("ore:")) {
-                // @todo 1.15 ore dictionary?
-//                int oreId = OreDictionary.getOreID(blockname.substring(4));
-//                return (world, pos) -> isMatchingOreDict(oreId, world.getBlockState(pos).getBlock());
-                return (world, pos) -> false;
+            if (blockname.startsWith("tag:")) {
+                ResourceLocation tagname = new ResourceLocation(blockname.substring(4));
+                TagKey<Block> key = TagKey.create(Registry.BLOCK.key(), tagname);
+                return (world, pos) -> {
+                    BlockState state = world.getBlockState(pos);
+                    return state.is(key);
+                };
             } else {
                 if (!ForgeRegistries.BLOCKS.containsKey(new ResourceLocation(blockname))) {
                     ErrorHandler.error("Block '" + blockname + "' is not valid!");
@@ -363,11 +364,13 @@ public class CommonRuleEvaluator {
         } else if (element.isJsonObject()) {
             JsonObject obj = element.getAsJsonObject();
             BiPredicate<LevelAccessor, BlockPos> test;
-            if (obj.has("ore")) {
-                // @todo 1.15 ore dictionary?
-//                int oreId = OreDictionary.getOreID(obj.get("ore").getAsString());
-//                test = (world, pos) -> isMatchingOreDict(oreId, world.getBlockState(pos).getBlock());
-                test = (world, pos) -> false;
+            if (obj.has("tag")) {
+                ResourceLocation tagname = new ResourceLocation(obj.get("tag").getAsString());
+                TagKey<Block> key = TagKey.create(Registry.BLOCK.key(), tagname);
+                test = (world, pos) -> {
+                    BlockState state = world.getBlockState(pos);
+                    return state.is(key);
+                };
             } else if (obj.has("block")) {
                 String blockname = obj.get("block").getAsString();
                 if (!ForgeRegistries.BLOCKS.containsKey(new ResourceLocation(blockname))) {
@@ -462,16 +465,7 @@ public class CommonRuleEvaluator {
         return items;
     }
 
-    private boolean isMatchingOreDict(int oreId, Block block) {
-//        ItemStack stack = new ItemStack(block);
-//        int[] oreIDs = stack.isEmpty() ? EMPTYINTS : OreDictionary.getOreIDs(stack);
-//        return isMatchingOreId(oreIDs, oreId);
-        // @todo 1.15 oredict
-        return false;
-    }
-
     private void addBlocksCheck(AttributeMap map, List<String> blocks) {
-
         BiFunction<Object, IEventQuery, BlockPos> posFunction;
         String bo = map.consumeAndFetch(BLOCKOFFSET);
         if (bo != null) {
@@ -752,12 +746,11 @@ public class CommonRuleEvaluator {
                 test = s -> finalTest.test(s) && count.test(s.getCount());
             }
         }
-        if (obj.has("ore")) {
-            // @todo 1.15 ore dictionary
-//            int oreId = OreDictionary.getOreID(obj.get("ore").getAsString());
-//            Predicate<ItemStack> finalTest = test;
-//            test = s -> finalTest.test(s) && isMatchingOreId(s.isEmpty() ? EMPTYINTS : OreDictionary.getOreIDs(s), oreId);
-            test = s -> false;
+        if (obj.has("tag")) {
+            ResourceLocation tagname = new ResourceLocation(obj.get("tag").getAsString());
+            TagKey<Item> key = TagKey.create(Registry.ITEM.key(), tagname);
+            Predicate<ItemStack> finalTest = test;
+            test = s -> finalTest.test(s) && s.is(key);
         }
         if (obj.has("mod")) {
             String mod = obj.get("mod").getAsString();
