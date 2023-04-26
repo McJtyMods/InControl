@@ -170,15 +170,11 @@ public class SpawnerSystem {
                             if (!(entity instanceof Enemy) || world.getDifficulty() != Difficulty.PEACEFUL) {
                                 Mob mobEntity = (Mob) entity;
                                 entity.moveTo(pos.getX(), pos.getY(), pos.getZ(), random.nextFloat() * 360.0F, 0.0F);
-                                busySpawning = mobEntity;   // @todo check in spawn rule
-                                int result = 0;// @todo 1.19.4 ForgeHooks.canEntitySpawn(mobEntity, world, pos.getX(), pos.getY(), pos.getZ(), null, MobSpawnType.NATURAL);
-                                busySpawning = null;
-                                if (result != -1) {
-                                    if (canSpawn(world, mobEntity, conditions) && isNotColliding(world, mobEntity, conditions)) {
-                                        // @todo 1.19.4
-//                                        if (!ForgeEventFactory.doSpecialSpawn(mobEntity, (LevelAccessor) world, pos.getX(), pos.getY(), pos.getZ(), null, MobSpawnType.NATURAL)) {
-//                                            mobEntity.finalizeSpawn(world, world.getCurrentDifficultyAt(entity.blockPosition()), MobSpawnType.NATURAL, null, null);
-//                                        }
+                                if (canSpawn(world, mobEntity, conditions) && isNotColliding(world, mobEntity, conditions)) {
+                                    busySpawning = mobEntity;   // @todo check in spawn rule
+                                    ForgeEventFactory.onFinalizeSpawn(mobEntity, world, world.getCurrentDifficultyAt(pos), MobSpawnType.NATURAL, null, null);
+                                    busySpawning = null;
+                                    if (!((Mob) entity).isSpawnCancelled()) {
                                         world.addFreshEntityWithPassengers(entity);
                                         Statistics.addSpawnerStat(ruleNr);
                                         spawned++;
