@@ -56,6 +56,8 @@ public interface IModRuleCompatibilityLayer {
 
     <T> boolean isBuilding(IEventQuery<T> query, T event);
 
+    <T> String getBuilding(IEventQuery<T> query, T event);
+
     // --------------------
     // Serene Seasons
     // --------------------

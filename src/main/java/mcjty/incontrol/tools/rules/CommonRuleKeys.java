@@ -48,6 +48,7 @@ public interface CommonRuleKeys {
     Key<Boolean> INBUILDING = Key.create(Type.BOOLEAN, "inbuilding");
     Key<Boolean> INSTREET = Key.create(Type.BOOLEAN, "instreet");
     Key<Boolean> INSPHERE = Key.create(Type.BOOLEAN, "insphere");
+    Key<String> BUILDING = Key.create(Type.STRING, "building");
 
     Key<String> GAMESTAGE = Key.create(Type.STRING, "gamestage");
 
