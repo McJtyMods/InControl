@@ -1,4 +1,4 @@
-Upcoming:
+1.19-7.1.5:
 - Added new 'building' keyword that you can use to test as a condition. This will allow testing if (for example) a spawn is in a certain list of buildings
 
 1.19-7.1.4:
