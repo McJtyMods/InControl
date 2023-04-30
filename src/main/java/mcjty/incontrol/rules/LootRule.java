@@ -102,6 +102,7 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(MAXSPAWNDIST))
                 .attribute(Attribute.create(RANDOM))
                 .attribute(Attribute.create(INBUILDING))
+                .attribute(Attribute.createMulti(BUILDING))
                 .attribute(Attribute.create(INCITY))
                 .attribute(Attribute.create(GAMESTAGE))
                 .attribute(Attribute.create(WINTER))

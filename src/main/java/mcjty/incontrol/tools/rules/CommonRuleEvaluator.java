@@ -113,6 +113,7 @@ public class CommonRuleEvaluator {
         map.consume(INSTREET, this::addInStreetCheck);
         map.consume(INSPHERE, this::addInSphereCheck);
         map.consume(INBUILDING, this::addInBuildingCheck);
+        map.consumeAsList(BUILDING, this::addBuildingCheck);
 
         map.consumeAsList(AMULET, v -> addBaubleCheck(v, compatibility::getAmuletSlots));
         map.consumeAsList(RING, v -> addBaubleCheck(v, compatibility::getRingSlots));
@@ -1091,6 +1092,18 @@ public class CommonRuleEvaluator {
         } else {
             checks.add((event,query) -> !compatibility.isBuilding(query, event));
         }
+    }
+
+    private void addBuildingCheck(List<String> buildings) {
+        if (!compatibility.hasLostCities()) {
+            logger.warn("The Lost Cities is missing: the 'building' test cannot work!");
+            return;
+        }
+        Set<String> buildingSet = new HashSet<>(buildings);
+        checks.add((event,query) -> {
+            String building = compatibility.getBuilding(query, event);
+            return building != null && buildingSet.contains(building);
+        });
     }
 
     public void addBaubleCheck(List<String> itemList, Supplier<int[]> slotSupplier) {

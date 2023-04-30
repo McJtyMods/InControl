@@ -155,6 +155,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(SPAWNER))
                 .attribute(Attribute.create(INCONTROL))
                 .attribute(Attribute.create(INBUILDING))
+                .attribute(Attribute.createMulti(BUILDING))
                 .attribute(Attribute.create(INCITY))
                 .attribute(Attribute.create(INSTREET))
                 .attribute(Attribute.create(INSPHERE))

@@ -105,6 +105,11 @@ public class ModRuleCompatibilityLayer implements IModRuleCompatibilityLayer {
     }
 
     @Override
+    public <T> String getBuilding(IEventQuery<T> query, T event) {
+        return LostCitySupport.getBuildingName(query, event);
+    }
+
+    @Override
     public boolean hasSereneSeasons() {
         return ModSetup.sereneSeasons;
     }
