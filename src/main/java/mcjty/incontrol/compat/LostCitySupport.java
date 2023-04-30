@@ -109,6 +109,21 @@ public class LostCitySupport {
         return false;
     }
 
+    // Get the name of the building
+    public static <T> String getBuildingName(IEventQuery<T> query, T event) {
+        Level w = getWorld(query, event);
+        if (w == null) {
+            return null;   // This test don't work client side
+        }
+        ILostCityInformation info = lostCities.getLostInfo(w);
+        if (info != null) {
+            BlockPos pos = query.getPos(event);
+            ILostChunkInfo chunkInfo = info.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
+            return chunkInfo.getBuildingType();
+        }
+        return null;
+    }
+
     public static class GetLostCities implements Function<ILostCities, Void> {
 
         @Override

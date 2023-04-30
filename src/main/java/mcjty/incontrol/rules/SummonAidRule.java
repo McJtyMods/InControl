@@ -112,6 +112,7 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
                 .attribute(Attribute.create(CANSPAWNHERE))
                 .attribute(Attribute.create(NOTCOLLIDING))
                 .attribute(Attribute.create(INBUILDING))
+                .attribute(Attribute.createMulti(BUILDING))
                 .attribute(Attribute.create(INCITY))
                 .attribute(Attribute.create(INSTREET))
                 .attribute(Attribute.create(INSPHERE))
