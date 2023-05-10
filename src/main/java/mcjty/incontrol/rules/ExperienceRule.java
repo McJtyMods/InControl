@@ -77,12 +77,18 @@ public class ExperienceRule extends RuleBase<RuleBase.EventGetter> {
 
     static {
         FACTORY
+                .attribute(Attribute.create(TIME))
                 .attribute(Attribute.create(MINTIME))
                 .attribute(Attribute.create(MAXTIME))
+
+                .attribute(Attribute.create(LIGHT))
                 .attribute(Attribute.create(MINLIGHT))
                 .attribute(Attribute.create(MAXLIGHT))
+
+                .attribute(Attribute.create(HEIGHT))
                 .attribute(Attribute.create(MINHEIGHT))
                 .attribute(Attribute.create(MAXHEIGHT))
+
                 .attribute(Attribute.create(MINDIFFICULTY))
                 .attribute(Attribute.create(MAXDIFFICULTY))
                 .attribute(Attribute.create(MINSPAWNDIST))
@@ -111,6 +117,8 @@ public class ExperienceRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(AUTUMN))
                 .attribute(Attribute.create(STATE))
                 .attribute(Attribute.create(PSTATE))
+                .attribute(Attribute.createMulti(SCOREBOARDTAGS_ALL))
+                .attribute(Attribute.createMulti(SCOREBOARDTAGS_ANY))
                 .attribute(Attribute.createMulti(MOB))
                 .attribute(Attribute.createMulti(MOD))
                 .attribute(Attribute.createMulti(BLOCK))

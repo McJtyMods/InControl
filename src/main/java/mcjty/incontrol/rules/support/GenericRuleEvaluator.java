@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import static mcjty.incontrol.rules.support.RuleKeys.*;
 
@@ -246,6 +247,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
 
     private static class CountInfo {
         private int amount;
+        private Predicate<Integer> amountTester = null;
         private List<EntityType> entityTypes = new ArrayList<>();
         private boolean scaledPerPlayer = false;
         private boolean scaledPerChunk = false;
@@ -259,6 +261,11 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
 
         public CountInfo setAmount(int amount) {
             this.amount = amount;
+            return this;
+        }
+
+        public CountInfo setAmountTester(Predicate<Integer> amountTester) {
+            this.amountTester = amountTester;
             return this;
         }
 
@@ -409,7 +416,6 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         return ee;
     }
 
-
     private void addMinCountCheck(String json) {
         CountInfo info = parseCountInfo(json);
         if (info == null) {
@@ -443,17 +449,31 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         });
     }
 
-    private void addDayCountCheck(Integer count) {
+    private void addDayCountCheck(Object count) {
         if (count == null) {
             return;
         }
 
-        checks.add((event, query) -> {
-            LevelAccessor world = query.getWorld(event);
-            DataStorage data = DataStorage.getData(Tools.getServerWorld(world));
-            int amount = data.getDaycounter();
-            return amount % count == 0;
-        });
+        if (count instanceof Integer c) {
+            checks.add((event, query) -> {
+                LevelAccessor world = query.getWorld(event);
+                DataStorage data = DataStorage.getData(Tools.getServerWorld(world));
+                int amount = data.getDaycounter();
+                return amount % c == 0;
+            });
+        } else if (count instanceof String input) {
+            Predicate<Integer> expression = Tools.parseExpression(input);
+            if (expression == null) {
+                // Error already reported
+                return;
+            }
+            checks.add((event, query) -> {
+                LevelAccessor world = query.getWorld(event);
+                DataStorage data = DataStorage.getData(Tools.getServerWorld(world));
+                int amount = data.getDaycounter();
+                return expression.test(amount);
+            });
+        }
     }
 
     private void addMinDayCountCheck(Integer count) {

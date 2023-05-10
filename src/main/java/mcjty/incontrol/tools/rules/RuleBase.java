@@ -25,6 +25,7 @@ import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.NeutralMob;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -133,6 +134,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         map.consume2(ACTION_DAMAGEMULTIPLY, ACTION_DAMAGEADD, this::addDamageAction);
         map.consume2(ACTION_SIZEMULTIPLY, ACTION_SIZEADD, this::addSizeActions);
         map.consumeAsList(ACTION_POTION, this::addPotionsAction);
+        map.consume(ACTION_NODESPAWN, this::addNoDespawnAction);
         map.consume(ACTION_ANGRY, this::addAngryAction);
         map.consume(ACTION_CUSTOMNAME, this::addCustomName);
         map.consume(ACTION_MOBNBT, this::addMobNBT);
@@ -146,6 +148,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         map.consume(ACTION_CLEAR, this::addClearAction);
         map.consume(ACTION_DAMAGE, this::addDoDamageAction);
         map.consume(ACTION_MESSAGE, this::addDoMessageAction);
+        map.consumeAsList(ACTION_ADDSCOREBOARDTAGS, this::addAddScoreboardTagsAction);
         map.consumeAsList(ACTION_GIVE, this::addGiveAction);
         map.consumeAsList(ACTION_DROP, this::addDropAction);
         map.consume2(ACTION_SETBLOCK, BLOCKOFFSET, this::addSetBlockAction);
@@ -245,6 +248,15 @@ public class RuleBase<T extends RuleBase.EventGetter> {
             Player player = event.getPlayer();
             if (player != null) {
                 layer.removeGameStage(player, stage);
+            }
+        });
+    }
+
+    private void addNoDespawnAction(boolean a) {
+        actions.add(event -> {
+            LivingEntity living = event.getEntityLiving();
+            if (living instanceof Mob mob) {
+                mob.setPersistenceRequired();
             }
         });
     }
@@ -609,6 +621,17 @@ public class RuleBase<T extends RuleBase.EventGetter> {
                 }
             });
         }
+    }
+
+    private void addAddScoreboardTagsAction(List<String> tags) {
+        actions.add(event -> {
+            LivingEntity entityLiving = event.getEntityLiving();
+            if (entityLiving != null) {
+                for (String tag : tags) {
+                    entityLiving.addTag(tag);
+                }
+            }
+        });
     }
 
     private void addHealthSetAction(float s) {

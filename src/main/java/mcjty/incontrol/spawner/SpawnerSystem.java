@@ -170,6 +170,9 @@ public class SpawnerSystem {
                             if (!(entity instanceof Enemy) || world.getDifficulty() != Difficulty.PEACEFUL) {
                                 Mob mobEntity = (Mob) entity;
                                 entity.moveTo(pos.getX(), pos.getY(), pos.getZ(), random.nextFloat() * 360.0F, 0.0F);
+                                for (String tag : rule.getScoreboardTags()) {
+                                    entity.addTag(tag);
+                                }
                                 busySpawning = mobEntity;   // @todo check in spawn rule
                                 int result = ForgeHooks.canEntitySpawn(mobEntity, world, pos.getX(), pos.getY(), pos.getZ(), null, MobSpawnType.NATURAL);
                                 busySpawning = null;
@@ -300,6 +303,8 @@ public class SpawnerSystem {
             return null;
         }
 
+        int verticalMindist = conditions.getVerticalMindist();
+        int verticalMaxdist = conditions.getVerticalMaxdist();
         int mindist = conditions.getMindist();
         int maxdist = conditions.getMaxdist();
 
@@ -311,6 +316,18 @@ public class SpawnerSystem {
             pos = box.randomPos(random, groupCenterPos, groupDistance);
             LevelChunk c = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
             if (c != null && c.getStatus() == ChunkStatus.FULL) {
+                // If vertical distance is beyond range then don't use this position (set it to null)
+                if (verticalMindist != -1 || verticalMaxdist != -1) {
+                    int y = pos.getY();
+                    int verticalDist = Math.abs(y - player.blockPosition().getY());
+                    if (verticalMindist != -1 && verticalDist < verticalMindist) {
+                        pos = null;
+                        continue;
+                    } else if (verticalMaxdist != -1 && verticalDist > verticalMaxdist) {
+                        pos = null;
+                        continue;
+                    }
+                }
                 sqdist = pos.distToCenterSqr(player.blockPosition().getX(), player.blockPosition().getY(), player.blockPosition().getZ());
             }
             counter--;
@@ -341,6 +358,8 @@ public class SpawnerSystem {
         int minheight = conditions.getMinheight();
         int maxheight = conditions.getMaxheight();
 
+        int verticalMindist = conditions.getVerticalMindist();
+        int verticalMaxdist = conditions.getVerticalMaxdist();
         int mindist = conditions.getMindist();
         int maxdist = conditions.getMaxdist();
 
@@ -355,6 +374,17 @@ public class SpawnerSystem {
             LevelChunk c = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
             if (c != null && c.getStatus() == ChunkStatus.FULL) {
                 pos = getValidSpawnablePosition(world, pos.getX(), pos.getZ(), minheight, maxheight, validSpawn);
+                if (pos != null && (verticalMindist != -1 || verticalMaxdist != -1)) {
+                    int y = pos.getY();
+                    int verticalDist = Math.abs(y - player.blockPosition().getY());
+                    if (verticalMindist != -1 && verticalDist < verticalMindist) {
+                        pos = null;
+                        continue;
+                    } else if (verticalMaxdist != -1 && verticalDist > verticalMaxdist) {
+                        pos = null;
+                        continue;
+                    }
+                }
                 sqdist = pos == null ? Double.MAX_VALUE : pos.distToCenterSqr(player.blockPosition().getX(), player.blockPosition().getY(), player.blockPosition().getZ());
             }
             counter--;

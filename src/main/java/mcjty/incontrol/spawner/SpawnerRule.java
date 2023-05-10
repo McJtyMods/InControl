@@ -15,6 +15,7 @@ public class SpawnerRule {
 
     private final List<EntityType<?>> mobs = new ArrayList<>();
     private final List<Float> weights = new ArrayList<>();
+    private final List<String> scoreboardTags = new ArrayList<>();
     private final MobCategory mobsFromBiome;
 
     private final float maxWeight;
@@ -33,6 +34,7 @@ public class SpawnerRule {
         PHASE,
         PERSECOND,
         ATTEMPTS,
+        ADDSCOREBOARDTAGS,
         AMOUNT,
         CONDITIONS
     }
@@ -47,6 +49,7 @@ public class SpawnerRule {
     private SpawnerRule(Builder builder) {
         mobs.addAll(builder.mobs);
         weights.addAll(builder.weights);
+        scoreboardTags.addAll(builder.scoreboardTags);
         mobsFromBiome = builder.mobsFromBiome;
 
         phases = builder.phases;
@@ -69,6 +72,10 @@ public class SpawnerRule {
 
     public List<EntityType<?>> getMobs() {
         return mobs;
+    }
+
+    public List<String> getScoreboardTags() {
+        return scoreboardTags;
     }
 
     public List<Float> getWeights() {
@@ -173,6 +180,16 @@ public class SpawnerRule {
                 case ATTEMPTS -> {
                     builder.attempts(object.getAsJsonPrimitive("attempts").getAsInt());
                 }
+                case ADDSCOREBOARDTAGS -> {
+                    JsonElement tags = object.get("addscoreboardtags");
+                    if (tags.isJsonArray()) {
+                        for (JsonElement element : tags.getAsJsonArray()) {
+                            builder.addScoreboardTags(element.getAsString());
+                        }
+                    } else {
+                        builder.addScoreboardTags(tags.getAsString());
+                    }
+                }
                 case AMOUNT -> {
                     JsonObject amount = object.getAsJsonObject("amount");
                     if (amount.has("minimum")) {
@@ -207,6 +224,7 @@ public class SpawnerRule {
     public static class Builder {
         private final List<EntityType<?>> mobs = new ArrayList<>();
         private final List<Float> weights = new ArrayList<>();
+        private final List<String> scoreboardTags = new ArrayList<>();
         private MobCategory mobsFromBiome = null;
 
         private final Set<String> phases = new HashSet<>();
@@ -219,6 +237,11 @@ public class SpawnerRule {
 
         public Builder mobs(EntityType<?>... mobs) {
             Collections.addAll(this.mobs, mobs);
+            return this;
+        }
+
+        public Builder addScoreboardTags(String... tags) {
+            Collections.addAll(this.scoreboardTags, tags);
             return this;
         }
 

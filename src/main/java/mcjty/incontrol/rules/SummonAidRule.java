@@ -93,17 +93,25 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
 
     static {
         FACTORY
+                .attribute(Attribute.create(TIME))
                 .attribute(Attribute.create(MINTIME))
                 .attribute(Attribute.create(MAXTIME))
+
                 .attribute(Attribute.create(DAYCOUNT))
                 .attribute(Attribute.create(MINDAYCOUNT))
                 .attribute(Attribute.create(MAXDAYCOUNT))
+
                 .attribute(Attribute.create(MINCOUNT))
                 .attribute(Attribute.create(MAXCOUNT))
+
+                .attribute(Attribute.create(LIGHT))
                 .attribute(Attribute.create(MINLIGHT))
                 .attribute(Attribute.create(MAXLIGHT))
+
+                .attribute(Attribute.create(HEIGHT))
                 .attribute(Attribute.create(MINHEIGHT))
                 .attribute(Attribute.create(MAXHEIGHT))
+
                 .attribute(Attribute.create(MINDIFFICULTY))
                 .attribute(Attribute.create(MAXDIFFICULTY))
                 .attribute(Attribute.create(MINSPAWNDIST))
@@ -138,6 +146,8 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
                 .attribute(Attribute.createMulti(DIMENSION))
                 .attribute(Attribute.createMulti(DIMENSION_MOD))
                 .attribute(Attribute.create(STATE))
+                .attribute(Attribute.createMulti(SCOREBOARDTAGS_ALL))
+                .attribute(Attribute.createMulti(SCOREBOARDTAGS_ANY))
 
                 .attribute(Attribute.create(ACTION_RESULT))
                 .attribute(Attribute.create(ACTION_MESSAGE))
@@ -159,6 +169,7 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
                 .attribute(Attribute.createMulti(ACTION_ARMORCHEST))
                 .attribute(Attribute.createMulti(ACTION_ARMORHELMET))
                 .attribute(Attribute.createMulti(ACTION_POTION))
+                .attribute(Attribute.create(ACTION_NODESPAWN))
         ;
     }
 
