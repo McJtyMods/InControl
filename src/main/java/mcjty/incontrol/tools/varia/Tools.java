@@ -25,6 +25,7 @@ import org.apache.logging.log4j.Logger;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 public class Tools {
 
@@ -40,17 +41,6 @@ public class Tools {
 
     public static String getBiomeId(Holder<Biome> biomeHolder) {
         return biomeHolder.unwrap().map((key) -> key.location().toString(), (key) -> "[unregistered " + key + "]");
-    }
-
-    /// Returns empty string on invalid biomes
-    @Nonnull
-    public static String getBiomeIdSlowAndOldAndProbablySomewhatWrong(Biome biome) {
-        if (ForgeRegistries.BIOMES.getKey(biome) == null) {
-            Optional<? extends Registry<Biome>> biomeRegistry = RegistryAccess.builtinCopy().registry(Registry.BIOME_REGISTRY);
-            return biomeRegistry.map(r -> r.getResourceKey(biome).map(key -> key.location().toString()).orElse("")).orElse("");
-        } else {
-            return ForgeRegistries.BIOMES.getKey(biome).toString();
-        }
     }
 
     public static Pair<Float, ItemStack> parseStackWithFactor(String name, Logger logger) {
@@ -172,5 +162,60 @@ public class Tools {
             throw new IllegalStateException("No world found!");
         }
         return sw;
+    }
+
+    // Parse an expression to a predicate that matches a certain integer. The following
+    // operators are supported:
+    // greater(x) is true if the number is greater than x (or gt)
+    // greaterOrEqual(x) is true if the number is greater or equal to x (or ge)
+    // smaller(x) is true if the number is smaller than x (or lt)
+    // smallerOrEqual(x) is true if the number is smaller or equal to x (or le)
+    // equal(x) is true if the number is equal to x (or eq)
+    // notEqual(x) is true if the number is not equal to x (or ne)
+    // range(min,max) is true if the number is in the range
+    // outsideRange(min,max) is true if the number is outside the range
+    // repeat(cycle,min,max) is true for every part of the cycle
+    public static Predicate<Integer> parseExpression(String input) {
+        // Use startsWith to parse the expression
+        String i = input.toLowerCase();
+        if (i.startsWith("greater(") || i.startsWith("gt(")) {
+            // Get the number
+            int number = Integer.parseInt(i.substring(i.indexOf('(') + 1, i.indexOf(')')).trim());
+            return value -> value > number;
+        } else if (i.startsWith("greaterorequal(") || i.startsWith("ge(")) {
+            int number = Integer.parseInt(i.substring(i.indexOf('(') + 1, i.indexOf(')')).trim());
+            return value -> value >= number;
+        } else if (i.startsWith("smaller(") || i.startsWith("lt(")) {
+            int number = Integer.parseInt(i.substring(i.indexOf('(') + 1, i.indexOf(')')).trim());
+            return value -> value < number;
+        } else if (i.startsWith("smallerorequal(") || i.startsWith("le(")) {
+            int number = Integer.parseInt(i.substring(i.indexOf('(') + 1, i.indexOf(')')).trim());
+            return value -> value <= number;
+        } else if (i.startsWith("equal(") || i.startsWith("eq(")) {
+            int number = Integer.parseInt(i.substring(i.indexOf('(') + 1, i.indexOf(')')).trim());
+            return value -> value == number;
+        } else if (i.startsWith("notequal(") || i.startsWith("ne(")) {
+            int number = Integer.parseInt(i.substring(i.indexOf('(') + 1, i.indexOf(')')).trim());
+            return value -> value != number;
+        } else if (i.startsWith("range(")) {
+            int min = Integer.parseInt(i.substring(i.indexOf('(') + 1, i.indexOf(',')));
+            int max = Integer.parseInt(i.substring(i.indexOf(',') + 1, i.indexOf(')')));
+            return value -> value >= min && value <= max;
+        } else if (i.startsWith("outsiderange(")) {
+            int min = Integer.parseInt(i.substring(i.indexOf('(') + 1, i.indexOf(',')));
+            int max = Integer.parseInt(i.substring(i.indexOf(',') + 1, i.indexOf(')')));
+            return value -> value < min || value > max;
+        } else if (i.startsWith("repeat(")) {
+            int cycle = Integer.parseInt(i.substring(i.indexOf('(') + 1, i.indexOf(',')));
+            int min = Integer.parseInt(i.substring(i.indexOf(',') + 1, i.lastIndexOf(',')));
+            int max = Integer.parseInt(i.substring(i.lastIndexOf(',') + 1, i.indexOf(')')));
+            return value -> {
+                int v = value % cycle;
+                return v >= min && v <= max;
+            };
+        } else {
+            ErrorHandler.error("Unknown expression '" + input + "'!");
+            return null;
+        }
     }
 }

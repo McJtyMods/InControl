@@ -21,7 +21,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.Difficulty;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -71,17 +73,25 @@ public class CommonRuleEvaluator {
         map.consume(RANDOM, this::addRandomCheck);
         map.consumeAsList(DIMENSION, this::addDimensionCheck);
         map.consumeAsList(DIMENSION_MOD, this::addDimensionModCheck);
+
+        map.consume(TIME, this::addTimeCheck);
         map.consume(MINTIME, this::addMinTimeCheck);
         map.consume(MAXTIME, this::addMaxTimeCheck);
+
+        map.consume(HEIGHT, this::addHeightCheck);
         map.consume(MINHEIGHT, this::addMinHeightCheck);
         map.consume(MAXHEIGHT, this::addMaxHeightCheck);
+
         map.consume(WEATHER, this::addWeatherCheck);
         map.consumeAsList(BIOMETAGS, this::addBiomeTagCheck);
         map.consume(DIFFICULTY, this::addDifficultyCheck);
         map.consume(MINSPAWNDIST, this::addMinSpawnDistCheck);
         map.consume(MAXSPAWNDIST, this::addMaxSpawnDistCheck);
+
+        map.consume(LIGHT, this::addLightCheck);
         map.consume(MINLIGHT, this::addMinLightCheck);
         map.consume(MAXLIGHT, this::addMaxLightCheck);
+
         map.consume(MINDIFFICULTY, this::addMinAdditionalDifficultyCheck);
         map.consume(MAXDIFFICULTY, this::addMaxAdditionalDifficultyCheck);
         map.consume(SEESKY, this::addSeeSkyCheck);
@@ -98,6 +108,8 @@ public class CommonRuleEvaluator {
         map.consumeAsList(OFFHANDITEM, this::addOffHandItemCheck);
         map.consumeAsList(BOTHHANDSITEM, this::addBothHandsItemCheck);
         map.consume(STRUCTURE, this::addStructureCheck);
+        map.consumeAsList(SCOREBOARDTAGS_ALL, this::addAllScoreboardTagsCheck);
+        map.consumeAsList(SCOREBOARDTAGS_ANY, this::addAnyScoreboardTagsCheck);
 
         map.consume(STATE, this::addStateCheck);
         map.consume(PSTATE, this::addPStateCheck);
@@ -248,6 +260,28 @@ public class CommonRuleEvaluator {
         }
     }
 
+    private void addAllScoreboardTagsCheck(List<String> list) {
+        Set<String> tags = new HashSet<>(list);
+        checks.add((event,query) -> {
+            Entity entity = query.getEntity(event);
+            if (entity instanceof LivingEntity living) {
+                return living.getTags().containsAll(tags);
+            }
+            return false;
+        });
+    }
+
+    private void addAnyScoreboardTagsCheck(List<String> list) {
+        Set<String> tags = new HashSet<>(list);
+        checks.add((event,query) -> {
+            Entity entity = query.getEntity(event);
+            if (entity instanceof LivingEntity living) {
+                // Return true if entity.getTags() contains any key from tags
+                return living.getTags().stream().anyMatch(tags::contains);
+            }
+            return false;
+        });
+    }
 
     private void addStructureCheck(String structure) {
         checks.add((event,query) -> StructureCache.CACHE.isInStructure(query.getWorld(event), structure, query.getPos(event)));
@@ -509,17 +543,20 @@ public class CommonRuleEvaluator {
         }
     }
 
-    private static boolean isMatchingOreId(int[] oreIDs, int oreId) {
-        if (oreIDs.length > 0) {
-            for (int id : oreIDs) {
-                if (id == oreId) {
-                    return true;
+    private void addTimeCheck(String time) {
+        Predicate<Integer> expression = Tools.parseExpression(time);
+        if (expression != null) {
+            checks.add((event,query) -> {
+                LevelAccessor world = query.getWorld(event);
+                if (world instanceof Level) {
+                    long t = ((Level)world).getDayTime();
+                    return expression.test((int) (t % 24000));
+                } else {
+                    return false;
                 }
-            }
+            });
         }
-        return false;
     }
-
 
     private void addMinTimeCheck(int mintime) {
         checks.add((event,query) -> {
@@ -565,6 +602,20 @@ public class CommonRuleEvaluator {
         });
     }
 
+    private void addLightCheck(String expression) {
+        Predicate<Integer> exp = Tools.parseExpression(expression);
+        if (exp != null) {
+            checks.add((event, query) -> {
+                BlockPos pos = query.getPos(event);
+                LevelAccessor world = query.getWorld(event);
+                LevelChunk chunk = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
+                if (chunk == null || !chunk.getStatus().isOrAfter(ChunkStatus.FULL)) {
+                    return false;
+                }
+                return exp.test(world.getBrightness(LightLayer.BLOCK, pos));
+            });
+        }
+    }
 
     private void addMinLightCheck(int minlight) {
         checks.add((event,query) -> {
@@ -598,6 +649,13 @@ public class CommonRuleEvaluator {
 
     private void addMaxAdditionalDifficultyCheck(Float maxdifficulty) {
         checks.add((event,query) -> query.getWorld(event).getCurrentDifficultyAt(query.getPos(event)).getEffectiveDifficulty() <= maxdifficulty);
+    }
+
+    private void addHeightCheck(String input) {
+        Predicate<Integer> expression = Tools.parseExpression(input);
+        if (expression != null) {
+            checks.add((event, query) -> expression.test(query.getY(event)));
+        }
     }
 
     private void addMaxHeightCheck(int maxheight) {
