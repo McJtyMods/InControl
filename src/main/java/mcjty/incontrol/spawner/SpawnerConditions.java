@@ -7,7 +7,6 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.level.Level;
 
 import java.util.*;
@@ -17,6 +16,8 @@ public class SpawnerConditions {
     private final Set<ResourceKey<Level>> dimensions;
     private final int mindist;
     private final int maxdist;
+    private final int verticalMindist;
+    private final int verticalMaxdist;
     private final int minheight;
     private final int maxheight;
     private final int mindaycount;
@@ -41,6 +42,8 @@ public class SpawnerConditions {
         DIMENSION,
         MINDIST,
         MAXDIST,
+        MINVERTICALDIST,
+        MAXVERTICALDIST,
         MINDAYCOUNT,
         MAXDAYCOUNT,
         MINHEIGHT,
@@ -72,6 +75,8 @@ public class SpawnerConditions {
         dimensions = new HashSet<>(builder.dimensions);
         mindist = builder.mindist;
         maxdist = builder.maxdist;
+        verticalMindist = builder.verticalMindist;
+        verticalMaxdist = builder.verticalMaxdist;
         minheight = builder.minheight;
         maxheight = builder.maxheight;
         mindaycount = builder.mindaycount;
@@ -94,6 +99,9 @@ public class SpawnerConditions {
     }
 
     private void validate() {
+        if (dimensions.isEmpty()) {
+            throw new IllegalStateException("No dimensions specified!");
+        }
         if (mindaycount < 0) {
             throw new IllegalStateException("Invalid negative minimum daycount!");
         }
@@ -111,6 +119,9 @@ public class SpawnerConditions {
         }
         if (minheight >= maxheight) {
             throw new IllegalStateException("Minimum height must be smaller then maximum!");
+        }
+        if (verticalMindist >= verticalMaxdist) {
+            throw new IllegalStateException("Minimum vertical distance must be smaller then maximum!");
         }
     }
 
@@ -132,6 +143,14 @@ public class SpawnerConditions {
 
     public int getMaxdist() {
         return maxdist;
+    }
+
+    public int getVerticalMindist() {
+        return verticalMindist;
+    }
+
+    public int getVerticalMaxdist() {
+        return verticalMaxdist;
     }
 
     public int getMinheight() {
@@ -225,6 +244,12 @@ public class SpawnerConditions {
                 case MAXDIST -> {
                     builder.distance(builder.mindist, object.getAsJsonPrimitive("maxdist").getAsInt());
                 }
+                case MINVERTICALDIST -> {
+                    builder.verticalDistance(object.getAsJsonPrimitive("minverticaldist").getAsInt(), builder.maxdist);
+                }
+                case MAXVERTICALDIST -> {
+                    builder.verticalDistance(builder.mindist, object.getAsJsonPrimitive("maxverticaldist").getAsInt());
+                }
                 case MINDAYCOUNT -> {
                     builder.daycount(object.getAsJsonPrimitive("mindaycount").getAsInt(), builder.maxdaycount);
                 }
@@ -285,6 +310,8 @@ public class SpawnerConditions {
 
         private int mindist = 24;
         private int maxdist = 120;
+        private int verticalMindist = -1;
+        private int verticalMaxdist = -1;
         private int mindaycount = 0;
         private int maxdaycount = Integer.MAX_VALUE;
         private int minheight = 1;
@@ -323,6 +350,12 @@ public class SpawnerConditions {
         public Builder distance(int min, int max) {
             this.mindist = min;
             this.maxdist = max;
+            return this;
+        }
+
+        public Builder verticalDistance(int min, int max) {
+            this.verticalMindist = min;
+            this.verticalMaxdist = max;
             return this;
         }
 

@@ -71,6 +71,19 @@ public class GenericAttributeMapFactory {
                     transformer = JsonElement::getAsString;
                 } else if (type == Type.JSON) {
                     transformer = JsonElement::toString;
+                } else if (type == Type.OBJECT) {
+                    if (jsonObject.isJsonPrimitive()) {
+                        if (jsonObject.getAsJsonPrimitive().isNumber()) {
+                            transformer = JsonElement::getAsInt;
+                        } else if (jsonObject.getAsJsonPrimitive().isBoolean()) {
+                            transformer = JsonElement::getAsBoolean;
+                        } else {
+                            transformer = JsonElement::getAsString;
+                        }
+                    } else {
+                        ErrorHandler.error("Expected a primitive for " + key.name() + "!");
+                        return map;
+                    }
                 } else if (type == Type.DIMENSION_TYPE) {
                     transformer = jsonElement -> {
                         ResourceKey<Level> worldkey = ResourceKey.create(Registries.DIMENSION, new ResourceLocation(jsonElement.getAsString()));
@@ -104,6 +117,24 @@ public class GenericAttributeMapFactory {
                 } else if (type == Type.STRING) {
                     if (jsonObject.has(key.name())) {
                         map.setNonnull(key, jsonObject.get(key.name()).getAsString());
+                    }
+                } else if (type == Type.OBJECT) {
+                    if (jsonObject.has(key.name())) {
+                        JsonElement el = jsonObject.get(key.name());
+                        if (el.isJsonObject()) {
+                            map.setNonnull(key, el.getAsJsonObject().toString());
+                        } else {
+                            if (el.isJsonPrimitive()) {
+                                JsonPrimitive prim = el.getAsJsonPrimitive();
+                                if (prim.isString()) {
+                                    map.setNonnull(key, prim.getAsString());
+                                } else if (prim.isNumber()) {
+                                    map.setNonnull(key, "" + prim.getAsInt());
+                                } else {
+                                    throw new RuntimeException("Bad type for key '" + key.name() + "'!");
+                                }
+                            }
+                        }
                     }
                 } else if (type == Type.DIMENSION_TYPE) {
                     if (jsonObject.has(key.name())) {

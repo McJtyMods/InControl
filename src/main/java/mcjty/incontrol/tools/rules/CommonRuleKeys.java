@@ -11,16 +11,24 @@ public interface CommonRuleKeys {
     Key<String> PHASE = Key.create(Type.STRING, "phase");
 
     // Inputs
+    Key<String> TIME = Key.create(Type.STRING, "time");
     Key<Integer> MINTIME = Key.create(Type.INTEGER, "mintime");
     Key<Integer> MAXTIME = Key.create(Type.INTEGER, "maxtime");
+
+    Key<String> LIGHT = Key.create(Type.STRING, "light");
     Key<Integer> MINLIGHT = Key.create(Type.INTEGER, "minlight");
     Key<Integer> MAXLIGHT = Key.create(Type.INTEGER, "maxlight");
+
+    Key<String> HEIGHT = Key.create(Type.STRING, "height");
     Key<Integer> MINHEIGHT = Key.create(Type.INTEGER, "minheight");
     Key<Integer> MAXHEIGHT = Key.create(Type.INTEGER, "maxheight");
-    Key<Float> MINDIFFICULTY = Key.create(Type.FLOAT, "mindifficulty");
-    Key<Float> MAXDIFFICULTY = Key.create(Type.FLOAT, "maxdifficulty");
+
     Key<Float> MINSPAWNDIST = Key.create(Type.FLOAT, "minspawndist");
     Key<Float> MAXSPAWNDIST = Key.create(Type.FLOAT, "maxspawndist");
+
+    Key<Float> MINDIFFICULTY = Key.create(Type.FLOAT, "mindifficulty");
+    Key<Float> MAXDIFFICULTY = Key.create(Type.FLOAT, "maxdifficulty");
+
     Key<Float> RANDOM = Key.create(Type.FLOAT, "random");
     Key<Boolean> SEESKY = Key.create(Type.BOOLEAN, "seesky");
     Key<Boolean> SLIME = Key.create(Type.BOOLEAN, "slime");
@@ -35,6 +43,8 @@ public interface CommonRuleKeys {
     Key<ResourceKey<Level>> DIMENSION = Key.create(Type.DIMENSION_TYPE, "dimension");
     Key<String> DIMENSION_MOD = Key.create(Type.STRING, "dimensionmod");
 
+    Key<String> SCOREBOARDTAGS_ALL = Key.create(Type.STRING, "scoreboardtags_all");
+    Key<String> SCOREBOARDTAGS_ANY = Key.create(Type.STRING, "scoreboardtags_any");
     Key<String> HELMET = Key.create(Type.JSON, "helmet");
     Key<String> CHESTPLATE = Key.create(Type.JSON, "chestplate");
     Key<String> LEGGINGS = Key.create(Type.JSON, "leggings");
@@ -87,6 +97,7 @@ public interface CommonRuleKeys {
     Key<Float> ACTION_DAMAGEADD = Key.create(Type.FLOAT, "damageadd");
     Key<Float> ACTION_SIZEMULTIPLY = Key.create(Type.FLOAT, "sizemultiply");
     Key<Float> ACTION_SIZEADD = Key.create(Type.FLOAT, "sizeadd");
+    Key<Boolean> ACTION_NODESPAWN = Key.create(Type.BOOLEAN, "nodespawn");
 
     Key<String> ACTION_POTION = Key.create(Type.STRING, "potion");
     Key<String> ACTION_HELDITEM = Key.create(Type.JSON, "helditem");
@@ -98,6 +109,7 @@ public interface CommonRuleKeys {
     Key<String> ACTION_CUSTOMNAME = Key.create(Type.STRING, "customname");
     Key<Boolean> ACTION_ANGRY = Key.create(Type.BOOLEAN, "angry");
     Key<String> ACTION_MESSAGE = Key.create(Type.STRING, "message");
+    Key<String> ACTION_ADDSCOREBOARDTAGS = Key.create(Type.STRING, "addscoreboardtags");
     Key<String> ACTION_GIVE = Key.create(Type.JSON, "give");
     Key<String> ACTION_DROP = Key.create(Type.JSON, "drop");
     Key<String> ACTION_SETBLOCK = Key.create(Type.JSON, "setblock");
