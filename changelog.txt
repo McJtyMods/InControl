@@ -1,4 +1,4 @@
-Upcoming:
+1.18-6.1.6:
 - New 'addscoreboardtags' keyword for spawner.json and spawn.json. With this you can add scoreboard tags on each entity spawned by this rule
 - New 'scoreboardtags_all' and 'scoreboardtags_any' conditions for spawn, experience, loot, special, and summonaid. These will test if all or any of the given tags are present on the entity
 - New 'nodespawn' action for spawn, special, and summonaid. This will prevent the mob from despawning
