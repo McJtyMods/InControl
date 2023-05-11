@@ -1,4 +1,4 @@
-Upcoming:
+1.19-7.1.7:
 - InControl would not initialize correctly due to a bad placed validation
 
 1.19-7.1.6:
