@@ -94,11 +94,9 @@ public class SpawnerConditions {
         noRestrictions = builder.noRestrictions;
         validSpawn = builder.validSpawn;
         sturdy = builder.sturdy;
-
-        validate();
     }
 
-    private void validate() {
+    public void validate() {
         if (dimensions.isEmpty()) {
             throw new IllegalStateException("No dimensions specified!");
         }
@@ -119,9 +117,6 @@ public class SpawnerConditions {
         }
         if (minheight >= maxheight) {
             throw new IllegalStateException("Minimum height must be smaller then maximum!");
-        }
-        if (verticalMindist >= verticalMaxdist) {
-            throw new IllegalStateException("Minimum vertical distance must be smaller then maximum!");
         }
     }
 
