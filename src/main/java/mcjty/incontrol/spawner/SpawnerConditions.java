@@ -94,11 +94,9 @@ public class SpawnerConditions {
         noRestrictions = builder.noRestrictions;
         validSpawn = builder.validSpawn;
         sturdy = builder.sturdy;
-
-        validate();
     }
 
-    private void validate() {
+    public void validate() {
         if (dimensions.isEmpty()) {
             throw new IllegalStateException("No dimensions specified!");
         }

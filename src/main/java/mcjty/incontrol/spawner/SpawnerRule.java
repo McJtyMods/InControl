@@ -206,7 +206,9 @@ public class SpawnerRule {
                     JsonObject conditions = object.getAsJsonObject("conditions");
                     SpawnerConditions.Builder conditionsBuilder = SpawnerConditions.create();
                     SpawnerConditions.parse(conditions, conditionsBuilder);
-                    builder.conditions(conditionsBuilder.build());
+                    SpawnerConditions cnd = conditionsBuilder.build();
+                    cnd.validate();
+                    builder.conditions(cnd);
                 }
             }
         }
