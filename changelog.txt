@@ -1,4 +1,4 @@
-Upcoming:
+1.19.3-8.0.2:
 - New 'addscoreboardtags' keyword for spawner.json and spawn.json. With this you can add scoreboard tags on each entity spawned by this rule
 - New 'scoreboardtags_all' and 'scoreboardtags_any' conditions for spawn, experience, loot, special, and summonaid. These will test if all or any of the given tags are present on the entity
 - New 'nodespawn' action for spawn, special, and summonaid. This will prevent the mob from despawning
@@ -6,6 +6,7 @@ Upcoming:
 - The 'daycount' keyword now also supports this new expression syntax. Using this you can now do things like: 'spawn zombies for two days every 10 days and spawn creepers for one day in the same cycle'
 - Added new 'minverticaldist' and 'maxverticaldist' keywords to the spawner system. These will allow you to specify a vertical distance between the spawner and the spawn position
 - The spawner system will now fail if no dimensions are specified (as it should, it's not optional)
+- Fixed a bug in 'addscoreboardtags'
 
 1.19-7.1.5:
 - Added new 'building' keyword that you can use to test as a condition. This will allow testing if (for example) a spawn is in a certain list of buildings

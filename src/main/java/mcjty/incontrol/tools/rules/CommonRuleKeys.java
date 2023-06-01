@@ -109,7 +109,7 @@ public interface CommonRuleKeys {
     Key<String> ACTION_CUSTOMNAME = Key.create(Type.STRING, "customname");
     Key<Boolean> ACTION_ANGRY = Key.create(Type.BOOLEAN, "angry");
     Key<String> ACTION_MESSAGE = Key.create(Type.STRING, "message");
-    Key<String> ACTION_ADDSCOREBOARDTAGS = Key.create(Type.STRING, "addscoreboardtags");
+    Key<String> ACTION_ADDSCOREBOARDTAGS = Key.create(Type.JSON, "addscoreboardtags");
     Key<String> ACTION_GIVE = Key.create(Type.JSON, "give");
     Key<String> ACTION_DROP = Key.create(Type.JSON, "drop");
     Key<String> ACTION_SETBLOCK = Key.create(Type.JSON, "setblock");
