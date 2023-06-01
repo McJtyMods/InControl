@@ -1,3 +1,6 @@
+1.19.3-8.0.6:
+- Fixed a bug in 'addscoreboardtags'
+
 1.19.3-8.0.5:
 - InControl would not initialize correctly due to a bad placed validation
 
