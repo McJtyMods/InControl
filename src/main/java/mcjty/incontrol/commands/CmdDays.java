@@ -20,7 +20,7 @@ public class CmdDays {
 
     private static int showDays(CommandContext<CommandSourceStack> context) {
         DataStorage data = DataStorage.getData(context.getSource().getLevel());
-        context.getSource().sendSuccess(Component.literal("Current day is " + data.getDaycounter()), false);
+        context.getSource().sendSuccess(() -> Component.literal("Current day is " + data.getDaycounter()), false);
         return 0;
     }
 

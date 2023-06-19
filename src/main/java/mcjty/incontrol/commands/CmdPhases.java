@@ -22,7 +22,8 @@ public class CmdPhases {
         for (String phase : data.getPhases()) {
             phases += phase + " ";
         }
-        context.getSource().sendSuccess(Component.literal("Current phases: " + phases), false);
+        String finalPhases = phases;
+        context.getSource().sendSuccess(() -> Component.literal("Current phases: " + finalPhases), false);
         return 0;
     }
 }

@@ -200,7 +200,7 @@ public class ForgeEventHandlers {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onLivingExperienceDrop(LivingExperienceDropEvent event) {
         int i = 0;
-        for (ExperienceRule rule : RulesManager.getFilteredExperienceRuiles(event.getEntity().level)) {
+        for (ExperienceRule rule : RulesManager.getFilteredExperienceRuiles(event.getEntity().level())) {
             if (rule.match(event)) {
                 Event.Result result = rule.getResult();
                 if (debug) {

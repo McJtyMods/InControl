@@ -39,9 +39,8 @@ import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.common.BiomeManager;
-import net.minecraftforge.energy.CapabilityEnergy;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.energy.IEnergyStorage;
-import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -763,11 +762,11 @@ public class CommonRuleEvaluator {
         if (!stack.isEmpty()) {
             // Stack matching
             if (name.contains("/") && name.contains("@")) {
-                return s -> ItemStack.isSame(s, stack) && ItemStack.tagMatches(s, stack);
+                return s -> ItemStack.isSameItem(s, stack) && ItemStack.isSameItemSameTags(s, stack);
             } else if (name.contains("/")) {
-                return s -> ItemStack.isSameItemSameTags(s, stack) && ItemStack.tagMatches(s, stack);
+                return s -> ItemStack.isSameItemSameTags(s, stack) && ItemStack.isSameItemSameTags(s, stack);
             } else if (name.contains("@")) {
-                return s -> ItemStack.isSame(s, stack);
+                return s -> ItemStack.isSameItem(s, stack);
             } else {
                 return s -> s.getItem() == stack.getItem();
             }
@@ -836,13 +835,13 @@ public class CommonRuleEvaluator {
     }
 
     private static int getEnergy(ItemStack stack) {
-        return stack.getCapability(CapabilityEnergy.ENERGY).map(IEnergyStorage::getEnergyStored).orElse(0);
+        return stack.getCapability(ForgeCapabilities.ENERGY).map(IEnergyStorage::getEnergyStored).orElse(0);
     }
 
     private boolean contains(LevelAccessor world, BlockPos pos, @Nullable Direction side, @Nonnull List<Predicate<ItemStack>> matchers) {
         BlockEntity tileEntity = world.getBlockEntity(pos);
         if (tileEntity != null) {
-            return tileEntity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, side).map(h -> {
+            return tileEntity.getCapability(ForgeCapabilities.ITEM_HANDLER, side).map(h -> {
                 for (int i = 0 ; i < h.getSlots() ; i++) {
                     ItemStack stack = h.getStackInSlot(i);
                     if (!stack.isEmpty()) {
@@ -862,7 +861,7 @@ public class CommonRuleEvaluator {
     private int getEnergy(LevelAccessor world, BlockPos pos, @Nullable Direction side) {
         BlockEntity tileEntity = world.getBlockEntity(pos);
         if (tileEntity != null) {
-            return tileEntity.getCapability(CapabilityEnergy.ENERGY, side).map(IEnergyStorage::getEnergyStored).orElse(0);
+            return tileEntity.getCapability(ForgeCapabilities.ENERGY, side).map(IEnergyStorage::getEnergyStored).orElse(0);
         }
         return 0;
     }

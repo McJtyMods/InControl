@@ -35,7 +35,7 @@ public class CmdInfo implements Command<CommandSourceStack> {
     public int run(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         ServerPlayer player = context.getSource().getPlayerOrException();
         BlockPos pos = player.blockPosition();
-        ServerLevel sw = Tools.getServerWorld(player.level);
+        ServerLevel sw = Tools.getServerWorld(player.level());
         ChunkAccess chunk = sw.getChunk(pos.getX() >> 4, pos.getZ() >> 4, ChunkStatus.STRUCTURE_REFERENCES, false);
         if (chunk != null) {
             Map<Structure, LongSet> references = chunk.getAllReferences();
