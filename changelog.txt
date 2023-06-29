@@ -1,3 +1,6 @@
+Upcoming:
+- Added 'minlight_full' and 'maxlight_full' keywords. These are similar to 'minlight' and 'maxlight' but they will test the full light level (including the sky light level)
+
 1.19.3-8.0.6:
 - Fixed a bug in 'addscoreboardtags'
 

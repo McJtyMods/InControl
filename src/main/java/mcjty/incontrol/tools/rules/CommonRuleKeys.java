@@ -18,6 +18,8 @@ public interface CommonRuleKeys {
     Key<String> LIGHT = Key.create(Type.STRING, "light");
     Key<Integer> MINLIGHT = Key.create(Type.INTEGER, "minlight");
     Key<Integer> MAXLIGHT = Key.create(Type.INTEGER, "maxlight");
+    Key<Integer> MINLIGHT_FULL = Key.create(Type.INTEGER, "minlight_full");
+    Key<Integer> MAXLIGHT_FULL = Key.create(Type.INTEGER, "maxlight_full");
 
     Key<String> HEIGHT = Key.create(Type.STRING, "height");
     Key<Integer> MINHEIGHT = Key.create(Type.INTEGER, "minheight");
