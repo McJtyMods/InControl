@@ -99,6 +99,8 @@ public class SpecialRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(LIGHT))
                 .attribute(Attribute.create(MINLIGHT))
                 .attribute(Attribute.create(MAXLIGHT))
+                .attribute(Attribute.create(MINLIGHT_FULL))
+                .attribute(Attribute.create(MAXLIGHT_FULL))
 
                 .attribute(Attribute.create(HEIGHT))
                 .attribute(Attribute.create(MINHEIGHT))
