@@ -1,5 +1,6 @@
 1.20-9.0.0:
 - Port to 1.20
+- Added 'minlight_full' and 'maxlight_full' keywords. These are similar to 'minlight' and 'maxlight' but they will test the full light level (including the sky light level)
 
 1.19.3-8.0.2:
 - New 'addscoreboardtags' keyword for spawner.json and spawn.json. With this you can add scoreboard tags on each entity spawned by this rule

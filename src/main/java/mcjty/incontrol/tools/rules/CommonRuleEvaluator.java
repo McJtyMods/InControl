@@ -91,6 +91,8 @@ public class CommonRuleEvaluator {
         map.consume(LIGHT, this::addLightCheck);
         map.consume(MINLIGHT, this::addMinLightCheck);
         map.consume(MAXLIGHT, this::addMaxLightCheck);
+        map.consume(MINLIGHT_FULL, this::addMinLightCheckCorrect);
+        map.consume(MAXLIGHT_FULL, this::addMaxLightCheckCorrect);
 
         map.consume(MINDIFFICULTY, this::addMinAdditionalDifficultyCheck);
         map.consume(MAXDIFFICULTY, this::addMaxAdditionalDifficultyCheck);
@@ -626,7 +628,18 @@ public class CommonRuleEvaluator {
                 return false;
             }
             return world.getBrightness(LightLayer.BLOCK, pos) >= minlight;
-//            return world.getMaxLocalRawBrightness(pos) >= minlight;
+        });
+    }
+
+    private void addMinLightCheckCorrect(int minlight) {
+        checks.add((event,query) -> {
+            BlockPos pos = query.getPos(event);
+            LevelAccessor world = query.getWorld(event);
+            LevelChunk chunk = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
+            if (chunk == null || !chunk.getStatus().isOrAfter(ChunkStatus.FULL)) {
+                return false;
+            }
+            return world.getMaxLocalRawBrightness(pos) >= minlight;
         });
     }
 
@@ -639,7 +652,18 @@ public class CommonRuleEvaluator {
                 return false;
             }
             return world.getBrightness(LightLayer.BLOCK, pos) <= maxlight;
-//            return query.getWorld(event).getMaxLocalRawBrightness(pos) <= maxlight;
+        });
+    }
+
+    private void addMaxLightCheckCorrect(int maxlight) {
+        checks.add((event,query) -> {
+            BlockPos pos = query.getPos(event);
+            LevelAccessor world = query.getWorld(event);
+            LevelChunk chunk = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
+            if (chunk == null || !chunk.getStatus().isOrAfter(ChunkStatus.FULL)) {
+                return false;
+            }
+            return world.getMaxLocalRawBrightness(pos) <= maxlight;
         });
     }
 
