@@ -1,4 +1,4 @@
-Upcoming:
+1.19-7.1.9:
 - Added 'minlight_full' and 'maxlight_full' keywords. These are similar to 'minlight' and 'maxlight' but they will test the full light level (including the sky light level)
 
 1.19-7.1.8:
