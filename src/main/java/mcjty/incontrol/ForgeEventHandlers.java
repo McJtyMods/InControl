@@ -6,9 +6,7 @@ import mcjty.incontrol.data.Statistics;
 import mcjty.incontrol.rules.*;
 import mcjty.incontrol.spawner.SpawnerSystem;
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -21,15 +19,16 @@ import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.living.LivingExperienceDropEvent;
 import net.minecraftforge.event.entity.living.MobSpawnEvent;
 import net.minecraftforge.event.entity.living.ZombieEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -302,4 +301,142 @@ public class ForgeEventHandlers {
         }
     }
 
+    public static Map<Integer, Integer> tickCounters = new HashMap<>();
+
+    @SubscribeEvent
+    public void onRightClickEvent(PlayerInteractEvent.RightClickBlock event) {
+        if (event.getLevel().isClientSide) {
+            return;
+        }
+        int i = 0;
+        for (RightClickRule rule : RulesManager.rightclickRules) {
+            if (rule.match(event)) {
+                Event.Result result = rule.getResult();
+                if (debug) {
+                    Biome biome = event.getLevel().getBiome(event.getPos()).value();
+                    InControl.setup.getLogger().log(org.apache.logging.log4j.Level.INFO, "Rule " + i + ": "+ result
+                            + " entity: " + event.getEntity().getName()
+                            + " y: " + event.getPos().getY()
+                            + " biome: " + ForgeRegistries.BIOMES.getKey(biome));
+                }
+                rule.action(event);
+                event.setUseBlock(result);
+                if (result == Event.Result.DENY) {
+                    event.setCanceled(true);
+                }
+                return;
+            }
+            i++;
+        }
+    }
+
+    @SubscribeEvent
+    public void onLeftClickEvent(PlayerInteractEvent.LeftClickBlock event) {
+        if (event.getLevel().isClientSide) {
+            return;
+        }
+        int i = 0;
+        for (LeftClickRule rule : RulesManager.leftclickRules) {
+            if (rule.match(event)) {
+                Event.Result result = rule.getResult();
+                if (debug) {
+                    Biome biome = event.getLevel().getBiome(event.getPos()).value();
+                    InControl.setup.getLogger().log(org.apache.logging.log4j.Level.INFO, "Rule " + i + ": "+ result
+                            + " entity: " + event.getEntity().getName()
+                            + " y: " + event.getPos().getY()
+                            + " biome: " + ForgeRegistries.BIOMES.getKey(biome));
+                }
+                rule.action(event);
+                event.setUseBlock(result);
+                if (result == Event.Result.DENY) {
+                    event.setCanceled(true);
+                }
+                return;
+            }
+            i++;
+        }
+    }
+
+
+    @SubscribeEvent
+    public void onBlockPaceEvent(BlockEvent.EntityPlaceEvent event) {
+        if (event.getLevel().isClientSide()) {
+            return;
+        }
+        int i = 0;
+        for (PlaceRule rule : RulesManager.placeRules) {
+            if (rule.match(event)) {
+                Event.Result result = rule.getResult();
+                if (debug) {
+                    Biome biome = event.getLevel().getBiome(event.getPos()).value();
+                    InControl.setup.getLogger().log(org.apache.logging.log4j.Level.INFO, "Rule " + i + ": "+ result
+                            + " entity: " + event.getEntity().getName()
+                            + " y: " + event.getPos().getY()
+                            + " biome: " + ForgeRegistries.BIOMES.getKey(biome));
+                }
+                rule.action(event);
+                if (result == Event.Result.DENY) {
+                    event.setCanceled(true);
+                }
+                return;
+            }
+            i++;
+        }
+    }
+
+    @SubscribeEvent
+    public void onBlockBreakEvent(BlockEvent.BreakEvent event) {
+        if (event.getLevel().isClientSide()) {
+            return;
+        }
+        int i = 0;
+        for (HarvestRule rule : RulesManager.harvestRules) {
+            if (rule.match(event)) {
+                Event.Result result = rule.getResult();
+                if (debug) {
+                    Biome biome = event.getLevel().getBiome(event.getPos()).value();
+                    InControl.setup.getLogger().log(org.apache.logging.log4j.Level.INFO, "Rule " + i + ": "+ result
+                            + " entity: " + event.getPlayer().getName()
+                            + " y: " + event.getPos().getY()
+                            + " biome: " + ForgeRegistries.BIOMES.getKey(biome));
+                }
+                rule.action(event);
+                if (result == Event.Result.DENY) {
+                    event.setCanceled(true);
+                }
+                return;
+            }
+            i++;
+        }
+    }
+
+    @SubscribeEvent
+    public void onPlayerTick(TickEvent.PlayerTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) {
+            return;
+        }
+        if (event.side != LogicalSide.SERVER) {
+            return;
+        }
+
+        int id = event.player.getId();
+        if (!tickCounters.containsKey(id)) {
+            tickCounters.put(id, 0);
+        }
+        int tickCounter = tickCounters.get(id) + 1;
+        tickCounters.put(id, tickCounter);
+        int i = 0;
+        for (EffectRule rule : RulesManager.effectRules) {
+            if (tickCounter % rule.getTimeout() == 0 && rule.match(event)) {
+                if (debug) {
+                    InControl.setup.getLogger().log(org.apache.logging.log4j.Level.INFO, "Join Rule " + i
+                            + " entity: " + event.player.getName()
+                            + " y: " + event.player.blockPosition().getY());
+                }
+                rule.action(event);
+                return;
+            }
+            i++;
+        }
+    }
 }

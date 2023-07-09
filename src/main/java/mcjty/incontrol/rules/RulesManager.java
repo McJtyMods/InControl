@@ -35,12 +35,23 @@ public class RulesManager {
     public static List<PhaseRule> phaseRules = new ArrayList<>();
     private static String path;
 
+    public static List<EffectRule> effectRules = new ArrayList<>();
+    public static List<HarvestRule> harvestRules = new ArrayList<>();
+    public static List<PlaceRule> placeRules = new ArrayList<>();
+    public static List<RightClickRule> rightclickRules = new ArrayList<>();
+    public static List<LeftClickRule> leftclickRules = new ArrayList<>();
+
     public static void reloadRules() {
         rules.clear();
         summonAidRules.clear();
         lootRules.clear();
         experienceRules.clear();
         phaseRules.clear();
+        effectRules.clear();
+        harvestRules.clear();
+        placeRules.clear();
+        rightclickRules.clear();
+        leftclickRules.clear();
         onPhaseChange();
         readAllRules();
     }
@@ -131,6 +142,11 @@ public class RulesManager {
         safeCall("loot.json", () -> readRules(path, "loot.json", LootRule::parse, lootRules));
         safeCall("experience.json", () -> readRules(path, "experience.json", ExperienceRule::parse, experienceRules));
         safeCall("phases.json", () -> readRules(path, "phases.json", PhaseRule::parse, phaseRules));
+        safeCall("effects.json", () -> readRules(path, "effects.json", EffectRule::parse, effectRules));
+        safeCall("breakevents.json", () -> readRules(path, "breakevents.json", HarvestRule::parse, harvestRules));
+        safeCall("placeevents.json", () -> readRules(path, "placeevents.json", PlaceRule::parse, placeRules));
+        safeCall("rightclicks.json", () -> readRules(path, "rightclicks.json", RightClickRule::parse, rightclickRules));
+        safeCall("leftclicks.json", () -> readRules(path, "leftclicks.json", LeftClickRule::parse, leftclickRules));
     }
 
     private static void safeCall(String name, Runnable code) {

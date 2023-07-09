@@ -51,9 +51,15 @@ public interface CommonRuleKeys {
     Key<String> CHESTPLATE = Key.create(Type.JSON, "chestplate");
     Key<String> LEGGINGS = Key.create(Type.JSON, "leggings");
     Key<String> BOOTS = Key.create(Type.JSON, "boots");
+    Key<String> LACKHELMET = Key.create(Type.JSON, "lackhelmet");
+    Key<String> LACKCHESTPLATE = Key.create(Type.JSON, "lackchestplate");
+    Key<String> LACKLEGGINGS = Key.create(Type.JSON, "lackleggings");
+    Key<String> LACKBOOTS = Key.create(Type.JSON, "lackboots");
     Key<String> HELDITEM = Key.create(Type.JSON, "helditem");
     Key<String> PLAYER_HELDITEM = Key.create(Type.JSON, "playerhelditem");
+    Key<String> LACKHELDITEM = Key.create(Type.JSON, "lackhelditem");
     Key<String> OFFHANDITEM = Key.create(Type.JSON, "offhanditem");
+    Key<String> LACKOFFHANDITEM = Key.create(Type.JSON, "lackoffhanditem");
     Key<String> BOTHHANDSITEM = Key.create(Type.JSON, "bothhandsitem");
 
     Key<Boolean> INCITY = Key.create(Type.BOOLEAN, "incity");

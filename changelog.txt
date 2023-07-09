@@ -1,6 +1,7 @@
 1.20-9.0.0:
 - In Control for 1.20 works differently then previous versions. "onjoin" is gone. Instead there is now "when" with four possible values 'position', 'onjoin', 'finalize', and 'despawn'
 - The 'special.json' file is gone. Instead you can now use 'spawn.json' for all your needs. Using 'when' at finalize you can now control the equipment and stats of mobs
+- Merged all FxControl functionality into InControl
 
 1.19.3-8.0.2:
 - New 'addscoreboardtags' keyword for spawner.json and spawn.json. With this you can add scoreboard tags on each entity spawned by this rule

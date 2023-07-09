@@ -101,14 +101,23 @@ public class CommonRuleEvaluator {
         map.consumeAsList(BLOCK, b -> addBlocksCheck(map, b));
         map.consumeAsList(BIOME, this::addBiomesCheck);
         map.consumeAsList(BIOMETYPE, this::addBiomeTypesCheck);
+
         map.consumeAsList(HELMET, this::addHelmetCheck);
         map.consumeAsList(CHESTPLATE, this::addChestplateCheck);
         map.consumeAsList(LEGGINGS, this::addLeggingsCheck);
         map.consumeAsList(BOOTS, this::addBootsCheck);
-        map.consumeAsList(PLAYER_HELDITEM, this::addHeldItemCheck);
-        map.consumeAsList(HELDITEM, this::addHeldItemCheck);
-        map.consumeAsList(OFFHANDITEM, this::addOffHandItemCheck);
+        map.consumeAsList(PLAYER_HELDITEM, items -> addHeldItemCheck(items, false));
+        map.consumeAsList(HELDITEM, items -> addHeldItemCheck(items, false));
+        map.consumeAsList(OFFHANDITEM, items -> addOffHandItemCheck(items, false));
         map.consumeAsList(BOTHHANDSITEM, this::addBothHandsItemCheck);
+
+        map.consumeAsList(LACKHELMET, this::addHelmetCheckLacking);
+        map.consumeAsList(LACKCHESTPLATE, this::addChestplateCheckLacking);
+        map.consumeAsList(LACKLEGGINGS, this::addLeggingsCheckLacking);
+        map.consumeAsList(LACKBOOTS, this::addBootsCheckLacking);
+        map.consumeAsList(LACKHELDITEM, items -> addHeldItemCheck(items, true));
+        map.consumeAsList(LACKOFFHANDITEM, items -> addOffHandItemCheck(items, true));
+
         map.consume(STRUCTURE, this::addStructureCheck);
         map.consumeAsList(SCOREBOARDTAGS_ALL, this::addAllScoreboardTagsCheck);
         map.consumeAsList(SCOREBOARDTAGS_ANY, this::addAnyScoreboardTagsCheck);
@@ -953,25 +962,45 @@ public class CommonRuleEvaluator {
 
     public void addHelmetCheck(List<String> itemList) {
         List<Predicate<ItemStack>> items = getItems(itemList, logger);
-        addArmorCheck(items, EquipmentSlot.HEAD);
+        addArmorCheck(items, EquipmentSlot.HEAD, false);
     }
 
     public void addChestplateCheck(List<String> itemList) {
         List<Predicate<ItemStack>> items = getItems(itemList, logger);
-        addArmorCheck(items, EquipmentSlot.CHEST);
+        addArmorCheck(items, EquipmentSlot.CHEST, false);
     }
 
     public void addLeggingsCheck(List<String> itemList) {
         List<Predicate<ItemStack>> items = getItems(itemList, logger);
-        addArmorCheck(items, EquipmentSlot.LEGS);
+        addArmorCheck(items, EquipmentSlot.LEGS, false);
     }
 
     public void addBootsCheck(List<String> itemList) {
         List<Predicate<ItemStack>> items = getItems(itemList, logger);
-        addArmorCheck(items, EquipmentSlot.FEET);
+        addArmorCheck(items, EquipmentSlot.FEET, false);
     }
 
-    private void addArmorCheck(List<Predicate<ItemStack>> items, EquipmentSlot slot) {
+    public void addHelmetCheckLacking(List<String> itemList) {
+        List<Predicate<ItemStack>> items = getItems(itemList, logger);
+        addArmorCheck(items, EquipmentSlot.HEAD, true);
+    }
+
+    public void addChestplateCheckLacking(List<String> itemList) {
+        List<Predicate<ItemStack>> items = getItems(itemList, logger);
+        addArmorCheck(items, EquipmentSlot.CHEST, true);
+    }
+
+    public void addLeggingsCheckLacking(List<String> itemList) {
+        List<Predicate<ItemStack>> items = getItems(itemList, logger);
+        addArmorCheck(items, EquipmentSlot.LEGS, true);
+    }
+
+    public void addBootsCheckLacking(List<String> itemList) {
+        List<Predicate<ItemStack>> items = getItems(itemList, logger);
+        addArmorCheck(items, EquipmentSlot.FEET, true);
+    }
+
+    private void addArmorCheck(List<Predicate<ItemStack>> items, EquipmentSlot slot, boolean lacking) {
         checks.add((event,query) -> {
             Player player = query.getPlayer(event);
             if (player != null) {
@@ -979,16 +1008,16 @@ public class CommonRuleEvaluator {
                 if (!armorItem.isEmpty()) {
                     for (Predicate<ItemStack> item : items) {
                         if (item.test(armorItem)) {
-                            return true;
+                            return !lacking;
                         }
                     }
                 }
             }
-            return false;
+            return lacking;
         });
     }
 
-    public void addHeldItemCheck(List<String> itemList) {
+    public void addHeldItemCheck(List<String> itemList, boolean lacking) {
         List<Predicate<ItemStack>> items = getItems(itemList, logger);
         checks.add((event,query) -> {
             Player player = query.getPlayer(event);
@@ -997,16 +1026,16 @@ public class CommonRuleEvaluator {
                 if (!mainhand.isEmpty()) {
                     for (Predicate<ItemStack> item : items) {
                         if (item.test(mainhand)) {
-                            return true;
+                            return !lacking;
                         }
                     }
                 }
             }
-            return false;
+            return lacking;
         });
     }
 
-    public void addOffHandItemCheck(List<String> itemList) {
+    public void addOffHandItemCheck(List<String> itemList, boolean lacking) {
         List<Predicate<ItemStack>> items = getItems(itemList, logger);
         checks.add((event,query) -> {
             Player player = query.getPlayer(event);
@@ -1015,12 +1044,12 @@ public class CommonRuleEvaluator {
                 if (!offhand.isEmpty()) {
                     for (Predicate<ItemStack> item : items) {
                         if (item.test(offhand)) {
-                            return true;
+                            return !lacking;
                         }
                     }
                 }
             }
-            return false;
+            return lacking;
         });
     }
 
