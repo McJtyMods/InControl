@@ -54,8 +54,8 @@ public class ForgeEventHandlers {
         if (event.getLevel().isClientSide) {
             return;
         }
-        for (SpawnRule rule : RulesManager.getFilteredRules(event.getLevel())) {
-            if (rule.isOnJoin() && rule.match(event)) {
+        for (SpawnRule rule : RulesManager.getFilteredRules(event.getLevel(), SpawnWhen.ONJOIN)) {
+            if (rule.match(event)) {
                 Event.Result result = rule.getResult();
                 if (debug) {
                     InControl.setup.getLogger().log(org.apache.logging.log4j.Level.INFO, "Join Rule " + i + ": " + result
@@ -105,36 +105,31 @@ public class ForgeEventHandlers {
         }
     }
 
-    @SubscribeEvent
-    public void onEntitySpecialSpawnEvent(MobSpawnEvent.FinalizeSpawn event) {
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public void onEntitySpawnEvent(MobSpawnEvent.FinalizeSpawn event) {
         int i = 0;
-        ServerLevel world = (ServerLevel) event.getEntity().getCommandSenderWorld();
-        for (SpecialRule rule : RulesManager.getFilteredSpecialRules(world)) {
+        for (SpawnRule rule : RulesManager.getFilteredRules(event.getEntity().getCommandSenderWorld(), SpawnWhen.FINALIZE)) {
             if (rule.match(event)) {
-                SpecialRule.SpecialResult result = rule.getResult();
+                Event.Result result = rule.getResult();
                 if (debug) {
                     Biome biome = event.getLevel().getBiome(new BlockPos((int) event.getX(), (int) event.getY(), (int) event.getZ())).value();
-                    InControl.setup.getLogger().log(org.apache.logging.log4j.Level.INFO, "Special " + i + ": " + result
+                    InControl.setup.getLogger().log(org.apache.logging.log4j.Level.INFO, "Finalize Rule " + i + ": " + result
                             + " entity: " + event.getEntity().getName()
                             + " y: " + event.getY()
                             + " biome: " + ForgeRegistries.BIOMES.getKey(biome));
                 }
-
-                switch (result) {
-                    case BEFORE -> {
-                        event.setCanceled(false);
-                    }
-                    case AFTER -> {
-                        event.getEntity().finalizeSpawn(world, world.getCurrentDifficultyAt(event.getEntity().blockPosition()),
-                                MobSpawnType.NATURAL, null, null);
-                        event.setCanceled(true);
-                    }
-                    case REPLACE -> {
-                        event.setCanceled(true);
-                    }
+                if (result == Event.Result.ALLOW) {
+                    // We perform the actions but don't allow the default finalize to occur
+                    rule.action(event);
+                    event.setCanceled(true);
+                } else if (result == Event.Result.DENY) {
+                    // We cancel the event and also the spawn
+                    event.setCanceled(true);
+                    event.setSpawnCancelled(true);
+                } else {
+                    // We perform the actions and also allow the default finalize to occur
+                    rule.action(event);
                 }
-                rule.action(event);
-
                 if (!rule.isDoContinue()) {
                     return;
                 }
@@ -144,14 +139,14 @@ public class ForgeEventHandlers {
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
-    public void onEntitySpawnEvent(MobSpawnEvent.FinalizeSpawn event) {
+    public void onPositionCheck(MobSpawnEvent.PositionCheck event) {
         int i = 0;
-        for (SpawnRule rule : RulesManager.getFilteredRules(event.getEntity().getCommandSenderWorld())) {
+        for (SpawnRule rule : RulesManager.getFilteredRules(event.getEntity().getCommandSenderWorld(), SpawnWhen.POSITION)) {
             if (rule.match(event)) {
                 Event.Result result = rule.getResult();
                 if (debug) {
                     Biome biome = event.getLevel().getBiome(new BlockPos((int) event.getX(), (int) event.getY(), (int) event.getZ())).value();
-                    InControl.setup.getLogger().log(org.apache.logging.log4j.Level.INFO, "Rule " + i + ": " + result
+                    InControl.setup.getLogger().log(org.apache.logging.log4j.Level.INFO, "Position Rule " + i + ": " + result
                             + " entity: " + event.getEntity().getName()
                             + " y: " + event.getY()
                             + " biome: " + ForgeRegistries.BIOMES.getKey(biome));
@@ -164,6 +159,33 @@ public class ForgeEventHandlers {
                     rule.action(event);
                 } else {
                     Statistics.addSpawnStat(i, true);
+                }
+                if (!rule.isDoContinue()) {
+                    return;
+                }
+            }
+            i++;
+        }
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public void onCheckDespawn(MobSpawnEvent.AllowDespawn event) {
+        int i = 0;
+        for (SpawnRule rule : RulesManager.getFilteredRules(event.getEntity().getCommandSenderWorld(), SpawnWhen.DESPAWN)) {
+            if (rule.match(event)) {
+                Event.Result result = rule.getResult();
+                if (debug) {
+                    Biome biome = event.getLevel().getBiome(new BlockPos((int) event.getX(), (int) event.getY(), (int) event.getZ())).value();
+                    InControl.setup.getLogger().log(org.apache.logging.log4j.Level.INFO, "Despawn Rule " + i + ": " + result
+                            + " entity: " + event.getEntity().getName()
+                            + " y: " + event.getY()
+                            + " biome: " + ForgeRegistries.BIOMES.getKey(biome));
+                }
+                if (result != null) {
+                    event.setResult(result);
+                }
+                if (result != Event.Result.DENY) {
+                    rule.action(event);
                 }
                 if (!rule.isDoContinue()) {
                     return;

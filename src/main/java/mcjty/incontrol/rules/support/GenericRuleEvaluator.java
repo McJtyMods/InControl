@@ -53,7 +53,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
     protected void addChecks(AttributeMap map) {
         super.addChecks(map);
 
-        map.consume(ONJOIN, b -> {});
+        map.consume(WHEN, b -> {});
         map.consume(PHASE, b -> {});
         map.consume(HOSTILE, this::addHostileCheck);
         map.consume(PASSIVE, this::addPassiveCheck);

@@ -18,7 +18,10 @@ import java.util.stream.Collectors;
 public class RulesManager {
 
     private static final List<SpawnRule> rules = new ArrayList<>();
-    private static List<SpawnRule> filteredRules = null;
+    private static List<SpawnRule> filteredRulesPosition = null;
+    private static List<SpawnRule> filteredRulesOnJoin = null;
+    private static List<SpawnRule> filteredRulesFinalize = null;
+    private static List<SpawnRule> filteredRulesDespawn = null;
 
     private static final List<SummonAidRule> summonAidRules = new ArrayList<>();
     private static List<SummonAidRule> filteredSummonAidRules = null;
@@ -29,9 +32,6 @@ public class RulesManager {
     private static final List<ExperienceRule> experienceRules = new ArrayList<>();
     private static List<ExperienceRule> filteredExperienceRules = null;
 
-    private static final List<SpecialRule> specialRules = new ArrayList<>();
-    private static List<SpecialRule> filteredSpecialRules = null;
-
     public static List<PhaseRule> phaseRules = new ArrayList<>();
     private static String path;
 
@@ -41,7 +41,6 @@ public class RulesManager {
         lootRules.clear();
         experienceRules.clear();
         phaseRules.clear();
-        specialRules.clear();
         onPhaseChange();
         readAllRules();
     }
@@ -55,27 +54,41 @@ public class RulesManager {
     }
 
     public static void onPhaseChange() {
-        filteredRules = null;
+        filteredRulesPosition = null;
+        filteredRulesOnJoin = null;
+        filteredRulesFinalize = null;
+        filteredRulesDespawn = null;
         filteredSummonAidRules = null;
         filteredLootRules = null;
         filteredExperienceRules = null;
-        filteredSpecialRules = null;
     }
 
-    public static List<SpawnRule> getFilteredRules(Level world) {
-        if (filteredRules == null) {
-            Set<String> phases = DataStorage.getData(world).getPhases();
-            filteredRules = rules.stream().filter(r -> phases.containsAll(r.getPhases())).collect(Collectors.toList());
-        }
-        return filteredRules;
+    private static List<SpawnRule> getCorrectList(SpawnWhen when) {
+        return switch (when) {
+            case POSITION -> filteredRulesPosition;
+            case ONJOIN -> filteredRulesOnJoin;
+            case FINALIZE -> filteredRulesFinalize;
+            case DESPAWN -> filteredRulesDespawn;
+        };
     }
 
-    public static List<SpecialRule> getFilteredSpecialRules(Level world) {
-        if (filteredSpecialRules == null) {
+    private static void setCorrectList(SpawnWhen when, List<SpawnRule> list) {
+        switch (when) {
+            case POSITION -> filteredRulesPosition = list;
+            case ONJOIN -> filteredRulesOnJoin = list;
+            case FINALIZE -> filteredRulesFinalize = list;
+            case DESPAWN -> filteredRulesDespawn = list;
+        };
+    }
+
+    public static List<SpawnRule> getFilteredRules(Level world, SpawnWhen when) {
+        List<SpawnRule> correctList = getCorrectList(when);
+        if (correctList == null) {
             Set<String> phases = DataStorage.getData(world).getPhases();
-            filteredSpecialRules = specialRules.stream().filter(r -> phases.containsAll(r.getPhases())).collect(Collectors.toList());
+            correctList = rules.stream().filter(r -> r.getWhen() == when && phases.containsAll(r.getPhases())).collect(Collectors.toList());
         }
-        return filteredSpecialRules;
+        setCorrectList(when, correctList);
+        return correctList;
     }
 
     public static List<SummonAidRule> getFilteredSummonAidRules(Level world) {
@@ -118,7 +131,6 @@ public class RulesManager {
         safeCall("loot.json", () -> readRules(path, "loot.json", LootRule::parse, lootRules));
         safeCall("experience.json", () -> readRules(path, "experience.json", ExperienceRule::parse, experienceRules));
         safeCall("phases.json", () -> readRules(path, "phases.json", PhaseRule::parse, phaseRules));
-        safeCall("special.json", () -> readRules(path, "special.json", SpecialRule::parse, specialRules));
     }
 
     private static void safeCall(String name, Runnable code) {

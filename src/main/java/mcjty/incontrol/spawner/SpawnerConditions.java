@@ -118,9 +118,6 @@ public class SpawnerConditions {
         if (minheight >= maxheight) {
             throw new IllegalStateException("Minimum height must be smaller then maximum!");
         }
-        if (verticalMindist >= verticalMaxdist) {
-            throw new IllegalStateException("Minimum vertical distance must be smaller then maximum!");
-        }
     }
 
     public Set<ResourceKey<Level>> getDimensions() {

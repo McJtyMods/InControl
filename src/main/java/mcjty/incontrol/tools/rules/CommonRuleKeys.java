@@ -7,8 +7,8 @@ import net.minecraft.world.level.Level;
 
 public interface CommonRuleKeys {
 
-    Key<Boolean> ONJOIN = Key.create(Type.BOOLEAN, "onjoin");
     Key<String> PHASE = Key.create(Type.STRING, "phase");
+    Key<String> WHEN = Key.create(Type.STRING, "when");
 
     // Inputs
     Key<String> TIME = Key.create(Type.STRING, "time");

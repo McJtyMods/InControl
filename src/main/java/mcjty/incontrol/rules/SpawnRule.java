@@ -25,6 +25,7 @@ import net.minecraftforge.event.entity.living.MobSpawnEvent;
 import net.minecraftforge.eventbus.api.Event;
 
 import javax.annotation.Nullable;
+import java.util.Arrays;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -78,6 +79,101 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
             return ItemStack.EMPTY;
         }
     };
+
+    public static final IEventQuery<MobSpawnEvent.PositionCheck> EVENT_QUERY_POSITION = new IEventQuery<>() {
+        @Override
+        public LevelAccessor getWorld(MobSpawnEvent.PositionCheck o) {
+            return o.getLevel();
+        }
+
+        @Override
+        public BlockPos getPos(MobSpawnEvent.PositionCheck o) {
+            return new BlockPos((int) o.getX(), (int) o.getY(), (int) o.getZ());
+        }
+
+        @Override
+        public BlockPos getValidBlockPos(MobSpawnEvent.PositionCheck o) {
+            return new BlockPos((int) o.getX(), (int) (o.getY() - 1), (int) o.getZ());
+        }
+
+        @Override
+        public int getY(MobSpawnEvent.PositionCheck o) {
+            return (int) o.getY();
+        }
+
+        @Override
+        public Entity getEntity(MobSpawnEvent.PositionCheck o) {
+            return o.getEntity();
+        }
+
+        @Override
+        public DamageSource getSource(MobSpawnEvent.PositionCheck o) {
+            return null;
+        }
+
+        @Override
+        public Entity getAttacker(MobSpawnEvent.PositionCheck o) {
+            return null;
+        }
+
+        @Override
+        public Player getPlayer(MobSpawnEvent.PositionCheck o) {
+            return getClosestPlayer(o.getLevel(), new BlockPos((int) o.getX(), (int) o.getY(), (int) o.getZ()));
+        }
+
+        @Override
+        public ItemStack getItem(MobSpawnEvent.PositionCheck o) {
+            return ItemStack.EMPTY;
+        }
+    };
+
+    public static final IEventQuery<MobSpawnEvent.AllowDespawn> EVENT_QUERY_DESPAWN = new IEventQuery<>() {
+        @Override
+        public LevelAccessor getWorld(MobSpawnEvent.AllowDespawn o) {
+            return o.getLevel();
+        }
+
+        @Override
+        public BlockPos getPos(MobSpawnEvent.AllowDespawn o) {
+            return new BlockPos((int) o.getX(), (int) o.getY(), (int) o.getZ());
+        }
+
+        @Override
+        public BlockPos getValidBlockPos(MobSpawnEvent.AllowDespawn o) {
+            return new BlockPos((int) o.getX(), (int) (o.getY() - 1), (int) o.getZ());
+        }
+
+        @Override
+        public int getY(MobSpawnEvent.AllowDespawn o) {
+            return (int) o.getY();
+        }
+
+        @Override
+        public Entity getEntity(MobSpawnEvent.AllowDespawn o) {
+            return o.getEntity();
+        }
+
+        @Override
+        public DamageSource getSource(MobSpawnEvent.AllowDespawn o) {
+            return null;
+        }
+
+        @Override
+        public Entity getAttacker(MobSpawnEvent.AllowDespawn o) {
+            return null;
+        }
+
+        @Override
+        public Player getPlayer(MobSpawnEvent.AllowDespawn o) {
+            return getClosestPlayer(o.getLevel(), new BlockPos((int) o.getX(), (int) o.getY(), (int) o.getZ()));
+        }
+
+        @Override
+        public ItemStack getItem(MobSpawnEvent.AllowDespawn o) {
+            return ItemStack.EMPTY;
+        }
+    };
+
     public static final IEventQuery<EntityJoinLevelEvent> EVENT_QUERY_JOIN = new IEventQuery<>() {
         @Override
         public Level getWorld(EntityJoinLevelEvent o) {
@@ -132,7 +228,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
 
     static {
         FACTORY
-                .attribute(Attribute.create(ONJOIN))
+                .attribute(Attribute.create(WHEN))
                 .attribute(Attribute.create(PHASE))
 
                 .attribute(Attribute.create(TIME))
@@ -239,15 +335,15 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
         ;
     }
 
-    private final boolean onJoin;
+    private final SpawnWhen when;
     private final GenericRuleEvaluator ruleEvaluator;
     private final Set<String> phases;
     private Event.Result result = null;
     private boolean doContinue = false;
 
-    private SpawnRule(AttributeMap map, boolean onJoin, Set<String> phases) {
+    private SpawnRule(AttributeMap map, SpawnWhen when, Set<String> phases) {
         super(InControl.setup.getLogger());
-        this.onJoin = onJoin;
+        this.when = when;
         this.phases = phases;
         ruleEvaluator = new GenericRuleEvaluator(map);
         addActions(map, new ModRuleCompatibilityLayer());
@@ -267,8 +363,12 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
             return null;
         } else {
             AttributeMap map = FACTORY.parse(element, "spawn.json");
-            boolean onJoin = element.getAsJsonObject().has("onjoin") && element.getAsJsonObject().get("onjoin").getAsBoolean();
-            return new SpawnRule(map, onJoin, PhaseTools.getPhases(element));
+            String whenS = element.getAsJsonObject().has("when") ? element.getAsJsonObject().get("when").getAsString() : SpawnWhen.POSITION.name();
+            SpawnWhen when = SpawnWhen.getByName(whenS);
+            if (when == null) {
+                ErrorHandler.error("Invalid spawn rule 'when' value '" + whenS + "'!. Should be one of " + Arrays.toString(SpawnWhen.values()) + "");
+            }
+            return new SpawnRule(map, when, PhaseTools.getPhases(element));
         }
     }
 
@@ -294,11 +394,73 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
         return ruleEvaluator.match(event, EVENT_QUERY);
     }
 
+    public boolean match(MobSpawnEvent.PositionCheck event) {
+        return ruleEvaluator.match(event, EVENT_QUERY_POSITION);
+    }
+
+    public boolean match(MobSpawnEvent.AllowDespawn event) {
+        return ruleEvaluator.match(event, EVENT_QUERY_DESPAWN);
+    }
+
     public boolean match(EntityJoinLevelEvent event) {
         return ruleEvaluator.match(event, EVENT_QUERY_JOIN);
     }
 
     public void action(MobSpawnEvent.FinalizeSpawn event) {
+        EventGetter getter = new EventGetter() {
+            @Override
+            public LivingEntity getEntityLiving() {
+                return event.getEntity();
+            }
+
+            @Override
+            public Player getPlayer() {
+                return null;
+            }
+
+            @Override
+            public LevelAccessor getWorld() {
+                return event.getLevel();
+            }
+
+            @Override
+            public BlockPos getPosition() {
+                return event.getEntity().blockPosition();
+            }
+        };
+        for (Consumer<EventGetter> action : actions) {
+            action.accept(getter);
+        }
+    }
+
+    public void action(MobSpawnEvent.PositionCheck event) {
+        EventGetter getter = new EventGetter() {
+            @Override
+            public LivingEntity getEntityLiving() {
+                return event.getEntity();
+            }
+
+            @Override
+            public Player getPlayer() {
+                return null;
+            }
+
+            @Override
+            public LevelAccessor getWorld() {
+                return event.getLevel();
+            }
+
+            @Override
+            public BlockPos getPosition() {
+                return event.getEntity().blockPosition();
+            }
+        };
+        for (Consumer<EventGetter> action : actions) {
+            action.accept(getter);
+        }
+    }
+
+    public void action(MobSpawnEvent.AllowDespawn event) {
         EventGetter getter = new EventGetter() {
             @Override
             public LivingEntity getEntityLiving() {
@@ -361,7 +523,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
         return doContinue;
     }
 
-    public boolean isOnJoin() {
-        return onJoin;
+    public SpawnWhen getWhen() {
+        return when;
     }
 }
