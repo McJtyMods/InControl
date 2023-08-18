@@ -1,3 +1,6 @@
+Upcoming:
+- Fixed spawn.json not working correctly for mobs spawned using spawner.json
+
 1.20-9.0.0:
 - In Control for 1.20 works differently then previous versions. "onjoin" is gone. Instead there is now "when" with four possible values 'position', 'onjoin', 'finalize', and 'despawn'
 - The 'special.json' file is gone. Instead you can now use 'spawn.json' for all your needs. Using 'when' at finalize you can now control the equipment and stats of mobs

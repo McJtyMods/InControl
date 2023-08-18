@@ -19,6 +19,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkStatus;
@@ -173,8 +174,8 @@ public class SpawnerSystem {
                                 for (String tag : rule.getScoreboardTags()) {
                                     entity.addTag(tag);
                                 }
+                                busySpawning = mobEntity;   // @todo check in spawn rule
                                 if (canSpawn(world, mobEntity, conditions) && isNotColliding(world, mobEntity, conditions)) {
-                                    busySpawning = mobEntity;   // @todo check in spawn rule
                                     ForgeEventFactory.onFinalizeSpawn(mobEntity, world, world.getCurrentDifficultyAt(pos), MobSpawnType.NATURAL, null, null);
                                     busySpawning = null;
                                     if (!((Mob) entity).isSpawnCancelled()) {
@@ -188,6 +189,8 @@ public class SpawnerSystem {
                                             return;
                                         }
                                     }
+                                } else {
+                                    busySpawning = null;
                                 }
                             }
                         }
@@ -230,7 +233,7 @@ public class SpawnerSystem {
         if (conditions.isNoRestrictions()) {
             return true;
         } else {
-            return mobEntity.checkSpawnRules(world, MobSpawnType.NATURAL);
+            return ForgeEventFactory.checkSpawnPosition(mobEntity, (ServerLevelAccessor) world, MobSpawnType.NATURAL);
         }
     }
 

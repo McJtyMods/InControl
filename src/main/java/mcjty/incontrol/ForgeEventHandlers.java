@@ -5,7 +5,9 @@ import mcjty.incontrol.data.DataStorage;
 import mcjty.incontrol.data.Statistics;
 import mcjty.incontrol.rules.*;
 import mcjty.incontrol.spawner.SpawnerSystem;
+import mcjty.incontrol.tools.varia.Tools;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -111,11 +113,12 @@ public class ForgeEventHandlers {
             if (rule.match(event)) {
                 Event.Result result = rule.getResult();
                 if (debug) {
-                    Biome biome = event.getLevel().getBiome(new BlockPos((int) event.getX(), (int) event.getY(), (int) event.getZ())).value();
+                    Holder<Biome> biome = event.getLevel().getBiome(new BlockPos((int) event.getX(), (int) event.getY(), (int) event.getZ()));
+                    String biomeId = Tools.getBiomeId(biome);
                     InControl.setup.getLogger().log(org.apache.logging.log4j.Level.INFO, "Finalize Rule " + i + ": " + result
                             + " entity: " + event.getEntity().getName()
                             + " y: " + event.getY()
-                            + " biome: " + ForgeRegistries.BIOMES.getKey(biome));
+                            + " biome: " + biomeId);
                 }
                 if (result == Event.Result.ALLOW) {
                     // We perform the actions but don't allow the default finalize to occur
@@ -144,11 +147,12 @@ public class ForgeEventHandlers {
             if (rule.match(event)) {
                 Event.Result result = rule.getResult();
                 if (debug) {
-                    Biome biome = event.getLevel().getBiome(new BlockPos((int) event.getX(), (int) event.getY(), (int) event.getZ())).value();
+                    Holder<Biome> biome = event.getLevel().getBiome(new BlockPos((int) event.getX(), (int) event.getY(), (int) event.getZ()));
+                    String biomeId = Tools.getBiomeId(biome);
                     InControl.setup.getLogger().log(org.apache.logging.log4j.Level.INFO, "Position Rule " + i + ": " + result
                             + " entity: " + event.getEntity().getName()
                             + " y: " + event.getY()
-                            + " biome: " + ForgeRegistries.BIOMES.getKey(biome));
+                            + " biome: " + biomeId);
                 }
                 if (result != null) {
                     event.setResult(result);
@@ -174,11 +178,12 @@ public class ForgeEventHandlers {
             if (rule.match(event)) {
                 Event.Result result = rule.getResult();
                 if (debug) {
-                    Biome biome = event.getLevel().getBiome(new BlockPos((int) event.getX(), (int) event.getY(), (int) event.getZ())).value();
+                    Holder<Biome> biome = event.getLevel().getBiome(new BlockPos((int) event.getX(), (int) event.getY(), (int) event.getZ()));
+                    String biomeId = Tools.getBiomeId(biome);
                     InControl.setup.getLogger().log(org.apache.logging.log4j.Level.INFO, "Despawn Rule " + i + ": " + result
                             + " entity: " + event.getEntity().getName()
                             + " y: " + event.getY()
-                            + " biome: " + ForgeRegistries.BIOMES.getKey(biome));
+                            + " biome: " + biomeId);
                 }
                 if (result != null) {
                     event.setResult(result);
@@ -201,11 +206,12 @@ public class ForgeEventHandlers {
             if (rule.match(event)) {
                 Event.Result result = rule.getResult();
                 if (debug) {
-                    Biome biome = event.getLevel().getBiome(new BlockPos(event.getX(), event.getY(), event.getZ())).value();
+                    Holder<Biome> biome = event.getLevel().getBiome(new BlockPos((int) event.getX(), (int) event.getY(), (int) event.getZ()));
+                    String biomeId = Tools.getBiomeId(biome);
                     InControl.setup.getLogger().log(org.apache.logging.log4j.Level.INFO, "SummonAid " + i + ": " + result
                             + " entity: " + event.getEntity().getName()
                             + " y: " + event.getY()
-                            + " biome: " + ForgeRegistries.BIOMES.getKey(biome));
+                            + " biome: " + biomeId);
                 }
                 event.setResult(result);
                 if (result != Event.Result.DENY) {
@@ -313,11 +319,12 @@ public class ForgeEventHandlers {
             if (rule.match(event)) {
                 Event.Result result = rule.getResult();
                 if (debug) {
-                    Biome biome = event.getLevel().getBiome(event.getPos()).value();
+                    Holder<Biome> biome = event.getLevel().getBiome(event.getPos());
+                    String biomeId = Tools.getBiomeId(biome);
                     InControl.setup.getLogger().log(org.apache.logging.log4j.Level.INFO, "Rule " + i + ": "+ result
                             + " entity: " + event.getEntity().getName()
                             + " y: " + event.getPos().getY()
-                            + " biome: " + ForgeRegistries.BIOMES.getKey(biome));
+                            + " biome: " + biomeId);
                 }
                 rule.action(event);
                 event.setUseBlock(result);
@@ -340,11 +347,12 @@ public class ForgeEventHandlers {
             if (rule.match(event)) {
                 Event.Result result = rule.getResult();
                 if (debug) {
-                    Biome biome = event.getLevel().getBiome(event.getPos()).value();
+                    Holder<Biome> biome = event.getLevel().getBiome(event.getPos());
+                    String biomeId = Tools.getBiomeId(biome);
                     InControl.setup.getLogger().log(org.apache.logging.log4j.Level.INFO, "Rule " + i + ": "+ result
                             + " entity: " + event.getEntity().getName()
                             + " y: " + event.getPos().getY()
-                            + " biome: " + ForgeRegistries.BIOMES.getKey(biome));
+                            + " biome: " + biomeId);
                 }
                 rule.action(event);
                 event.setUseBlock(result);
@@ -368,11 +376,12 @@ public class ForgeEventHandlers {
             if (rule.match(event)) {
                 Event.Result result = rule.getResult();
                 if (debug) {
-                    Biome biome = event.getLevel().getBiome(event.getPos()).value();
+                    Holder<Biome> biome = event.getLevel().getBiome(event.getPos());
+                    String biomeId = Tools.getBiomeId(biome);
                     InControl.setup.getLogger().log(org.apache.logging.log4j.Level.INFO, "Rule " + i + ": "+ result
                             + " entity: " + event.getEntity().getName()
                             + " y: " + event.getPos().getY()
-                            + " biome: " + ForgeRegistries.BIOMES.getKey(biome));
+                            + " biome: " + biomeId);
                 }
                 rule.action(event);
                 if (result == Event.Result.DENY) {
@@ -394,11 +403,12 @@ public class ForgeEventHandlers {
             if (rule.match(event)) {
                 Event.Result result = rule.getResult();
                 if (debug) {
-                    Biome biome = event.getLevel().getBiome(event.getPos()).value();
+                    Holder<Biome> biome = event.getLevel().getBiome(event.getPos());
+                    String biomeId = Tools.getBiomeId(biome);
                     InControl.setup.getLogger().log(org.apache.logging.log4j.Level.INFO, "Rule " + i + ": "+ result
                             + " entity: " + event.getPlayer().getName()
                             + " y: " + event.getPos().getY()
-                            + " biome: " + ForgeRegistries.BIOMES.getKey(biome));
+                            + " biome: " + biomeId);
                 }
                 rule.action(event);
                 if (result == Event.Result.DENY) {
