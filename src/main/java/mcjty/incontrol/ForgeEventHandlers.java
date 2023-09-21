@@ -93,7 +93,7 @@ public class ForgeEventHandlers {
     public void onWorldTick(TickEvent.WorldTickEvent event) {
         if (event.phase == TickEvent.Phase.START && !event.world.isClientSide) {
             // For every world tick we reset the cache
-            InControl.setup.cache.reset(event.world);
+            InControl.setup.cache.performCount(event.world);
 
             if (!event.world.players().isEmpty()) {
                 // If a world has players we do mob spawning in it
