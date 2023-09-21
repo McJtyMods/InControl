@@ -1,3 +1,6 @@
+Upcoming:
+- Fixed a rare threading condition related to counting
+
 1.20-9.0.1:
 - Fixed spawn.json not working correctly for mobs spawned using spawner.json
 

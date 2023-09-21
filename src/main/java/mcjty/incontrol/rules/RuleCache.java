@@ -19,82 +19,81 @@ public class RuleCache {
 
     private final Map<ResourceKey<Level>, CachePerWorld> caches = new HashMap<>();
 
-    public void reset(LevelAccessor world) {
+    public void performCount(LevelAccessor world) {
         ResourceKey<Level> key = Tools.getDimensionKey(world);
-        CachePerWorld cache = caches.get(key);
-        if (cache != null) {
-            cache.reset();
-        }
+        // Get a cache or create it when it doesn't exist
+        CachePerWorld cache = caches.computeIfAbsent(key, k -> new CachePerWorld());
+        cache.count(world);
     }
 
     public int getValidSpawnChunks(LevelAccessor world) {
         CachePerWorld cache = getOrCreateCache(world);
-        return cache.getValidSpawnChunks(world);
+        return cache.getValidSpawnChunks();
     }
 
     public int getValidPlayers(LevelAccessor world) {
         CachePerWorld cache = getOrCreateCache(world);
-        return cache.getValidPlayers(world);
+        return cache.getValidPlayers();
     }
 
     public int getCountAll(LevelAccessor world) {
         CachePerWorld cache = getOrCreateCache(world);
-        return cache.getCountAll(world);
+        return cache.getCountAll();
     }
 
     public int getCountPassive(LevelAccessor world) {
         CachePerWorld cache = getOrCreateCache(world);
-        return cache.getCountPassive(world);
+        return cache.getCountPassive();
     }
 
     public int getCountHostile(LevelAccessor world) {
         CachePerWorld cache = getOrCreateCache(world);
-        return cache.getCountHostile(world);
+        return cache.getCountHostile();
     }
 
     public int getCountNeutral(LevelAccessor world) {
         CachePerWorld cache = getOrCreateCache(world);
-        return cache.getCountNeutral(world);
+        return cache.getCountNeutral();
     }
 
 
     public int getCount(LevelAccessor world, EntityType entityType) {
         CachePerWorld cache = getOrCreateCache(world);
-        return cache.getCount(world, entityType);
+        return cache.getCount(entityType);
     }
 
     public int getCountPerMod(LevelAccessor world, String mod) {
         CachePerWorld cache = getOrCreateCache(world);
-        CountPerMod countPerMod = cache.getCountPerMod(world, mod);
+        CountPerMod countPerMod = cache.getCountPerMod(mod);
         return countPerMod == null ? 0 : countPerMod.total;
     }
 
     public int getCountPerModHostile(LevelAccessor world, String mod) {
         CachePerWorld cache = getOrCreateCache(world);
-        CountPerMod countPerMod = cache.getCountPerMod(world, mod);
+        CountPerMod countPerMod = cache.getCountPerMod(mod);
         return countPerMod == null ? 0 : countPerMod.hostile;
     }
 
     public int getCountPerModPassive(LevelAccessor world, String mod) {
         CachePerWorld cache = getOrCreateCache(world);
-        CountPerMod countPerMod = cache.getCountPerMod(world, mod);
+        CountPerMod countPerMod = cache.getCountPerMod(mod);
         return countPerMod == null ? 0 : countPerMod.passive;
     }
 
     public int getCountPerModAll(LevelAccessor world, String mod) {
         CachePerWorld cache = getOrCreateCache(world);
-        CountPerMod countPerMod = cache.getCountPerMod(world, mod);
+        CountPerMod countPerMod = cache.getCountPerMod(mod);
         return countPerMod == null ? 0 : countPerMod.total;
     }
 
     public void registerSpawn(LevelAccessor world, EntityType entityType) {
         CachePerWorld cache = getOrCreateCache(world);
-        cache.registerSpawn(world, entityType);
+        cache.registerSpawn(entityType);
     }
 
     public void registerDespawn(LevelAccessor world, EntityType entityType) {
         CachePerWorld cache = getOrCreateCache(world);
-        cache.registerDespawn(world, entityType);
+        cache.registerDespawn(entityType);
     }
 
     private CachePerWorld getOrCreateCache(LevelAccessor world) {
@@ -124,31 +123,29 @@ public class RuleCache {
         private int countNeutral = -1;
         private int validSpawnChunks = -1;
         private int validPlayers = -1;
-        private boolean countDone = false;
 
-        public void reset() {
-            cachedCounters.clear();
-            countPerMod.clear();
-            countPassive = -1;
-            countHostile = -1;
-            countNeutral = -1;
-            validSpawnChunks = -1;
-            validPlayers = -1;
-            countDone = false;
-        }
-
-        public int getValidSpawnChunks(LevelAccessor world) {
-            if (validSpawnChunks == -1) {
-                validSpawnChunks = countValidSpawnChunks(world);
-            }
+        public int getValidSpawnChunks() {
             return validSpawnChunks;
         }
 
-        public int getValidPlayers(LevelAccessor world) {
-            if (validPlayers == -1) {
-                validPlayers = countValidPlayers(world);
-            }
+        public int getValidPlayers() {
             return validPlayers;
+        }
+
+        public int getCountAll() {
+            return countHostile + countPassive + countNeutral;
+        }
+
+        public int getCountPassive() {
+            return countPassive;
+        }
+
+        public int getCountHostile() {
+            return countHostile;
+        }
+
+        public int getCountNeutral() {
+            return countNeutral;
         }
 
         private int countValidPlayers(LevelAccessor world) {
@@ -161,36 +158,11 @@ public class RuleCache {
             return cnt;
         }
 
-        private int countValidSpawnChunks(LevelAccessor world) {
-            ServerLevel sw = Tools.getServerWorld(world);
-            return sw.getChunkSource().chunkMap.size();
-        }
-
-        public int getCountAll(LevelAccessor world) {
-            count(world);
-            return countHostile + countPassive + countNeutral;
-        }
-
-        public int getCountPassive(LevelAccessor world) {
-            count(world);
-            return countPassive;
-        }
-
-        public int getCountHostile(LevelAccessor world) {
-            count(world);
-            return countHostile;
-        }
-
-        public int getCountNeutral(LevelAccessor world) {
-            count(world);
-            return countNeutral;
-        }
-
         private void count(LevelAccessor world) {
-            if (countDone) {
-                return;
-            }
-            countDone = true;
+            ServerLevel sw1 = Tools.getServerWorld(world);
+            validSpawnChunks = sw1.getChunkSource().chunkMap.size();
+            validPlayers = countValidPlayers(world);
+
             cachedCounters.clear();
             countPerMod.clear();
             countPassive = 0;
@@ -201,7 +173,7 @@ public class RuleCache {
 
             sw.getEntities().getAll().forEach(entity -> {
                 if (entity instanceof Mob) {
-                    int cnt = cachedCounters.getOrDefault(entity.getType(), 0)+1;
+                    int cnt = cachedCounters.getOrDefault(entity.getType(), 0) + 1;
                     cachedCounters.put(entity.getType(), cnt);
 
                     String mod = ForgeRegistries.ENTITY_TYPES.getKey(entity.getType()).getNamespace();
@@ -222,23 +194,19 @@ public class RuleCache {
             });
         }
 
-        public int getCount(LevelAccessor world, EntityType entityType) {
-            count(world);
+        public int getCount(EntityType entityType) {
             return cachedCounters.getOrDefault(entityType, 0);
         }
 
-        public CountPerMod getCountPerMod(LevelAccessor world, String mod) {
-            count(world);
+        public CountPerMod getCountPerMod(String mod) {
             return countPerMod.get(mod);
         }
 
-        public void registerSpawn(LevelAccessor world, EntityType entityType) {
-            count(world);
+        public void registerSpawn(EntityType entityType) {
             cachedCounters.put(entityType, cachedCounters.getOrDefault(entityType, 0) + 1);
         }
 
-        public void registerDespawn(LevelAccessor world, EntityType entityType) {
-            count(world);
+        public void registerDespawn(EntityType entityType) {
             Integer cnt = cachedCounters.getOrDefault(entityType, 0);
             if (cnt > 0) {
                 cachedCounters.put(entityType, cnt-1);
