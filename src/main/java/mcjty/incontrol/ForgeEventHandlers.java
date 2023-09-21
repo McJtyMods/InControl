@@ -24,6 +24,7 @@ import net.minecraftforge.event.entity.living.ZombieEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -92,7 +93,7 @@ public class ForgeEventHandlers {
     public void onWorldTick(TickEvent.LevelTickEvent event) {
         if (event.phase == TickEvent.Phase.START && !event.level.isClientSide) {
             // For every world tick we reset the cache
-            InControl.setup.cache.reset(event.level);
+            InControl.setup.cache.performCount(event.level);
 
             if (!event.level.players().isEmpty()) {
                 // If a world has players we do mob spawning in it
