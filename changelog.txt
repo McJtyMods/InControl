@@ -1,4 +1,4 @@
-Upcoming:
+1.18-6.1.11:
 - Fixed a problem in the spawner where there was the possibility that some mobs caused crashes during spawn position selection
 
 1.18-6.1.10:
