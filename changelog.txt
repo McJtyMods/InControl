@@ -1,3 +1,7 @@
+Upcoming:
+- The 'timeout' keyword wasn't working in effects.json
+- Fixed a problem with the damage action. It wasn't working properly
+
 1.20-9.0.2:
 - Fixed a rare threading condition related to counting
 

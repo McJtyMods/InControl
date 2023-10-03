@@ -31,9 +31,7 @@ public class ModSetup {
 
         MinecraftForge.EVENT_BUS.register(new ForgeEventHandlers());
         RulesManager.setRulePath(FMLPaths.CONFIGDIR.get());
-        RulesManager.readRules();
         SpawnerParser.setRulePath(FMLPaths.CONFIGDIR.get());
-        SpawnerParser.readRules("spawner.json");
     }
 
     public Logger getLogger() {

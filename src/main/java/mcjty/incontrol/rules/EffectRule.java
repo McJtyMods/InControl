@@ -74,6 +74,7 @@ public class EffectRule extends RuleBase<RuleBase.EventGetter> {
 
     static {
         FACTORY
+                .attribute(Attribute.create(TIMEOUT))
                 .attribute(Attribute.create(MINTIME))
                 .attribute(Attribute.create(MAXTIME))
                 .attribute(Attribute.create(MINLIGHT))

@@ -4,6 +4,7 @@ import mcjty.incontrol.commands.ModCommands;
 import mcjty.incontrol.data.DataStorage;
 import mcjty.incontrol.data.Statistics;
 import mcjty.incontrol.rules.*;
+import mcjty.incontrol.spawner.SpawnerParser;
 import mcjty.incontrol.spawner.SpawnerSystem;
 import mcjty.incontrol.tools.varia.Tools;
 import net.minecraft.core.BlockPos;
@@ -23,6 +24,7 @@ import net.minecraftforge.event.entity.living.MobSpawnEvent;
 import net.minecraftforge.event.entity.living.ZombieEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.level.BlockEvent;
+import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -36,6 +38,12 @@ import java.util.function.Predicate;
 public class ForgeEventHandlers {
 
     public static boolean debug = false;
+
+    @SubscribeEvent
+    public void onServerStarted(ServerStartedEvent event) {
+        RulesManager.readRules();
+        SpawnerParser.readRules("spawner.json");
+    }
 
     @SubscribeEvent
     public void registerCommands(RegisterCommandsEvent event) {

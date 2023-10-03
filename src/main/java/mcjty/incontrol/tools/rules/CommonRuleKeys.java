@@ -9,6 +9,7 @@ public interface CommonRuleKeys {
 
     Key<String> PHASE = Key.create(Type.STRING, "phase");
     Key<String> WHEN = Key.create(Type.STRING, "when");
+    Key<Integer> TIMEOUT = Key.create(Type.INTEGER, "timeout");
 
     // Inputs
     Key<String> TIME = Key.create(Type.STRING, "time");
