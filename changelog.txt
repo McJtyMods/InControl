@@ -1,4 +1,4 @@
-Upcoming:
+1.19-7.1.11:
 - Fixed a problem in the spawner where there was the possibility that some mobs caused crashes during spawn position selection
 
 1.19-7.1.10:
