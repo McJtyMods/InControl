@@ -33,6 +33,7 @@ import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.TickEvent;
 import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Predicate;
@@ -163,32 +164,34 @@ public class SpawnerSystem {
                     if (spawnable == null) {
                         return;
                     }
-                    boolean nocollisions = world.noCollision(spawnable.getAABB(pos.getX(), pos.getY(), pos.getZ()));
-                    if (nocollisions) {
-                        Entity entity = spawnable.create(world);
-                        if (entity instanceof Mob) {
-                            if (!(entity instanceof Enemy) || world.getDifficulty() != Difficulty.PEACEFUL) {
-                                Mob mobEntity = (Mob) entity;
-                                entity.moveTo(pos.getX(), pos.getY(), pos.getZ(), random.nextFloat() * 360.0F, 0.0F);
-                                for (String tag : rule.getScoreboardTags()) {
-                                    entity.addTag(tag);
-                                }
-                                busySpawning = mobEntity;   // @todo check in spawn rule
-                                int result = ForgeHooks.canEntitySpawn(mobEntity, world, pos.getX(), pos.getY(), pos.getZ(), null, MobSpawnType.NATURAL);
-                                busySpawning = null;
-                                if (result != -1) {
-                                    if (canSpawn(world, mobEntity, conditions) && isNotColliding(world, mobEntity, conditions)) {
-                                        if (!ForgeEventFactory.doSpecialSpawn(mobEntity, (LevelAccessor) world, pos.getX(), pos.getY(), pos.getZ(), null, MobSpawnType.NATURAL)) {
-                                            mobEntity.finalizeSpawn(world, world.getCurrentDifficultyAt(entity.blockPosition()), MobSpawnType.NATURAL, null, null);
-                                        }
-                                        world.addFreshEntityWithPassengers(entity);
-                                        Statistics.addSpawnerStat(ruleNr);
-                                        spawned++;
-                                        if (groupCenterPos == null) {
-                                            groupCenterPos = pos;
-                                        }
-                                        if (spawned >= desiredAmount) {
-                                            return;
+                    if (isMobSpawnValid(world, pos, spawnable)) {
+                        boolean nocollisions = world.noCollision(spawnable.getAABB(pos.getX(), pos.getY(), pos.getZ()));
+                        if (nocollisions) {
+                            Entity entity = spawnable.create(world);
+                            if (entity instanceof Mob) {
+                                if (!(entity instanceof Enemy) || world.getDifficulty() != Difficulty.PEACEFUL) {
+                                    Mob mobEntity = (Mob) entity;
+                                    entity.moveTo(pos.getX(), pos.getY(), pos.getZ(), random.nextFloat() * 360.0F, 0.0F);
+                                    for (String tag : rule.getScoreboardTags()) {
+                                        entity.addTag(tag);
+                                    }
+                                    busySpawning = mobEntity;   // @todo check in spawn rule
+                                    int result = ForgeHooks.canEntitySpawn(mobEntity, world, pos.getX(), pos.getY(), pos.getZ(), null, MobSpawnType.NATURAL);
+                                    busySpawning = null;
+                                    if (result != -1) {
+                                        if (canSpawn(world, mobEntity, conditions) && isNotColliding(world, mobEntity, conditions)) {
+                                            if (!ForgeEventFactory.doSpecialSpawn(mobEntity, (LevelAccessor) world, pos.getX(), pos.getY(), pos.getZ(), null, MobSpawnType.NATURAL)) {
+                                                mobEntity.finalizeSpawn(world, world.getCurrentDifficultyAt(entity.blockPosition()), MobSpawnType.NATURAL, null, null);
+                                            }
+                                            world.addFreshEntityWithPassengers(entity);
+                                            Statistics.addSpawnerStat(ruleNr);
+                                            spawned++;
+                                            if (groupCenterPos == null) {
+                                                groupCenterPos = pos;
+                                            }
+                                            if (spawned >= desiredAmount) {
+                                                return;
+                                            }
                                         }
                                     }
                                 }
@@ -404,7 +407,7 @@ public class SpawnerSystem {
                 if (!isValidSpawnPos(world, blockPos)) {
                     return false;
                 }
-                return isValidSpawn(world, blockPos, mob);
+                return true; //isValidSpawn(world, blockPos, mob);
             };
         } else if (conditions.isSturdy()) {
             validSpawn = blockPos -> {
@@ -461,7 +464,7 @@ public class SpawnerSystem {
         return blockPos.getY() < minHeight ? null : blockPos;
     }
 
-    private static boolean isValidSpawn(LevelReader world, BlockPos pos, EntityType<?> entityType) {
+    private static boolean isMobSpawnValid(LevelReader world, BlockPos pos, @Nonnull EntityType<?> entityType) {
         return world.getBlockState(pos.below()).isValidSpawn(world, pos.below(), entityType);
     }
 
