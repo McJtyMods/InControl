@@ -1,4 +1,4 @@
-Upcoming:
+1.20-9.0.3:
 - The 'timeout' keyword wasn't working in effects.json
 - Fixed a problem with the damage action. It wasn't working properly
 
