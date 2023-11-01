@@ -24,7 +24,7 @@ import net.minecraftforge.event.entity.living.MobSpawnEvent;
 import net.minecraftforge.event.entity.living.ZombieEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.level.BlockEvent;
-import net.minecraftforge.event.server.ServerStartedEvent;
+import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -38,11 +38,20 @@ import java.util.function.Predicate;
 public class ForgeEventHandlers {
 
     public static boolean debug = false;
+    public static boolean loaded = false;
 
     @SubscribeEvent
-    public void onServerStarted(ServerStartedEvent event) {
-        RulesManager.readRules();
-        SpawnerParser.readRules("spawner.json");
+    public void onServerAboutToStart(ServerAboutToStartEvent event) {
+        loaded = false;
+    }
+
+    @SubscribeEvent
+    public void onServerTick(TickEvent.ServerTickEvent event) {
+        if (!loaded) {
+            loaded = true;
+            RulesManager.readRules();
+            SpawnerParser.readRules("spawner.json");
+        }
     }
 
     @SubscribeEvent
