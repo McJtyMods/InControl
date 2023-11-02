@@ -39,6 +39,7 @@ public interface CommonRuleKeys {
     Key<String> BIOMETAGS = Key.create(Type.STRING, "biometags");
     Key<String> DIFFICULTY = Key.create(Type.STRING, "difficulty");
     Key<String> BLOCK = Key.create(Type.JSON, "block");
+    Key<String> AREA = Key.create(Type.STRING, "area");
     Key<String> BLOCKOFFSET = Key.create(Type.JSON, "blockoffset");
     Key<String> BIOME = Key.create(Type.STRING, "biome");
     Key<String> BIOMETYPE = Key.create(Type.STRING, "biometype");
@@ -126,6 +127,9 @@ public interface CommonRuleKeys {
     Key<String> ACTION_SETHELDAMOUNT = Key.create(Type.STRING, "setheldamount");
     Key<String> ACTION_SETSTATE = Key.create(Type.STRING, "setstate");
     Key<String> ACTION_SETPSTATE = Key.create(Type.STRING, "setpstate");
+    Key<String> ACTION_SETPHASE = Key.create(Type.STRING, "setphase");
+    Key<String> ACTION_CLEARPHASE = Key.create(Type.STRING, "clearphase");
+    Key<String> ACTION_TOGGLEPHASE = Key.create(Type.STRING, "togglephase");
 
     Key<String> ACTION_EXPLOSION = Key.create(Type.STRING, "explosion");
     Key<Integer> ACTION_FIRE = Key.create(Type.INTEGER, "fire");

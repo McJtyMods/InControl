@@ -2,6 +2,7 @@ package mcjty.incontrol.setup;
 
 import mcjty.incontrol.ForgeEventHandlers;
 import mcjty.incontrol.InControl;
+import mcjty.incontrol.areas.AreaParser;
 import mcjty.incontrol.compat.EnigmaSupport;
 import mcjty.incontrol.compat.LostCitySupport;
 import mcjty.incontrol.events.EventsParser;
@@ -34,6 +35,7 @@ public class ModSetup {
         RulesManager.setRulePath(FMLPaths.CONFIGDIR.get());
         SpawnerParser.setRulePath(FMLPaths.CONFIGDIR.get());
         EventsParser.setRulePath(FMLPaths.CONFIGDIR.get());
+        AreaParser.setRulePath(FMLPaths.CONFIGDIR.get());
     }
 
     public Logger getLogger() {

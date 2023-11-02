@@ -123,6 +123,7 @@ public class ExperienceRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.createMulti(SCOREBOARDTAGS_ANY))
                 .attribute(Attribute.createMulti(MOB))
                 .attribute(Attribute.createMulti(MOD))
+                .attribute(Attribute.create(AREA))
                 .attribute(Attribute.createMulti(BLOCK))
                 .attribute(Attribute.create(BLOCKOFFSET))
                 .attribute(Attribute.createMulti(BIOME))
@@ -149,7 +150,7 @@ public class ExperienceRule extends RuleBase<RuleBase.EventGetter> {
     private float addxp = 0.0f;
 
     private ExperienceRule(AttributeMap map, Set<String> phases) {
-        super(InControl.setup.getLogger());
+        super();
         this.phases = phases;
         ruleEvaluator = new GenericRuleEvaluator(map);
         addActions(map, new ModRuleCompatibilityLayer());

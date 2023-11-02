@@ -137,6 +137,7 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(MAGIC))
                 .attribute(Attribute.createMulti(MOB))
                 .attribute(Attribute.createMulti(MOD))
+                .attribute(Attribute.create(AREA))
                 .attribute(Attribute.createMulti(BLOCK))
                 .attribute(Attribute.create(BLOCKOFFSET))
                 .attribute(Attribute.createMulti(BIOME))
@@ -182,7 +183,7 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
     private boolean removeAll = false;
 
     private LootRule(AttributeMap map, Set<String> phases) {
-        super(InControl.setup.getLogger());
+        super();
         this.phases = phases;
         ruleEvaluator = new GenericRuleEvaluator(map);
         addActions(map, new ModRuleCompatibilityLayer());
@@ -284,7 +285,7 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
 
         List<Pair<ItemStack, Function<Integer, Integer>>> items = new ArrayList<>();
         for (String name : itemNames) {
-            ItemStack stack = Tools.parseStack(name, InControl.setup.getLogger());
+            ItemStack stack = Tools.parseStack(name);
             if (stack.isEmpty()) {
                 InControl.setup.getLogger().log(org.apache.logging.log4j.Level.ERROR, "Unknown item '" + name + "'!");
             } else {
@@ -308,7 +309,7 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
     }
 
     private void removeItem(List<String> itemList) {
-        toRemoveItems.addAll(CommonRuleEvaluator.getItems(itemList, logger));
+        toRemoveItems.addAll(CommonRuleEvaluator.getItems(itemList));
     }
 
     public boolean match(LivingDropsEvent event) {

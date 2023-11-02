@@ -2,7 +2,6 @@ package mcjty.incontrol.rules;
 
 import com.google.gson.JsonElement;
 import mcjty.incontrol.ErrorHandler;
-import mcjty.incontrol.InControl;
 import mcjty.incontrol.compat.ModRuleCompatibilityLayer;
 import mcjty.incontrol.data.PhaseTools;
 import mcjty.incontrol.rules.support.GenericRuleEvaluator;
@@ -283,6 +282,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(AUTUMN))
                 .attribute(Attribute.createMulti(MOB))
                 .attribute(Attribute.createMulti(MOD))
+                .attribute(Attribute.create(AREA))
                 .attribute(Attribute.createMulti(BLOCK))
                 .attribute(Attribute.create(BLOCKOFFSET))
                 .attribute(Attribute.createMulti(BIOME))
@@ -326,6 +326,9 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(ACTION_ANGRY))
                 .attribute(Attribute.create(ACTION_MOBNBT))
                 .attribute(Attribute.create(ACTION_CUSTOMNAME))
+                .attribute(Attribute.create(ACTION_SETPHASE))
+                .attribute(Attribute.create(ACTION_CLEARPHASE))
+                .attribute(Attribute.create(ACTION_TOGGLEPHASE))
                 .attribute(Attribute.createMulti(ACTION_HELDITEM))
                 .attribute(Attribute.createMulti(ACTION_ARMORBOOTS))
                 .attribute(Attribute.createMulti(ACTION_ARMORLEGS))
@@ -343,7 +346,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
     private boolean doContinue = false;
 
     private SpawnRule(AttributeMap map, SpawnWhen when, Set<String> phases) {
-        super(InControl.setup.getLogger());
+        super();
         this.when = when;
         this.phases = phases;
         ruleEvaluator = new GenericRuleEvaluator(map);

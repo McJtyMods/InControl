@@ -1,5 +1,6 @@
 package mcjty.incontrol;
 
+import mcjty.incontrol.areas.AreaParser;
 import mcjty.incontrol.commands.ModCommands;
 import mcjty.incontrol.data.DataStorage;
 import mcjty.incontrol.data.Statistics;
@@ -51,6 +52,7 @@ public class ForgeEventHandlers {
             RulesManager.readRules();
             SpawnerParser.readRules("spawner.json");
             EventsParser.readRules("events.json");
+            AreaParser.readRules("areas.json");
         }
     }
 
@@ -434,6 +436,8 @@ public class ForgeEventHandlers {
             }
             i++;
         }
+
+        EventsSystem.onBlockBreak(event);
     }
 
     @SubscribeEvent
@@ -469,7 +473,7 @@ public class ForgeEventHandlers {
     @SubscribeEvent
     public void onEntityKilled(LivingDeathEvent event) {
         if (!event.getEntity().level().isClientSide) {
-            EventsSystem.onEntityKilled(event.getEntity());
+            EventsSystem.onEntityKilled(event);
         }
     }
 }

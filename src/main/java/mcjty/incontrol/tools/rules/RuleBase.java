@@ -6,6 +6,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import mcjty.incontrol.ErrorHandler;
+import mcjty.incontrol.InControl;
+import mcjty.incontrol.data.DataStorage;
 import mcjty.incontrol.tools.typed.AttributeMap;
 import mcjty.incontrol.tools.varia.LookAtTools;
 import mcjty.incontrol.tools.varia.Tools;
@@ -51,10 +53,12 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.server.ServerLifecycleHooks;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -62,12 +66,7 @@ import static mcjty.incontrol.tools.rules.CommonRuleKeys.*;
 
 public class RuleBase<T extends RuleBase.EventGetter> {
 
-    protected final Logger logger;
     protected final List<Consumer<T>> actions = new ArrayList<>();
-
-    public RuleBase(Logger logger) {
-        this.logger = logger;
-    }
 
     private static final Random rnd = new Random();
 
@@ -78,7 +77,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
             JsonElement element = parser.parse(json);
             if (element.isJsonPrimitive()) {
                 String name = element.getAsString();
-                Pair<Float, ItemStack> pair = Tools.parseStackWithFactor(name, logger);
+                Pair<Float, ItemStack> pair = Tools.parseStackWithFactor(name);
                 if (pair.getValue().isEmpty()) {
                     ErrorHandler.error("Unknown item '" + name + "'!");
                 } else {
@@ -86,7 +85,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
                 }
             } else if (element.isJsonObject()) {
                 JsonObject obj = element.getAsJsonObject();
-                Pair<Float, ItemStack> pair = Tools.parseStackWithFactor(obj, logger);
+                Pair<Float, ItemStack> pair = Tools.parseStackWithFactor(obj);
                 if (pair != null) {
                     items.add(pair);
                 }
@@ -158,18 +157,51 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         map.consume2(ACTION_SETBLOCK, BLOCKOFFSET, this::addSetBlockAction);
         map.consume(ACTION_SETHELDITEM, this::addSetHeldItemAction);
         map.consume(ACTION_SETHELDAMOUNT, this::addSetHeldAmountAction);
+        map.consume(ACTION_SETPHASE, this::addSetPhaseAction);
+        map.consume(ACTION_CLEARPHASE, this::addClearPhaseAction);
+        map.consume(ACTION_TOGGLEPHASE, this::addTogglePhaseAction);
         map.consume(ACTION_SETSTATE, state -> {
             if (layer.hasEnigmaScript()) {
                 addStateAction(state, layer);
             } else {
-                logger.warn("EnigmaScript is missing: this action cannot work!");
+                InControl.setup.getLogger().warn("EnigmaScript is missing: this action cannot work!");
             }
         });
         map.consume(ACTION_SETPSTATE, state -> {
             if (layer.hasEnigmaScript()) {
                 addPStateAction(state, layer);
             } else {
-                logger.warn("EnigmaScript is missing: this action cannot work!");
+                InControl.setup.getLogger().warn("EnigmaScript is missing: this action cannot work!");
+            }
+        });
+    }
+
+    private void addTogglePhaseAction(String phase) {
+        actions.add(event -> {
+            Player player = event.getPlayer();
+            if (player != null) {
+                DataStorage data = DataStorage.getData(player.getCommandSenderWorld());
+                data.togglePhase(phase);
+            }
+        });
+    }
+
+    private void addClearPhaseAction(String phase) {
+        actions.add(event -> {
+            Player player = event.getPlayer();
+            if (player != null) {
+                DataStorage data = DataStorage.getData(player.getCommandSenderWorld());
+                data.setPhase(phase, false);
+            }
+        });
+    }
+
+    private void addSetPhaseAction(String phase) {
+        actions.add(event -> {
+            Player player = event.getPlayer();
+            if (player != null) {
+                DataStorage data = DataStorage.getData(player.getCommandSenderWorld());
+                data.setPhase(phase, true);
             }
         });
     }
@@ -371,10 +403,10 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         ItemStack stack;
         if (element.isJsonPrimitive()) {
             String name = element.getAsString();
-            stack = Tools.parseStack(name, logger);
+            stack = Tools.parseStack(name);
         } else if (element.isJsonObject()) {
             JsonObject obj = element.getAsJsonObject();
-            stack = Tools.parseStack(obj, logger);
+            stack = Tools.parseStack(obj);
             if (stack == null) {
                 return;
             }

@@ -47,7 +47,7 @@ import static mcjty.incontrol.rules.support.RuleKeys.*;
 public class GenericRuleEvaluator extends CommonRuleEvaluator {
 
     public GenericRuleEvaluator(AttributeMap map) {
-        super(map, InControl.setup.getLogger(), new ModRuleCompatibilityLayer());
+        super(map, new ModRuleCompatibilityLayer());
     }
 
     @Override

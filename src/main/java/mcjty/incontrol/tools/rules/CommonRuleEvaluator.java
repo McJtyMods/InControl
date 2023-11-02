@@ -5,6 +5,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import mcjty.incontrol.ErrorHandler;
+import mcjty.incontrol.InControl;
+import mcjty.incontrol.areas.Area;
+import mcjty.incontrol.areas.AreaSystem;
 import mcjty.incontrol.tools.cache.StructureCache;
 import mcjty.incontrol.tools.typed.AttributeMap;
 import mcjty.incontrol.tools.varia.LookAtTools;
@@ -43,7 +46,6 @@ import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.energy.IEnergyStorage;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -59,11 +61,9 @@ import static mcjty.incontrol.tools.rules.CommonRuleKeys.*;
 public class CommonRuleEvaluator {
 
     protected final List<BiFunction<Object, IEventQuery, Boolean>> checks = new ArrayList<>();
-    private final Logger logger;
     private final IModRuleCompatibilityLayer compatibility;
 
-    public CommonRuleEvaluator(AttributeMap map, Logger logger, IModRuleCompatibilityLayer compatibility) {
-        this.logger = logger;
+    public CommonRuleEvaluator(AttributeMap map, IModRuleCompatibilityLayer compatibility) {
         this.compatibility = compatibility;
         addChecks(map);
     }
@@ -98,6 +98,7 @@ public class CommonRuleEvaluator {
         map.consume(MAXDIFFICULTY, this::addMaxAdditionalDifficultyCheck);
         map.consume(SEESKY, this::addSeeSkyCheck);
         map.consume(SLIME, this::addSlimeChunkCheck);
+        map.consume(AREA, this::addAreaCheck);
         map.consumeAsList(BLOCK, b -> addBlocksCheck(map, b));
         map.consumeAsList(BIOME, this::addBiomesCheck);
         map.consumeAsList(BIOMETYPE, this::addBiomeTypesCheck);
@@ -145,6 +146,23 @@ public class CommonRuleEvaluator {
         map.consumeAsList(HEAD, v -> addBaubleCheck(v, compatibility::getHeadSlots));
         map.consumeAsList(BODY, v -> addBaubleCheck(v, compatibility::getBodySlots));
         map.consumeAsList(CHARM, v -> addBaubleCheck(v, compatibility::getCharmSlots));
+    }
+
+    private void addAreaCheck(String areaName) {
+        Area area = AreaSystem.getArea(areaName);
+        if (area == null) {
+            ErrorHandler.error("Cannot find area '" + areaName + "'!");
+        } else {
+            checks.add((event, query) -> {
+                LevelAccessor world = query.getWorld(event);
+                ResourceKey<Level> key = Tools.getDimensionKey(world);
+                if (area.dimension() == key) {
+                    BlockPos pos = query.getPos(event);
+                    return area.isInArea(pos.getX(), pos.getY(), pos.getZ());
+                }
+                return false;
+            });
+        }
     }
 
     private static final Random rnd = new Random();
@@ -387,7 +405,7 @@ public class CommonRuleEvaluator {
     }
 
     @Nullable
-    private BiPredicate<LevelAccessor, BlockPos> parseBlock(String json) {
+    public static BiPredicate<LevelAccessor, BlockPos> parseBlock(String json) {
         JsonParser parser = new JsonParser();
         JsonElement element = parser.parse(json);
         if (element.isJsonPrimitive()) {
@@ -490,17 +508,17 @@ public class CommonRuleEvaluator {
         return null;
     }
 
-    protected List<Predicate<ItemStack>> getItems(JsonElement itemObj) {
+    protected static List<Predicate<ItemStack>> getItems(JsonElement itemObj) {
         List<Predicate<ItemStack>> items = new ArrayList<>();
         if (itemObj.isJsonObject()) {
-            Predicate<ItemStack> matcher = getMatcher(itemObj.getAsJsonObject(), logger);
+            Predicate<ItemStack> matcher = getMatcher(itemObj.getAsJsonObject());
             if (matcher != null) {
                 items.add(matcher);
             }
         } else if (itemObj.isJsonArray()) {
             for (JsonElement element : itemObj.getAsJsonArray()) {
                 JsonObject obj = element.getAsJsonObject();
-                Predicate<ItemStack> matcher = getMatcher(obj, logger);
+                Predicate<ItemStack> matcher = getMatcher(obj);
                 if (matcher != null) {
                     items.add(matcher);
                 }
@@ -790,8 +808,8 @@ public class CommonRuleEvaluator {
     }
 
 
-    private static Predicate<ItemStack> getMatcher(String name, Logger logger) {
-        ItemStack stack = Tools.parseStack(name, logger);
+    private static Predicate<ItemStack> getMatcher(String name) {
+        ItemStack stack = Tools.parseStack(name);
         if (!stack.isEmpty()) {
             // Stack matching
             if (name.contains("/") && name.contains("@")) {
@@ -807,7 +825,7 @@ public class CommonRuleEvaluator {
         return null;
     }
 
-    private static Predicate<ItemStack> getMatcher(JsonObject obj, Logger logger) {
+    private static Predicate<ItemStack> getMatcher(JsonObject obj) {
         if (obj.has("empty")) {
             boolean empty = obj.get("empty").getAsBoolean();
             return s -> s.isEmpty() == empty;
@@ -850,7 +868,7 @@ public class CommonRuleEvaluator {
             test = s -> finalTest.test(s) && "mod".equals(ForgeRegistries.ITEMS.getKey(s.getItem()).getNamespace());
         }
         if (obj.has("nbt")) {
-            List<Predicate<CompoundTag>> nbtMatchers = getNbtMatchers(obj, logger);
+            List<Predicate<CompoundTag>> nbtMatchers = getNbtMatchers(obj);
             if (nbtMatchers != null) {
                 Predicate<ItemStack> finalTest = test;
                 test = s -> finalTest.test(s) && nbtMatchers.stream().allMatch(p -> p.test(s.getTag()));
@@ -871,7 +889,7 @@ public class CommonRuleEvaluator {
         return stack.getCapability(ForgeCapabilities.ENERGY).map(IEnergyStorage::getEnergyStored).orElse(0);
     }
 
-    private boolean contains(LevelAccessor world, BlockPos pos, @Nullable Direction side, @Nonnull List<Predicate<ItemStack>> matchers) {
+    private static boolean contains(LevelAccessor world, BlockPos pos, @Nullable Direction side, @Nonnull List<Predicate<ItemStack>> matchers) {
         BlockEntity tileEntity = world.getBlockEntity(pos);
         if (tileEntity != null) {
             return tileEntity.getCapability(ForgeCapabilities.ITEM_HANDLER, side).map(h -> {
@@ -891,7 +909,7 @@ public class CommonRuleEvaluator {
         return false;
     }
 
-    private int getEnergy(LevelAccessor world, BlockPos pos, @Nullable Direction side) {
+    private static int getEnergy(LevelAccessor world, BlockPos pos, @Nullable Direction side) {
         BlockEntity tileEntity = world.getBlockEntity(pos);
         if (tileEntity != null) {
             return tileEntity.getCapability(ForgeCapabilities.ENERGY, side).map(IEnergyStorage::getEnergyStored).orElse(0);
@@ -899,18 +917,18 @@ public class CommonRuleEvaluator {
         return 0;
     }
 
-    private static List<Predicate<CompoundTag>> getNbtMatchers(JsonObject obj, Logger logger) {
+    private static List<Predicate<CompoundTag>> getNbtMatchers(JsonObject obj) {
         JsonArray nbtArray = obj.getAsJsonArray("nbt");
-        return getNbtMatchers(nbtArray, logger);
+        return getNbtMatchers(nbtArray);
     }
 
-    private static List<Predicate<CompoundTag>> getNbtMatchers(JsonArray nbtArray, Logger logger) {
+    private static List<Predicate<CompoundTag>> getNbtMatchers(JsonArray nbtArray) {
         List<Predicate<CompoundTag>> nbtMatchers = new ArrayList<>();
         for (JsonElement element : nbtArray) {
             JsonObject o = element.getAsJsonObject();
             String tag = o.get("tag").getAsString();
             if (o.has("contains")) {
-                List<Predicate<CompoundTag>> subMatchers = getNbtMatchers(o.getAsJsonArray("contains"), logger);
+                List<Predicate<CompoundTag>> subMatchers = getNbtMatchers(o.getAsJsonArray("contains"));
                 nbtMatchers.add(tagCompound -> {
                     if (tagCompound != null) {
                         ListTag list = tagCompound.getList(tag, Tag.TAG_COMPOUND);
@@ -936,20 +954,20 @@ public class CommonRuleEvaluator {
     }
 
 
-    public static List<Predicate<ItemStack>> getItems(List<String> itemNames, Logger logger) {
+    public static List<Predicate<ItemStack>> getItems(List<String> itemNames) {
         List<Predicate<ItemStack>> items = new ArrayList<>();
         for (String json : itemNames) {
             JsonParser parser = new JsonParser();
             JsonElement element = parser.parse(json);
             if (element.isJsonPrimitive()) {
                 String name = element.getAsString();
-                Predicate<ItemStack> matcher = getMatcher(name, logger);
+                Predicate<ItemStack> matcher = getMatcher(name);
                 if (matcher != null) {
                     items.add(matcher);
                 }
             } else if (element.isJsonObject()) {
                 JsonObject obj = element.getAsJsonObject();
-                Predicate<ItemStack> matcher = getMatcher(obj, logger);
+                Predicate<ItemStack> matcher = getMatcher(obj);
                 if (matcher != null) {
                     items.add(matcher);
                 }
@@ -961,42 +979,42 @@ public class CommonRuleEvaluator {
     }
 
     public void addHelmetCheck(List<String> itemList) {
-        List<Predicate<ItemStack>> items = getItems(itemList, logger);
+        List<Predicate<ItemStack>> items = getItems(itemList);
         addArmorCheck(items, EquipmentSlot.HEAD, false);
     }
 
     public void addChestplateCheck(List<String> itemList) {
-        List<Predicate<ItemStack>> items = getItems(itemList, logger);
+        List<Predicate<ItemStack>> items = getItems(itemList);
         addArmorCheck(items, EquipmentSlot.CHEST, false);
     }
 
     public void addLeggingsCheck(List<String> itemList) {
-        List<Predicate<ItemStack>> items = getItems(itemList, logger);
+        List<Predicate<ItemStack>> items = getItems(itemList);
         addArmorCheck(items, EquipmentSlot.LEGS, false);
     }
 
     public void addBootsCheck(List<String> itemList) {
-        List<Predicate<ItemStack>> items = getItems(itemList, logger);
+        List<Predicate<ItemStack>> items = getItems(itemList);
         addArmorCheck(items, EquipmentSlot.FEET, false);
     }
 
     public void addHelmetCheckLacking(List<String> itemList) {
-        List<Predicate<ItemStack>> items = getItems(itemList, logger);
+        List<Predicate<ItemStack>> items = getItems(itemList);
         addArmorCheck(items, EquipmentSlot.HEAD, true);
     }
 
     public void addChestplateCheckLacking(List<String> itemList) {
-        List<Predicate<ItemStack>> items = getItems(itemList, logger);
+        List<Predicate<ItemStack>> items = getItems(itemList);
         addArmorCheck(items, EquipmentSlot.CHEST, true);
     }
 
     public void addLeggingsCheckLacking(List<String> itemList) {
-        List<Predicate<ItemStack>> items = getItems(itemList, logger);
+        List<Predicate<ItemStack>> items = getItems(itemList);
         addArmorCheck(items, EquipmentSlot.LEGS, true);
     }
 
     public void addBootsCheckLacking(List<String> itemList) {
-        List<Predicate<ItemStack>> items = getItems(itemList, logger);
+        List<Predicate<ItemStack>> items = getItems(itemList);
         addArmorCheck(items, EquipmentSlot.FEET, true);
     }
 
@@ -1018,7 +1036,7 @@ public class CommonRuleEvaluator {
     }
 
     public void addHeldItemCheck(List<String> itemList, boolean lacking) {
-        List<Predicate<ItemStack>> items = getItems(itemList, logger);
+        List<Predicate<ItemStack>> items = getItems(itemList);
         checks.add((event,query) -> {
             Player player = query.getPlayer(event);
             if (player != null) {
@@ -1036,7 +1054,7 @@ public class CommonRuleEvaluator {
     }
 
     public void addOffHandItemCheck(List<String> itemList, boolean lacking) {
-        List<Predicate<ItemStack>> items = getItems(itemList, logger);
+        List<Predicate<ItemStack>> items = getItems(itemList);
         checks.add((event,query) -> {
             Player player = query.getPlayer(event);
             if (player != null) {
@@ -1054,7 +1072,7 @@ public class CommonRuleEvaluator {
     }
 
     public void addBothHandsItemCheck(List<String> itemList) {
-        List<Predicate<ItemStack>> items = getItems(itemList, logger);
+        List<Predicate<ItemStack>> items = getItems(itemList);
         checks.add((event,query) -> {
             Player player = query.getPlayer(event);
             if (player != null) {
@@ -1081,7 +1099,7 @@ public class CommonRuleEvaluator {
 
     private void addStateCheck(String s) {
         if (!compatibility.hasEnigmaScript()) {
-            logger.warn("EnigmaScript is missing: this test cannot work!");
+            InControl.setup.getLogger().warn("EnigmaScript is missing: this test cannot work!");
             return;
         }
         String[] split = StringUtils.split(s, '=');
@@ -1100,7 +1118,7 @@ public class CommonRuleEvaluator {
 
     private void addPStateCheck(String s) {
         if (!compatibility.hasEnigmaScript()) {
-            logger.warn("EnigmaScript is missing: this test cannot work!");
+            InControl.setup.getLogger().warn("EnigmaScript is missing: this test cannot work!");
             return;
         }
         String[] split = StringUtils.split(s, '=');
@@ -1119,7 +1137,7 @@ public class CommonRuleEvaluator {
 
     private void addSummerCheck(Boolean s) {
         if (!compatibility.hasSereneSeasons()) {
-            logger.warn("Serene Seasons is missing: this test cannot work!");
+            InControl.setup.getLogger().warn("Serene Seasons is missing: this test cannot work!");
             return;
         }
         checks.add((event, query) -> s == compatibility.isSummer(Tools.getServerWorld(query.getWorld(event))));
@@ -1127,7 +1145,7 @@ public class CommonRuleEvaluator {
 
     private void addWinterCheck(Boolean s) {
         if (!compatibility.hasSereneSeasons()) {
-            logger.warn("Serene Seasons is missing: this test cannot work!");
+            InControl.setup.getLogger().warn("Serene Seasons is missing: this test cannot work!");
             return;
         }
         checks.add((event, query) -> s == compatibility.isWinter(Tools.getServerWorld(query.getWorld(event))));
@@ -1135,7 +1153,7 @@ public class CommonRuleEvaluator {
 
     private void addSpringCheck(Boolean s) {
         if (!compatibility.hasSereneSeasons()) {
-            logger.warn("Serene Seasons is missing: this test cannot work!");
+            InControl.setup.getLogger().warn("Serene Seasons is missing: this test cannot work!");
             return;
         }
         checks.add((event, query) -> s == compatibility.isSpring(Tools.getServerWorld(query.getWorld(event))));
@@ -1143,7 +1161,7 @@ public class CommonRuleEvaluator {
 
     private void addAutumnCheck(Boolean s) {
         if (!compatibility.hasSereneSeasons()) {
-            logger.warn("Serene Seasons is missing: this test cannot work!");
+            InControl.setup.getLogger().warn("Serene Seasons is missing: this test cannot work!");
             return;
         }
         checks.add((event, query) -> s == compatibility.isAutumn(Tools.getServerWorld(query.getWorld(event))));
@@ -1151,7 +1169,7 @@ public class CommonRuleEvaluator {
 
     private void addGameStageCheck(String stage) {
         if (!compatibility.hasGameStages()) {
-            logger.warn("Game Stages is missing: the 'gamestage' test cannot work!");
+            InControl.setup.getLogger().warn("Game Stages is missing: the 'gamestage' test cannot work!");
             return;
         }
         checks.add((event, query) -> compatibility.hasGameStage(query.getPlayer(event), stage));
@@ -1159,7 +1177,7 @@ public class CommonRuleEvaluator {
 
     private void addInCityCheck(boolean incity) {
         if (!compatibility.hasLostCities()) {
-            logger.warn("The Lost Cities is missing: the 'incity' test cannot work!");
+            InControl.setup.getLogger().warn("The Lost Cities is missing: the 'incity' test cannot work!");
             return;
         }
         if (incity) {
@@ -1171,7 +1189,7 @@ public class CommonRuleEvaluator {
 
     private void addInStreetCheck(boolean instreet) {
         if (!compatibility.hasLostCities()) {
-            logger.warn("The Lost Cities is missing: the 'instreet' test cannot work!");
+            InControl.setup.getLogger().warn("The Lost Cities is missing: the 'instreet' test cannot work!");
             return;
         }
         if (instreet) {
@@ -1183,7 +1201,7 @@ public class CommonRuleEvaluator {
 
     private void addInSphereCheck(boolean insphere) {
         if (!compatibility.hasLostCities()) {
-            logger.warn("The Lost Cities is missing: the 'insphere' test cannot work!");
+            InControl.setup.getLogger().warn("The Lost Cities is missing: the 'insphere' test cannot work!");
             return;
         }
         if (insphere) {
@@ -1195,7 +1213,7 @@ public class CommonRuleEvaluator {
 
     private void addInBuildingCheck(boolean inbuilding) {
         if (!compatibility.hasLostCities()) {
-            logger.warn("The Lost Cities is missing: the 'inbuilding' test cannot work!");
+            InControl.setup.getLogger().warn("The Lost Cities is missing: the 'inbuilding' test cannot work!");
             return;
         }
         if (inbuilding) {
@@ -1207,7 +1225,7 @@ public class CommonRuleEvaluator {
 
     private void addBuildingCheck(List<String> buildings) {
         if (!compatibility.hasLostCities()) {
-            logger.warn("The Lost Cities is missing: the 'building' test cannot work!");
+            InControl.setup.getLogger().warn("The Lost Cities is missing: the 'building' test cannot work!");
             return;
         }
         Set<String> buildingSet = new HashSet<>(buildings);
@@ -1219,11 +1237,11 @@ public class CommonRuleEvaluator {
 
     public void addBaubleCheck(List<String> itemList, Supplier<int[]> slotSupplier) {
         if (!compatibility.hasBaubles()) {
-            logger.warn("Baubles is missing: this test cannot work!");
+            InControl.setup.getLogger().warn("Baubles is missing: this test cannot work!");
             return;
         }
 
-        List<Predicate<ItemStack>> items = getItems(itemList, logger);
+        List<Predicate<ItemStack>> items = getItems(itemList);
         checks.add((event,query) -> {
             Player player = query.getPlayer(event);
             if (player != null) {

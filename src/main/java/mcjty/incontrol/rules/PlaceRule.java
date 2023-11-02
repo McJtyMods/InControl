@@ -115,6 +115,7 @@ public class PlaceRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.createMulti(BODY))
                 .attribute(Attribute.createMulti(CHARM))
 
+                .attribute(Attribute.create(AREA))
                 .attribute(Attribute.createMulti(BLOCK))
                 .attribute(Attribute.create(BLOCKOFFSET))
                 .attribute(Attribute.createMulti(HELMET))
@@ -150,6 +151,9 @@ public class PlaceRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(ACTION_RESULT))
                 .attribute(Attribute.create(ACTION_SETSTATE))
                 .attribute(Attribute.create(ACTION_SETPSTATE))
+                .attribute(Attribute.create(ACTION_SETPHASE))
+                .attribute(Attribute.create(ACTION_CLEARPHASE))
+                .attribute(Attribute.create(ACTION_TOGGLEPHASE))
                 .attribute(Attribute.createMulti(ACTION_POTION))
                 .attribute(Attribute.createMulti(ACTION_GIVE))
                 .attribute(Attribute.createMulti(ACTION_DROP))
@@ -160,7 +164,7 @@ public class PlaceRule extends RuleBase<RuleBase.EventGetter> {
     private final GenericRuleEvaluator ruleEvaluator;
 
     private PlaceRule(AttributeMap map) {
-        super(InControl.setup.getLogger());
+        super();
         ruleEvaluator = new GenericRuleEvaluator(map);
         addActions(map, new ModRuleCompatibilityLayer());
     }

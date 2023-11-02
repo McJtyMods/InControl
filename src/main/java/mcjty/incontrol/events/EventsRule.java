@@ -5,8 +5,12 @@ import com.google.gson.JsonObject;
 import mcjty.incontrol.ErrorHandler;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.registries.ForgeRegistries;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class EventsRule {
 
@@ -16,7 +20,7 @@ public class EventsRule {
 
     enum Cmd {
         ON,
-        PARAMETER,
+        PARAMETERS,
         SPAWN,
         CONDITIONS
     }
@@ -41,7 +45,7 @@ public class EventsRule {
 
     public static void parse(JsonObject object, Builder builder) {
         EventType.Type type = null;
-        String parameter = null;
+        JsonObject parameters = null;
 
         for (String attr : object.keySet()) {
             Cmd cmd = COMMANDS.get(attr);
@@ -59,67 +63,14 @@ public class EventsRule {
                         return;
                     }
                 }
-                case PARAMETER -> {
-                    JsonElement par = object.get("parameter");
-                    parameter = par.getAsString();
+                case PARAMETERS -> {
+                    parameters = object.getAsJsonObject("parameters");
                 }
                 case SPAWN -> {
-                    List<ResourceLocation> mobs = new ArrayList<>();
-                    JsonObject value = object.getAsJsonObject("spawn");
-                    JsonElement mob = value.get("mob");
-                    if (mob.isJsonArray()) {
-                        for (JsonElement element : mob.getAsJsonArray()) {
-                            ResourceLocation mobid = new ResourceLocation(element.getAsString());
-                            if (!ForgeRegistries.ENTITY_TYPES.containsKey(mobid)) {
-                                ErrorHandler.error("Invalid mob '" + mobid + "' for events rule!");
-                                return;
-                            }
-                            mobs.add(mobid);
-                        }
-                    } else {
-                        ResourceLocation mobid = new ResourceLocation(mob.getAsString());
-                        if (!ForgeRegistries.ENTITY_TYPES.containsKey(mobid)) {
-                            ErrorHandler.error("Invalid mob '" + mobid + "' for events rule!");
-                            return;
-                        }
-                        mobs.add(mobid);
-                    }
-                    if (mobs.isEmpty()) {
-                        ErrorHandler.error("No mobs specified for events rule!");
+                    SpawnEventAction action = parseSpawnEventAction(object);
+                    if (action == null) {
                         return;
                     }
-
-                    int attempts = 10;
-                    int mincount = 1;
-                    int maxcount = 1;
-                    float mindistance = 0.0f;
-                    float maxdistance = 10.0f;
-                    if (value.has("attempts")) {
-                        attempts = value.getAsJsonPrimitive("attempts").getAsInt();
-                    }
-                    if (value.has("mindistance")) {
-                        mindistance = value.getAsJsonPrimitive("mindistance").getAsFloat();
-                    }
-                    if (value.has("maxdistance")) {
-                        maxdistance = value.getAsJsonPrimitive("maxdistance").getAsFloat();
-                    }
-                    if (value.has("mincount")) {
-                        mincount = value.getAsJsonPrimitive("mincount").getAsInt();
-                    }
-                    if (value.has("maxcount")) {
-                        maxcount = value.getAsJsonPrimitive("maxcount").getAsInt();
-                    }
-                    // Check count and distance bounds
-                    if (mincount > maxcount) {
-                        ErrorHandler.error("Mincount can't be larger than maxcount for events rule!");
-                        return;
-                    }
-                    if (mindistance > maxdistance) {
-                        ErrorHandler.error("Mindistance can't be larger than maxdistance for events rule!");
-                        return;
-                    }
-
-                    SpawnEventAction action = new SpawnEventAction(mobs, attempts, mindistance, maxdistance, mincount, maxcount);
                     builder.action(action);
                 }
                 case CONDITIONS -> {
@@ -136,7 +87,87 @@ public class EventsRule {
             ErrorHandler.error("No 'on' specified for events rule!");
             return;
         }
-        builder.eventType(new EventType(type, parameter));
+        EventType et;
+        switch (type) {
+            case MOB_KILLED -> {
+                et = new EventTypeMobKilled();
+                if (!et.parse(parameters)) {
+                    return;
+                }
+            }
+            case BLOCK_BROKEN -> {
+                et = new EventTypeBlockBroken();
+                if (!et.parse(parameters)) {
+                    return;
+                }
+            }
+            default -> {
+                ErrorHandler.error("Unknown event type '" + type + "' for events rule!");
+                return;
+            }
+        }
+
+        builder.eventType(et);
+    }
+
+    @Nullable
+    private static SpawnEventAction parseSpawnEventAction(JsonObject object) {
+        List<ResourceLocation> mobs = new ArrayList<>();
+        JsonObject value = object.getAsJsonObject("spawn");
+        JsonElement mob = value.get("mob");
+        if (mob.isJsonArray()) {
+            for (JsonElement element : mob.getAsJsonArray()) {
+                ResourceLocation mobid = new ResourceLocation(element.getAsString());
+                if (!ForgeRegistries.ENTITY_TYPES.containsKey(mobid)) {
+                    ErrorHandler.error("Invalid mob '" + mobid + "' for events rule!");
+                    return null;
+                }
+                mobs.add(mobid);
+            }
+        } else {
+            ResourceLocation mobid = new ResourceLocation(mob.getAsString());
+            if (!ForgeRegistries.ENTITY_TYPES.containsKey(mobid)) {
+                ErrorHandler.error("Invalid mob '" + mobid + "' for events rule!");
+                return null;
+            }
+            mobs.add(mobid);
+        }
+        if (mobs.isEmpty()) {
+            ErrorHandler.error("No mobs specified for events rule!");
+            return null;
+        }
+
+        int attempts = 10;
+        int mincount = 1;
+        int maxcount = 1;
+        float mindistance = 0.0f;
+        float maxdistance = 10.0f;
+        if (value.has("attempts")) {
+            attempts = value.getAsJsonPrimitive("attempts").getAsInt();
+        }
+        if (value.has("mindistance")) {
+            mindistance = value.getAsJsonPrimitive("mindistance").getAsFloat();
+        }
+        if (value.has("maxdistance")) {
+            maxdistance = value.getAsJsonPrimitive("maxdistance").getAsFloat();
+        }
+        if (value.has("mincount")) {
+            mincount = value.getAsJsonPrimitive("mincount").getAsInt();
+        }
+        if (value.has("maxcount")) {
+            maxcount = value.getAsJsonPrimitive("maxcount").getAsInt();
+        }
+        // Check count and distance bounds
+        if (mincount > maxcount) {
+            ErrorHandler.error("Mincount can't be larger than maxcount for events rule!");
+            return null;
+        }
+        if (mindistance > maxdistance) {
+            ErrorHandler.error("Mindistance can't be larger than maxdistance for events rule!");
+            return null;
+        }
+
+        return new SpawnEventAction(mobs, attempts, mindistance, maxdistance, mincount, maxcount);
     }
 
     public EventType getEventType() {

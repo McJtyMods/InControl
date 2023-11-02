@@ -95,6 +95,27 @@ public class DataStorage extends SavedData {
         }
     }
 
+    public void setPhase(String phase, boolean value) {
+        if (value) {
+            if (phases.add(phase)) {
+                RulesManager.onPhaseChange();
+            }
+        } else {
+            if (phases.remove(phase)) {
+                RulesManager.onPhaseChange();
+            }
+        }
+    }
+
+    public void togglePhase(String phase) {
+        if (phases.contains(phase)) {
+            phases.remove(phase);
+        } else {
+            phases.add(phase);
+        }
+        RulesManager.onPhaseChange();
+    }
+
     private void tickPhases(Level world) {
         boolean dirty = false;
         for (PhaseRule rule : RulesManager.phaseRules) {

@@ -17,11 +17,9 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Optional;
 import java.util.function.Predicate;
 
 public class Tools {
@@ -40,7 +38,7 @@ public class Tools {
         return biomeHolder.unwrap().map((key) -> key.location().toString(), (key) -> "[unregistered " + key + "]");
     }
 
-    public static Pair<Float, ItemStack> parseStackWithFactor(String name, Logger logger) {
+    public static Pair<Float, ItemStack> parseStackWithFactor(String name) {
         int i = 0;
         while (i < name.length() && (Character.isDigit(name.charAt(i)) || name.charAt(i) == '.')) {
             i++;
@@ -53,18 +51,18 @@ public class Tools {
             } catch (NumberFormatException e) {
                 v = 1.0f;
             }
-            return Pair.of(v, parseStack(name.substring(i + 1), logger));
+            return Pair.of(v, parseStack(name.substring(i + 1)));
         }
 
-        return Pair.of(1.0f, parseStack(name, logger));
+        return Pair.of(1.0f, parseStack(name));
     }
 
-    public static Pair<Float, ItemStack> parseStackWithFactor(JsonObject obj, Logger logger) {
+    public static Pair<Float, ItemStack> parseStackWithFactor(JsonObject obj) {
         float factor = 1.0f;
         if (obj.has("factor")) {
             factor = obj.get("factor").getAsFloat();
         }
-        ItemStack stack = parseStack(obj, logger);
+        ItemStack stack = parseStack(obj);
         if (stack == null) {
             return null;
         }
@@ -72,10 +70,10 @@ public class Tools {
     }
 
     @Nonnull
-    public static ItemStack parseStack(String name, Logger logger) {
+    public static ItemStack parseStack(String name) {
         if (name.contains("{")) {
             int idx = name.indexOf('{');
-            ItemStack stack = parseStackNoNBT(name.substring(0, idx), logger);
+            ItemStack stack = parseStackNoNBT(name.substring(0, idx));
             if (stack.isEmpty()) {
                 return stack;
             }
@@ -90,7 +88,7 @@ public class Tools {
             return stack;
         } else if (name.contains("/")) {
             int idx = name.indexOf('/');
-            ItemStack stack = parseStackNoNBT(name.substring(0, idx), logger);
+            ItemStack stack = parseStackNoNBT(name.substring(0, idx));
             if (stack.isEmpty()) {
                 return stack;
             }
@@ -104,12 +102,12 @@ public class Tools {
             stack.setTag(nbt);
             return stack;
         } else {
-            return parseStackNoNBT(name, logger);
+            return parseStackNoNBT(name);
         }
     }
 
     @Nullable
-    public static ItemStack parseStack(JsonObject obj, Logger logger) {
+    public static ItemStack parseStack(JsonObject obj) {
         if (obj.has("empty")) {
             return ItemStack.EMPTY;
         }
@@ -140,7 +138,7 @@ public class Tools {
         return stack;
     }
 
-    private static ItemStack parseStackNoNBT(String name, Logger logger) {
+    private static ItemStack parseStackNoNBT(String name) {
         Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(name));
         if (item == null) {
             return ItemStack.EMPTY;

@@ -14,12 +14,14 @@ public class EventsConditions {
 
     private final Set<ResourceKey<Level>> dimensions;
     private final float random;
+    private final Set<String> phases;
 
     public static final EventsConditions DEFAULT = EventsConditions.create().build();
 
     enum Cmd {
         DIMENSION,
-        RANDOM
+        RANDOM,
+        PHASE
     }
 
     private static final Map<String, Cmd> CONDITIONS = new HashMap<>();
@@ -33,6 +35,7 @@ public class EventsConditions {
     private EventsConditions(Builder builder) {
         dimensions = new HashSet<>(builder.dimensions);
         random = builder.random;
+        phases = builder.phases;
     }
 
     public void validate() {
@@ -47,6 +50,10 @@ public class EventsConditions {
 
     public float getRandom() {
         return random;
+    }
+
+    public Set<String> getPhases() {
+        return phases;
     }
 
     public static Builder create() {
@@ -77,6 +84,16 @@ public class EventsConditions {
                 case RANDOM -> {
                     builder.random(object.get(attr).getAsFloat());
                 }
+                case PHASE -> {
+                    JsonElement value = object.get(attr);
+                    if (value.isJsonArray()) {
+                        for (JsonElement element : value.getAsJsonArray()) {
+                            builder.phase(element.getAsString());
+                        }
+                    } else {
+                        builder.phase(value.getAsString());
+                    }
+                }
             }
         }
     }
@@ -84,6 +101,7 @@ public class EventsConditions {
     public static class Builder {
         private final Set<ResourceKey<Level>> dimensions = new HashSet<>();
         private float random = -1;
+        private final Set<String> phases = new HashSet<>();
 
         public Builder dimensions(ResourceKey<Level>... dimensions) {
             Collections.addAll(this.dimensions, dimensions);
@@ -92,6 +110,11 @@ public class EventsConditions {
 
         public Builder random(float random) {
             this.random = random;
+            return this;
+        }
+
+        public Builder phase(String... phases) {
+            Collections.addAll(this.phases, phases);
             return this;
         }
 

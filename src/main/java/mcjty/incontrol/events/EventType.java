@@ -1,12 +1,17 @@
 package mcjty.incontrol.events;
 
-public record EventType(Type type, String extra) {
+import com.google.gson.JsonObject;
+
+public interface EventType {
+
+    Type type();
+    boolean parse(JsonObject object);
 
     enum Type {
         MOB_KILLED,
         BLOCK_BROKEN;
 
-        public static Type getType(String str) {
+        public static EventType.Type getType(String str) {
             return valueOf(str.toUpperCase());
         }
     }

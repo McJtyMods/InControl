@@ -1,17 +1,23 @@
 package mcjty.incontrol.events;
 
-import mcjty.incontrol.spawner.SpawnerSystem;
+import mcjty.incontrol.data.DataStorage;
+import mcjty.incontrol.data.PhaseTools;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraftforge.event.ForgeEventFactory;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.*;
+import java.util.function.BiPredicate;
 
 public class EventsSystem {
 
@@ -33,45 +39,68 @@ public class EventsSystem {
 
     public static void addRule(EventsRule rule) {
         rules.computeIfAbsent(rule.getEventType().type(), k -> new ArrayList<>()).add(rule);
-        if (rule.getEventType().type() == EventType.Type.MOB_KILLED) {
-            for (ResourceLocation mob : rule.getAction().mobid()) {
+        if (rule.getEventType() instanceof EventTypeMobKilled mobKilled) {
+            for (ResourceLocation mob : mobKilled.getMobs()) {
                 rulesByMob.computeIfAbsent(mob, k -> new ArrayList<>()).add(rule);
             }
         }
     }
 
-    public static void onEntityKilled(LivingEntity entity) {
+    public static void onEntityKilled(LivingDeathEvent event) {
+        Entity entity = event.getEntity();
         ResourceLocation key = ForgeRegistries.ENTITY_TYPES.getKey(entity.getType());
-        List<EventsRule> rules = EventsSystem.rulesByMob.get(key);
-        if (rules != null) {
-            for (EventsRule rule : rules) {
-                EventsConditions conditions = rule.getConditions();
-                float random = conditions.getRandom();
-                if (random >= 0 && rnd.nextFloat() >= random) {
+        List<EventsRule> eventsRules = rulesByMob.get(key);
+        if (eventsRules != null) {
+            for (EventsRule rule : eventsRules) {
+                EventTypeMobKilled eventType = (EventTypeMobKilled) rule.getEventType();
+                if (eventType.isPlayerKill() && !(event.getSource().getEntity() instanceof Player)) {
                     continue;
                 }
-                Set<ResourceKey<Level>> dimensions = conditions.getDimensions();
-                if (dimensions.isEmpty() || dimensions.contains(entity.level().dimension())) {
-                    SpawnEventAction action = rule.getAction();
-                    List<ResourceLocation> mobs = action.mobid();
-                    // Pick a random mob
-                    ResourceLocation mob = mobs.get(rnd.nextInt(mobs.size()));
-                    EntityType<?> entityType = ForgeRegistries.ENTITY_TYPES.getValue(mob);
-                    if (entityType != null) {
-                        // Get a random count
-                        int count = action.minamount() + rnd.nextInt(action.maxamount() - action.minamount() + 1);
-                        for (int i = 0 ; i < count ; i++) {
-                            for (int a = 0 ; a < action.attempts() ; a++) {
-                                BlockPos randomPos = getRandomPos(entity.blockPosition(), action.mindistance(), action.maxdistance());
-                                if (spawn(entityType, conditions, (ServerLevel) entity.level(), randomPos)) {
-                                    break;
-                                }
-                            }
-                        }
+                if (!checkConditions(rule, entity.level())) {
+                    continue;
+                }
+                doSpawnAction(rule, entity.blockPosition(), (ServerLevel) entity.level());
+            }
+        }
+    }
+
+    private static void doSpawnAction(EventsRule rule, BlockPos pos, ServerLevel level) {
+        SpawnEventAction action = rule.getAction();
+        List<ResourceLocation> mobs = action.mobid();
+        // Pick a random mob
+        ResourceLocation mob = mobs.get(rnd.nextInt(mobs.size()));
+        EntityType<?> entityType = ForgeRegistries.ENTITY_TYPES.getValue(mob);
+        if (entityType != null) {
+            // Get a random count
+            int count = action.minamount() + rnd.nextInt(action.maxamount() - action.minamount() + 1);
+            for (int i = 0; i < count; i++) {
+                for (int a = 0; a < action.attempts(); a++) {
+                    BlockPos randomPos = getRandomPos(pos, action.mindistance(), action.maxdistance());
+                    if (spawn(entityType, action, level, randomPos)) {
+                        break;
                     }
                 }
             }
         }
+    }
+
+    private static boolean checkConditions(EventsRule rule, Level level) {
+        EventsConditions conditions = rule.getConditions();
+        float random = conditions.getRandom();
+        if (random >= 0 && rnd.nextFloat() >= random) {
+            return false;
+        }
+        if (!conditions.getPhases().isEmpty()) {
+            Set<String> phases = DataStorage.getData(level).getPhases();
+            if (!phases.containsAll(conditions.getPhases())) {
+                return false;
+            }
+        }
+        Set<ResourceKey<Level>> dimensions = conditions.getDimensions();
+        if (!dimensions.isEmpty() && !dimensions.contains(level.dimension())) {
+            return false;
+        }
+        return true;
     }
 
     private static BlockPos getRandomPos(BlockPos center, float mindistance, float maxdistance) {
@@ -82,41 +111,33 @@ public class EventsSystem {
         return new BlockPos(x, center.getY(), z);
     }
 
-    private static boolean spawn(EntityType<?> entityType, EventsConditions conditions, ServerLevelAccessor world, BlockPos pos) {
+    private static boolean spawn(EntityType<?> entityType, SpawnEventAction action, ServerLevelAccessor world, BlockPos pos) {
         Entity entity = entityType.create(world.getLevel());
         Mob mobEntity = (Mob) entity;
         entity.moveTo(pos.getX(), pos.getY(), pos.getZ(), rnd.nextFloat() * 360.0F, 0.0F);
         busySpawning = mobEntity;
-        if (canSpawn(world.getLevel(), mobEntity, conditions) && isNotColliding(world.getLevel(), mobEntity, conditions)) {
+        if (canSpawn(world.getLevel(), mobEntity, action) && isNotColliding(world.getLevel(), mobEntity, action)) {
             ForgeEventFactory.onFinalizeSpawn(mobEntity, world, world.getCurrentDifficultyAt(pos), MobSpawnType.NATURAL, null, null);
             busySpawning = null;
             if (!((Mob) entity).isSpawnCancelled()) {
                 world.addFreshEntityWithPassengers(entity);
                 busySpawning = null;
                 return true;
-//                Statistics.addSpawnerStat(ruleNr);
-//                spawned++;
-//                if (groupCenterPos == null) {
-//                    groupCenterPos = pos;
-//                }
-//                if (spawned >= desiredAmount) {
-//                    return;
-//                }
             }
         }
         busySpawning = null;
         return false;
     }
 
-    private static boolean canSpawn(Level world, Mob mobEntity, EventsConditions conditions) {
-//        if (conditions.isNoRestrictions()) {
-//            return true;
-//        } else {
+    private static boolean canSpawn(Level world, Mob mobEntity, SpawnEventAction action) {
+        if (action.norestrictions()) {
+            return true;
+        } else {
             return ForgeEventFactory.checkSpawnPosition(mobEntity, (ServerLevelAccessor) world, MobSpawnType.NATURAL);
-//        }
+        }
     }
 
-    private static boolean isNotColliding(Level world, Mob mobEntity, EventsConditions conditions) {
+    private static boolean isNotColliding(Level world, Mob mobEntity, SpawnEventAction action) {
 //        if (conditions.isInLiquid()) {
 //            return world.containsAnyLiquid(mobEntity.getBoundingBox()) && world.isUnobstructed(mobEntity);
 //        } else if (conditions.isInWater()) {
@@ -129,4 +150,21 @@ public class EventsSystem {
     }
 
 
+    public static void onBlockBreak(BlockEvent.BreakEvent event) {
+        List<EventsRule> eventsRules = rules.get(EventType.Type.BLOCK_BROKEN);
+        if (eventsRules != null) {
+            for (EventsRule rule : eventsRules) {
+                EventTypeBlockBroken eventType = (EventTypeBlockBroken) rule.getEventType();
+                if (!checkConditions(rule, event.getPlayer().level())) {
+                    continue;
+                }
+                for (BiPredicate<LevelAccessor, BlockPos> predicate : eventType.getBlocks()) {
+                    if (predicate.test(event.getLevel(), event.getPos())) {
+                        doSpawnAction(rule, event.getPos(), (ServerLevel) event.getLevel());
+                    }
+                }
+
+            }
+        }
+    }
 }

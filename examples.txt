@@ -1,0 +1,59 @@
+[
+  {
+    "on": "mob_killed",
+    "parameters": {
+      "mob": "minecraft:cow",
+      "player": true
+    },
+    "conditions": {
+      "dimension": "minecraft:overworld",
+      "random": 0.3,
+      "phase": "after_10days"
+    },
+    "spawn": {
+      "mob": "minecraft:cow",
+      "mindistance": 3,
+      "maxdistance": 5,
+      "mincount": 2,
+      "maxcount": 3,
+      "attempts": 20,
+      "norestrictions": true
+    }
+  },
+  {
+    "on": "block_broken",
+    "parameters": {
+      "block": "minecraft:diamond_ore"
+    },
+    "conditions": {
+      "dimension": "minecraft:overworld",
+      "random": 0.3,
+      "phase": "after_10days"
+    },
+    "spawn": {
+      "mob": "minecraft:wither_skeleton",
+      "mindistance": 0,
+      "maxdistance": 2,
+      "attempts": 20,
+      "norestrictions": true
+    }
+  }
+]
+
+
+
+
+
+[
+  {
+    "dimension": "minecraft:overworld",
+    "name": "temple",
+    "type": "box",
+    "x": 0,
+    "y": 60,
+    "z": 0,
+    "dimx": 100,
+    "dimy": 100,
+    "dimz": 100
+  }
+]

@@ -141,6 +141,7 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
                 .attribute(Attribute.create(AUTUMN))
                 .attribute(Attribute.createMulti(MOB))
                 .attribute(Attribute.createMulti(MOD))
+                .attribute(Attribute.create(AREA))
                 .attribute(Attribute.createMulti(BLOCK))
                 .attribute(Attribute.create(BLOCKOFFSET))
                 .attribute(Attribute.createMulti(BIOME))
@@ -180,7 +181,7 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
     private Event.Result result;
 
     private SummonAidRule(AttributeMap map, Set<String> phases) {
-        super(InControl.setup.getLogger());
+        super();
         this.phases = phases;
         ruleEvaluator = new GenericRuleEvaluator(map);
         addActions(map, new ModRuleCompatibilityLayer());
