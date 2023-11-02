@@ -8,6 +8,7 @@ import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.compat.ModRuleCompatibilityLayer;
 import mcjty.incontrol.data.DataStorage;
+import mcjty.incontrol.events.EventsSystem;
 import mcjty.incontrol.spawner.SpawnerSystem;
 import mcjty.incontrol.tools.rules.CommonRuleEvaluator;
 import mcjty.incontrol.tools.rules.IEventQuery;
@@ -62,6 +63,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         map.consume(NOTCOLLIDING, this::addNotCollidingCheck);
         map.consume(SPAWNER, this::addSpawnerCheck);
         map.consume(INCONTROL, this::addInControlCheck);
+        map.consume(EVENTSPAWN, this::addEventSpawnCheck);
         map.consumeAsList(MOB, this::addMobsCheck);
         map.consume(PLAYER, this::addPlayerCheck);
         map.consume(REALPLAYER, this::addRealPlayerCheck);
@@ -149,6 +151,10 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
 
     private void addInControlCheck(boolean c) {
         checks.add((event, query) -> c == (SpawnerSystem.busySpawning != null));
+    }
+
+    private void addEventSpawnCheck(boolean c) {
+        checks.add((event, query) -> c == (EventsSystem.busySpawning != null));
     }
 
     private void addSpawnerCheck(boolean c) {

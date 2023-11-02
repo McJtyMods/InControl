@@ -3,6 +3,8 @@ package mcjty.incontrol;
 import mcjty.incontrol.commands.ModCommands;
 import mcjty.incontrol.data.DataStorage;
 import mcjty.incontrol.data.Statistics;
+import mcjty.incontrol.events.EventsParser;
+import mcjty.incontrol.events.EventsSystem;
 import mcjty.incontrol.rules.*;
 import mcjty.incontrol.spawner.SpawnerParser;
 import mcjty.incontrol.spawner.SpawnerSystem;
@@ -18,10 +20,7 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
-import net.minecraftforge.event.entity.living.LivingDropsEvent;
-import net.minecraftforge.event.entity.living.LivingExperienceDropEvent;
-import net.minecraftforge.event.entity.living.MobSpawnEvent;
-import net.minecraftforge.event.entity.living.ZombieEvent;
+import net.minecraftforge.event.entity.living.*;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.event.server.ServerAboutToStartEvent;
@@ -51,6 +50,7 @@ public class ForgeEventHandlers {
             loaded = true;
             RulesManager.readRules();
             SpawnerParser.readRules("spawner.json");
+            EventsParser.readRules("events.json");
         }
     }
 
@@ -463,6 +463,13 @@ public class ForgeEventHandlers {
                 return;
             }
             i++;
+        }
+    }
+
+    @SubscribeEvent
+    public void onEntityKilled(LivingDeathEvent event) {
+        if (!event.getEntity().level().isClientSide) {
+            EventsSystem.onEntityKilled(event.getEntity());
         }
     }
 }

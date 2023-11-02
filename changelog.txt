@@ -1,3 +1,7 @@
+Upcoming:
+- New events.json system that allows the player to spawn mobs whenever something happens. Still work in progress
+- New 'eventspawn' test that can be used to test for mobs spawned by the new events.json system
+
 1.20-9.0.4:
 - Fixed a timing error with loading rules at startup. They were loaded too late which causes onjoin rules to not work soon enough
 

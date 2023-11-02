@@ -7,6 +7,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.InControl;
+import mcjty.incontrol.events.EventsSystem;
 import mcjty.incontrol.rules.RulesManager;
 import mcjty.incontrol.spawner.SpawnerSystem;
 import net.minecraft.ChatFormatting;
@@ -34,6 +35,7 @@ public class CmdReload implements Command<CommandSourceStack> {
             try {
                 RulesManager.reloadRules();
                 SpawnerSystem.reloadRules();
+                EventsSystem.reloadRules();
             } catch (Exception e) {
                 InControl.setup.getLogger().error("Error reloading rules!", e);
                 player.sendSystemMessage(Component.literal(ChatFormatting.RED + "Error: " + e.getLocalizedMessage()));
