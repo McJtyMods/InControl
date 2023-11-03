@@ -1,7 +1,6 @@
 package mcjty.incontrol.events;
 
 import mcjty.incontrol.data.DataStorage;
-import mcjty.incontrol.data.PhaseTools;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -9,7 +8,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
@@ -17,7 +15,6 @@ import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.*;
-import java.util.function.BiPredicate;
 
 public class EventsSystem {
 
@@ -158,12 +155,9 @@ public class EventsSystem {
                 if (!checkConditions(rule, event.getPlayer().level())) {
                     continue;
                 }
-                for (BiPredicate<LevelAccessor, BlockPos> predicate : eventType.getBlocks()) {
-                    if (predicate.test(event.getLevel(), event.getPos())) {
-                        doSpawnAction(rule, event.getPos(), (ServerLevel) event.getLevel());
-                    }
+                if (eventType.getBlockTest().test(event.getLevel(), event.getPos())) {
+                    doSpawnAction(rule, event.getPos(), (ServerLevel) event.getLevel());
                 }
-
             }
         }
     }

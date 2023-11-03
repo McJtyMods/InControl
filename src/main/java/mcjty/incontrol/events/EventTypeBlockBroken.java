@@ -5,18 +5,13 @@ import com.google.gson.JsonObject;
 import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.tools.rules.CommonRuleEvaluator;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.registries.ForgeRegistries;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.BiPredicate;
 
 public class EventTypeBlockBroken implements EventType {
 
-    private List<BiPredicate<LevelAccessor, BlockPos>> blocks;
+    private BiPredicate<LevelAccessor, BlockPos> predicate;
 
     public EventTypeBlockBroken() {
     }
@@ -26,33 +21,18 @@ public class EventTypeBlockBroken implements EventType {
         return Type.BLOCK_BROKEN;
     }
 
-    public List<BiPredicate<LevelAccessor, BlockPos>> getBlocks() {
-        return blocks;
+    public BiPredicate<LevelAccessor, BlockPos> getBlockTest() {
+        return predicate;
     }
 
     @Override
     public boolean parse(JsonObject object) {
-        blocks = new ArrayList<>();
         JsonElement block = object.get("block");
-        if (block.isJsonArray()) {
-            for (JsonElement element : block.getAsJsonArray()) {
-                BiPredicate<LevelAccessor, BlockPos> predicate = CommonRuleEvaluator.parseBlock(element.getAsString());
-                if (predicate == null) {
-                    return false;
-                }
-                blocks.add(predicate);
-            }
-        } else {
-            BiPredicate<LevelAccessor, BlockPos> predicate = CommonRuleEvaluator.parseBlock(block.getAsString());
-            if (predicate == null) {
-                return false;
-            }
-            blocks.add(predicate);
-        }
-        if (blocks.isEmpty()) {
-            ErrorHandler.error("No blocks specified!");
+        if (block == null) {
+            ErrorHandler.error("Block broken event has no 'block' parameter!");
             return false;
         }
-        return true;
+        predicate = CommonRuleEvaluator.parseBlockJson(block);
+        return predicate != null;
     }
 }

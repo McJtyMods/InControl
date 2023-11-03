@@ -405,9 +405,14 @@ public class CommonRuleEvaluator {
     }
 
     @Nullable
-    public static BiPredicate<LevelAccessor, BlockPos> parseBlock(String json) {
+    private static BiPredicate<LevelAccessor, BlockPos> parseBlock(String json) {
         JsonParser parser = new JsonParser();
         JsonElement element = parser.parse(json);
+        return parseBlockJson(element);
+    }
+
+    @Nullable
+    public static BiPredicate<LevelAccessor, BlockPos> parseBlockJson(JsonElement element) {
         if (element.isJsonPrimitive()) {
             String blockname = element.getAsString();
             if (blockname.startsWith("tag:")) {
@@ -503,7 +508,7 @@ public class CommonRuleEvaluator {
 
             return test;
         } else {
-            ErrorHandler.error("Block description '" + json + "' is not valid!");
+            ErrorHandler.error("Block description is not valid!");
         }
         return null;
     }

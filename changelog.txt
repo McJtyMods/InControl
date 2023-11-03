@@ -5,6 +5,7 @@ Upcoming:
 - Added new 'setphase', 'clearphase', and 'togglephase' actions for effects, experience, leftclicks, rightclicks, harvests, and spawn events
 - New area system in 'areas.json'. This can be used by map makers to define predefined locations on the map. These areas can then be used in various rules. For example to create a peaceful area on a server
 - New 'area' test that can be used in nearly all rules (like spawn.json, loot.json, effects.json, ...). This will evaluate to true if the position is in the specified area
+- Added new /incontrol area command to show the current area
 
 1.20-9.0.4:
 - Fixed a timing error with loading rules at startup. They were loaded too late which causes onjoin rules to not work soon enough

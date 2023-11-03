@@ -166,8 +166,12 @@ public class EventsRule {
             ErrorHandler.error("Mindistance can't be larger than maxdistance for events rule!");
             return null;
         }
+        boolean norestrictions = false;
+        if (value.has("norestrictions")) {
+            norestrictions = value.getAsJsonPrimitive("norestrictions").getAsBoolean();
+        }
 
-        return new SpawnEventAction(mobs, attempts, mindistance, maxdistance, mincount, maxcount);
+        return new SpawnEventAction(mobs, attempts, mindistance, maxdistance, mincount, maxcount, norestrictions);
     }
 
     public EventType getEventType() {

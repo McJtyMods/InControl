@@ -31,17 +31,15 @@ public class CmdReload implements Command<CommandSourceStack> {
     public int run(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         ServerPlayer player = context.getSource().getPlayerOrException();
         ErrorHandler.clearErrors();
-        if (player != null) {
-            player.sendSystemMessage(Component.literal("Reloaded InControl rules"));
-            try {
-                RulesManager.reloadRules();
-                SpawnerSystem.reloadRules();
-                EventsSystem.reloadRules();
-                AreaSystem.reloadRules();
-            } catch (Exception e) {
-                InControl.setup.getLogger().error("Error reloading rules!", e);
-                player.sendSystemMessage(Component.literal(ChatFormatting.RED + "Error: " + e.getLocalizedMessage()));
-            }
+        player.sendSystemMessage(Component.literal("Reloaded InControl rules"));
+        try {
+            AreaSystem.reloadRules();
+            RulesManager.reloadRules();
+            SpawnerSystem.reloadRules();
+            EventsSystem.reloadRules();
+        } catch (Exception e) {
+            InControl.setup.getLogger().error("Error reloading rules!", e);
+            player.sendSystemMessage(Component.literal(ChatFormatting.RED + "Error: " + e.getLocalizedMessage()));
         }
         return 0;
     }

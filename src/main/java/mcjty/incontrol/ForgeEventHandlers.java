@@ -49,10 +49,10 @@ public class ForgeEventHandlers {
     public void onServerTick(TickEvent.ServerTickEvent event) {
         if (!loaded) {
             loaded = true;
+            AreaParser.readRules("areas.json");
             RulesManager.readRules();
             SpawnerParser.readRules("spawner.json");
             EventsParser.readRules("events.json");
-            AreaParser.readRules("areas.json");
         }
     }
 

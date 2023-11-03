@@ -21,6 +21,7 @@ public class ModCommands {
                         .then(CmdInfo.register(dispatcher))
                         .then(CmdDays.register(dispatcher))
                         .then(CmdPhases.register(dispatcher))
+                        .then(CmdArea.register(dispatcher))
         );
 
         dispatcher.register(Commands.literal("ctrl").redirect(commands));

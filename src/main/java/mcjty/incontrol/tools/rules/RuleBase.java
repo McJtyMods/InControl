@@ -178,31 +178,22 @@ public class RuleBase<T extends RuleBase.EventGetter> {
 
     private void addTogglePhaseAction(String phase) {
         actions.add(event -> {
-            Player player = event.getPlayer();
-            if (player != null) {
-                DataStorage data = DataStorage.getData(player.getCommandSenderWorld());
-                data.togglePhase(phase);
-            }
+            DataStorage data = DataStorage.getData(Tools.getServerWorld(event.getWorld()));
+            data.togglePhase(phase);
         });
     }
 
     private void addClearPhaseAction(String phase) {
         actions.add(event -> {
-            Player player = event.getPlayer();
-            if (player != null) {
-                DataStorage data = DataStorage.getData(player.getCommandSenderWorld());
-                data.setPhase(phase, false);
-            }
+            DataStorage data = DataStorage.getData(Tools.getServerWorld(event.getWorld()));
+            data.setPhase(phase, false);
         });
     }
 
     private void addSetPhaseAction(String phase) {
         actions.add(event -> {
-            Player player = event.getPlayer();
-            if (player != null) {
-                DataStorage data = DataStorage.getData(player.getCommandSenderWorld());
-                data.setPhase(phase, true);
-            }
+            DataStorage data = DataStorage.getData(Tools.getServerWorld(event.getWorld()));
+            data.setPhase(phase, true);
         });
     }
 
