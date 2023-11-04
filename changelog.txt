@@ -1,5 +1,6 @@
 Upcoming:
 - Fixed a problem with the 'spawner' test not working with 'when' equal to 'position' (default)
+- Fixed a timing isue with loading the rule files again. In some cases rules where not executing during initial chunk loading
 
 1.20-9.1.0:
 - New events.json system that allows the player to spawn mobs whenever something happens. Still work in progress

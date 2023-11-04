@@ -22,7 +22,8 @@ import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.*;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.level.BlockEvent;
-import net.minecraftforge.event.server.ServerAboutToStartEvent;
+import net.minecraftforge.event.level.LevelEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -37,12 +38,26 @@ public class ForgeEventHandlers {
 
     public static boolean debug = false;
 
+    public static boolean loaded = false;
+
     @SubscribeEvent
-    public void onServerAboutToStart(ServerAboutToStartEvent event) {
-        AreaSystem.reloadRules();
-        RulesManager.reloadRules();
-        SpawnerSystem.reloadRules();
-        EventsSystem.reloadRules();
+    public void onLevelLoad(LevelEvent.Load event) {
+        tryLoadRules();
+    }
+
+    private static void tryLoadRules() {
+        if (!loaded) {
+            loaded = true;
+            AreaSystem.reloadRules();
+            RulesManager.reloadRules();
+            SpawnerSystem.reloadRules();
+            EventsSystem.reloadRules();
+        }
+    }
+
+    @SubscribeEvent
+    public void onServerStopping(ServerStoppedEvent event) {
+        loaded = false;
     }
 
     @SubscribeEvent
