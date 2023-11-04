@@ -1,13 +1,11 @@
 package mcjty.incontrol;
 
-import mcjty.incontrol.areas.AreaParser;
+import mcjty.incontrol.areas.AreaSystem;
 import mcjty.incontrol.commands.ModCommands;
 import mcjty.incontrol.data.DataStorage;
 import mcjty.incontrol.data.Statistics;
-import mcjty.incontrol.events.EventsParser;
 import mcjty.incontrol.events.EventsSystem;
 import mcjty.incontrol.rules.*;
-import mcjty.incontrol.spawner.SpawnerParser;
 import mcjty.incontrol.spawner.SpawnerSystem;
 import mcjty.incontrol.tools.varia.Tools;
 import net.minecraft.core.BlockPos;
@@ -38,22 +36,13 @@ import java.util.function.Predicate;
 public class ForgeEventHandlers {
 
     public static boolean debug = false;
-    public static boolean loaded = false;
 
     @SubscribeEvent
     public void onServerAboutToStart(ServerAboutToStartEvent event) {
-        loaded = false;
-    }
-
-    @SubscribeEvent
-    public void onServerTick(TickEvent.ServerTickEvent event) {
-        if (!loaded) {
-            loaded = true;
-            AreaParser.readRules("areas.json");
-            RulesManager.readRules();
-            SpawnerParser.readRules("spawner.json");
-            EventsParser.readRules("events.json");
-        }
+        AreaSystem.reloadRules();
+        RulesManager.reloadRules();
+        SpawnerSystem.reloadRules();
+        EventsSystem.reloadRules();
     }
 
     @SubscribeEvent
