@@ -1,3 +1,6 @@
+Upcoming:
+- Fixed a problem with the 'spawner' test not working with 'when' equal to 'position' (default)
+
 1.20-9.1.0:
 - New events.json system that allows the player to spawn mobs whenever something happens. Still work in progress
 - Implemented 'mob_killed' and 'block_broken' events
