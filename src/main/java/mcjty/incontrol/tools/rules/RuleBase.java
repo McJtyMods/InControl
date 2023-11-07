@@ -590,7 +590,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         List<MobEffectInstance> effects = new ArrayList<>();
         for (String p : potions) {
             String[] splitted = StringUtils.split(p, ',');
-            if (splitted == null || splitted.length != 3) {
+            if (splitted == null || (splitted.length != 3 && splitted.length != 4)) {
                 ErrorHandler.error("Bad potion specifier '" + p + "'! Use <potion>,<duration>,<amplifier>");
                 continue;
             }
@@ -601,6 +601,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
             }
             int duration = 0;
             int amplifier = 0;
+            boolean hideParticles = false;
             try {
                 duration = Integer.parseInt(splitted[1]);
                 amplifier = Integer.parseInt(splitted[2]);
@@ -608,14 +609,21 @@ public class RuleBase<T extends RuleBase.EventGetter> {
                 ErrorHandler.error("Bad duration or amplifier integer for '" + p + "'!");
                 continue;
             }
-            effects.add(new MobEffectInstance(potion, duration, amplifier));
+            if (splitted.length == 4)
+            {
+                try {
+                    hideParticles = splitted[3].equalsIgnoreCase("true");
+                }
+                catch (Exception ignored){}
+            }
+            effects.add(new MobEffectInstance(potion, duration, amplifier, hideParticles, !hideParticles));
         }
         if (!effects.isEmpty()) {
             actions.add(event -> {
                 LivingEntity living = event.getEntityLiving();
                 if (living != null) {
                     for (MobEffectInstance effect : effects) {
-                        MobEffectInstance neweffect = new MobEffectInstance(effect.getEffect(), effect.getDuration(), effect.getAmplifier());
+                        MobEffectInstance neweffect = new MobEffectInstance(effect.getEffect(), effect.getDuration(), effect.getAmplifier(), effect.isAmbient(), effect.isVisible());
                         living.addEffect(neweffect);
                     }
                 }
