@@ -84,16 +84,7 @@ public class GenericAttributeMapFactory {
                         return map;
                     }
                 } else if (type == Type.DIMENSION_TYPE) {
-                    transformer = jsonElement -> {
-                        ResourceKey<Level> worldkey = ResourceKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(jsonElement.getAsString()));
-                        MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
-                        if (server != null) {
-                            if (!server.levelKeys().contains(worldkey)) {
-                                ErrorHandler.error("Dimension '" + jsonElement.getAsString() + "' not found!");
-                            }
-                        }
-                        return worldkey;
-                    };
+                    transformer = jsonElement -> ResourceKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(jsonElement.getAsString()));
                 } else {
                     transformer = e -> "INVALID";
                 }
