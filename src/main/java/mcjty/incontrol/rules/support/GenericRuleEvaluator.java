@@ -33,10 +33,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -165,7 +162,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
                 } else if (event instanceof MobSpawnEvent.PositionCheck checkSpawn) {
                     return checkSpawn.getSpawnType().equals(MobSpawnType.SPAWNER);
                 } else {
-                    return query.getEntity(event) instanceof Mob mob && mob.getSpawnType().equals(MobSpawnType.SPAWNER);
+                    return query.getEntity(event) instanceof Mob mob && Objects.equals(mob.getSpawnType(), MobSpawnType.SPAWNER);
                 }
             });
         } else {
@@ -175,7 +172,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
                 } else if (event instanceof MobSpawnEvent.PositionCheck checkSpawn) {
                     return !checkSpawn.getSpawnType().equals(MobSpawnType.SPAWNER);
                 } else {
-                    return query.getEntity(event) instanceof Mob mob && mob.getSpawnType().equals(MobSpawnType.SPAWNER);
+                    return !(query.getEntity(event) instanceof Mob mob && Objects.equals(mob.getSpawnType(), MobSpawnType.SPAWNER));
                 }
             });
         }
