@@ -165,7 +165,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
                 } else if (event instanceof MobSpawnEvent.PositionCheck checkSpawn) {
                     return checkSpawn.getSpawnType().equals(MobSpawnType.SPAWNER);
                 } else {
-                    return false;
+                    return query.getEntity(event) instanceof Mob mob && mob.getSpawnType().equals(MobSpawnType.SPAWNER);
                 }
             });
         } else {
@@ -175,7 +175,7 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
                 } else if (event instanceof MobSpawnEvent.PositionCheck checkSpawn) {
                     return !checkSpawn.getSpawnType().equals(MobSpawnType.SPAWNER);
                 } else {
-                    return false;
+                    return query.getEntity(event) instanceof Mob mob && mob.getSpawnType().equals(MobSpawnType.SPAWNER);
                 }
             });
         }
