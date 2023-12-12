@@ -1,3 +1,6 @@
+Upcoming:
+- The 'spawner' test will now also work for 'onjoin'
+
 1.20-9.1.2:
 - Removed invalid dimension test from the parser. That test would give errors when loading for dimensions that don't exist yet
 
