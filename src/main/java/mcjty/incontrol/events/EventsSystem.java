@@ -56,28 +56,43 @@ public class EventsSystem {
                 if (!checkConditions(rule, entity.level())) {
                     continue;
                 }
-                doSpawnAction(rule, entity.blockPosition(), (ServerLevel) entity.level());
+                doActions(rule, entity.blockPosition(), (ServerLevel) entity.level());
             }
         }
     }
 
+    private static void doActions(EventsRule rule, BlockPos pos, ServerLevel level) {
+        doSpawnAction(rule, pos, level);
+        doPhaseAction(rule, level);
+    }
+
     private static void doSpawnAction(EventsRule rule, BlockPos pos, ServerLevel level) {
-        SpawnEventAction action = rule.getAction();
-        List<ResourceLocation> mobs = action.mobid();
-        // Pick a random mob
-        ResourceLocation mob = mobs.get(rnd.nextInt(mobs.size()));
-        EntityType<?> entityType = ForgeRegistries.ENTITY_TYPES.getValue(mob);
-        if (entityType != null) {
-            // Get a random count
-            int count = action.minamount() + rnd.nextInt(action.maxamount() - action.minamount() + 1);
-            for (int i = 0; i < count; i++) {
-                for (int a = 0; a < action.attempts(); a++) {
-                    BlockPos randomPos = getRandomPos(pos, action.mindistance(), action.maxdistance());
-                    if (spawn(entityType, action, level, randomPos)) {
-                        break;
+        SpawnEventAction action = rule.getSpawnAction();
+        if (action != null) {
+            List<ResourceLocation> mobs = action.mobid();
+            // Pick a random mob
+            ResourceLocation mob = mobs.get(rnd.nextInt(mobs.size()));
+            EntityType<?> entityType = ForgeRegistries.ENTITY_TYPES.getValue(mob);
+            if (entityType != null) {
+                // Get a random count
+                int count = action.minamount() + rnd.nextInt(action.maxamount() - action.minamount() + 1);
+                for (int i = 0; i < count; i++) {
+                    for (int a = 0; a < action.attempts(); a++) {
+                        BlockPos randomPos = getRandomPos(pos, action.mindistance(), action.maxdistance());
+                        if (spawn(entityType, action, level, randomPos)) {
+                            break;
+                        }
                     }
                 }
             }
+        }
+    }
+
+    private static void doPhaseAction(EventsRule rule, Level level) {
+        PhaseAction action = rule.getPhaseAction();
+        if (action != null) {
+            DataStorage data = DataStorage.getData(level);
+            action.phases().forEach(p -> data.setPhase(p, action.set()));
         }
     }
 
@@ -156,7 +171,7 @@ public class EventsSystem {
                     continue;
                 }
                 if (eventType.getBlockTest().test(event.getLevel(), event.getPos())) {
-                    doSpawnAction(rule, event.getPos(), (ServerLevel) event.getLevel());
+                    doActions(rule, event.getPos(), (ServerLevel) event.getLevel());
                 }
             }
         }

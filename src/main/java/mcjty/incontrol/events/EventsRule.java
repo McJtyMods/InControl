@@ -17,11 +17,13 @@ public class EventsRule {
     private final EventType eventType;
     private final EventsConditions conditions;
     private final SpawnEventAction action;
+    private final PhaseAction phaseAction;
 
     enum Cmd {
         ON,
         PARAMETERS,
         SPAWN,
+        PHASE,
         CONDITIONS
     }
 
@@ -36,6 +38,7 @@ public class EventsRule {
         conditions = builder.conditions;
         action = builder.action;
         eventType = builder.eventType;
+        phaseAction = builder.phaseAction;
     }
 
 
@@ -68,10 +71,15 @@ public class EventsRule {
                 }
                 case SPAWN -> {
                     SpawnEventAction action = parseSpawnEventAction(object);
-                    if (action == null) {
-                        return;
+                    if (action != null) {
+                        builder.action(action);
                     }
-                    builder.action(action);
+                }
+                case PHASE -> {
+                    PhaseAction action = parsePhaseAction(object);
+                    if (action != null) {
+                        builder.action(action);
+                    }
                 }
                 case CONDITIONS -> {
                     JsonObject conditions = object.getAsJsonObject("conditions");
@@ -111,9 +119,51 @@ public class EventsRule {
     }
 
     @Nullable
+    private static PhaseAction parsePhaseAction(JsonObject object) {
+        JsonObject value = object.getAsJsonObject("phase");
+        if (value == null) {
+            // Valid
+            return null;
+        }
+        List<String> phases = new ArrayList<>();
+        JsonElement names = value.get("names");
+        if (names == null) {
+            ErrorHandler.error("No names specified for phase action!");
+            return null;
+        }
+        if (names.isJsonPrimitive()) {
+            if (!names.getAsJsonPrimitive().isString()) {
+                ErrorHandler.error("Invalid names specified for phase action!");
+                return null;
+            }
+            phases.add(names.getAsString());
+        } else {
+            for (JsonElement element : names.getAsJsonArray()) {
+                if (!element.isJsonPrimitive() || !element.getAsJsonPrimitive().isString()) {
+                    ErrorHandler.error("Invalid names specified for phase action!");
+                    return null;
+                }
+                phases.add(element.getAsString());
+            }
+        }
+
+        boolean set;
+        if (value.has("set")) {
+            set = value.getAsJsonPrimitive("set").getAsBoolean();
+        } else {
+            set = true;
+        }
+        return new PhaseAction(phases, set);
+    }
+
+    @Nullable
     private static SpawnEventAction parseSpawnEventAction(JsonObject object) {
         List<ResourceLocation> mobs = new ArrayList<>();
         JsonObject value = object.getAsJsonObject("spawn");
+        if (value == null) {
+            // Valid
+            return null;
+        }
         JsonElement mob = value.get("mob");
         if (mob.isJsonArray()) {
             for (JsonElement element : mob.getAsJsonArray()) {
@@ -182,14 +232,19 @@ public class EventsRule {
         return conditions;
     }
 
-    public SpawnEventAction getAction() {
+    public SpawnEventAction getSpawnAction() {
         return action;
+    }
+
+    public PhaseAction getPhaseAction() {
+        return phaseAction;
     }
 
     public static class Builder {
 
         private EventsConditions conditions = EventsConditions.DEFAULT;
         private SpawnEventAction action;
+        private PhaseAction phaseAction;
         private EventType eventType;
 
         public Builder conditions(EventsConditions conditions) {
@@ -199,6 +254,11 @@ public class EventsRule {
 
         public Builder action(SpawnEventAction action) {
             this.action = action;
+            return this;
+        }
+
+        public Builder action(PhaseAction phaseAction) {
+            this.phaseAction = phaseAction;
             return this;
         }
 

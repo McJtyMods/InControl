@@ -3,6 +3,9 @@ package mcjty.incontrol.data;
 import mcjty.incontrol.rules.PhaseRule;
 import mcjty.incontrol.rules.RulesManager;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
@@ -32,6 +35,10 @@ public class DataStorage extends SavedData {
             isDay = tag.getBoolean("isday");
         } else {
             isDay = null;
+        }
+        ListTag phasesTag = tag.getList("phases", Tag.TAG_STRING);
+        for (int i = 0 ; i < phasesTag.size() ; i++) {
+            phases.add(phasesTag.getString(i));
         }
     }
 
@@ -99,10 +106,12 @@ public class DataStorage extends SavedData {
         if (value) {
             if (phases.add(phase)) {
                 RulesManager.onPhaseChange();
+                setDirty();
             }
         } else {
             if (phases.remove(phase)) {
                 RulesManager.onPhaseChange();
+                setDirty();
             }
         }
     }
@@ -114,6 +123,7 @@ public class DataStorage extends SavedData {
             phases.add(phase);
         }
         RulesManager.onPhaseChange();
+        setDirty();
     }
 
     private void tickPhases(Level world) {
@@ -132,6 +142,7 @@ public class DataStorage extends SavedData {
         if (dirty) {
             // We need to reevaluate the rules
             RulesManager.onPhaseChange();
+            setDirty();
         }
     }
 
@@ -141,6 +152,11 @@ public class DataStorage extends SavedData {
         if (isDay != null) {
             tag.putBoolean("isday", isDay);
         }
+        ListTag phasesTag = new ListTag();
+        for (String phase : phases) {
+            phasesTag.add(StringTag.valueOf(phase));
+        }
+        tag.put("phases", phasesTag);
         return tag;
     }
 }
