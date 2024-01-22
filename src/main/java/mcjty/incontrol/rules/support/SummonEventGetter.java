@@ -1,4 +1,4 @@
-package mcjty.incontrol.rules;
+package mcjty.incontrol.rules.support;
 
 import mcjty.incontrol.tools.rules.RuleBase;
 import net.minecraft.world.entity.monster.Zombie;

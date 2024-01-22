@@ -6,7 +6,7 @@ import mcjty.incontrol.areas.AreaParser;
 import mcjty.incontrol.compat.EnigmaSupport;
 import mcjty.incontrol.compat.LostCitySupport;
 import mcjty.incontrol.events.EventsParser;
-import mcjty.incontrol.rules.RuleCache;
+import mcjty.incontrol.rules.support.RuleCache;
 import mcjty.incontrol.rules.RulesManager;
 import mcjty.incontrol.spawner.SpawnerParser;
 import net.minecraftforge.common.MinecraftForge;

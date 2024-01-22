@@ -6,6 +6,7 @@ import mcjty.incontrol.data.DataStorage;
 import mcjty.incontrol.data.Statistics;
 import mcjty.incontrol.events.EventsSystem;
 import mcjty.incontrol.rules.*;
+import mcjty.incontrol.rules.support.SpawnWhen;
 import mcjty.incontrol.spawner.SpawnerSystem;
 import mcjty.incontrol.tools.varia.Tools;
 import net.minecraft.core.BlockPos;
@@ -125,6 +126,8 @@ public class ForgeEventHandlers {
             if (event.level.dimension().equals(Level.OVERWORLD)) {
                 DataStorage.getData(event.level).tick(event.level);
             }
+
+            EventsSystem.onLevelTick(event);
         }
     }
 

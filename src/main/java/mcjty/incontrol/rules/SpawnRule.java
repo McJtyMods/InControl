@@ -5,6 +5,7 @@ import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.compat.ModRuleCompatibilityLayer;
 import mcjty.incontrol.data.PhaseTools;
 import mcjty.incontrol.rules.support.GenericRuleEvaluator;
+import mcjty.incontrol.rules.support.SpawnWhen;
 import mcjty.incontrol.tools.rules.IEventQuery;
 import mcjty.incontrol.tools.rules.IModRuleCompatibilityLayer;
 import mcjty.incontrol.tools.rules.RuleBase;
@@ -308,6 +309,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.createMulti(OFFHANDITEM))
                 .attribute(Attribute.createMulti(BOTHHANDSITEM))
 
+                .attribute(Attribute.create(ACTION_CUSTOMEVENT))
                 .attribute(Attribute.create(ACTION_CONTINUE))
                 .attribute(Attribute.create(ACTION_RESULT))
                 .attribute(Attribute.create(ACTION_MESSAGE))

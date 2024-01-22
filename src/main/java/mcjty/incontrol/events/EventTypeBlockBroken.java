@@ -3,7 +3,7 @@ package mcjty.incontrol.events;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import mcjty.incontrol.ErrorHandler;
-import mcjty.incontrol.tools.rules.CommonRuleEvaluator;
+import mcjty.incontrol.tools.rules.TestingBlockTools;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.LevelAccessor;
 
@@ -32,7 +32,7 @@ public class EventTypeBlockBroken implements EventType {
             ErrorHandler.error("Block broken event has no 'block' parameter!");
             return false;
         }
-        predicate = CommonRuleEvaluator.parseBlockJson(block);
+        predicate = TestingBlockTools.parseBlockJson(block);
         return predicate != null;
     }
 }

@@ -1,55 +1,139 @@
 package mcjty.incontrol.rules.support;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.InControl;
+import mcjty.incontrol.areas.Area;
+import mcjty.incontrol.areas.AreaSystem;
 import mcjty.incontrol.compat.ModRuleCompatibilityLayer;
 import mcjty.incontrol.data.DataStorage;
 import mcjty.incontrol.events.EventsSystem;
 import mcjty.incontrol.spawner.SpawnerSystem;
-import mcjty.incontrol.tools.rules.CommonRuleEvaluator;
+import mcjty.incontrol.tools.cache.StructureCache;
+import mcjty.incontrol.tools.rules.TestingBlockTools;
 import mcjty.incontrol.tools.rules.IEventQuery;
+import mcjty.incontrol.tools.rules.IModRuleCompatibilityLayer;
+import mcjty.incontrol.tools.rules.TestingTools;
 import mcjty.incontrol.tools.typed.AttributeMap;
 import mcjty.incontrol.tools.varia.Tools;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.players.PlayerList;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.*;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.common.BiomeManager;
 import net.minecraftforge.event.entity.living.MobSpawnEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.annotation.Nullable;
 import java.util.*;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Predicate;
+import java.util.function.*;
+import java.util.stream.Collectors;
 
 import static mcjty.incontrol.rules.support.RuleKeys.*;
 
 
-public class GenericRuleEvaluator extends CommonRuleEvaluator {
+public class GenericRuleEvaluator {
+
+    private static final Random rnd = new Random();
+    private final List<BiFunction<Object, IEventQuery, Boolean>> checks = new ArrayList<>();
+    private final IModRuleCompatibilityLayer compatibility;
 
     public GenericRuleEvaluator(AttributeMap map) {
-        super(map, new ModRuleCompatibilityLayer());
+        this.compatibility = new ModRuleCompatibilityLayer();
+        addChecks(map);
     }
 
-    @Override
-    protected void addChecks(AttributeMap map) {
-        super.addChecks(map);
+    private void addChecks(AttributeMap map) {
+        map.consume(RANDOM, this::addRandomCheck);
+        map.consumeAsList(DIMENSION, this::addDimensionCheck);
+        map.consumeAsList(DIMENSION_MOD, this::addDimensionModCheck);
+
+        map.consume(TIME, this::addTimeCheck);
+        map.consume(MINTIME, this::addMinTimeCheck);
+        map.consume(MAXTIME, this::addMaxTimeCheck);
+
+        map.consume(HEIGHT, this::addHeightCheck);
+        map.consume(MINHEIGHT, this::addMinHeightCheck);
+        map.consume(MAXHEIGHT, this::addMaxHeightCheck);
+
+        map.consume(WEATHER, this::addWeatherCheck);
+        map.consumeAsList(BIOMETAGS, this::addBiomeTagCheck);
+        map.consume(DIFFICULTY, this::addDifficultyCheck);
+        map.consume(MINSPAWNDIST, this::addMinSpawnDistCheck);
+        map.consume(MAXSPAWNDIST, this::addMaxSpawnDistCheck);
+
+        map.consume(LIGHT, this::addLightCheck);
+        map.consume(MINLIGHT, this::addMinLightCheck);
+        map.consume(MAXLIGHT, this::addMaxLightCheck);
+        map.consume(MINLIGHT_FULL, this::addMinLightCheckCorrect);
+        map.consume(MAXLIGHT_FULL, this::addMaxLightCheckCorrect);
+
+        map.consume(MINDIFFICULTY, this::addMinAdditionalDifficultyCheck);
+        map.consume(MAXDIFFICULTY, this::addMaxAdditionalDifficultyCheck);
+        map.consume(SEESKY, this::addSeeSkyCheck);
+        map.consume(SLIME, this::addSlimeChunkCheck);
+        map.consume(AREA, this::addAreaCheck);
+
+        map.consumeAsList(BLOCK, b1 -> addBlocksCheck(map, b1));
+        map.consumeAsList(BIOME, this::addBiomesCheck);
+        map.consumeAsList(BIOMETYPE, this::addBiomeTypesCheck);
+
+        map.consumeAsList(HELMET, this::addHelmetCheck);
+        map.consumeAsList(CHESTPLATE, this::addChestplateCheck);
+        map.consumeAsList(LEGGINGS, this::addLeggingsCheck);
+        map.consumeAsList(BOOTS, this::addBootsCheck);
+        map.consumeAsList(PLAYER_HELDITEM, items -> addHeldItemCheck(items, false));
+        map.consumeAsList(HELDITEM, items -> addHeldItemCheck(items, false));
+        map.consumeAsList(OFFHANDITEM, items -> addOffHandItemCheck(items, false));
+        map.consumeAsList(BOTHHANDSITEM, this::addBothHandsItemCheck);
+
+        map.consumeAsList(LACKHELMET, this::addHelmetCheckLacking);
+        map.consumeAsList(LACKCHESTPLATE, this::addChestplateCheckLacking);
+        map.consumeAsList(LACKLEGGINGS, this::addLeggingsCheckLacking);
+        map.consumeAsList(LACKBOOTS, this::addBootsCheckLacking);
+        map.consumeAsList(LACKHELDITEM, items -> addHeldItemCheck(items, true));
+        map.consumeAsList(LACKOFFHANDITEM, items -> addOffHandItemCheck(items, true));
+
+        map.consume(STRUCTURE, this::addStructureCheck);
+        map.consumeAsList(SCOREBOARDTAGS_ALL, this::addAllScoreboardTagsCheck);
+        map.consumeAsList(SCOREBOARDTAGS_ANY, this::addAnyScoreboardTagsCheck);
+
+        map.consume(STATE, this::addStateCheck);
+        map.consume(PSTATE, this::addPStateCheck);
+
+        map.consume(SUMMER, this::addSummerCheck);
+        map.consume(WINTER, this::addWinterCheck);
+        map.consume(SPRING, this::addSpringCheck);
+        map.consume(AUTUMN, this::addAutumnCheck);
+
+        map.consume(GAMESTAGE, this::addGameStageCheck);
+
+        map.consume(INCITY, this::addInCityCheck);
+        map.consume(INSTREET, this::addInStreetCheck);
+        map.consume(INSPHERE, this::addInSphereCheck);
+        map.consume(INBUILDING, this::addInBuildingCheck);
+        map.consumeAsList(BUILDING, this::addBuildingCheck);
+
+        map.consumeAsList(AMULET, v -> addBaubleCheck(v, compatibility::getAmuletSlots));
+        map.consumeAsList(RING, v -> addBaubleCheck(v, compatibility::getRingSlots));
+        map.consumeAsList(BELT, v -> addBaubleCheck(v, compatibility::getBeltSlots));
+        map.consumeAsList(TRINKET, v -> addBaubleCheck(v, compatibility::getTrinketSlots));
+        map.consumeAsList(HEAD, v -> addBaubleCheck(v, compatibility::getHeadSlots));
+        map.consumeAsList(BODY, v -> addBaubleCheck(v, compatibility::getBodySlots));
+        map.consumeAsList(CHARM, v -> addBaubleCheck(v, compatibility::getCharmSlots));
 
         map.consume(WHEN, b -> {});
         map.consume(PHASE, b -> {});
@@ -251,185 +335,653 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         }
     }
 
-    private static class CountInfo {
-        private int amount;
-        private Predicate<Integer> amountTester = null;
-        private List<EntityType> entityTypes = new ArrayList<>();
-        private boolean scaledPerPlayer = false;
-        private boolean scaledPerChunk = false;
-        private boolean passive = false;
-        private boolean hostile = false;
-        private boolean all = false;
-        private String mod = null;
-
-        public CountInfo() {
-        }
-
-        public CountInfo setAmount(int amount) {
-            this.amount = amount;
-            return this;
-        }
-
-        public CountInfo setAmountTester(Predicate<Integer> amountTester) {
-            this.amountTester = amountTester;
-            return this;
-        }
-
-        public CountInfo addEntityType(EntityType entityClass) {
-            if (entityClass != null) {
-                this.entityTypes.add(entityClass);
-            }
-            return this;
-        }
-
-        public CountInfo setScaledPerPlayer(boolean scaledPerPlayer) {
-            this.scaledPerPlayer = scaledPerPlayer;
-            return this;
-        }
-
-        public CountInfo setScaledPerChunk(boolean scaledPerChunk) {
-            this.scaledPerChunk = scaledPerChunk;
-            return this;
-        }
-
-        public CountInfo setAll(boolean all) {
-            this.all = all;
-            return this;
-        }
-
-        public CountInfo setPassive(boolean passive) {
-            this.passive = passive;
-            return this;
-        }
-
-        public CountInfo setHostile(boolean hostile) {
-            this.hostile = hostile;
-            return this;
-        }
-
-        public CountInfo setMod(String mod) {
-            this.mod = mod;
-            return this;
-        }
-
-        public String validate() {
-            if (scaledPerPlayer && scaledPerChunk) {
-                return "You cannot combine 'perchunk' and 'perplayer'!";
-            }
-            if (mod != null && !entityTypes.isEmpty()) {
-                return "You cannot combine 'mod' with 'mob'!";
-            }
-            if ((passive && hostile) || (all && passive) || (all && hostile)) {
-                return "Don't use all, passive, and hostile at the same time!";
-            }
-            if ((passive || hostile || all) && !entityTypes.isEmpty()) {
-                return "You cannot combine 'all', 'passive', or 'hostile' with 'mob'!";
-            }
-            return null;
-        }
+    private void addRandomCheck(float r) {
+        checks.add((event,query) -> rnd.nextFloat() < r);
     }
 
-    @Nullable
-    private CountInfo parseCountInfo(String json) {
-        JsonParser parser = new JsonParser();
-        JsonElement element = parser.parse(json);
-        if (element.isJsonPrimitive()) {
-            if (element.getAsJsonPrimitive().isString()) {
-                String[] splitted = StringUtils.split(element.getAsString(), ',');
-                int amount;
-                try {
-                    amount = Integer.parseInt(splitted[0]);
-                } catch (NumberFormatException e) {
-                    ErrorHandler.error("Bad amount for mincount '" + splitted[0] + "'!");
-                    return null;
+    private void addSeeSkyCheck(boolean seesky) {
+        if (seesky) {
+            checks.add((event,query) -> {
+                LevelAccessor world = query.getWorld(event);
+                BlockPos pos = query.getPos(event);
+                LevelChunk chunk = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
+                if (chunk == null || !chunk.getStatus().isOrAfter(ChunkStatus.FULL)) {
+                    return false;
                 }
-                EntityType entityClass = null;
-                if (splitted.length > 1) {
-                    entityClass = findEntity(splitted[1]);
-                    if (entityClass == null) {
-                        ErrorHandler.error("Cannot find mob '" + splitted[1] + "'!");
-                        return null;
-                    }
-                }
-                return new CountInfo().setAmount(amount).addEntityType(entityClass);
-            } else {
-                int amount = element.getAsInt();
-                return new CountInfo().setAmount(amount);
-            }
-        } else if (element.isJsonObject()) {
-            JsonObject obj = element.getAsJsonObject();
-            int amount = obj.get("amount").getAsInt();
-            CountInfo info = new CountInfo().setAmount(amount);
-            if (obj.has("mob")) {
-                if (obj.get("mob").isJsonPrimitive()) {
-                    String entity = obj.get("mob").getAsString();
-                    EntityType entityType = findEntity(entity);
-                    if (entityType == null) return null;
-                    info.addEntityType(entityType);
-                } else if (obj.get("mob").isJsonArray()) {
-                    JsonArray array = obj.get("mob").getAsJsonArray();
-                    for (JsonElement el : array) {
-                        String entity = el.getAsString();
-                        EntityType entityType = findEntity(entity);
-                        if (entityType == null) {
-                            ErrorHandler.error("Cannot find mob '" + entity + "'!");
-                            return null;
-                        }
-                        info.addEntityType(entityType);
-                    }
-                } else {
-                    ErrorHandler.error("Bad entity tag in count description!");
-                    return null;
-                }
-            }
-            if (obj.has("mod")) {
-                String mod = obj.get("mod").getAsString();
-                info.setMod(mod);
-            }
-            if (obj.has("perplayer")) {
-                info.setScaledPerPlayer(obj.get("perplayer").getAsBoolean());
-            }
-            if (obj.has("perchunk")) {
-                info.setScaledPerChunk(obj.get("perchunk").getAsBoolean());
-            }
-            if (obj.has("passive")) {
-                info.setPassive(obj.get("passive").getAsBoolean());
-            }
-            if (obj.has("all")) {
-                info.setAll(obj.get("all").getAsBoolean());
-            }
-            if (obj.has("hostile")) {
-                info.setHostile(obj.get("hostile").getAsBoolean());
-            }
-            String error = info.validate();
-            if (error != null) {
-                ErrorHandler.error(error);
-                return null;
-            }
-            return info;
+                return world.canSeeSkyFromBelowWater(pos);
+            });
         } else {
-            ErrorHandler.error("Count description '" + json + "' is not valid!");
-            return null;
+            checks.add((event,query) -> {
+                LevelAccessor world = query.getWorld(event);
+                BlockPos pos = query.getPos(event);
+                LevelChunk chunk = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
+                if (chunk == null || !chunk.getStatus().isOrAfter(ChunkStatus.FULL)) {
+                    return false;
+                }
+                return !world.canSeeSkyFromBelowWater(pos);
+            });
         }
     }
 
-    private EntityType findEntity(String id) {
-        EntityType<?> ee = ForgeRegistries.ENTITY_TYPES.getValue(new ResourceLocation(id));
-        if (ee == null) {
-            ErrorHandler.error("Unknown mob '" + id + "'!");
-            return null;
+    private void addSlimeChunkCheck(boolean slime) {
+        if (slime) {
+            checks.add((event,query) -> TestingTools.isSlimeChunk(new ChunkPos(query.getPos(event)), query.getWorld(event)));
+        } else {
+            checks.add((event,query) -> !TestingTools.isSlimeChunk(new ChunkPos(query.getPos(event)), query.getWorld(event)));
         }
-        return ee;
+    }
+
+    private void addDimensionCheck(List<ResourceKey<Level>> dimensions) {
+        if (dimensions.size() == 1) {
+            ResourceKey<Level> dim = dimensions.get(0);
+            checks.add((event,query) -> Tools.getDimensionKey(query.getWorld(event)).equals(dim));
+        } else {
+            Set<ResourceKey<Level>> dims = new HashSet<>(dimensions);
+            checks.add((event,query) -> dims.contains(Tools.getDimensionKey(query.getWorld(event))));
+        }
+    }
+
+    private void addDimensionModCheck(List<String> dimensions) {
+        if (dimensions.size() == 1) {
+            String dimmod = dimensions.get(0);
+            checks.add((event,query) -> Tools.getDimensionKey(query.getWorld(event)).location().getNamespace().equals(dimmod));
+        } else {
+            Set<String> dims = new HashSet<>(dimensions);
+            checks.add((event,query) -> dims.contains(Tools.getDimensionKey(query.getWorld(event)).location().getNamespace()));
+        }
+    }
+
+    private void addDifficultyCheck(String difficulty) {
+        difficulty = difficulty.toLowerCase();
+        Difficulty diff = Difficulty.byName(difficulty);
+        if (diff != null) {
+            Difficulty finalDiff = diff;
+            checks.add((event,query) -> query.getWorld(event).getDifficulty() == finalDiff);
+        } else {
+            ErrorHandler.error("Unknown difficulty '" + difficulty + "'! Use one of 'easy', 'normal', 'hard',  or 'peaceful'");
+        }
+    }
+
+    private void addWeatherCheck(String weather) {
+        boolean raining = weather.toLowerCase().startsWith("rain");
+        boolean thunder = weather.toLowerCase().startsWith("thunder");
+        if (raining) {
+            checks.add((event,query) -> {
+                LevelAccessor world = query.getWorld(event);
+                if (world instanceof Level level) {
+                    return level.isRaining();
+                } else {
+                    return false;
+                }
+            });
+        } else if (thunder) {
+            checks.add((event, query) -> {
+                LevelAccessor world = query.getWorld(event);
+                if (world instanceof Level level) {
+                    return level.isThundering();
+                } else {
+                    return false;
+                }
+            });
+        } else {
+            ErrorHandler.error("Unknown weather '" + weather + "'! Use 'rain' or 'thunder'");
+        }
+    }
+
+    private void addBiomeTagCheck(List<String> list) {
+        Set<TagKey<Biome>> tags = list.stream().map(s -> TagKey.create(Registries.BIOME, new ResourceLocation(s))).collect(Collectors.toSet());
+        if (tags.size() == 1) {
+            TagKey<Biome> key = tags.iterator().next();
+            checks.add((event,query) -> {
+                Holder<Biome> biome = query.getWorld(event).getBiome(query.getPos(event));
+                return biome.is(key);
+            });
+        } else {
+            checks.add((event, query) -> {
+                Holder<Biome> biome = query.getWorld(event).getBiome(query.getPos(event));
+                for (TagKey<Biome> tag : tags) {
+                    if (biome.is(tag)) {
+                        return true;
+                    }
+                }
+                return false;
+            });
+        }
+    }
+
+    private void addAllScoreboardTagsCheck(List<String> list) {
+        Set<String> tags = new HashSet<>(list);
+        checks.add((event,query) -> {
+            Entity entity = query.getEntity(event);
+            if (entity instanceof LivingEntity living) {
+                return living.getTags().containsAll(tags);
+            }
+            return false;
+        });
+    }
+
+    private void addAnyScoreboardTagsCheck(List<String> list) {
+        Set<String> tags = new HashSet<>(list);
+        checks.add((event,query) -> {
+            Entity entity = query.getEntity(event);
+            if (entity instanceof LivingEntity living) {
+                // Return true if entity.getTags() contains any key from tags
+                return living.getTags().stream().anyMatch(tags::contains);
+            }
+            return false;
+        });
+    }
+
+    private void addStructureCheck(String structure) {
+        checks.add((event,query) -> StructureCache.CACHE.isInStructure(query.getWorld(event), structure, query.getPos(event)));
+    }
+
+    private void addBiomesCheck(List<String> biomes) {
+        if (biomes.size() == 1) {
+            String biomename = biomes.get(0);
+            checks.add((event,query) -> {
+                Holder<Biome> biome = query.getWorld(event).getBiome(query.getPos(event));
+                return Tools.getBiomeId(biome).equals(biomename);
+            });
+        } else {
+            Set<String> biomenames = new HashSet<>(biomes);
+            checks.add((event,query) -> {
+                Holder<Biome> biome = query.getWorld(event).getBiome(query.getPos(event));
+                String biomeId = Tools.getBiomeId(biome);
+                return biomenames.contains(biomeId);
+            });
+        }
+    }
+
+    private void addBiomeTypesCheck(List<String> biomeTypes) {
+        Set<Biome> biomes = new HashSet<>();
+        biomeTypes.stream().map(s -> BiomeManager.BiomeType.valueOf(s.toUpperCase())).
+                forEach(type -> BiomeManager.getBiomes(type).forEach(t -> biomes.add(ForgeRegistries.BIOMES.getValue(t.getKey().registry()))));
+
+        checks.add((event,query) -> {
+            Holder<Biome> biome = query.getWorld(event).getBiome(query.getPos(event));
+            return biomes.contains(biome.value());
+        });
+    }
+
+    private void addBlocksCheck(AttributeMap map, List<String> blocks) {
+        BiFunction<Object, IEventQuery, BlockPos> posFunction;
+        String bo = map.consumeAndFetch(BLOCKOFFSET);
+        if (bo != null) {
+            posFunction = TestingBlockTools.parseOffset(bo);
+        } else {
+            posFunction = (event, query) -> query.getValidBlockPos(event);
+        }
+
+        if (blocks.size() == 1) {
+            String json = blocks.get(0);
+            BiPredicate<LevelAccessor, BlockPos> blockMatcher = TestingBlockTools.parseBlock(json);
+            if (blockMatcher != null) {
+                checks.add((event, query) -> {
+                    BlockPos pos = posFunction.apply(event, query);
+                    return pos != null && blockMatcher.test(query.getWorld(event), pos);
+                });
+            }
+        } else {
+            List<BiPredicate<LevelAccessor, BlockPos>> blockMatchers = new ArrayList<>();
+            for (String block : blocks) {
+                BiPredicate<LevelAccessor, BlockPos> blockMatcher = TestingBlockTools.parseBlock(block);
+                if (blockMatcher == null) {
+                    return;
+                }
+                blockMatchers.add(blockMatcher);
+            }
+
+            checks.add((event,query) -> {
+                BlockPos pos = posFunction.apply(event, query);
+                if (pos != null) {
+                    LevelAccessor world = query.getWorld(event);
+                    for (BiPredicate<LevelAccessor, BlockPos> matcher : blockMatchers) {
+                        if (matcher.test(world, pos)) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            });
+        }
+    }
+
+    private void addTimeCheck(String time) {
+        Predicate<Integer> expression = Tools.parseExpression(time);
+        if (expression != null) {
+            checks.add((event,query) -> {
+                LevelAccessor world = query.getWorld(event);
+                if (world instanceof Level) {
+                    long t = ((Level)world).getDayTime();
+                    return expression.test((int) (t % 24000));
+                } else {
+                    return false;
+                }
+            });
+        }
+    }
+
+    private void addMinTimeCheck(int mintime) {
+        checks.add((event,query) -> {
+            LevelAccessor world = query.getWorld(event);
+            if (world instanceof Level) {
+                long time = ((Level)world).getDayTime();
+                return (time % 24000) >= mintime;
+            } else {
+                return false;
+            }
+        });
+    }
+
+    private void addMaxTimeCheck(int maxtime) {
+        checks.add((event,query) -> {
+            LevelAccessor world = query.getWorld(event);
+            if (world instanceof Level) {
+                long time = ((Level)world).getDayTime();
+                return (time % 24000) <= maxtime;
+            } else {
+                return false;
+            }
+        });
+    }
+
+    private void addMinSpawnDistCheck(float v) {
+        final float d = v * v;
+        checks.add((event,query) -> {
+            BlockPos pos = query.getPos(event);
+            ServerLevel sw = Tools.getServerWorld(query.getWorld(event));
+            double sqdist = pos.distSqr(sw.getSharedSpawnPos());
+            return sqdist >= d;
+        });
+    }
+
+    private void addMaxSpawnDistCheck(float v) {
+        final float d = v * v;
+        checks.add((event,query) -> {
+            BlockPos pos = query.getPos(event);
+            ServerLevel sw = Tools.getServerWorld(query.getWorld(event));
+            double sqdist = pos.distSqr(sw.getSharedSpawnPos());
+            return sqdist <= d;
+        });
+    }
+
+    private void addLightCheck(String expression) {
+        Predicate<Integer> exp = Tools.parseExpression(expression);
+        if (exp != null) {
+            checks.add((event, query) -> {
+                BlockPos pos = query.getPos(event);
+                LevelAccessor world = query.getWorld(event);
+                LevelChunk chunk = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
+                if (chunk == null || !chunk.getStatus().isOrAfter(ChunkStatus.FULL)) {
+                    return false;
+                }
+                return exp.test(world.getBrightness(LightLayer.BLOCK, pos));
+            });
+        }
+    }
+
+    private void addMinLightCheck(int minlight) {
+        checks.add((event,query) -> {
+            BlockPos pos = query.getPos(event);
+            LevelAccessor world = query.getWorld(event);
+            LevelChunk chunk = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
+            if (chunk == null || !chunk.getStatus().isOrAfter(ChunkStatus.FULL)) {
+                return false;
+            }
+            return world.getBrightness(LightLayer.BLOCK, pos) >= minlight;
+        });
+    }
+
+    private void addMinLightCheckCorrect(int minlight) {
+        checks.add((event,query) -> {
+            BlockPos pos = query.getPos(event);
+            LevelAccessor world = query.getWorld(event);
+            LevelChunk chunk = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
+            if (chunk == null || !chunk.getStatus().isOrAfter(ChunkStatus.FULL)) {
+                return false;
+            }
+            return world.getMaxLocalRawBrightness(pos) >= minlight;
+        });
+    }
+
+    private void addMaxLightCheck(int maxlight) {
+        checks.add((event,query) -> {
+            BlockPos pos = query.getPos(event);
+            LevelAccessor world = query.getWorld(event);
+            LevelChunk chunk = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
+            if (chunk == null || !chunk.getStatus().isOrAfter(ChunkStatus.FULL)) {
+                return false;
+            }
+            return world.getBrightness(LightLayer.BLOCK, pos) <= maxlight;
+        });
+    }
+
+    private void addMaxLightCheckCorrect(int maxlight) {
+        checks.add((event,query) -> {
+            BlockPos pos = query.getPos(event);
+            LevelAccessor world = query.getWorld(event);
+            LevelChunk chunk = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
+            if (chunk == null || !chunk.getStatus().isOrAfter(ChunkStatus.FULL)) {
+                return false;
+            }
+            return world.getMaxLocalRawBrightness(pos) <= maxlight;
+        });
+    }
+
+    private void addMinAdditionalDifficultyCheck(Float mindifficulty) {
+        checks.add((event,query) -> query.getWorld(event).getCurrentDifficultyAt(query.getPos(event)).getEffectiveDifficulty() >= mindifficulty);
+    }
+
+    private void addMaxAdditionalDifficultyCheck(Float maxdifficulty) {
+        checks.add((event,query) -> query.getWorld(event).getCurrentDifficultyAt(query.getPos(event)).getEffectiveDifficulty() <= maxdifficulty);
+    }
+
+    private void addHeightCheck(String input) {
+        Predicate<Integer> expression = Tools.parseExpression(input);
+        if (expression != null) {
+            checks.add((event, query) -> expression.test(query.getY(event)));
+        }
+    }
+
+    private void addMaxHeightCheck(int maxheight) {
+        checks.add((event,query) -> query.getY(event) <= maxheight);
+    }
+
+    private void addMinHeightCheck(int minheight) {
+        checks.add((event,query) -> query.getY(event) >= minheight);
+    }
+
+    private void addHelmetCheck(List<String> itemList) {
+        List<Predicate<ItemStack>> items = TestingTools.getItems(itemList);
+        addArmorCheck(items, EquipmentSlot.HEAD, false);
+    }
+
+    private void addChestplateCheck(List<String> itemList) {
+        List<Predicate<ItemStack>> items = TestingTools.getItems(itemList);
+        addArmorCheck(items, EquipmentSlot.CHEST, false);
+    }
+
+    private void addLeggingsCheck(List<String> itemList) {
+        List<Predicate<ItemStack>> items = TestingTools.getItems(itemList);
+        addArmorCheck(items, EquipmentSlot.LEGS, false);
+    }
+
+    private void addBootsCheck(List<String> itemList) {
+        List<Predicate<ItemStack>> items = TestingTools.getItems(itemList);
+        addArmorCheck(items, EquipmentSlot.FEET, false);
+    }
+
+    private void addHelmetCheckLacking(List<String> itemList) {
+        List<Predicate<ItemStack>> items = TestingTools.getItems(itemList);
+        addArmorCheck(items, EquipmentSlot.HEAD, true);
+    }
+
+    private void addChestplateCheckLacking(List<String> itemList) {
+        List<Predicate<ItemStack>> items = TestingTools.getItems(itemList);
+        addArmorCheck(items, EquipmentSlot.CHEST, true);
+    }
+
+    private void addLeggingsCheckLacking(List<String> itemList) {
+        List<Predicate<ItemStack>> items = TestingTools.getItems(itemList);
+        addArmorCheck(items, EquipmentSlot.LEGS, true);
+    }
+
+    private void addBootsCheckLacking(List<String> itemList) {
+        List<Predicate<ItemStack>> items = TestingTools.getItems(itemList);
+        addArmorCheck(items, EquipmentSlot.FEET, true);
+    }
+
+    private void addArmorCheck(List<Predicate<ItemStack>> items, EquipmentSlot slot, boolean lacking) {
+        checks.add((event,query) -> {
+            Player player = query.getPlayer(event);
+            if (player != null) {
+                ItemStack armorItem = player.getItemBySlot(slot);
+                if (!armorItem.isEmpty()) {
+                    for (Predicate<ItemStack> item : items) {
+                        if (item.test(armorItem)) {
+                            return !lacking;
+                        }
+                    }
+                }
+            }
+            return lacking;
+        });
+    }
+
+    private void addHeldItemCheck(List<String> itemList, boolean lacking) {
+        List<Predicate<ItemStack>> items = TestingTools.getItems(itemList);
+        checks.add((event,query) -> {
+            Player player = query.getPlayer(event);
+            if (player != null) {
+                ItemStack mainhand = player.getMainHandItem();
+                if (!mainhand.isEmpty()) {
+                    for (Predicate<ItemStack> item : items) {
+                        if (item.test(mainhand)) {
+                            return !lacking;
+                        }
+                    }
+                }
+            }
+            return lacking;
+        });
+    }
+
+    private void addOffHandItemCheck(List<String> itemList, boolean lacking) {
+        List<Predicate<ItemStack>> items = TestingTools.getItems(itemList);
+        checks.add((event,query) -> {
+            Player player = query.getPlayer(event);
+            if (player != null) {
+                ItemStack offhand = player.getOffhandItem();
+                if (!offhand.isEmpty()) {
+                    for (Predicate<ItemStack> item : items) {
+                        if (item.test(offhand)) {
+                            return !lacking;
+                        }
+                    }
+                }
+            }
+            return lacking;
+        });
+    }
+
+    private void addBothHandsItemCheck(List<String> itemList) {
+        List<Predicate<ItemStack>> items = TestingTools.getItems(itemList);
+        checks.add((event,query) -> {
+            Player player = query.getPlayer(event);
+            if (player != null) {
+                ItemStack offhand = player.getOffhandItem();
+                if (!offhand.isEmpty()) {
+                    for (Predicate<ItemStack> item : items) {
+                        if (item.test(offhand)) {
+                            return true;
+                        }
+                    }
+                }
+                ItemStack mainhand = player.getMainHandItem();
+                if (!mainhand.isEmpty()) {
+                    for (Predicate<ItemStack> item : items) {
+                        if (item.test(mainhand)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        });
+    }
+
+    private void addStateCheck(String s) {
+        if (!compatibility.hasEnigmaScript()) {
+            InControl.setup.getLogger().warn("EnigmaScript is missing: this test cannot work!");
+            return;
+        }
+        String[] split = StringUtils.split(s, '=');
+        String state;
+        String value;
+        try {
+            state = split[0];
+            value = split[1];
+        } catch (Exception e) {
+            ErrorHandler.error("Bad state=value specifier '" + s + "'!");
+            return;
+        }
+
+        checks.add((event, query) -> value.equals(compatibility.getState(query.getWorld(event), state)));
+    }
+
+    private void addPStateCheck(String s) {
+        if (!compatibility.hasEnigmaScript()) {
+            InControl.setup.getLogger().warn("EnigmaScript is missing: this test cannot work!");
+            return;
+        }
+        String[] split = StringUtils.split(s, '=');
+        String state;
+        String value;
+        try {
+            state = split[0];
+            value = split[1];
+        } catch (Exception e) {
+            ErrorHandler.error("Bad state=value specifier '" + s + "'!");
+            return;
+        }
+
+        checks.add((event, query) -> value.equals(compatibility.getPlayerState(query.getPlayer(event), state)));
+    }
+
+    private void addSummerCheck(Boolean s) {
+        if (!compatibility.hasSereneSeasons()) {
+            InControl.setup.getLogger().warn("Serene Seasons is missing: this test cannot work!");
+            return;
+        }
+        checks.add((event, query) -> s == compatibility.isSummer(Tools.getServerWorld(query.getWorld(event))));
+    }
+
+    private void addWinterCheck(Boolean s) {
+        if (!compatibility.hasSereneSeasons()) {
+            InControl.setup.getLogger().warn("Serene Seasons is missing: this test cannot work!");
+            return;
+        }
+        checks.add((event, query) -> s == compatibility.isWinter(Tools.getServerWorld(query.getWorld(event))));
+    }
+
+    private void addSpringCheck(Boolean s) {
+        if (!compatibility.hasSereneSeasons()) {
+            InControl.setup.getLogger().warn("Serene Seasons is missing: this test cannot work!");
+            return;
+        }
+        checks.add((event, query) -> s == compatibility.isSpring(Tools.getServerWorld(query.getWorld(event))));
+    }
+
+    private void addAutumnCheck(Boolean s) {
+        if (!compatibility.hasSereneSeasons()) {
+            InControl.setup.getLogger().warn("Serene Seasons is missing: this test cannot work!");
+            return;
+        }
+        checks.add((event, query) -> s == compatibility.isAutumn(Tools.getServerWorld(query.getWorld(event))));
+    }
+
+    private void addGameStageCheck(String stage) {
+        if (!compatibility.hasGameStages()) {
+            InControl.setup.getLogger().warn("Game Stages is missing: the 'gamestage' test cannot work!");
+            return;
+        }
+        checks.add((event, query) -> compatibility.hasGameStage(query.getPlayer(event), stage));
+    }
+
+    private void addInCityCheck(boolean incity) {
+        if (!compatibility.hasLostCities()) {
+            InControl.setup.getLogger().warn("The Lost Cities is missing: the 'incity' test cannot work!");
+            return;
+        }
+        if (incity) {
+            checks.add((event,query) -> compatibility.isCity(query, event));
+        } else {
+            checks.add((event,query) -> !compatibility.isCity(query, event));
+        }
+    }
+
+    private void addInStreetCheck(boolean instreet) {
+        if (!compatibility.hasLostCities()) {
+            InControl.setup.getLogger().warn("The Lost Cities is missing: the 'instreet' test cannot work!");
+            return;
+        }
+        if (instreet) {
+            checks.add((event,query) -> compatibility.isStreet(query, event));
+        } else {
+            checks.add((event,query) -> !compatibility.isStreet(query, event));
+        }
+    }
+
+    private void addInSphereCheck(boolean insphere) {
+        if (!compatibility.hasLostCities()) {
+            InControl.setup.getLogger().warn("The Lost Cities is missing: the 'insphere' test cannot work!");
+            return;
+        }
+        if (insphere) {
+            checks.add((event,query) -> compatibility.inSphere(query, event));
+        } else {
+            checks.add((event,query) -> !compatibility.inSphere(query, event));
+        }
+    }
+
+    private void addInBuildingCheck(boolean inbuilding) {
+        if (!compatibility.hasLostCities()) {
+            InControl.setup.getLogger().warn("The Lost Cities is missing: the 'inbuilding' test cannot work!");
+            return;
+        }
+        if (inbuilding) {
+            checks.add((event,query) -> compatibility.isBuilding(query, event));
+        } else {
+            checks.add((event,query) -> !compatibility.isBuilding(query, event));
+        }
+    }
+
+    private void addBuildingCheck(List<String> buildings) {
+        if (!compatibility.hasLostCities()) {
+            InControl.setup.getLogger().warn("The Lost Cities is missing: the 'building' test cannot work!");
+            return;
+        }
+        Set<String> buildingSet = new HashSet<>(buildings);
+        checks.add((event,query) -> {
+            String building = compatibility.getBuilding(query, event);
+            return building != null && buildingSet.contains(building);
+        });
+    }
+
+    private void addBaubleCheck(List<String> itemList, Supplier<int[]> slotSupplier) {
+        if (!compatibility.hasBaubles()) {
+            InControl.setup.getLogger().warn("Baubles is missing: this test cannot work!");
+            return;
+        }
+
+        List<Predicate<ItemStack>> items = TestingTools.getItems(itemList);
+        checks.add((event,query) -> {
+            Player player = query.getPlayer(event);
+            if (player != null) {
+                for (int slot : slotSupplier.get()) {
+                    ItemStack stack = compatibility.getBaubleStack(player, slot);
+                    if (!stack.isEmpty()) {
+                        for (Predicate<ItemStack> item : items) {
+                            if (item.test(stack)) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        });
     }
 
     private void addMinCountCheck(String json) {
-        CountInfo info = parseCountInfo(json);
+        CountInfo info = CountInfo.parseCountInfo(json);
         if (info == null) {
             return;
         }
 
-        BiFunction<LevelAccessor, Entity, Integer> counter = getCounter(info);
-        Function<LevelAccessor, Integer> amountAdjuster = getAmountAdjuster(info, info.amount);
+        BiFunction<LevelAccessor, Entity, Integer> counter = info.getCounter();
+        Function<LevelAccessor, Integer> amountAdjuster = CountInfo.getAmountAdjuster(info, info.amount);
 
         checks.add((event, query) -> {
             LevelAccessor world = query.getWorld(event);
@@ -441,10 +993,10 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
     }
 
     private void addMaxCountCheck(String json) {
-        CountInfo info = parseCountInfo(json);
+        CountInfo info = CountInfo.parseCountInfo(json);
 
-        BiFunction<LevelAccessor, Entity, Integer> counter = getCounter(info);
-        Function<LevelAccessor, Integer> amountAdjuster = getAmountAdjuster(info, info.amount);
+        BiFunction<LevelAccessor, Entity, Integer> counter = info.getCounter();
+        Function<LevelAccessor, Integer> amountAdjuster = CountInfo.getAmountAdjuster(info, info.amount);
 
         checks.add((event, query) -> {
             LevelAccessor world = query.getWorld(event);
@@ -508,59 +1060,6 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         });
     }
 
-    private Function<LevelAccessor, Integer> getAmountAdjuster(CountInfo info, int infoAmount) {
-        Function<LevelAccessor, Integer> amountAdjuster;
-        if (info.scaledPerChunk) {
-            amountAdjuster = world -> infoAmount * InControl.setup.cache.getValidSpawnChunks(world) / 289;
-        } else if (info.scaledPerPlayer) {
-            amountAdjuster = world -> infoAmount * InControl.setup.cache.getValidPlayers(world);
-        } else {
-            amountAdjuster = world -> infoAmount;
-        }
-        return amountAdjuster;
-    }
-
-    private BiFunction<LevelAccessor, Entity, Integer> getCounter(CountInfo info) {
-        BiFunction<LevelAccessor, Entity, Integer> counter;
-        if (info.mod != null) {
-            if (info.hostile) {
-                counter = (world, entity) -> InControl.setup.cache.getCountPerModHostile(world, info.mod);
-            } else if (info.passive) {
-                counter = (world, entity) -> InControl.setup.cache.getCountPerModPassive(world, info.mod);
-            } else if (info.all) {
-                counter = (world, entity) -> InControl.setup.cache.getCountPerModAll(world, info.mod);
-            } else {
-                counter = (world, entity) -> InControl.setup.cache.getCountPerMod(world, info.mod);
-            }
-        } else if (info.hostile) {
-            counter = (world, entity) -> InControl.setup.cache.getCountHostile(world);
-        } else if (info.passive) {
-            counter = (world, entity) -> InControl.setup.cache.getCountPassive(world);
-        } else if (info.all) {
-            counter = (world, entity) -> InControl.setup.cache.getCountAll(world);
-        } else {
-            List<EntityType> infoEntityType = info.entityTypes;
-            if (infoEntityType.isEmpty()) {
-                counter = (world, entity) -> InControl.setup.cache.getCount(world, entity.getType());
-            } else if (infoEntityType.size() == 1) {
-                counter = (world, entity) -> {
-                    EntityType entityType = infoEntityType.get(0);
-                    return InControl.setup.cache.getCount(world, entityType);
-                };
-            } else {
-                counter = (world, entity) -> {
-                    int amount = 0;
-                    for (EntityType cls : infoEntityType) {
-                        amount += InControl.setup.cache.getCount(world, cls);
-                    }
-                    return amount;
-                };
-            }
-        }
-        return counter;
-    }
-
-
     private void addPlayerCheck(boolean asPlayer) {
         if (asPlayer) {
             checks.add((event, query) -> query.getAttacker(event) instanceof Player);
@@ -569,48 +1068,19 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         }
     }
 
-
-    private boolean isFakePlayer(Entity entity) {
-        if (!(entity instanceof Player)) {
-            return false;
-        }
-
-        if (entity instanceof FakePlayer) {
-            return true;
-        }
-
-        // If this returns false it is still possible we have a fake player. Try to find the player in the list of online players
-        PlayerList playerList = entity.getCommandSenderWorld().getServer().getPlayerList();
-        ServerPlayer playerByUUID = playerList.getPlayer(((Player) entity).getGameProfile().getId());
-        if (playerByUUID == null) {
-            // The player isn't online. Then it can't be real
-            return true;
-        }
-
-        // The player is in the list. But is it this player?
-        return entity != playerByUUID;
-    }
-
-    private boolean isRealPlayer(Entity entity) {
-        if (!(entity instanceof Player)) {
-            return false;
-        }
-        return !isFakePlayer(entity);
-    }
-
     private void addRealPlayerCheck(boolean asPlayer) {
         if (asPlayer) {
-            checks.add((event, query) -> query.getAttacker(event) == null ? false : isRealPlayer(query.getAttacker(event)));
+            checks.add((event, query) -> query.getAttacker(event) == null ? false : TestingTools.isRealPlayer(query.getAttacker(event)));
         } else {
-            checks.add((event, query) -> query.getAttacker(event) == null ? true : !isRealPlayer(query.getAttacker(event)));
+            checks.add((event, query) -> query.getAttacker(event) == null ? true : !TestingTools.isRealPlayer(query.getAttacker(event)));
         }
     }
 
     private void addFakePlayerCheck(boolean asPlayer) {
         if (asPlayer) {
-            checks.add((event, query) -> query.getAttacker(event) == null ? false : isFakePlayer(query.getAttacker(event)));
+            checks.add((event, query) -> query.getAttacker(event) == null ? false : TestingTools.isFakePlayer(query.getAttacker(event)));
         } else {
-            checks.add((event, query) -> query.getAttacker(event) == null ? true : !isFakePlayer(query.getAttacker(event)));
+            checks.add((event, query) -> query.getAttacker(event) == null ? true : !TestingTools.isFakePlayer(query.getAttacker(event)));
         }
     }
 
@@ -656,8 +1126,23 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         });
     }
 
+    private void addAreaCheck(String areaName) {
+        Area area = AreaSystem.getArea(areaName);
+        if (area == null) {
+            ErrorHandler.error("Cannot find area '" + areaName + "'!");
+        } else {
+            checks.add((event, query) -> {
+                LevelAccessor world = query.getWorld(event);
+                ResourceKey<Level> key = Tools.getDimensionKey(world);
+                if (area.dimension() == key) {
+                    BlockPos pos = query.getPos(event);
+                    return area.isInArea(pos.getX(), pos.getY(), pos.getZ());
+                }
+                return false;
+            });
+        }
+    }
 
-    @Override
     public boolean match(Object event, IEventQuery query) {
         for (BiFunction<Object, IEventQuery, Boolean> rule : checks) {
             if (!rule.apply(event, query)) {
@@ -666,5 +1151,4 @@ public class GenericRuleEvaluator extends CommonRuleEvaluator {
         }
         return true;
     }
-
 }

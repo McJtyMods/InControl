@@ -135,6 +135,7 @@ public class ExperienceRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.createMulti(OFFHANDITEM))
                 .attribute(Attribute.createMulti(BOTHHANDSITEM))
 
+                .attribute(Attribute.create(ACTION_CUSTOMEVENT))
                 .attribute(Attribute.create(ACTION_RESULT))
                 .attribute(Attribute.create(ACTION_SETXP))
                 .attribute(Attribute.create(ACTION_ADDXP))

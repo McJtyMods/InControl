@@ -15,7 +15,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.LevelAccessor;
 
 import static mcjty.incontrol.rules.support.RuleKeys.*;
-import static mcjty.incontrol.tools.rules.CommonRuleKeys.*;
 
 public class PhaseRule {
 

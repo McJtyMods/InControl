@@ -9,7 +9,8 @@ public interface EventType {
 
     enum Type {
         MOB_KILLED,
-        BLOCK_BROKEN;
+        BLOCK_BROKEN,
+        CUSTOM;
 
         public static EventType.Type getType(String str) {
             return valueOf(str.toUpperCase());

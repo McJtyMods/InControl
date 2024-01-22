@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.data.DataStorage;
+import mcjty.incontrol.rules.support.SpawnWhen;
 import mcjty.incontrol.tools.varia.JSonTools;
 import net.minecraft.world.level.Level;
 

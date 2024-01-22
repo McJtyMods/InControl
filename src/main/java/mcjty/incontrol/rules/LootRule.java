@@ -7,10 +7,10 @@ import mcjty.incontrol.InControl;
 import mcjty.incontrol.compat.ModRuleCompatibilityLayer;
 import mcjty.incontrol.data.PhaseTools;
 import mcjty.incontrol.rules.support.GenericRuleEvaluator;
-import mcjty.incontrol.tools.rules.CommonRuleEvaluator;
 import mcjty.incontrol.tools.rules.IEventQuery;
 import mcjty.incontrol.tools.rules.IModRuleCompatibilityLayer;
 import mcjty.incontrol.tools.rules.RuleBase;
+import mcjty.incontrol.tools.rules.TestingTools;
 import mcjty.incontrol.tools.typed.Attribute;
 import mcjty.incontrol.tools.typed.AttributeMap;
 import mcjty.incontrol.tools.typed.GenericAttributeMapFactory;
@@ -168,6 +168,7 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.createMulti(OFFHANDITEM))
                 .attribute(Attribute.createMulti(BOTHHANDSITEM))
 
+                .attribute(Attribute.create(ACTION_CUSTOMEVENT))
                 .attribute(Attribute.create(ACTION_ITEMNBT))
                 .attribute(Attribute.create(ACTION_ITEMCOUNT))
                 .attribute(Attribute.createMulti(ACTION_ITEM))
@@ -309,7 +310,7 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
     }
 
     private void removeItem(List<String> itemList) {
-        toRemoveItems.addAll(CommonRuleEvaluator.getItems(itemList));
+        toRemoveItems.addAll(TestingTools.getItems(itemList));
     }
 
     public boolean match(LivingDropsEvent event) {

@@ -1,6 +1,7 @@
 Upcoming:
 - Manually set phases will now also be persisted when the world is reloaded
 - New type of event action called 'phase'. This will allow you to set or clear a phase when an event happens. For example, you can now set a phase when a player kills a mob and then use that phase in a spawner rule to spawn mobs only when that phase is set
+- New type of event trigger called 'custom'. This event can be fired from other rule files (like spawn.json or rightclick.json) to make custom things possible
 
 1.20-9.1.3:
 - The 'spawner' test will now also work for 'onjoin'

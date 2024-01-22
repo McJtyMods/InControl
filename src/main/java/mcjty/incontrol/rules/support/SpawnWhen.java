@@ -1,4 +1,4 @@
-package mcjty.incontrol.rules;
+package mcjty.incontrol.rules.support;
 
 public enum SpawnWhen {
     POSITION,

@@ -109,6 +109,12 @@ public class EventsRule {
                     return;
                 }
             }
+            case CUSTOM -> {
+                et = new EventTypeCustom();
+                if (!et.parse(parameters)) {
+                    return;
+                }
+            }
             default -> {
                 ErrorHandler.error("Unknown event type '" + type + "' for events rule!");
                 return;

@@ -8,6 +8,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.data.DataStorage;
+import mcjty.incontrol.events.EventsSystem;
 import mcjty.incontrol.tools.typed.AttributeMap;
 import mcjty.incontrol.tools.varia.LookAtTools;
 import mcjty.incontrol.tools.varia.Tools;
@@ -62,7 +63,7 @@ import java.util.Random;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static mcjty.incontrol.tools.rules.CommonRuleKeys.*;
+import static mcjty.incontrol.rules.support.RuleKeys.*;
 
 public class RuleBase<T extends RuleBase.EventGetter> {
 
@@ -126,6 +127,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
     }
 
     protected void addActions(AttributeMap map, IModRuleCompatibilityLayer layer) {
+        map.consume(ACTION_CUSTOMEVENT, this::addCustomEventAction);
         map.consume(ACTION_COMMAND, this::addCommandAction);
         map.consume(ACTION_ADDSTAGE, stage -> addAddStage(stage, layer));
         map.consume(ACTION_REMOVESTAGE, stage -> addRemoveStage(stage, layer));
@@ -218,6 +220,13 @@ public class RuleBase<T extends RuleBase.EventGetter> {
             return false;
         }
     };
+
+    private void addCustomEventAction(String eventname) {
+        actions.add(event -> {
+            ServerLevel level = Tools.getServerWorld(event.getWorld());
+            EventsSystem.onCustomEvent(level, event.getPosition(), eventname);
+        });
+    }
 
     private void addCommandAction(String command) {
         actions.add(event -> {
@@ -490,7 +499,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
                     String value = propObj.get("value").getAsString();
                     for (Property<?> key : state.getProperties()) {
                         if (name.equals(key.getName())) {
-                            state = CommonRuleEvaluator.set(state, key, value);
+                            state = TestingTools.set(state, key, value);
                         }
                     }
                 }

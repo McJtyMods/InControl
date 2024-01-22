@@ -6,6 +6,7 @@ import mcjty.incontrol.InControl;
 import mcjty.incontrol.compat.ModRuleCompatibilityLayer;
 import mcjty.incontrol.data.PhaseTools;
 import mcjty.incontrol.rules.support.GenericRuleEvaluator;
+import mcjty.incontrol.rules.support.SummonEventGetter;
 import mcjty.incontrol.tools.rules.IEventQuery;
 import mcjty.incontrol.tools.rules.IModRuleCompatibilityLayer;
 import mcjty.incontrol.tools.rules.RuleBase;
@@ -152,6 +153,7 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
                 .attribute(Attribute.createMulti(SCOREBOARDTAGS_ALL))
                 .attribute(Attribute.createMulti(SCOREBOARDTAGS_ANY))
 
+                .attribute(Attribute.create(ACTION_CUSTOMEVENT))
                 .attribute(Attribute.create(ACTION_RESULT))
                 .attribute(Attribute.create(ACTION_MESSAGE))
                 .attribute(Attribute.create(ACTION_HEALTHSET))

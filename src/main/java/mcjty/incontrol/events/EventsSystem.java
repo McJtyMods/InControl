@@ -10,6 +10,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraftforge.event.ForgeEventFactory;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -29,9 +30,16 @@ public class EventsSystem {
     public static Mob busySpawning = null;
 
     public static void reloadRules() {
+        customEventMap.clear();
         rules.clear();
         rulesByMob.clear();
         EventsParser.readRules("events.json");
+    }
+
+    public static void cleanup() {
+        customEventMap.clear();
+        rules.clear();
+        rulesByMob.clear();
     }
 
     public static void addRule(EventsRule rule) {
@@ -172,6 +180,40 @@ public class EventsSystem {
                 }
                 if (eventType.getBlockTest().test(event.getLevel(), event.getPos())) {
                     doActions(rule, event.getPos(), (ServerLevel) event.getLevel());
+                }
+            }
+        }
+    }
+
+    private record ScheduledCustomEvent(BlockPos pos, String name) {}
+
+    private static Map<Level, List<ScheduledCustomEvent>> customEventMap = new HashMap<>();
+
+    public static void onLevelTick(TickEvent.LevelTickEvent event) {
+        List<ScheduledCustomEvent> events = customEventMap.get(event.level);
+        if (events != null) {
+            for (ScheduledCustomEvent scheduledCustomEvent : events) {
+                handleCustomEvent((ServerLevel) event.level, scheduledCustomEvent.pos, scheduledCustomEvent.name);
+            }
+            events.clear();
+        }
+    }
+
+    public static void onCustomEvent(Level level, BlockPos pos, String name) {
+        List<ScheduledCustomEvent> events = customEventMap.computeIfAbsent(level, k -> new ArrayList<>());
+        events.add(new ScheduledCustomEvent(pos, name));
+    }
+
+    private static void handleCustomEvent(ServerLevel level, BlockPos pos, String name) {
+        List<EventsRule> eventsRules = rules.get(EventType.Type.CUSTOM);
+        if (eventsRules != null) {
+            for (EventsRule rule : eventsRules) {
+                EventTypeCustom eventType = (EventTypeCustom) rule.getEventType();
+                if (!checkConditions(rule, level)) {
+                    continue;
+                }
+                if (eventType.getName().equals(name)) {
+                    doActions(rule, pos, level);
                 }
             }
         }
