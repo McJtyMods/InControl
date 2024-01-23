@@ -5,6 +5,7 @@ import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.compat.ModRuleCompatibilityLayer;
 import mcjty.incontrol.data.PhaseTools;
 import mcjty.incontrol.rules.support.GenericRuleEvaluator;
+import mcjty.incontrol.rules.support.ICResult;
 import mcjty.incontrol.rules.support.SpawnWhen;
 import mcjty.incontrol.tools.rules.IEventQuery;
 import mcjty.incontrol.tools.rules.IModRuleCompatibilityLayer;
@@ -344,7 +345,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
     private final SpawnWhen when;
     private final GenericRuleEvaluator ruleEvaluator;
     private final Set<String> phases;
-    private Event.Result result = null;
+    private ICResult result = null;
     private boolean doContinue = false;
 
     private SpawnRule(AttributeMap map, SpawnWhen when, Set<String> phases) {
@@ -384,11 +385,13 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
 
         map.consumeOrElse(ACTION_RESULT, br -> {
             if ("default".equals(br) || br.startsWith("def")) {
-                this.result = Event.Result.DEFAULT;
+                this.result = ICResult.DEFAULT;
             } else if ("allow".equals(br) || "true".equals(br)) {
-                this.result = Event.Result.ALLOW;
+                this.result = ICResult.ALLOW;
+            } else if ("deny_with_actions".equals(br)) {
+                this.result = ICResult.DENY_WITH_ACTIONS;
             } else {
-                this.result = Event.Result.DENY;
+                this.result = ICResult.DENY;
             }
         }, () -> {
             this.result = null;
@@ -521,7 +524,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
     }
 
     @Nullable
-    public Event.Result getResult() {
+    public ICResult getResult() {
         return result;
     }
 

@@ -6,6 +6,7 @@ import mcjty.incontrol.data.DataStorage;
 import mcjty.incontrol.data.Statistics;
 import mcjty.incontrol.events.EventsSystem;
 import mcjty.incontrol.rules.*;
+import mcjty.incontrol.rules.support.ICResult;
 import mcjty.incontrol.rules.support.SpawnWhen;
 import mcjty.incontrol.spawner.SpawnerSystem;
 import mcjty.incontrol.tools.varia.Tools;
@@ -80,7 +81,7 @@ public class ForgeEventHandlers {
         }
         for (SpawnRule rule : RulesManager.getFilteredRules(event.getLevel(), SpawnWhen.ONJOIN)) {
             if (rule.match(event)) {
-                Event.Result result = rule.getResult();
+                ICResult result = rule.getResult();
                 if (debug) {
                     InControl.setup.getLogger().log(org.apache.logging.log4j.Level.INFO, "Join Rule " + i + ": " + result
                             + " entity: " + event.getEntity().getName()
