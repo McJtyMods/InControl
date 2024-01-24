@@ -87,12 +87,21 @@ public class ForgeEventHandlers {
                             + " entity: " + event.getEntity().getName()
                             + " y: " + event.getEntity().blockPosition().getY());
                 }
-                if (result != Event.Result.DENY) {
-                    Statistics.addSpawnStat(i, false);
-                    rule.action(event);
-                } else {
-                    Statistics.addSpawnStat(i, true);
-                    event.setCanceled(true);
+                switch (result) {
+                    case ALLOW:
+                    case DEFAULT:
+                        Statistics.addSpawnStat(i, false);
+                        rule.action(event);
+                        break;
+                    case DENY:
+                        Statistics.addSpawnStat(i, true);
+                        event.setCanceled(true);
+                        break;
+                    case DENY_WITH_ACTIONS:
+                        Statistics.addSpawnStat(i, true);
+                        rule.action(event);
+                        event.setCanceled(true);
+                        break;
                 }
                 if (!rule.isDoContinue()) {
                     return;
@@ -137,7 +146,7 @@ public class ForgeEventHandlers {
         int i = 0;
         for (SpawnRule rule : RulesManager.getFilteredRules(event.getEntity().getCommandSenderWorld(), SpawnWhen.FINALIZE)) {
             if (rule.match(event)) {
-                Event.Result result = rule.getResult();
+                ICResult result = rule.getResult();
                 if (debug) {
                     Holder<Biome> biome = event.getLevel().getBiome(new BlockPos((int) event.getX(), (int) event.getY(), (int) event.getZ()));
                     String biomeId = Tools.getBiomeId(biome);
@@ -146,17 +155,27 @@ public class ForgeEventHandlers {
                             + " y: " + event.getY()
                             + " biome: " + biomeId);
                 }
-                if (result == Event.Result.ALLOW) {
-                    // We perform the actions but don't allow the default finalize to occur
-                    rule.action(event);
-                    event.setCanceled(true);
-                } else if (result == Event.Result.DENY) {
-                    // We cancel the event and also the spawn
-                    event.setCanceled(true);
-                    event.setSpawnCancelled(true);
-                } else {
-                    // We perform the actions and also allow the default finalize to occur
-                    rule.action(event);
+                switch (result) {
+                    case ALLOW:
+                        // We perform the actions but don't allow the default finalize to occur
+                        rule.action(event);
+                        event.setCanceled(true);
+                        break;
+                    case DEFAULT:
+                        // We perform the actions and also allow the default finalize to occur
+                        rule.action(event);
+                        break;
+                    case DENY:
+                        // We cancel the event and also the spawn
+                        event.setCanceled(true);
+                        event.setSpawnCancelled(true);
+                        break;
+                    case DENY_WITH_ACTIONS:
+                        // We cancel the event and also the spawn but allow actions
+                        rule.action(event);
+                        event.setCanceled(true);
+                        event.setSpawnCancelled(true);
+                        break;
                 }
                 if (!rule.isDoContinue()) {
                     return;
@@ -171,7 +190,7 @@ public class ForgeEventHandlers {
         int i = 0;
         for (SpawnRule rule : RulesManager.getFilteredRules(event.getEntity().getCommandSenderWorld(), SpawnWhen.POSITION)) {
             if (rule.match(event)) {
-                Event.Result result = rule.getResult();
+                ICResult result = rule.getResult();
                 if (debug) {
                     Holder<Biome> biome = event.getLevel().getBiome(new BlockPos((int) event.getX(), (int) event.getY(), (int) event.getZ()));
                     String biomeId = Tools.getBiomeId(biome);
@@ -180,15 +199,29 @@ public class ForgeEventHandlers {
                             + " y: " + event.getY()
                             + " biome: " + biomeId);
                 }
-                if (result != null) {
-                    event.setResult(result);
+                switch (result) {
+                    case ALLOW:
+                        event.setResult(Event.Result.ALLOW);
+                        Statistics.addSpawnStat(i, false);
+                        rule.action(event);
+                        break;
+                    case DEFAULT:
+                        event.setResult(Event.Result.DEFAULT);
+                        Statistics.addSpawnStat(i, false);
+                        rule.action(event);
+                        break;
+                    case DENY:
+                        event.setResult(Event.Result.DENY);
+                        Statistics.addSpawnStat(i, true);
+                        event.setCanceled(true);
+                        break;
+                    case DENY_WITH_ACTIONS:
+                        event.setResult(Event.Result.DENY);
+                        Statistics.addSpawnStat(i, true);
+                        rule.action(event);
+                        break;
                 }
-                if (result != Event.Result.DENY) {
-                    Statistics.addSpawnStat(i, false);
-                    rule.action(event);
-                } else {
-                    Statistics.addSpawnStat(i, true);
-                }
+
                 if (!rule.isDoContinue()) {
                     return;
                 }
@@ -202,7 +235,7 @@ public class ForgeEventHandlers {
         int i = 0;
         for (SpawnRule rule : RulesManager.getFilteredRules(event.getEntity().getCommandSenderWorld(), SpawnWhen.DESPAWN)) {
             if (rule.match(event)) {
-                Event.Result result = rule.getResult();
+                ICResult result = rule.getResult();
                 if (debug) {
                     Holder<Biome> biome = event.getLevel().getBiome(new BlockPos((int) event.getX(), (int) event.getY(), (int) event.getZ()));
                     String biomeId = Tools.getBiomeId(biome);
@@ -211,12 +244,24 @@ public class ForgeEventHandlers {
                             + " y: " + event.getY()
                             + " biome: " + biomeId);
                 }
-                if (result != null) {
-                    event.setResult(result);
+                switch (result) {
+                    case ALLOW:
+                        event.setResult(Event.Result.ALLOW);
+                        rule.action(event);
+                        break;
+                    case DEFAULT:
+                        event.setResult(Event.Result.DEFAULT);
+                        rule.action(event);
+                        break;
+                    case DENY:
+                        event.setResult(Event.Result.DENY);
+                        break;
+                    case DENY_WITH_ACTIONS:
+                        event.setResult(Event.Result.DENY);
+                        rule.action(event);
+                        break;
                 }
-                if (result != Event.Result.DENY) {
-                    rule.action(event);
-                }
+
                 if (!rule.isDoContinue()) {
                     return;
                 }

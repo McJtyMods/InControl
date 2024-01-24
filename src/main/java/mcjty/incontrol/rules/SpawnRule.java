@@ -25,6 +25,7 @@ import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.MobSpawnEvent;
 import net.minecraftforge.eventbus.api.Event;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Set;
@@ -394,7 +395,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
                 this.result = ICResult.DENY;
             }
         }, () -> {
-            this.result = null;
+            this.result = ICResult.DEFAULT;
         });
         map.consume(ACTION_CONTINUE, v -> this.doContinue = v);
     }
@@ -523,7 +524,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
         }
     }
 
-    @Nullable
+    @Nonnull
     public ICResult getResult() {
         return result;
     }
