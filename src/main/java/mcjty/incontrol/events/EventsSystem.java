@@ -5,7 +5,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -111,16 +114,7 @@ public class EventsSystem {
         if (action != null) {
             DataStorage data = DataStorage.getData(level);
             int number = data.getNumber(action.name());
-            if (action.set() != null) {
-                number = action.set();
-            }
-            if (action.add() != null) {
-                number += action.add();
-            }
-            if (action.mul() != null) {
-                number *= action.mul();
-            }
-            data.setNumber(action.name(), number);
+            data.setNumber(action.name(), action.perform(number));
         }
     }
 
@@ -130,12 +124,16 @@ public class EventsSystem {
         if (random >= 0 && rnd.nextFloat() >= random) {
             return false;
         }
-        if (!conditions.getPhases().isEmpty()) {
-            Set<String> phases = DataStorage.getData(level).getPhases();
-            if (!phases.containsAll(conditions.getPhases())) {
-                return false;
-            }
+        if (!checkPhases(level, conditions)) return false;
+        if (!checkNumbers(level, conditions)) return false;
+        Set<ResourceKey<Level>> dimensions = conditions.getDimensions();
+        if (!dimensions.isEmpty() && !dimensions.contains(level.dimension())) {
+            return false;
         }
+        return true;
+    }
+
+    private static boolean checkNumbers(Level level, EventsConditions conditions) {
         if (!conditions.getNumbers().isEmpty()) {
             DataStorage data = DataStorage.getData(level);
             for (Map.Entry<String, Predicate<Integer>> entry : conditions.getNumbers().entrySet()) {
@@ -145,9 +143,15 @@ public class EventsSystem {
                 }
             }
         }
-        Set<ResourceKey<Level>> dimensions = conditions.getDimensions();
-        if (!dimensions.isEmpty() && !dimensions.contains(level.dimension())) {
-            return false;
+        return true;
+    }
+
+    private static boolean checkPhases(Level level, EventsConditions conditions) {
+        if (!conditions.getPhases().isEmpty()) {
+            Set<String> phases = DataStorage.getData(level).getPhases();
+            if (!phases.containsAll(conditions.getPhases())) {
+                return false;
+            }
         }
         return true;
     }

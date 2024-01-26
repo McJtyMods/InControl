@@ -1,21 +1,18 @@
 Upcoming:
-- Manually set phases will now also be persisted when the world is reloaded
-- New type of event trigger called 'custom'. This event can be fired from other rule files (like spawn.json or rightclick.json) to make custom things possible
-- New 'result' called 'deny_with_actions' which will deny the event but still execute the actions. This can be used to deny the spawn of a mob but still send out an event
-- New 'number' system where rules can affect numbers and also test on numbers being in a certain range
-- New commands:
-    - New 'numbers' command to show the current numbers
-    - New 'setnumber' command to set a number
-- New actions:
-    - 'setnumber' and 'addnumber' actions to set or add a number
-    - 'customevent' action. You can use this to fire a custom event from a rule file
-- New 'number' test for spawn, experience, loot, effect, harvest, left click, right click, place, and summon aid rules. This will allow you to test for a named number and it expects a json with a 'name' and 'expression' attribute. For example: "number": { "name": "mycounter", "expression": "gt(10)" }
-- The new 'number' test now also works for spawner rules
-- New event actions:
-    - Type of event action called 'phase'. This will allow you to set or clear a phase when an event happens. For example, you can now set a phase when a player kills a mob and then use that phase in a spawner rule to spawn mobs only when that phase is set
-    - Type of event action called 'number'. This will allow you to set, add, or multiple a number when an event happens
-- The 'phase' test is now also supported for experience, loot, effect, harvest, left click, right click, place, and summon aid rules
-- Event conditions now also support numbers
+- New named number system where you have variables with a name and an integer value:
+    - Two new commands: 'numbers' to show the current numbers and 'setnumber' to set a number
+    - Two new actions that can be used in many rules: 'setnumber' and 'addnumber'
+    - New 'number' test that can be used in almost all rules to test if a number satisfies a given expression. Example expression: "number": { "name": "mycounter", "expression": "gt(10)" }
+    - This test also works for events and spawner rules. Basically everwhere that you can test for a phase you can now also test for a number
+    - New event action called 'number'. This will allow you to modify a number when an event happens. For example: { "name": "mycounter", "value": "+1" }
+- Various fixes and improvements to the phase system:
+    - Manually set phases will now also be persisted when the world is reloaded
+    - New event action called 'phase'. This will allow you to set or clear a phase when an event happens. For example, you can now set a phase when a player kills a mob and then use that phase in a spawner rule to spawn mobs only when that phase is set
+    - The 'phase' test is now also supported for experience, loot, effect, harvest, left click, right click, place, and summon aid rules
+- New custom event:
+    - New 'customevent' action that you can use from within many rules to fire a custom event
+    - New event trigger called 'custom'
+    - New 'result' called 'deny_with_actions' which will deny the event but still execute the actions. This can be used to deny the spawn of a mob but still send out an event
 
 1.20-9.1.3:
 - The 'spawner' test will now also work for 'onjoin'

@@ -137,26 +137,55 @@ public class EventsRule {
 
     @Nullable
     private static NumberAction parseNumberAction(JsonObject object) {
-        JsonObject value = object.getAsJsonObject("number");
-        if (value == null) {
+        JsonObject number = object.getAsJsonObject("number");
+        if (number == null) {
             // Valid
             return null;
         }
-        String name = value.getAsJsonPrimitive("name").getAsString();
-        Integer set = null;
-        Integer add = null;
-        Integer mul = null;
-        if (value.has("set")) {
-            set = value.getAsJsonPrimitive("set").getAsInt();
+        if (!number.has("name")) {
+            ErrorHandler.error("No name specified for number action!");
+            return null;
         }
-        if (value.has("add")) {
-            add = value.getAsJsonPrimitive("add").getAsInt();
+        if (!number.has("value")) {
+            ErrorHandler.error("No set/add/mul specified for number action!");
+            return null;
         }
-        if (value.has("mul")) {
-            mul = value.getAsJsonPrimitive("mul").getAsInt();
+        String name = number.getAsJsonPrimitive("name").getAsString();
+        String value = number.getAsJsonPrimitive("value").getAsString();
+        // Parse value as a string with the following format:
+        // [<operator><number>]+
+        // Example: *30+2
+        // This means: multiply by 30 and add 2
+        // Example: 60-1
+        // This means: Take 60 and subtract 1
+        List<NumberAction.Action> actions = new ArrayList<>();
+        value = value.trim();
+        int pos = 0;
+        while (pos < value.length()) {
+            char c = value.charAt(pos);
+            if (c == ' ') {
+                pos++;
+                continue;
+            }
+            NumberAction.Operator operator = NumberAction.Operator.getOperator(c);
+            if (operator == NumberAction.Operator.NONE) {
+                ErrorHandler.error("Invalid number action '" + value + "'!");
+                return null;
+            }
+            pos++;
+            int start = pos;
+            while (pos < value.length() && Character.isDigit(value.charAt(pos))) {
+                pos++;
+            }
+            if (pos > start) {
+                int v = Integer.parseInt(value.substring(start, pos));
+                actions.add(new NumberAction.Action(operator, v));
+            } else {
+                ErrorHandler.error("Invalid number action '" + value + "'!");
+                return null;
+            }
         }
-        // @todo error checking
-        return new NumberAction(name, set, add, mul);
+        return new NumberAction(name, actions);
     }
 
     @Nullable
