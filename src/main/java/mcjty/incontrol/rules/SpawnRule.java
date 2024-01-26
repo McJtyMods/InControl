@@ -23,10 +23,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.MobSpawnEvent;
-import net.minecraftforge.eventbus.api.Event;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -334,8 +332,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(ACTION_SETPHASE))
                 .attribute(Attribute.create(ACTION_CLEARPHASE))
                 .attribute(Attribute.create(ACTION_TOGGLEPHASE))
-                .attribute(Attribute.create(ACTION_SETNUMBER))
-                .attribute(Attribute.create(ACTION_ADDNUMBER))
+                .attribute(Attribute.create(ACTION_CHANGENUMBER))
                 .attribute(Attribute.createMulti(ACTION_HELDITEM))
                 .attribute(Attribute.createMulti(ACTION_ARMORBOOTS))
                 .attribute(Attribute.createMulti(ACTION_ARMORLEGS))

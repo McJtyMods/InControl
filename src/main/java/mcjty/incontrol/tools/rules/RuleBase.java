@@ -9,6 +9,7 @@ import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.data.DataStorage;
 import mcjty.incontrol.events.EventsSystem;
+import mcjty.incontrol.events.NumberAction;
 import mcjty.incontrol.tools.typed.AttributeMap;
 import mcjty.incontrol.tools.varia.LookAtTools;
 import mcjty.incontrol.tools.varia.Tools;
@@ -168,8 +169,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         map.consume(ACTION_SETPHASE, this::addSetPhaseAction);
         map.consume(ACTION_CLEARPHASE, this::addClearPhaseAction);
         map.consume(ACTION_TOGGLEPHASE, this::addTogglePhaseAction);
-        map.consume(ACTION_SETNUMBER, this::addSetNumberAction);
-        map.consume(ACTION_ADDNUMBER, this::addAddNumberAction);
+        map.consume(ACTION_CHANGENUMBER, this::addChangeNumberAction);
         map.consume(ACTION_SETSTATE, state -> {
             if (layer.hasEnigmaScript()) {
                 addStateAction(state, layer);
@@ -200,18 +200,23 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         });
     }
 
-    private void addSetNumberAction(String s) {
+    private void addChangeNumberAction(String s) {
         try {
             String[] split = StringUtils.split(s, '=');
             String number = split[0];
             String value = split[1];
-            int finalValue = Integer.parseInt(value);
+            NumberAction action = NumberAction.createUnnamed(value);
+            if (action == null) {
+                return;
+            }
             actions.add(event -> {
                 DataStorage data = DataStorage.getData(Tools.getServerWorld(event.getWorld()));
-                data.setNumber(number, finalValue);
+                int n = data.getNumber(number);
+                n = action.perform(n);
+                data.setNumber(number, n);
             });
         } catch (Exception e) {
-            ErrorHandler.error("Bad number=value specifier '" + s + "'!");
+            ErrorHandler.error("Bad number=expression specifier '" + s + "'!");
         }
     }
 

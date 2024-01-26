@@ -1,10 +1,10 @@
 Upcoming:
 - New named number system where you have variables with a name and an integer value:
     - Two new commands: 'numbers' to show the current numbers and 'setnumber' to set a number
-    - Two new actions that can be used in many rules: 'setnumber' and 'addnumber'
     - New 'number' test that can be used in almost all rules to test if a number satisfies a given expression. Example expression: "number": { "name": "mycounter", "expression": "gt(10)" }
     - This test also works for events and spawner rules. Basically everwhere that you can test for a phase you can now also test for a number
     - New event action called 'number'. This will allow you to modify a number when an event happens. For example: { "name": "mycounter", "value": "+1" }
+    - New 'changenumber' action that can be used in many rules. Same syntax as the number event action: "changenumber": "mycounter=+1"
 - Various fixes and improvements to the phase system:
     - Manually set phases will now also be persisted when the world is reloaded
     - New event action called 'phase'. This will allow you to set or clear a phase when an event happens. For example, you can now set a phase when a player kills a mob and then use that phase in a spawner rule to spawn mobs only when that phase is set

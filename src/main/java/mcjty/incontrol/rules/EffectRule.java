@@ -19,7 +19,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.event.TickEvent;
 
-import java.util.Collection;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -157,8 +156,7 @@ public class EffectRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(ACTION_SETPHASE))
                 .attribute(Attribute.create(ACTION_CLEARPHASE))
                 .attribute(Attribute.create(ACTION_TOGGLEPHASE))
-                .attribute(Attribute.create(ACTION_SETNUMBER))
-                .attribute(Attribute.create(ACTION_ADDNUMBER))
+                .attribute(Attribute.create(ACTION_CHANGENUMBER))
                 .attribute(Attribute.createMulti(ACTION_POTION))
                 .attribute(Attribute.createMulti(ACTION_GIVE))
                 .attribute(Attribute.createMulti(ACTION_DROP))
