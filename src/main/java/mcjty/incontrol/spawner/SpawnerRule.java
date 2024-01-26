@@ -4,12 +4,19 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.InControl;
+import mcjty.incontrol.rules.support.RuleKeys;
+import mcjty.incontrol.tools.rules.TestingTools;
+import mcjty.incontrol.tools.varia.Tools;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.*;
+import java.util.function.Predicate;
+
+import static mcjty.incontrol.rules.support.RuleKeys.NUMBER;
+import static mcjty.incontrol.rules.support.RuleKeys.PHASE;
 
 public class SpawnerRule {
 
@@ -25,6 +32,7 @@ public class SpawnerRule {
     private final int maxSpawn;
     private final int groupDistance;
     private final Set<String> phases;
+    private final Map<String, Predicate<Integer>> numbers;
     private final SpawnerConditions conditions;
 
     enum Cmd {
@@ -32,6 +40,7 @@ public class SpawnerRule {
         WEIGHTS,
         MOBSFROMBIOME,
         PHASE,
+        NUMBER,
         PERSECOND,
         ATTEMPTS,
         ADDSCOREBOARDTAGS,
@@ -53,6 +62,7 @@ public class SpawnerRule {
         mobsFromBiome = builder.mobsFromBiome;
 
         phases = builder.phases;
+        numbers = builder.numbers;
         persecond = builder.persecond;
         attempts = builder.attempts;
         conditions = builder.conditions;
@@ -92,6 +102,10 @@ public class SpawnerRule {
 
     public Set<String> getPhases() {
         return phases;
+    }
+
+    public Map<String, Predicate<Integer>> getNumbers() {
+        return numbers;
     }
 
     public float getPersecond() {
@@ -165,13 +179,31 @@ public class SpawnerRule {
                     builder.mobsFromBiome(classification);
                 }
                 case PHASE -> {
-                    JsonElement phaseElement = object.get("phase");
+                    JsonElement phaseElement = object.get(PHASE.name());
                     if (phaseElement.isJsonArray()) {
                         for (JsonElement element : phaseElement.getAsJsonArray()) {
                             builder.phases(element.getAsString());
                         }
                     } else {
                         builder.phases(phaseElement.getAsString());
+                    }
+                }
+                case NUMBER -> {
+                    JsonElement number = object.get(NUMBER.name());
+                    if (number.isJsonArray()) {
+                        for (JsonElement element : number.getAsJsonArray()) {
+                            TestingTools.NumberResult result = TestingTools.parseNumberCheck(element);
+                            if (result == null) {
+                                return;
+                            }
+                            builder.number(result.number(), result.test());
+                        }
+                    } else {
+                        TestingTools.NumberResult result = TestingTools.parseNumberCheck(number);
+                        if (result == null) {
+                            return;
+                        }
+                        builder.number(result.number(), result.test());
                     }
                 }
                 case PERSECOND -> {
@@ -230,6 +262,7 @@ public class SpawnerRule {
         private MobCategory mobsFromBiome = null;
 
         private final Set<String> phases = new HashSet<>();
+        private final Map<String, Predicate<Integer>> numbers = new HashMap<>();
         private float persecond = 1.0f;
         private int attempts = 1;
         private int minSpawn = 1;
@@ -259,6 +292,11 @@ public class SpawnerRule {
 
         public Builder phases(String... phases) {
             Collections.addAll(this.phases, phases);
+            return this;
+        }
+
+        public Builder number(String name, Predicate<Integer> predicate) {
+            numbers.put(name, predicate);
             return this;
         }
 

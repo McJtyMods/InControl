@@ -2,7 +2,6 @@ package mcjty.incontrol.rules;
 
 import com.google.gson.JsonElement;
 import mcjty.incontrol.ErrorHandler;
-import mcjty.incontrol.InControl;
 import mcjty.incontrol.compat.ModRuleCompatibilityLayer;
 import mcjty.incontrol.data.PhaseTools;
 import mcjty.incontrol.rules.support.GenericRuleEvaluator;
@@ -77,6 +76,9 @@ public class ExperienceRule extends RuleBase<RuleBase.EventGetter> {
 
     static {
         FACTORY
+                .attribute(Attribute.create(PHASE))
+                .attribute(Attribute.create(NUMBER))
+
                 .attribute(Attribute.create(TIME))
                 .attribute(Attribute.create(MINTIME))
                 .attribute(Attribute.create(MAXTIME))
@@ -144,21 +146,15 @@ public class ExperienceRule extends RuleBase<RuleBase.EventGetter> {
     }
 
     private final GenericRuleEvaluator ruleEvaluator;
-    private final Set<String> phases;
     private Event.Result result;
     private Integer xp = null;
     private float multxp = 1.0f;
     private float addxp = 0.0f;
 
     private ExperienceRule(AttributeMap map, Set<String> phases) {
-        super();
-        this.phases = phases;
+        super(phases);
         ruleEvaluator = new GenericRuleEvaluator(map);
         addActions(map, new ModRuleCompatibilityLayer());
-    }
-
-    public Set<String> getPhases() {
-        return phases;
     }
 
     public static ExperienceRule parse(JsonElement element) {

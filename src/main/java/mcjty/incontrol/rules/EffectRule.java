@@ -3,6 +3,7 @@ package mcjty.incontrol.rules;
 import com.google.gson.JsonElement;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.compat.ModRuleCompatibilityLayer;
+import mcjty.incontrol.data.PhaseTools;
 import mcjty.incontrol.rules.support.GenericRuleEvaluator;
 import mcjty.incontrol.tools.rules.IEventQuery;
 import mcjty.incontrol.tools.rules.RuleBase;
@@ -18,6 +19,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.event.TickEvent;
 
+import java.util.Collection;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import static mcjty.incontrol.rules.support.RuleKeys.*;
@@ -74,6 +77,9 @@ public class EffectRule extends RuleBase<RuleBase.EventGetter> {
 
     static {
         FACTORY
+                .attribute(Attribute.create(PHASE))
+                .attribute(Attribute.create(NUMBER))
+
                 .attribute(Attribute.create(TIMEOUT))
                 .attribute(Attribute.create(MINTIME))
                 .attribute(Attribute.create(MAXTIME))
@@ -151,6 +157,8 @@ public class EffectRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(ACTION_SETPHASE))
                 .attribute(Attribute.create(ACTION_CLEARPHASE))
                 .attribute(Attribute.create(ACTION_TOGGLEPHASE))
+                .attribute(Attribute.create(ACTION_SETNUMBER))
+                .attribute(Attribute.create(ACTION_ADDNUMBER))
                 .attribute(Attribute.createMulti(ACTION_POTION))
                 .attribute(Attribute.createMulti(ACTION_GIVE))
                 .attribute(Attribute.createMulti(ACTION_DROP))
@@ -160,8 +168,8 @@ public class EffectRule extends RuleBase<RuleBase.EventGetter> {
     private final GenericRuleEvaluator ruleEvaluator;
     private final int timeout;
 
-    private EffectRule(AttributeMap map, int time) {
-        super();
+    private EffectRule(AttributeMap map, int time, Set<String> phases) {
+        super(phases);
         ruleEvaluator = new GenericRuleEvaluator(map);
         this.timeout = time > 0 ? time : 1;
         addActions(map, new ModRuleCompatibilityLayer());
@@ -215,7 +223,7 @@ public class EffectRule extends RuleBase<RuleBase.EventGetter> {
                 return null;
             }
             int time = element.getAsJsonObject().has("timeout") ? element.getAsJsonObject().get("timeout").getAsInt() : 20;
-            return new EffectRule(map, time);
+            return new EffectRule(map, time, PhaseTools.getPhases(element));
         }
     }
 }

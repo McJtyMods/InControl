@@ -386,7 +386,7 @@ public class ForgeEventHandlers {
             return;
         }
         int i = 0;
-        for (RightClickRule rule : RulesManager.rightclickRules) {
+        for (RightClickRule rule : RulesManager.getFilteredRightClickRules(event.getLevel())) {
             if (rule.match(event)) {
                 Event.Result result = rule.getResult();
                 if (debug) {
@@ -414,7 +414,7 @@ public class ForgeEventHandlers {
             return;
         }
         int i = 0;
-        for (LeftClickRule rule : RulesManager.leftclickRules) {
+        for (LeftClickRule rule : RulesManager.getFilteredLeftClickRules(event.getLevel())) {
             if (rule.match(event)) {
                 Event.Result result = rule.getResult();
                 if (debug) {
@@ -443,7 +443,7 @@ public class ForgeEventHandlers {
             return;
         }
         int i = 0;
-        for (PlaceRule rule : RulesManager.placeRules) {
+        for (PlaceRule rule : RulesManager.getFilteredPlaceRules(event.getLevel())) {
             if (rule.match(event)) {
                 Event.Result result = rule.getResult();
                 if (debug) {
@@ -470,7 +470,7 @@ public class ForgeEventHandlers {
             return;
         }
         int i = 0;
-        for (HarvestRule rule : RulesManager.harvestRules) {
+        for (HarvestRule rule : RulesManager.getFilteredHarvestRules(event.getLevel())) {
             if (rule.match(event)) {
                 Event.Result result = rule.getResult();
                 if (debug) {
@@ -509,7 +509,7 @@ public class ForgeEventHandlers {
         int tickCounter = tickCounters.get(id) + 1;
         tickCounters.put(id, tickCounter);
         int i = 0;
-        for (EffectRule rule : RulesManager.effectRules) {
+        for (EffectRule rule : RulesManager.getFilteredEffectRules(event.player.getCommandSenderWorld())) {
             if (tickCounter % rule.getTimeout() == 0 && rule.match(event)) {
                 if (debug) {
                     InControl.setup.getLogger().log(org.apache.logging.log4j.Level.INFO, "Join Rule " + i

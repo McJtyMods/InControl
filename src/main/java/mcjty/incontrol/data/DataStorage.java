@@ -9,11 +9,14 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.storage.DimensionDataStorage;
 
 import javax.annotation.Nonnull;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 public class DataStorage extends SavedData {
@@ -23,6 +26,7 @@ public class DataStorage extends SavedData {
     private Boolean isDay = null;
     private int daycounter = 0;
     private final Set<String> phases = new HashSet<>();
+    private final Map<String, Integer> numbers = new HashMap<>();
 
     private int checkCounter = 0;   // We only check every X ticks for efficiency
 
@@ -40,10 +44,14 @@ public class DataStorage extends SavedData {
         for (int i = 0 ; i < phasesTag.size() ; i++) {
             phases.add(phasesTag.getString(i));
         }
+        CompoundTag numbersTag = tag.getCompound("numbers");
+        for (String key : numbersTag.getAllKeys()) {
+            numbers.put(key, numbersTag.getInt(key));
+        }
     }
 
     @Nonnull
-    public static DataStorage getData(Level world) {
+    public static DataStorage getData(LevelAccessor world) {
         if (world.isClientSide()) {
             throw new RuntimeException("Don't access this client-side!");
         }
@@ -61,18 +69,6 @@ public class DataStorage extends SavedData {
     public void setDaycounter(int daycounter) {
         this.daycounter = daycounter;
         setDirty();
-    }
-
-    public Boolean getDay() {
-        return isDay;
-    }
-
-    public void setDay(Boolean day) {
-        isDay = day;
-    }
-
-    public Set<String> getPhases() {
-        return phases;
     }
 
     public void tick(Level world) {
@@ -100,6 +96,23 @@ public class DataStorage extends SavedData {
                 setDirty();
             }
         }
+    }
+
+    public Map<String, Integer> getNumbers() {
+        return numbers;
+    }
+
+    public void setNumber(String name, int value) {
+        numbers.put(name, value);
+        setDirty();
+    }
+
+    public int getNumber(String name) {
+        return numbers.getOrDefault(name, 0);
+    }
+
+    public Set<String> getPhases() {
+        return phases;
     }
 
     public void setPhase(String phase, boolean value) {
@@ -157,6 +170,11 @@ public class DataStorage extends SavedData {
             phasesTag.add(StringTag.valueOf(phase));
         }
         tag.put("phases", phasesTag);
+        CompoundTag numbersTag = new CompoundTag();
+        for (Map.Entry<String, Integer> entry : numbers.entrySet()) {
+            numbersTag.putInt(entry.getKey(), entry.getValue());
+        }
+        tag.put("numbers", numbersTag);
         return tag;
     }
 }

@@ -7,6 +7,7 @@ import mcjty.incontrol.data.DataStorage;
 import mcjty.incontrol.rules.support.SpawnWhen;
 import mcjty.incontrol.tools.varia.JSonTools;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -36,11 +37,16 @@ public class RulesManager {
     public static List<PhaseRule> phaseRules = new ArrayList<>();
     private static String path;
 
-    public static List<EffectRule> effectRules = new ArrayList<>();
-    public static List<HarvestRule> harvestRules = new ArrayList<>();
-    public static List<PlaceRule> placeRules = new ArrayList<>();
-    public static List<RightClickRule> rightclickRules = new ArrayList<>();
-    public static List<LeftClickRule> leftclickRules = new ArrayList<>();
+    private static final List<EffectRule> effectRules = new ArrayList<>();
+    private static List<EffectRule> filteredEffectRules = null;
+    private static final List<HarvestRule> harvestRules = new ArrayList<>();
+    private static List<HarvestRule> filteredHarvestRules = null;
+    private static final List<PlaceRule> placeRules = new ArrayList<>();
+    private static List<PlaceRule> filteredPlaceRules = null;
+    private static final List<RightClickRule> rightclickRules = new ArrayList<>();
+    private static List<RightClickRule> filteredRightClickRules = null;
+    private static final List<LeftClickRule> leftclickRules = new ArrayList<>();
+    private static List<LeftClickRule> filteredLeftClickRules = null;
 
     public static void reloadRules() {
         rules.clear();
@@ -73,6 +79,11 @@ public class RulesManager {
         filteredSummonAidRules = null;
         filteredLootRules = null;
         filteredExperienceRules = null;
+        filteredEffectRules = null;
+        filteredHarvestRules = null;
+        filteredPlaceRules = null;
+        filteredRightClickRules = null;
+        filteredLeftClickRules = null;
     }
 
     private static List<SpawnRule> getCorrectList(SpawnWhen when) {
@@ -91,6 +102,46 @@ public class RulesManager {
             case FINALIZE -> filteredRulesFinalize = list;
             case DESPAWN -> filteredRulesDespawn = list;
         };
+    }
+
+    public static List<EffectRule> getFilteredEffectRules(Level world) {
+        if (filteredEffectRules == null) {
+            Set<String> phases = DataStorage.getData(world).getPhases();
+            filteredEffectRules = effectRules.stream().filter(r -> phases.containsAll(r.getPhases())).collect(Collectors.toList());
+        }
+        return filteredEffectRules;
+    }
+
+    public static List<HarvestRule> getFilteredHarvestRules(LevelAccessor world) {
+        if (filteredHarvestRules == null) {
+            Set<String> phases = DataStorage.getData(world).getPhases();
+            filteredHarvestRules = harvestRules.stream().filter(r -> phases.containsAll(r.getPhases())).collect(Collectors.toList());
+        }
+        return filteredHarvestRules;
+    }
+
+    public static List<PlaceRule> getFilteredPlaceRules(LevelAccessor world) {
+        if (filteredPlaceRules == null) {
+            Set<String> phases = DataStorage.getData(world).getPhases();
+            filteredPlaceRules = placeRules.stream().filter(r -> phases.containsAll(r.getPhases())).collect(Collectors.toList());
+        }
+        return filteredPlaceRules;
+    }
+
+    public static List<RightClickRule> getFilteredRightClickRules(Level world) {
+        if (filteredRightClickRules == null) {
+            Set<String> phases = DataStorage.getData(world).getPhases();
+            filteredRightClickRules = rightclickRules.stream().filter(r -> phases.containsAll(r.getPhases())).collect(Collectors.toList());
+        }
+        return filteredRightClickRules;
+    }
+
+    public static List<LeftClickRule> getFilteredLeftClickRules(Level world) {
+        if (filteredLeftClickRules == null) {
+            Set<String> phases = DataStorage.getData(world).getPhases();
+            filteredLeftClickRules = leftclickRules.stream().filter(r -> phases.containsAll(r.getPhases())).collect(Collectors.toList());
+        }
+        return filteredLeftClickRules;
     }
 
     public static List<SpawnRule> getFilteredRules(Level world, SpawnWhen when) {

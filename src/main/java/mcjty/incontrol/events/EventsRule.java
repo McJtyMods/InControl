@@ -12,18 +12,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static mcjty.incontrol.rules.support.RuleKeys.PHASE;
+
 public class EventsRule {
 
     private final EventType eventType;
     private final EventsConditions conditions;
     private final SpawnEventAction action;
     private final PhaseAction phaseAction;
+    private final NumberAction numberAction;
 
     enum Cmd {
         ON,
         PARAMETERS,
         SPAWN,
         PHASE,
+        NUMBER,
         CONDITIONS
     }
 
@@ -39,6 +43,7 @@ public class EventsRule {
         action = builder.action;
         eventType = builder.eventType;
         phaseAction = builder.phaseAction;
+        numberAction = builder.numberAction;
     }
 
 
@@ -77,6 +82,12 @@ public class EventsRule {
                 }
                 case PHASE -> {
                     PhaseAction action = parsePhaseAction(object);
+                    if (action != null) {
+                        builder.action(action);
+                    }
+                }
+                case NUMBER -> {
+                    NumberAction action = parseNumberAction(object);
                     if (action != null) {
                         builder.action(action);
                     }
@@ -125,8 +136,31 @@ public class EventsRule {
     }
 
     @Nullable
+    private static NumberAction parseNumberAction(JsonObject object) {
+        JsonObject value = object.getAsJsonObject("number");
+        if (value == null) {
+            // Valid
+            return null;
+        }
+        String name = value.getAsJsonPrimitive("name").getAsString();
+        Integer set = null;
+        Integer add = null;
+        Integer mul = null;
+        if (value.has("set")) {
+            set = value.getAsJsonPrimitive("set").getAsInt();
+        }
+        if (value.has("add")) {
+            add = value.getAsJsonPrimitive("add").getAsInt();
+        }
+        if (value.has("mul")) {
+            mul = value.getAsJsonPrimitive("mul").getAsInt();
+        }
+        return new NumberAction(name, set, add, mul);
+    }
+
+    @Nullable
     private static PhaseAction parsePhaseAction(JsonObject object) {
-        JsonObject value = object.getAsJsonObject("phase");
+        JsonObject value = object.getAsJsonObject(PHASE.name());
         if (value == null) {
             // Valid
             return null;
@@ -246,11 +280,16 @@ public class EventsRule {
         return phaseAction;
     }
 
+    public NumberAction getNumberAction() {
+        return numberAction;
+    }
+
     public static class Builder {
 
         private EventsConditions conditions = EventsConditions.DEFAULT;
         private SpawnEventAction action;
         private PhaseAction phaseAction;
+        private NumberAction numberAction;
         private EventType eventType;
 
         public Builder conditions(EventsConditions conditions) {
@@ -265,6 +304,11 @@ public class EventsRule {
 
         public Builder action(PhaseAction phaseAction) {
             this.phaseAction = phaseAction;
+            return this;
+        }
+
+        public Builder action(NumberAction numberAction) {
+            this.numberAction = numberAction;
             return this;
         }
 

@@ -13,6 +13,8 @@ public interface RuleKeys {
     Key<Integer> TIMEOUT = Key.create(Type.INTEGER, "timeout");
 
     // Inputs
+    Key<String> NUMBER = Key.create(Type.JSON, "number");
+
     Key<String> TIME = Key.create(Type.STRING, "time");
     Key<Integer> MINTIME = Key.create(Type.INTEGER, "mintime");
     Key<Integer> MAXTIME = Key.create(Type.INTEGER, "maxtime");
@@ -146,6 +148,8 @@ public interface RuleKeys {
     Key<String> ACTION_SETHELDAMOUNT = Key.create(Type.STRING, "setheldamount");
     Key<String> ACTION_SETSTATE = Key.create(Type.STRING, "setstate");
     Key<String> ACTION_SETPSTATE = Key.create(Type.STRING, "setpstate");
+    Key<String> ACTION_SETNUMBER = Key.create(Type.STRING, "setnumber");
+    Key<String> ACTION_ADDNUMBER = Key.create(Type.STRING, "addnumber");
     Key<String> ACTION_SETPHASE = Key.create(Type.STRING, "setphase");
     Key<String> ACTION_CLEARPHASE = Key.create(Type.STRING, "clearphase");
     Key<String> ACTION_TOGGLEPHASE = Key.create(Type.STRING, "togglephase");

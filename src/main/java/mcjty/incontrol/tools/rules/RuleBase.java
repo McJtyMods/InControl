@@ -56,10 +56,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -68,8 +65,17 @@ import static mcjty.incontrol.rules.support.RuleKeys.*;
 public class RuleBase<T extends RuleBase.EventGetter> {
 
     protected final List<Consumer<T>> actions = new ArrayList<>();
+    private final Set<String> phases;
 
     private static final Random rnd = new Random();
+
+    public RuleBase(Set<String> phases) {
+        this.phases = phases;
+    }
+
+    public Set<String> getPhases() {
+        return phases;
+    }
 
     protected List<Pair<Float, ItemStack>> getItemsWeighted(List<String> itemNames) {
         List<Pair<Float, ItemStack>> items = new ArrayList<>();
@@ -162,6 +168,8 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         map.consume(ACTION_SETPHASE, this::addSetPhaseAction);
         map.consume(ACTION_CLEARPHASE, this::addClearPhaseAction);
         map.consume(ACTION_TOGGLEPHASE, this::addTogglePhaseAction);
+        map.consume(ACTION_SETNUMBER, this::addSetNumberAction);
+        map.consume(ACTION_ADDNUMBER, this::addAddNumberAction);
         map.consume(ACTION_SETSTATE, state -> {
             if (layer.hasEnigmaScript()) {
                 addStateAction(state, layer);
@@ -190,6 +198,37 @@ public class RuleBase<T extends RuleBase.EventGetter> {
             DataStorage data = DataStorage.getData(Tools.getServerWorld(event.getWorld()));
             data.setPhase(phase, false);
         });
+    }
+
+    private void addSetNumberAction(String s) {
+        try {
+            String[] split = StringUtils.split(s, '=');
+            String number = split[0];
+            String value = split[1];
+            int finalValue = Integer.parseInt(value);
+            actions.add(event -> {
+                DataStorage data = DataStorage.getData(Tools.getServerWorld(event.getWorld()));
+                data.setNumber(number, finalValue);
+            });
+        } catch (Exception e) {
+            ErrorHandler.error("Bad number=value specifier '" + s + "'!");
+        }
+    }
+
+    private void addAddNumberAction(String s) {
+        try {
+            String[] split = StringUtils.split(s, '=');
+            String number = split[0];
+            String value = split[1];
+            int finalValue = Integer.parseInt(value);
+            actions.add(event -> {
+                DataStorage data = DataStorage.getData(Tools.getServerWorld(event.getWorld()));
+                int n = data.getNumber(number);
+                data.setNumber(number, n + finalValue);
+            });
+        } catch (Exception e) {
+            ErrorHandler.error("Bad number=value specifier '" + s + "'!");
+        }
     }
 
     private void addSetPhaseAction(String phase) {

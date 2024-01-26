@@ -83,6 +83,13 @@ public class SpawnerSystem {
         if (!data.getPhases().containsAll(rule.getPhases())) {
             return;
         }
+        for (Map.Entry<String, Predicate<Integer>> entry : rule.getNumbers().entrySet()) {
+            int value = data.getNumber(entry.getKey());
+            if (!entry.getValue().test(value)) {
+                return;
+            }
+        }
+
         SpawnerConditions conditions = rule.getConditions();
         if (conditions.getMaxtotal() != -1) {
             int count = InControl.setup.cache.getCountHostile(world);

@@ -94,6 +94,9 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
 
     static {
         FACTORY
+                .attribute(Attribute.create(PHASE))
+                .attribute(Attribute.create(NUMBER))
+
                 .attribute(Attribute.create(TIME))
                 .attribute(Attribute.create(MINTIME))
                 .attribute(Attribute.create(MAXTIME))
@@ -179,18 +182,12 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
     }
 
     private final GenericRuleEvaluator ruleEvaluator;
-    private final Set<String> phases;
     private Event.Result result;
 
     private SummonAidRule(AttributeMap map, Set<String> phases) {
-        super();
-        this.phases = phases;
+        super(phases);
         ruleEvaluator = new GenericRuleEvaluator(map);
         addActions(map, new ModRuleCompatibilityLayer());
-    }
-
-    public Set<String> getPhases() {
-        return phases;
     }
 
     public static SummonAidRule parse(JsonElement element) {

@@ -21,8 +21,10 @@ public class ModCommands {
                         .then(CmdInfo.register(dispatcher))
                         .then(CmdDays.register(dispatcher))
                         .then(CmdPhases.register(dispatcher))
+                        .then(CmdNumbers.register(dispatcher))
                         .then(CmdArea.register(dispatcher))
                         .then(CmdSetPhase.register(dispatcher))
+                        .then(CmdSetNumber.register(dispatcher))
                         .then(CmdClearPhase.register(dispatcher))
         );
 

@@ -104,6 +104,24 @@ public class EventsSystem {
         }
     }
 
+    private static void doNumberAction(EventsRule rule, Level level) {
+        NumberAction action = rule.getNumberAction();
+        if (action != null) {
+            DataStorage data = DataStorage.getData(level);
+            int number = data.getNumber(action.name());
+            if (action.set() != null) {
+                number = action.set();
+            }
+            if (action.add() != null) {
+                number += action.add();
+            }
+            if (action.mul() != null) {
+                number *= action.mul();
+            }
+            data.setNumber(action.name(), number);
+        }
+    }
+
     private static boolean checkConditions(EventsRule rule, Level level) {
         EventsConditions conditions = rule.getConditions();
         float random = conditions.getRandom();

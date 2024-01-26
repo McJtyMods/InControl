@@ -3,6 +3,7 @@ package mcjty.incontrol.rules;
 import com.google.gson.JsonElement;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.compat.ModRuleCompatibilityLayer;
+import mcjty.incontrol.data.PhaseTools;
 import mcjty.incontrol.rules.support.GenericRuleEvaluator;
 import mcjty.incontrol.tools.rules.IEventQuery;
 import mcjty.incontrol.tools.rules.IModRuleCompatibilityLayer;
@@ -21,6 +22,7 @@ import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.Event;
 import org.apache.logging.log4j.Level;
 
+import java.util.Set;
 import java.util.function.Consumer;
 
 import static mcjty.incontrol.rules.support.RuleKeys.*;
@@ -77,6 +79,9 @@ public class PlaceRule extends RuleBase<RuleBase.EventGetter> {
 
     static {
         FACTORY
+                .attribute(Attribute.create(PHASE))
+                .attribute(Attribute.create(NUMBER))
+
                 .attribute(Attribute.create(MINTIME))
                 .attribute(Attribute.create(MAXTIME))
                 .attribute(Attribute.create(MINLIGHT))
@@ -155,6 +160,8 @@ public class PlaceRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(ACTION_SETPHASE))
                 .attribute(Attribute.create(ACTION_CLEARPHASE))
                 .attribute(Attribute.create(ACTION_TOGGLEPHASE))
+                .attribute(Attribute.create(ACTION_SETNUMBER))
+                .attribute(Attribute.create(ACTION_ADDNUMBER))
                 .attribute(Attribute.createMulti(ACTION_POTION))
                 .attribute(Attribute.createMulti(ACTION_GIVE))
                 .attribute(Attribute.createMulti(ACTION_DROP))
@@ -164,8 +171,8 @@ public class PlaceRule extends RuleBase<RuleBase.EventGetter> {
     private Event.Result result;
     private final GenericRuleEvaluator ruleEvaluator;
 
-    private PlaceRule(AttributeMap map) {
-        super();
+    private PlaceRule(AttributeMap map, Set<String> phases) {
+        super(phases);
         ruleEvaluator = new GenericRuleEvaluator(map);
         addActions(map, new ModRuleCompatibilityLayer());
     }
@@ -235,7 +242,7 @@ public class PlaceRule extends RuleBase<RuleBase.EventGetter> {
                 InControl.setup.getLogger().log(Level.ERROR, e);
                 return null;
             }
-            return new PlaceRule(map);
+            return new PlaceRule(map, PhaseTools.getPhases(element));
         }
     }
 }

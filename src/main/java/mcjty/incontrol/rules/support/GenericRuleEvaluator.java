@@ -1,7 +1,9 @@
 package mcjty.incontrol.rules.support;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import mcjty.incontrol.ErrorHandler;
-import mcjty.incontrol.InControl;
 import mcjty.incontrol.areas.Area;
 import mcjty.incontrol.areas.AreaSystem;
 import mcjty.incontrol.compat.ModRuleCompatibilityLayer;
@@ -31,8 +33,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.*;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.chunk.ChunkStatus;
-import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.common.BiomeManager;
 import net.minecraftforge.event.entity.living.MobSpawnEvent;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -137,6 +137,7 @@ public class GenericRuleEvaluator {
 
         map.consume(WHEN, b -> {});
         map.consume(PHASE, b -> {});
+        map.consume(NUMBER, this::addNumberCheck);
         map.consume(HOSTILE, this::addHostileCheck);
         map.consume(PASSIVE, this::addPassiveCheck);
         map.consume(BABY, this::addBabyCheck);
@@ -162,6 +163,18 @@ public class GenericRuleEvaluator {
         map.consume(MAXDAYCOUNT, this::addMaxDayCountCheck);
     }
 
+    private void addNumberCheck(String json) {
+        JsonParser parser = new JsonParser();
+        JsonElement element = parser.parse(json);
+        TestingTools.NumberResult result = TestingTools.parseNumberCheck(element);
+        if (result != null) {
+            checks.add((event,query) -> {
+                DataStorage data = DataStorage.getData(Tools.getServerWorld(query.getWorld(event)));
+                return result.test().test(data.getNumber(result.number()));
+            });
+        }
+    }
+
     private void addCanSpawnHereCheck(boolean c) {
         if (c) {
             checks.add((event, query) -> {
@@ -169,10 +182,7 @@ public class GenericRuleEvaluator {
                 if (entity instanceof Mob) {
                     BlockPos pos = entity.blockPosition();
                     Level world = entity.getCommandSenderWorld();
-                    LevelChunk chunk = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
-                    if (chunk == null || !chunk.getStatus().isOrAfter(ChunkStatus.FULL)) {
-                        return false;
-                    }
+                    if (TestingTools.isChunkInvalid(world, pos)) return false;
                     return Mob.checkMobSpawnRules((EntityType<? extends Mob>) entity.getType(), world, MobSpawnType.NATURAL, pos, null);
                 } else {
                     return false;
@@ -184,10 +194,7 @@ public class GenericRuleEvaluator {
                 if (entity instanceof Mob) {
                     BlockPos pos = entity.blockPosition();
                     Level world = entity.getCommandSenderWorld();
-                    LevelChunk chunk = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
-                    if (chunk == null || !chunk.getStatus().isOrAfter(ChunkStatus.FULL)) {
-                        return false;
-                    }
+                    if (TestingTools.isChunkInvalid(world, pos)) return false;
                     return !Mob.checkMobSpawnRules((EntityType<? extends Mob>) entity.getType(), world, MobSpawnType.NATURAL, pos, null);
                 } else {
                     return true;
@@ -203,10 +210,7 @@ public class GenericRuleEvaluator {
                 if (entity instanceof Mob) {
                     BlockPos pos = entity.blockPosition();
                     Level world = entity.getCommandSenderWorld();
-                    LevelChunk chunk = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
-                    if (chunk == null || !chunk.getStatus().isOrAfter(ChunkStatus.FULL)) {
-                        return false;
-                    }
+                    if (TestingTools.isChunkInvalid(world, pos)) return false;
                     return ((Mob) entity).checkSpawnObstruction(world);
                 } else {
                     return false;
@@ -215,14 +219,11 @@ public class GenericRuleEvaluator {
         } else {
             checks.add((event, query) -> {
                 Entity entity = query.getEntity(event);
-                if (entity instanceof Mob) {
+                if (entity instanceof Mob mob) {
                     BlockPos pos = entity.blockPosition();
                     Level world = entity.getCommandSenderWorld();
-                    LevelChunk chunk = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
-                    if (chunk == null || !chunk.getStatus().isOrAfter(ChunkStatus.FULL)) {
-                        return false;
-                    }
-                    return !((Mob) entity).checkSpawnObstruction(world);
+                    if (TestingTools.isChunkInvalid(world, pos)) return false;
+                    return !mob.checkSpawnObstruction(world);
                 } else {
                     return true;
                 }
@@ -324,9 +325,7 @@ public class GenericRuleEvaluator {
             });
         } else {
             Set<String> modids = new HashSet<>();
-            for (String modid : mods) {
-                modids.add(modid);
-            }
+            modids.addAll(mods);
             checks.add((event, query) -> {
                 EntityType<?> type = query.getEntity(event).getType();
                 String mod = ForgeRegistries.ENTITY_TYPES.getKey(type).getNamespace();
@@ -344,20 +343,14 @@ public class GenericRuleEvaluator {
             checks.add((event,query) -> {
                 LevelAccessor world = query.getWorld(event);
                 BlockPos pos = query.getPos(event);
-                LevelChunk chunk = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
-                if (chunk == null || !chunk.getStatus().isOrAfter(ChunkStatus.FULL)) {
-                    return false;
-                }
+                if (TestingTools.isChunkInvalid(world, pos)) return false;
                 return world.canSeeSkyFromBelowWater(pos);
             });
         } else {
             checks.add((event,query) -> {
                 LevelAccessor world = query.getWorld(event);
                 BlockPos pos = query.getPos(event);
-                LevelChunk chunk = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
-                if (chunk == null || !chunk.getStatus().isOrAfter(ChunkStatus.FULL)) {
-                    return false;
-                }
+                if (TestingTools.isChunkInvalid(world, pos)) return false;
                 return !world.canSeeSkyFromBelowWater(pos);
             });
         }
@@ -612,10 +605,7 @@ public class GenericRuleEvaluator {
             checks.add((event, query) -> {
                 BlockPos pos = query.getPos(event);
                 LevelAccessor world = query.getWorld(event);
-                LevelChunk chunk = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
-                if (chunk == null || !chunk.getStatus().isOrAfter(ChunkStatus.FULL)) {
-                    return false;
-                }
+                if (TestingTools.isChunkInvalid(world, pos)) return false;
                 return exp.test(world.getBrightness(LightLayer.BLOCK, pos));
             });
         }
@@ -625,10 +615,7 @@ public class GenericRuleEvaluator {
         checks.add((event,query) -> {
             BlockPos pos = query.getPos(event);
             LevelAccessor world = query.getWorld(event);
-            LevelChunk chunk = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
-            if (chunk == null || !chunk.getStatus().isOrAfter(ChunkStatus.FULL)) {
-                return false;
-            }
+            if (TestingTools.isChunkInvalid(world, pos)) return false;
             return world.getBrightness(LightLayer.BLOCK, pos) >= minlight;
         });
     }
@@ -637,10 +624,7 @@ public class GenericRuleEvaluator {
         checks.add((event,query) -> {
             BlockPos pos = query.getPos(event);
             LevelAccessor world = query.getWorld(event);
-            LevelChunk chunk = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
-            if (chunk == null || !chunk.getStatus().isOrAfter(ChunkStatus.FULL)) {
-                return false;
-            }
+            if (TestingTools.isChunkInvalid(world, pos)) return false;
             return world.getMaxLocalRawBrightness(pos) >= minlight;
         });
     }
@@ -649,10 +633,7 @@ public class GenericRuleEvaluator {
         checks.add((event,query) -> {
             BlockPos pos = query.getPos(event);
             LevelAccessor world = query.getWorld(event);
-            LevelChunk chunk = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
-            if (chunk == null || !chunk.getStatus().isOrAfter(ChunkStatus.FULL)) {
-                return false;
-            }
+            if (TestingTools.isChunkInvalid(world, pos)) return false;
             return world.getBrightness(LightLayer.BLOCK, pos) <= maxlight;
         });
     }
@@ -661,10 +642,7 @@ public class GenericRuleEvaluator {
         checks.add((event,query) -> {
             BlockPos pos = query.getPos(event);
             LevelAccessor world = query.getWorld(event);
-            LevelChunk chunk = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
-            if (chunk == null || !chunk.getStatus().isOrAfter(ChunkStatus.FULL)) {
-                return false;
-            }
+            if (TestingTools.isChunkInvalid(world, pos)) return false;
             return world.getMaxLocalRawBrightness(pos) <= maxlight;
         });
     }
@@ -813,45 +791,37 @@ public class GenericRuleEvaluator {
 
     private void addStateCheck(String s) {
         if (!compatibility.hasEnigmaScript()) {
-            InControl.setup.getLogger().warn("EnigmaScript is missing: this test cannot work!");
+            TestingTools.warn("EnigmaScript is missing: this test cannot work!");
             return;
         }
-        String[] split = StringUtils.split(s, '=');
-        String state;
-        String value;
         try {
-            state = split[0];
-            value = split[1];
+            String[] split = StringUtils.split(s, '=');
+            String state = split[0];
+            String value = split[1];
+            checks.add((event, query) -> value.equals(compatibility.getState(query.getWorld(event), state)));
         } catch (Exception e) {
             ErrorHandler.error("Bad state=value specifier '" + s + "'!");
-            return;
         }
-
-        checks.add((event, query) -> value.equals(compatibility.getState(query.getWorld(event), state)));
     }
 
     private void addPStateCheck(String s) {
         if (!compatibility.hasEnigmaScript()) {
-            InControl.setup.getLogger().warn("EnigmaScript is missing: this test cannot work!");
+            TestingTools.warn("EnigmaScript is missing: this test cannot work!");
             return;
         }
-        String[] split = StringUtils.split(s, '=');
-        String state;
-        String value;
         try {
-            state = split[0];
-            value = split[1];
+            String[] split = StringUtils.split(s, '=');
+            String state = split[0];
+            String value = split[1];
+            checks.add((event, query) -> value.equals(compatibility.getPlayerState(query.getPlayer(event), state)));
         } catch (Exception e) {
             ErrorHandler.error("Bad state=value specifier '" + s + "'!");
-            return;
         }
-
-        checks.add((event, query) -> value.equals(compatibility.getPlayerState(query.getPlayer(event), state)));
     }
 
     private void addSummerCheck(Boolean s) {
         if (!compatibility.hasSereneSeasons()) {
-            InControl.setup.getLogger().warn("Serene Seasons is missing: this test cannot work!");
+            TestingTools.warn("Serene Seasons is missing: this test cannot work!");
             return;
         }
         checks.add((event, query) -> s == compatibility.isSummer(Tools.getServerWorld(query.getWorld(event))));
@@ -859,7 +829,7 @@ public class GenericRuleEvaluator {
 
     private void addWinterCheck(Boolean s) {
         if (!compatibility.hasSereneSeasons()) {
-            InControl.setup.getLogger().warn("Serene Seasons is missing: this test cannot work!");
+            TestingTools.warn("Serene Seasons is missing: this test cannot work!");
             return;
         }
         checks.add((event, query) -> s == compatibility.isWinter(Tools.getServerWorld(query.getWorld(event))));
@@ -867,7 +837,7 @@ public class GenericRuleEvaluator {
 
     private void addSpringCheck(Boolean s) {
         if (!compatibility.hasSereneSeasons()) {
-            InControl.setup.getLogger().warn("Serene Seasons is missing: this test cannot work!");
+            TestingTools.warn("Serene Seasons is missing: this test cannot work!");
             return;
         }
         checks.add((event, query) -> s == compatibility.isSpring(Tools.getServerWorld(query.getWorld(event))));
@@ -875,7 +845,7 @@ public class GenericRuleEvaluator {
 
     private void addAutumnCheck(Boolean s) {
         if (!compatibility.hasSereneSeasons()) {
-            InControl.setup.getLogger().warn("Serene Seasons is missing: this test cannot work!");
+            TestingTools.warn("Serene Seasons is missing: this test cannot work!");
             return;
         }
         checks.add((event, query) -> s == compatibility.isAutumn(Tools.getServerWorld(query.getWorld(event))));
@@ -883,7 +853,7 @@ public class GenericRuleEvaluator {
 
     private void addGameStageCheck(String stage) {
         if (!compatibility.hasGameStages()) {
-            InControl.setup.getLogger().warn("Game Stages is missing: the 'gamestage' test cannot work!");
+            TestingTools.warn("Game Stages is missing: the 'gamestage' test cannot work!");
             return;
         }
         checks.add((event, query) -> compatibility.hasGameStage(query.getPlayer(event), stage));
@@ -891,7 +861,7 @@ public class GenericRuleEvaluator {
 
     private void addInCityCheck(boolean incity) {
         if (!compatibility.hasLostCities()) {
-            InControl.setup.getLogger().warn("The Lost Cities is missing: the 'incity' test cannot work!");
+            TestingTools.warn("The Lost Cities is missing: the 'incity' test cannot work!");
             return;
         }
         if (incity) {
@@ -903,7 +873,7 @@ public class GenericRuleEvaluator {
 
     private void addInStreetCheck(boolean instreet) {
         if (!compatibility.hasLostCities()) {
-            InControl.setup.getLogger().warn("The Lost Cities is missing: the 'instreet' test cannot work!");
+            TestingTools.warn("The Lost Cities is missing: the 'instreet' test cannot work!");
             return;
         }
         if (instreet) {
@@ -915,7 +885,7 @@ public class GenericRuleEvaluator {
 
     private void addInSphereCheck(boolean insphere) {
         if (!compatibility.hasLostCities()) {
-            InControl.setup.getLogger().warn("The Lost Cities is missing: the 'insphere' test cannot work!");
+            TestingTools.warn("The Lost Cities is missing: the 'insphere' test cannot work!");
             return;
         }
         if (insphere) {
@@ -927,7 +897,7 @@ public class GenericRuleEvaluator {
 
     private void addInBuildingCheck(boolean inbuilding) {
         if (!compatibility.hasLostCities()) {
-            InControl.setup.getLogger().warn("The Lost Cities is missing: the 'inbuilding' test cannot work!");
+            TestingTools.warn("The Lost Cities is missing: the 'inbuilding' test cannot work!");
             return;
         }
         if (inbuilding) {
@@ -939,7 +909,7 @@ public class GenericRuleEvaluator {
 
     private void addBuildingCheck(List<String> buildings) {
         if (!compatibility.hasLostCities()) {
-            InControl.setup.getLogger().warn("The Lost Cities is missing: the 'building' test cannot work!");
+            TestingTools.warn("The Lost Cities is missing: the 'building' test cannot work!");
             return;
         }
         Set<String> buildingSet = new HashSet<>(buildings);
@@ -951,7 +921,7 @@ public class GenericRuleEvaluator {
 
     private void addBaubleCheck(List<String> itemList, Supplier<int[]> slotSupplier) {
         if (!compatibility.hasBaubles()) {
-            InControl.setup.getLogger().warn("Baubles is missing: this test cannot work!");
+            TestingTools.warn("Baubles is missing: this test cannot work!");
             return;
         }
 

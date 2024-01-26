@@ -232,6 +232,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
         FACTORY
                 .attribute(Attribute.create(WHEN))
                 .attribute(Attribute.create(PHASE))
+                .attribute(Attribute.create(NUMBER))
 
                 .attribute(Attribute.create(TIME))
                 .attribute(Attribute.create(MINTIME))
@@ -333,6 +334,8 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(ACTION_SETPHASE))
                 .attribute(Attribute.create(ACTION_CLEARPHASE))
                 .attribute(Attribute.create(ACTION_TOGGLEPHASE))
+                .attribute(Attribute.create(ACTION_SETNUMBER))
+                .attribute(Attribute.create(ACTION_ADDNUMBER))
                 .attribute(Attribute.createMulti(ACTION_HELDITEM))
                 .attribute(Attribute.createMulti(ACTION_ARMORBOOTS))
                 .attribute(Attribute.createMulti(ACTION_ARMORLEGS))
@@ -345,14 +348,12 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
 
     private final SpawnWhen when;
     private final GenericRuleEvaluator ruleEvaluator;
-    private final Set<String> phases;
     private ICResult result = null;
     private boolean doContinue = false;
 
     private SpawnRule(AttributeMap map, SpawnWhen when, Set<String> phases) {
-        super();
+        super(phases);
         this.when = when;
-        this.phases = phases;
         ruleEvaluator = new GenericRuleEvaluator(map);
         addActions(map, new ModRuleCompatibilityLayer());
         if (!map.isEmpty()) {
@@ -360,10 +361,6 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
             map.getKeys().forEach(k -> buffer.append(k).append(' '));
             ErrorHandler.error("Invalid keywords in spawn rule: " + buffer);
         }
-    }
-
-    public Set<String> getPhases() {
-        return phases;
     }
 
     public static SpawnRule parse(JsonElement element) {

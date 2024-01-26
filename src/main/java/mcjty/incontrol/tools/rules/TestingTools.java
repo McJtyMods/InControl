@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import mcjty.incontrol.ErrorHandler;
+import mcjty.incontrol.InControl;
 import mcjty.incontrol.tools.varia.Tools;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -26,6 +27,8 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
+import net.minecraft.world.level.chunk.ChunkStatus;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.FakePlayer;
@@ -351,5 +354,41 @@ public class TestingTools {
             return false;
         }
         return !isFakePlayer(entity);
+    }
+
+    public static void warn(String message) {
+        InControl.setup.getLogger().warn(message);
+    }
+
+    public static boolean isChunkInvalid(LevelAccessor world, BlockPos pos) {
+        LevelChunk chunk = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
+        if (chunk == null || !chunk.getStatus().isOrAfter(ChunkStatus.FULL)) {
+            return true;
+        }
+        return false;
+    }
+
+    @Nullable
+    public static NumberResult parseNumberCheck(JsonElement element) {
+        if (!element.isJsonObject()) {
+            ErrorHandler.error("Number check needs to be an object!");
+            return null;
+        }
+        JsonObject object = element.getAsJsonObject();
+        if (!object.has("name")) {
+            ErrorHandler.error("Number check needs to have a 'name' field!");
+            return null;
+        }
+        if (!object.has("expression")) {
+            ErrorHandler.error("Number check needs to have a 'expression' field!");
+            return null;
+        }
+        String number = object.get("name").getAsString();
+        String expression = object.get("expression").getAsString();
+        Predicate<Integer> test = Tools.parseExpression(expression);
+        return new NumberResult(number, test);
+    }
+
+    public record NumberResult(String number, Predicate<Integer> test) {
     }
 }

@@ -90,6 +90,9 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
 
     static {
         FACTORY
+                .attribute(Attribute.create(PHASE))
+                .attribute(Attribute.create(NUMBER))
+
                 .attribute(Attribute.create(TIME))
                 .attribute(Attribute.create(MINTIME))
                 .attribute(Attribute.create(MAXTIME))
@@ -178,20 +181,14 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
     }
 
     private final GenericRuleEvaluator ruleEvaluator;
-    private final Set<String> phases;
     private final List<Predicate<ItemStack>> toRemoveItems = new ArrayList<>();
     private final List<Pair<ItemStack, Function<Integer, Integer>>> toAddItems = new ArrayList<>();
     private boolean removeAll = false;
 
     private LootRule(AttributeMap map, Set<String> phases) {
-        super();
-        this.phases = phases;
+        super(phases);
         ruleEvaluator = new GenericRuleEvaluator(map);
         addActions(map, new ModRuleCompatibilityLayer());
-    }
-
-    public Set<String> getPhases() {
-        return phases;
     }
 
     public static LootRule parse(JsonElement element) {
