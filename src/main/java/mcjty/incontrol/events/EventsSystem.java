@@ -16,6 +16,7 @@ import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 public class EventsSystem {
 
@@ -72,6 +73,7 @@ public class EventsSystem {
     private static void doActions(EventsRule rule, BlockPos pos, ServerLevel level) {
         doSpawnAction(rule, pos, level);
         doPhaseAction(rule, level);
+        doNumberAction(rule, level);
     }
 
     private static void doSpawnAction(EventsRule rule, BlockPos pos, ServerLevel level) {
@@ -132,6 +134,15 @@ public class EventsSystem {
             Set<String> phases = DataStorage.getData(level).getPhases();
             if (!phases.containsAll(conditions.getPhases())) {
                 return false;
+            }
+        }
+        if (!conditions.getNumbers().isEmpty()) {
+            DataStorage data = DataStorage.getData(level);
+            for (Map.Entry<String, Predicate<Integer>> entry : conditions.getNumbers().entrySet()) {
+                int number = data.getNumber(entry.getKey());
+                if (!entry.getValue().test(number)) {
+                    return false;
+                }
             }
         }
         Set<ResourceKey<Level>> dimensions = conditions.getDimensions();

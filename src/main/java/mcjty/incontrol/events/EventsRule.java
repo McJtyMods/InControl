@@ -155,6 +155,7 @@ public class EventsRule {
         if (value.has("mul")) {
             mul = value.getAsJsonPrimitive("mul").getAsInt();
         }
+        // @todo error checking
         return new NumberAction(name, set, add, mul);
     }
 
