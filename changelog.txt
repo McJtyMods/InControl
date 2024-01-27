@@ -1,4 +1,4 @@
-Upcoming:
+1.20-9.2.0:
 - New named number system where you have variables with a name and an integer value:
     - Two new commands: 'numbers' to show the current numbers and 'setnumber' to set a number
     - New 'number' test that can be used in almost all rules to test if a number satisfies a given expression. Example expression: "number": { "name": "mycounter", "expression": "gt(10)" }
