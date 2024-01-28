@@ -213,7 +213,6 @@ public class ForgeEventHandlers {
                     case DENY:
                         event.setResult(Event.Result.DENY);
                         Statistics.addSpawnStat(i, true);
-                        event.setCanceled(true);
                         break;
                     case DENY_WITH_ACTIONS:
                         event.setResult(Event.Result.DENY);

@@ -1,3 +1,6 @@
+Upcoming:
+- Fix with position checks. They would crash if you used deny
+
 1.20-9.2.0:
 - New named number system where you have variables with a name and an integer value:
     - Two new commands: 'numbers' to show the current numbers and 'setnumber' to set a number
