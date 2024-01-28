@@ -1,4 +1,4 @@
-Upcoming:
+1.20-9.2.1:
 - Fix with position checks. They would crash if you used deny
 
 1.20-9.2.0:
