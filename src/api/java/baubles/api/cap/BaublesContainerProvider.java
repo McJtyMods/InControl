@@ -2,9 +2,9 @@ package baubles.api.cap;
 
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.EnumFacing;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
-import net.minecraftforge.common.util.INBTSerializable;
+import net.neoforged.neoforge.common.capabilities.Capability;
+import net.neoforged.neoforge.common.capabilities.ICapabilityProvider;
+import net.neoforged.neoforge.common.util.INBTSerializable;
 
 public class BaublesContainerProvider implements INBTSerializable<CompoundNBT>, ICapabilityProvider {
 

@@ -2,7 +2,7 @@ package baubles.api.cap;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.items.IItemHandlerModifiable;
+import net.neoforged.neoforge.items.IItemHandlerModifiable;
 
 public interface IBaublesItemHandler extends IItemHandlerModifiable {	
 	
