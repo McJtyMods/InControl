@@ -28,7 +28,7 @@ import net.neoforged.neoforge.event.level.LevelEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.eventbus.api.Event;
 import net.neoforged.neoforge.eventbus.api.EventPriority;
-import net.neoforged.neoforge.eventbus.api.SubscribeEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.fml.LogicalSide;
 import org.apache.commons.lang3.tuple.Pair;
 

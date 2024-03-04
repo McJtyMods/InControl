@@ -3,10 +3,10 @@ package mcjty.incontrol;
 
 import mcjty.incontrol.setup.ModSetup;
 import mcjty.incontrol.tools.cache.StructureCache;
-import net.neoforged.neoforge.common.MinecraftForge;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.fml.common.Mod;
-import net.neoforged.neoforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 @Mod(InControl.MODID)

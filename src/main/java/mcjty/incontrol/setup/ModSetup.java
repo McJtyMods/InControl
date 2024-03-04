@@ -9,7 +9,7 @@ import mcjty.incontrol.events.EventsParser;
 import mcjty.incontrol.rules.support.RuleCache;
 import mcjty.incontrol.rules.RulesManager;
 import mcjty.incontrol.spawner.SpawnerParser;
-import net.neoforged.neoforge.common.MinecraftForge;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.fml.ModList;
 import net.neoforged.neoforge.fml.loading.FMLPaths;
 import org.apache.logging.log4j.Level;
@@ -31,7 +31,7 @@ public class ModSetup {
         logger = LogManager.getLogger(InControl.MODID);
         setupModCompat();
 
-        MinecraftForge.EVENT_BUS.register(new ForgeEventHandlers());
+        NeoForge.EVENT_BUS.register(new ForgeEventHandlers());
         RulesManager.setRulePath(FMLPaths.CONFIGDIR.get());
         SpawnerParser.setRulePath(FMLPaths.CONFIGDIR.get());
         EventsParser.setRulePath(FMLPaths.CONFIGDIR.get());
