@@ -39,14 +39,15 @@ public interface RuleKeys {
     Key<Boolean> SEESKY = Key.create(Type.BOOLEAN, "seesky");
     Key<Boolean> SLIME = Key.create(Type.BOOLEAN, "slime");
     Key<String> WEATHER = Key.create(Type.STRING, "weather");
-    Key<String> BIOMETAGS = Key.create(Type.STRING, "biometags");
     Key<String> DIFFICULTY = Key.create(Type.STRING, "difficulty");
     Key<String> BLOCK = Key.create(Type.JSON, "block");
     Key<String> AREA = Key.create(Type.STRING, "area");
     Key<String> BLOCKOFFSET = Key.create(Type.JSON, "blockoffset");
     Key<String> BIOME = Key.create(Type.STRING, "biome");
     Key<String> BIOMETYPE = Key.create(Type.STRING, "biometype");
+    Key<String> BIOMETAGS = Key.create(Type.STRING, "biometags");
     Key<String> STRUCTURE = Key.create(Type.STRING, "structure");
+    Key<String> STRUCTURETAGS = Key.create(Type.STRING, "structuretags");
     Key<ResourceKey<Level>> DIMENSION = Key.create(Type.DIMENSION_TYPE, "dimension");
     Key<String> DIMENSION_MOD = Key.create(Type.STRING, "dimensionmod");
 

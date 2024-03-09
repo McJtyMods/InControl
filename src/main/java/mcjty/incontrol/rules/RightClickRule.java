@@ -96,7 +96,8 @@ public class RightClickRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(WEATHER))
                 .attribute(Attribute.createMulti(BIOMETAGS))
                 .attribute(Attribute.create(DIFFICULTY))
-                .attribute(Attribute.create(STRUCTURE))
+                .attribute(Attribute.createMulti(STRUCTURE))
+                .attribute(Attribute.createMulti(STRUCTURETAGS))
                 .attribute(Attribute.createMulti(MOD))
 
                 .attribute(Attribute.create(GAMESTAGE))
