@@ -26,7 +26,7 @@ public record SpawnEventAction(List<ResourceLocation> mobid, int attempts,
         if (mob.isJsonArray()) {
             for (JsonElement element : mob.getAsJsonArray()) {
                 ResourceLocation mobid = new ResourceLocation(element.getAsString());
-                if (!ForgeRegistries.ENTITY_TYPES.containsKey(mobid)) {
+                if (!BuiltInRegistries.ENTITY_TYPE.containsKey(mobid)) {
                     ErrorHandler.error("Invalid mob '" + mobid + "' for events rule!");
                     return null;
                 }
@@ -34,7 +34,7 @@ public record SpawnEventAction(List<ResourceLocation> mobid, int attempts,
             }
         } else {
             ResourceLocation mobid = new ResourceLocation(mob.getAsString());
-            if (!ForgeRegistries.ENTITY_TYPES.containsKey(mobid)) {
+            if (!BuiltInRegistries.ENTITY_TYPE.containsKey(mobid)) {
                 ErrorHandler.error("Invalid mob '" + mobid + "' for events rule!");
                 return null;
             }

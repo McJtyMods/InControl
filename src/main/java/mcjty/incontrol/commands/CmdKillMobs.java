@@ -65,7 +65,7 @@ public class CmdKillMobs  implements Command<CommandSourceStack> {
             } else if (entity) {
                 return !(input instanceof Animal) && !(input instanceof Player);
             } else {
-                String id = ForgeRegistries.ENTITY_TYPES.getKey(input.getType()).toString();
+                String id = BuiltInRegistries.ENTITY_TYPE.getKey(input.getType()).toString();
                 return type.equals(id);
             }
         });

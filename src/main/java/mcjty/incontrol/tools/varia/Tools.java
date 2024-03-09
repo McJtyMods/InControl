@@ -112,7 +112,7 @@ public class Tools {
             return ItemStack.EMPTY;
         }
         String name = obj.get("item").getAsString();
-        Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(name));
+        Item item = BuiltInRegistries.ITEM.getValue(new ResourceLocation(name));
         if (item == null) {
             ErrorHandler.error("Unknown item '" + name + "'!");
             return null;
@@ -139,7 +139,7 @@ public class Tools {
     }
 
     private static ItemStack parseStackNoNBT(String name) {
-        Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(name));
+        Item item = BuiltInRegistries.ITEM.getValue(new ResourceLocation(name));
         if (item == null) {
             return ItemStack.EMPTY;
         }

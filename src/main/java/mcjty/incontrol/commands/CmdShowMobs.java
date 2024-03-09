@@ -27,7 +27,7 @@ public class CmdShowMobs  implements Command<CommandSourceStack> {
     @Override
     public int run(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         ServerPlayer player = context.getSource().getPlayerOrException();
-        Set<ResourceLocation> keys = ForgeRegistries.ENTITY_TYPES.getKeys();
+        Set<ResourceLocation> keys = BuiltInRegistries.ENTITY_TYPE.getKeys();
         keys.forEach(s -> InControl.setup.getLogger().info(("Mob:" + s)));
         return 0;
     }

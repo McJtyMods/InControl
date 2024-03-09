@@ -176,7 +176,7 @@ public class RuleCache {
                     int cnt = cachedCounters.getOrDefault(entity.getType(), 0) + 1;
                     cachedCounters.put(entity.getType(), cnt);
 
-                    String mod = ForgeRegistries.ENTITY_TYPES.getKey(entity.getType()).getNamespace();
+                    String mod = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()).getNamespace();
                     CountPerMod count = countPerMod.computeIfAbsent(mod, s -> new CountPerMod());
                     count.total++;
 

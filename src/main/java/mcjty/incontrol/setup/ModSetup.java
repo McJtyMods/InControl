@@ -10,7 +10,7 @@ import mcjty.incontrol.rules.support.RuleCache;
 import mcjty.incontrol.rules.RulesManager;
 import mcjty.incontrol.spawner.SpawnerParser;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.fml.ModList;
+import net.neoforged.fml.ModList;
 import net.neoforged.neoforge.fml.loading.FMLPaths;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;

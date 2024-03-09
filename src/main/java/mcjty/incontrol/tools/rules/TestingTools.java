@@ -175,7 +175,7 @@ public class TestingTools {
         }
 
         String name = obj.get("item").getAsString();
-        Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(name));
+        Item item = BuiltInRegistries.ITEM.getValue(new ResourceLocation(name));
         if (item == null) {
             ErrorHandler.error("Unknown item '" + name + "'!");
             return null;
@@ -208,7 +208,7 @@ public class TestingTools {
         if (obj.has("mod")) {
             String mod = obj.get("mod").getAsString();
             Predicate<ItemStack> finalTest = test;
-            test = s -> finalTest.test(s) && "mod".equals(ForgeRegistries.ITEMS.getKey(s.getItem()).getNamespace());
+            test = s -> finalTest.test(s) && "mod".equals(BuiltInRegistries.ITEM.getKey(s.getItem()).getNamespace());
         }
         if (obj.has("nbt")) {
             List<Predicate<CompoundTag>> nbtMatchers = getNbtMatchers(obj);

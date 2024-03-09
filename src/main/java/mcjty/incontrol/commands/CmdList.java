@@ -52,7 +52,7 @@ public class CmdList implements Command<CommandSourceStack> {
             ServerLevel worldServer = player.getCommandSenderWorld().getServer().getLevel(dimension);
             Counter<ResourceLocation> counter = new Counter<>();
             worldServer.getEntities(ANY_TYPE, e -> e instanceof Mob).forEach(input -> {
-                counter.add(ForgeRegistries.ENTITY_TYPES.getKey(input.getType()));
+                counter.add(BuiltInRegistries.ENTITY_TYPE.getKey(input.getType()));
             });
             for (Map.Entry<ResourceLocation, Integer> entry : counter.getMap().entrySet()) {
                 player.sendSystemMessage(Component.literal(ChatFormatting.YELLOW + "Mob " + entry.getKey().toString() + ": " + entry.getValue()));

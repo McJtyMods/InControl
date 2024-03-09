@@ -41,7 +41,7 @@ public class EventTypeMobKilled implements EventType {
         if (mob.isJsonArray()) {
             for (JsonElement element : mob.getAsJsonArray()) {
                 ResourceLocation rl = new ResourceLocation(element.getAsString());
-                if (!ForgeRegistries.ENTITY_TYPES.containsKey(rl)) {
+                if (!BuiltInRegistries.ENTITY_TYPE.containsKey(rl)) {
                     ErrorHandler.error("Unknown mob '" + rl + "'!");
                     return true;
                 }
@@ -49,7 +49,7 @@ public class EventTypeMobKilled implements EventType {
             }
         } else {
             ResourceLocation rl = new ResourceLocation(mob.getAsString());
-            if (!ForgeRegistries.ENTITY_TYPES.containsKey(rl)) {
+            if (!BuiltInRegistries.ENTITY_TYPE.containsKey(rl)) {
                 ErrorHandler.error("Unknown mob '" + rl + "'!");
                 return true;
             }

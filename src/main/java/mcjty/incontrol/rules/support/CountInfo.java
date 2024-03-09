@@ -171,7 +171,7 @@ class CountInfo {
     }
 
     private static EntityType findEntity(String id) {
-        EntityType<?> ee = ForgeRegistries.ENTITY_TYPES.getValue(new ResourceLocation(id));
+        EntityType<?> ee = BuiltInRegistries.ENTITY_TYPE.getValue(new ResourceLocation(id));
         if (ee == null) {
             ErrorHandler.error("Unknown mob '" + id + "'!");
             return null;

@@ -57,7 +57,7 @@ public class EventsSystem {
 
     public static void onEntityKilled(LivingDeathEvent event) {
         Entity entity = event.getEntity();
-        ResourceLocation key = ForgeRegistries.ENTITY_TYPES.getKey(entity.getType());
+        ResourceLocation key = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
         List<EventsRule> eventsRules = rulesByMob.get(key);
         if (eventsRules != null) {
             for (EventsRule rule : eventsRules) {
@@ -85,7 +85,7 @@ public class EventsSystem {
             List<ResourceLocation> mobs = action.mobid();
             // Pick a random mob
             ResourceLocation mob = mobs.get(rnd.nextInt(mobs.size()));
-            EntityType<?> entityType = ForgeRegistries.ENTITY_TYPES.getValue(mob);
+            EntityType<?> entityType = BuiltInRegistries.ENTITY_TYPE.getValue(mob);
             if (entityType != null) {
                 // Get a random count
                 int count = action.minamount() + rnd.nextInt(action.maxamount() - action.minamount() + 1);

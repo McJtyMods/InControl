@@ -292,17 +292,17 @@ public class GenericRuleEvaluator {
     private void addMobsCheck(List<String> mobs) {
         if (mobs.size() == 1) {
             String id = mobs.get(0);
-            if (!ForgeRegistries.ENTITY_TYPES.containsKey(new ResourceLocation(id))) {
+            if (!BuiltInRegistries.ENTITY_TYPE.containsKey(new ResourceLocation(id))) {
                 ErrorHandler.error("Unknown mob '" + id + "'!");
             }
-            EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(new ResourceLocation(id));
+            EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.getValue(new ResourceLocation(id));
             if (type != null) {
                 checks.add((event, query) -> type.equals(query.getEntity(event).getType()));
             }
         } else {
             Set<EntityType> classes = new HashSet<>();
             for (String id : mobs) {
-                EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(new ResourceLocation(id));
+                EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.getValue(new ResourceLocation(id));
                 if (type != null) {
                     classes.add(type);
                 } else {
@@ -320,7 +320,7 @@ public class GenericRuleEvaluator {
             String modid = mods.get(0);
             checks.add((event, query) -> {
                 EntityType<?> type = query.getEntity(event).getType();
-                String mod = ForgeRegistries.ENTITY_TYPES.getKey(type).getNamespace();
+                String mod = BuiltInRegistries.ENTITY_TYPE.getKey(type).getNamespace();
                 return modid.equals(mod);
             });
         } else {
@@ -328,7 +328,7 @@ public class GenericRuleEvaluator {
             modids.addAll(mods);
             checks.add((event, query) -> {
                 EntityType<?> type = query.getEntity(event).getType();
-                String mod = ForgeRegistries.ENTITY_TYPES.getKey(type).getNamespace();
+                String mod = BuiltInRegistries.ENTITY_TYPE.getKey(type).getNamespace();
                 return modids.contains(mod);
             });
         }
