@@ -3,6 +3,7 @@ package mcjty.incontrol.rules.support;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.areas.Area;
 import mcjty.incontrol.areas.AreaSystem;
@@ -33,6 +34,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.*;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraftforge.common.BiomeManager;
 import net.minecraftforge.event.entity.living.MobSpawnEvent;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -107,7 +110,8 @@ public class GenericRuleEvaluator {
         map.consumeAsList(LACKHELDITEM, items -> addHeldItemCheck(items, true));
         map.consumeAsList(LACKOFFHANDITEM, items -> addOffHandItemCheck(items, true));
 
-        map.consume(STRUCTURE, this::addStructureCheck);
+        map.consumeAsList(STRUCTURE, this::addStructureCheck);
+        map.consumeAsList(STRUCTURETAGS, this::addStructureTagsCheck);
         map.consumeAsList(SCOREBOARDTAGS_ALL, this::addAllScoreboardTagsCheck);
         map.consumeAsList(SCOREBOARDTAGS_ANY, this::addAnyScoreboardTagsCheck);
 
@@ -465,8 +469,51 @@ public class GenericRuleEvaluator {
         });
     }
 
-    private void addStructureCheck(String structure) {
-        checks.add((event,query) -> StructureCache.CACHE.isInStructure(query.getWorld(event), structure, query.getPos(event)));
+    private void addStructureCheck(List<String> structures) {
+        if (structures.size() == 1) {
+            String structure = structures.get(0);
+            checks.add((event,query) -> StructureCache.CACHE.isInStructure(query.getWorld(event), structure, query.getPos(event)));
+        } else {
+            Set<String> structureNames = new HashSet<>(structures);
+            checks.add((event,query) -> {
+                for (String structure : structureNames) {
+                    if (StructureCache.CACHE.isInStructure(query.getWorld(event), structure, query.getPos(event))) {
+                        return true;
+                    }
+                }
+                return false;
+            });
+        }
+    }
+
+    private void addStructureTagsCheck(List<String> tags) {
+        Set<TagKey<Structure>> tagSet = tags.stream().map(s -> TagKey.create(Registries.STRUCTURE, new ResourceLocation(s))).collect(Collectors.toSet());
+        checks.add((event,query) -> {
+            LevelAccessor world = query.getWorld(event);
+            BlockPos pos = query.getPos(event);
+            if (TestingTools.isChunkInvalid(world, pos)) return false;
+            ChunkAccess chunk = world.getChunk(pos);
+            if (chunk == null) {
+                return false;
+            }
+            Map<Structure, LongSet> references = chunk.getAllReferences();
+            for (Map.Entry<Structure, LongSet> e : references.entrySet()) {
+                LongSet longs = e.getValue();
+                if (!longs.isEmpty()) {
+                    Structure struct = e.getKey();
+                    Optional<ResourceKey<Structure>> resourceKey = world.registryAccess().registryOrThrow(Registries.STRUCTURE).getResourceKey(struct);
+                    if (resourceKey.isPresent()) {
+                        Holder.Reference<Structure> holder = world.registryAccess().registryOrThrow(Registries.STRUCTURE).getHolder(resourceKey.get()).get();
+                        for (TagKey<Structure> tagKey : tagSet) {
+                            if (holder.is(tagKey)) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        });
     }
 
     private void addBiomesCheck(List<String> biomes) {
