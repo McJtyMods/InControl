@@ -224,11 +224,13 @@ public class EventsSystem {
 
     public static void onLevelTick(TickEvent.LevelTickEvent event) {
         List<ScheduledCustomEvent> events = customEventMap.get(event.level);
-        if (events != null) {
-            for (ScheduledCustomEvent scheduledCustomEvent : events) {
+        if (events != null && !events.isEmpty()) {
+            // Make a copy of events and loop over the copy
+            var copy = new ArrayList<>(events);
+            events.clear();
+            for (ScheduledCustomEvent scheduledCustomEvent : copy) {
                 handleCustomEvent((ServerLevel) event.level, scheduledCustomEvent.pos, scheduledCustomEvent.name);
             }
-            events.clear();
         }
     }
 
