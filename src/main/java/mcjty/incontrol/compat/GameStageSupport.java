@@ -25,7 +25,7 @@ public class GameStageSupport {
     public static void removeGameStage(Player player, String stage) {
         if (player != null) {
             IStageData stageData = GameStageHelper.getPlayerData(player);
-            stageData.addStage(stage);
+            stageData.removeStage(stage);
         }
     }
 }
