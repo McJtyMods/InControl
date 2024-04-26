@@ -28,8 +28,8 @@ sourceSets.main.resources {
 
 dependencies {
     mc()
-    jei()
-    top()
+//    jei()
+//    top()
     lostcities()
     gamestages()
     sereneseasons()
