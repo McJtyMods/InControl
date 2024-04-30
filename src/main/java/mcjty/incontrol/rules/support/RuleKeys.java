@@ -180,6 +180,8 @@ public interface RuleKeys {
     Key<Float> ACTION_MULTXP = Key.create(Type.FLOAT, "multxp");
     Key<Float> ACTION_ADDXP = Key.create(Type.FLOAT, "addxp");
 
+    Key<Boolean> ACTION_MAKE_PASSIVE = Key.create(Type.BOOLEAN, "makepassive");
+
     // Mob spawn entry
     Key<String> ACTION_REMOVE = Key.create(Type.JSON, "remove");
 }
