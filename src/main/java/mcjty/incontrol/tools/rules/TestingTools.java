@@ -174,11 +174,16 @@ public class TestingTools {
             return s -> s.isEmpty() == empty;
         }
 
-        String name = obj.get("item").getAsString();
-        Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(name));
-        if (item == null) {
-            ErrorHandler.error("Unknown item '" + name + "'!");
-            return null;
+        Item item;
+        if (obj.has("item")) {
+            String name = obj.get("item").getAsString();
+            item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(name));
+            if (item == null) {
+                ErrorHandler.error("Unknown item '" + name + "'!");
+                return null;
+            }
+        } else {
+            item = null;
         }
 
         Predicate<ItemStack> test;
@@ -187,44 +192,75 @@ public class TestingTools {
             if (damage == null) {
                 return null;
             }
-            test = s -> s.getItem() == item && damage.test(s.getDamageValue());
+            if (item == null) {
+                test = s -> damage.test(s.getDamageValue());
+            } else {
+                test = s -> s.getItem() == item && damage.test(s.getDamageValue());
+            }
         } else {
-            test = s -> s.getItem() == item;
+            if (item == null) {
+                test = null;
+            } else {
+                test = s -> s.getItem() == item;
+            }
         }
 
         if (obj.has("count")) {
             Predicate<Integer> count = getExpression(obj.get("count"));
             if (count != null) {
-                Predicate<ItemStack> finalTest = test;
-                test = s -> finalTest.test(s) && count.test(s.getCount());
+                if (test == null) {
+                    test = s -> count.test(s.getCount());
+                } else {
+                    Predicate<ItemStack> finalTest = test;
+                    test = s -> finalTest.test(s) && count.test(s.getCount());
+                }
             }
         }
         if (obj.has("tag")) {
             ResourceLocation tagname = new ResourceLocation(obj.get("tag").getAsString());
             TagKey<Item> key = TagKey.create(Registries.ITEM, tagname);
-            Predicate<ItemStack> finalTest = test;
-            test = s -> finalTest.test(s) && s.is(key);
+            if (test == null) {
+                test = s -> s.is(key);
+            } else {
+                Predicate<ItemStack> finalTest = test;
+                test = s -> finalTest.test(s) && s.is(key);
+            }
         }
         if (obj.has("mod")) {
             String mod = obj.get("mod").getAsString();
-            Predicate<ItemStack> finalTest = test;
-            test = s -> finalTest.test(s) && "mod".equals(ForgeRegistries.ITEMS.getKey(s.getItem()).getNamespace());
+            if (test == null) {
+                test = s -> mod.equals(ForgeRegistries.ITEMS.getKey(s.getItem()).getNamespace());
+            } else {
+                Predicate<ItemStack> finalTest = test;
+                test = s -> finalTest.test(s) && mod.equals(ForgeRegistries.ITEMS.getKey(s.getItem()).getNamespace());
+            }
         }
         if (obj.has("nbt")) {
             List<Predicate<CompoundTag>> nbtMatchers = getNbtMatchers(obj);
             if (nbtMatchers != null) {
-                Predicate<ItemStack> finalTest = test;
-                test = s -> finalTest.test(s) && nbtMatchers.stream().allMatch(p -> p.test(s.getTag()));
+                if (test == null) {
+                    test = s -> nbtMatchers.stream().allMatch(p -> p.test(s.getTag()));
+                } else {
+                    Predicate<ItemStack> finalTest = test;
+                    test = s -> finalTest.test(s) && nbtMatchers.stream().allMatch(p -> p.test(s.getTag()));
+                }
             }
         }
         if (obj.has("energy")) {
             Predicate<Integer> energy = getExpression(obj.get("energy"));
             if (energy != null) {
-                Predicate<ItemStack> finalTest = test;
-                test = s -> finalTest.test(s) && energy.test(getEnergy(s));
+                if (test == null) {
+                    test = s -> energy.test(getEnergy(s));
+                } else {
+                    Predicate<ItemStack> finalTest = test;
+                    test = s -> finalTest.test(s) && energy.test(getEnergy(s));
+                }
             }
         }
 
+        if (test == null) {
+            ErrorHandler.error("No item description found!");
+        }
         return test;
     }
 
