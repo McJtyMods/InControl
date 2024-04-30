@@ -19,6 +19,7 @@ import mcjty.incontrol.tools.rules.TestingTools;
 import mcjty.incontrol.tools.typed.AttributeMap;
 import mcjty.incontrol.tools.varia.Tools;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -34,9 +35,11 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.*;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraftforge.common.BiomeManager;
+import net.minecraftforge.common.Tags;
 import net.minecraftforge.event.entity.living.MobSpawnEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
@@ -71,6 +74,9 @@ public class GenericRuleEvaluator {
         map.consume(HEIGHT, this::addHeightCheck);
         map.consume(MINHEIGHT, this::addMinHeightCheck);
         map.consume(MAXHEIGHT, this::addMaxHeightCheck);
+
+        map.consumeAsList(SOURCE, this::addSourceCheck);
+        map.consumeAsList(MOD, this::addModsCheck);
 
         map.consume(WEATHER, this::addWeatherCheck);
         map.consumeAsList(BIOMETAGS, this::addBiomeTagCheck);
@@ -110,6 +116,7 @@ public class GenericRuleEvaluator {
         map.consumeAsList(LACKHELDITEM, items -> addHeldItemCheck(items, true));
         map.consumeAsList(LACKOFFHANDITEM, items -> addOffHandItemCheck(items, true));
 
+        map.consume(HASSTRUCTURE, this::addHasStructureCheck);
         map.consumeAsList(STRUCTURE, this::addStructureCheck);
         map.consumeAsList(STRUCTURETAGS, this::addStructureTagsCheck);
         map.consumeAsList(SCOREBOARDTAGS_ALL, this::addAllScoreboardTagsCheck);
@@ -139,8 +146,10 @@ public class GenericRuleEvaluator {
         map.consumeAsList(BODY, v -> addBaubleCheck(v, compatibility::getBodySlots));
         map.consumeAsList(CHARM, v -> addBaubleCheck(v, compatibility::getCharmSlots));
 
-        map.consume(WHEN, b -> {});
-        map.consume(PHASE, b -> {});
+        map.consume(WHEN, b -> {
+        });
+        map.consume(PHASE, b -> {
+        });
         map.consume(NUMBER, this::addNumberCheck);
         map.consume(HOSTILE, this::addHostileCheck);
         map.consume(PASSIVE, this::addPassiveCheck);
@@ -158,13 +167,13 @@ public class GenericRuleEvaluator {
         map.consume(PROJECTILE, this::addProjectileCheck);
         map.consume(FIRE, this::addFireCheck);
         map.consume(MAGIC, this::addMagicCheck);
-        map.consumeAsList(SOURCE, this::addSourceCheck);
-        map.consumeAsList(MOD, this::addModsCheck);
         map.consume(MINCOUNT, this::addMinCountCheck);
         map.consume(MAXCOUNT, this::addMaxCountCheck);
         map.consume(DAYCOUNT, this::addDayCountCheck);
         map.consume(MINDAYCOUNT, this::addMinDayCountCheck);
         map.consume(MAXDAYCOUNT, this::addMaxDayCountCheck);
+
+        map.consume(CAVE, this::addCaveCheck);
     }
 
     private void addNumberCheck(String json) {
@@ -172,7 +181,7 @@ public class GenericRuleEvaluator {
         JsonElement element = parser.parse(json);
         TestingTools.NumberResult result = TestingTools.parseNumberCheck(element);
         if (result != null) {
-            checks.add((event,query) -> {
+            checks.add((event, query) -> {
                 DataStorage data = DataStorage.getData(Tools.getServerWorld(query.getWorld(event)));
                 return result.test().test(data.getNumber(result.number()));
             });
@@ -339,19 +348,46 @@ public class GenericRuleEvaluator {
     }
 
     private void addRandomCheck(float r) {
-        checks.add((event,query) -> rnd.nextFloat() < r);
+        checks.add((event, query) -> rnd.nextFloat() < r);
+    }
+
+    private void addCaveCheck(boolean cave) {
+        checks.add((event, query) -> {
+            LevelAccessor world = query.getWorld(event);
+            BlockPos pos = query.getPos(event);
+            if (TestingTools.isChunkInvalid(world, pos)) return false;
+            if (world.canSeeSkyFromBelowWater(pos)) {
+                // We can see the sky, so not a cave
+                return !cave;
+            }
+            // To qualify as a cave we will scan the area in all 8 cardinal directions for at least 30 blocks and try to find stone.
+            // If we can find stone in six of those cardinal directions then we are in a cave.
+            int cnt = 0;
+            for (Direction direction : Direction.values()) {
+                BlockPos p = pos;
+                for (int i = 0; i < 50; i++) {
+                    p = p.relative(direction);
+                    BlockState state = world.getBlockState(p);
+                    if (state.is(Tags.Blocks.STONE) || state.is(Tags.Blocks.ORES)) {
+                        cnt++;
+                        break;
+                    }
+                }
+            }
+            return cnt >= 8 == cave;
+        });
     }
 
     private void addSeeSkyCheck(boolean seesky) {
         if (seesky) {
-            checks.add((event,query) -> {
+            checks.add((event, query) -> {
                 LevelAccessor world = query.getWorld(event);
                 BlockPos pos = query.getPos(event);
                 if (TestingTools.isChunkInvalid(world, pos)) return false;
                 return world.canSeeSkyFromBelowWater(pos);
             });
         } else {
-            checks.add((event,query) -> {
+            checks.add((event, query) -> {
                 LevelAccessor world = query.getWorld(event);
                 BlockPos pos = query.getPos(event);
                 if (TestingTools.isChunkInvalid(world, pos)) return false;
@@ -362,29 +398,29 @@ public class GenericRuleEvaluator {
 
     private void addSlimeChunkCheck(boolean slime) {
         if (slime) {
-            checks.add((event,query) -> TestingTools.isSlimeChunk(new ChunkPos(query.getPos(event)), query.getWorld(event)));
+            checks.add((event, query) -> TestingTools.isSlimeChunk(new ChunkPos(query.getPos(event)), query.getWorld(event)));
         } else {
-            checks.add((event,query) -> !TestingTools.isSlimeChunk(new ChunkPos(query.getPos(event)), query.getWorld(event)));
+            checks.add((event, query) -> !TestingTools.isSlimeChunk(new ChunkPos(query.getPos(event)), query.getWorld(event)));
         }
     }
 
     private void addDimensionCheck(List<ResourceKey<Level>> dimensions) {
         if (dimensions.size() == 1) {
             ResourceKey<Level> dim = dimensions.get(0);
-            checks.add((event,query) -> Tools.getDimensionKey(query.getWorld(event)).equals(dim));
+            checks.add((event, query) -> Tools.getDimensionKey(query.getWorld(event)).equals(dim));
         } else {
             Set<ResourceKey<Level>> dims = new HashSet<>(dimensions);
-            checks.add((event,query) -> dims.contains(Tools.getDimensionKey(query.getWorld(event))));
+            checks.add((event, query) -> dims.contains(Tools.getDimensionKey(query.getWorld(event))));
         }
     }
 
     private void addDimensionModCheck(List<String> dimensions) {
         if (dimensions.size() == 1) {
             String dimmod = dimensions.get(0);
-            checks.add((event,query) -> Tools.getDimensionKey(query.getWorld(event)).location().getNamespace().equals(dimmod));
+            checks.add((event, query) -> Tools.getDimensionKey(query.getWorld(event)).location().getNamespace().equals(dimmod));
         } else {
             Set<String> dims = new HashSet<>(dimensions);
-            checks.add((event,query) -> dims.contains(Tools.getDimensionKey(query.getWorld(event)).location().getNamespace()));
+            checks.add((event, query) -> dims.contains(Tools.getDimensionKey(query.getWorld(event)).location().getNamespace()));
         }
     }
 
@@ -393,7 +429,7 @@ public class GenericRuleEvaluator {
         Difficulty diff = Difficulty.byName(difficulty);
         if (diff != null) {
             Difficulty finalDiff = diff;
-            checks.add((event,query) -> query.getWorld(event).getDifficulty() == finalDiff);
+            checks.add((event, query) -> query.getWorld(event).getDifficulty() == finalDiff);
         } else {
             ErrorHandler.error("Unknown difficulty '" + difficulty + "'! Use one of 'easy', 'normal', 'hard',  or 'peaceful'");
         }
@@ -403,7 +439,7 @@ public class GenericRuleEvaluator {
         boolean raining = weather.toLowerCase().startsWith("rain");
         boolean thunder = weather.toLowerCase().startsWith("thunder");
         if (raining) {
-            checks.add((event,query) -> {
+            checks.add((event, query) -> {
                 LevelAccessor world = query.getWorld(event);
                 if (world instanceof Level level) {
                     return level.isRaining();
@@ -429,7 +465,7 @@ public class GenericRuleEvaluator {
         Set<TagKey<Biome>> tags = list.stream().map(s -> TagKey.create(Registries.BIOME, new ResourceLocation(s))).collect(Collectors.toSet());
         if (tags.size() == 1) {
             TagKey<Biome> key = tags.iterator().next();
-            checks.add((event,query) -> {
+            checks.add((event, query) -> {
                 Holder<Biome> biome = query.getWorld(event).getBiome(query.getPos(event));
                 return biome.is(key);
             });
@@ -448,7 +484,7 @@ public class GenericRuleEvaluator {
 
     private void addAllScoreboardTagsCheck(List<String> list) {
         Set<String> tags = new HashSet<>(list);
-        checks.add((event,query) -> {
+        checks.add((event, query) -> {
             Entity entity = query.getEntity(event);
             if (entity instanceof LivingEntity living) {
                 return living.getTags().containsAll(tags);
@@ -459,7 +495,7 @@ public class GenericRuleEvaluator {
 
     private void addAnyScoreboardTagsCheck(List<String> list) {
         Set<String> tags = new HashSet<>(list);
-        checks.add((event,query) -> {
+        checks.add((event, query) -> {
             Entity entity = query.getEntity(event);
             if (entity instanceof LivingEntity living) {
                 // Return true if entity.getTags() contains any key from tags
@@ -469,13 +505,17 @@ public class GenericRuleEvaluator {
         });
     }
 
+    private void addHasStructureCheck(boolean c) {
+        checks.add((event, query) -> StructureCache.CACHE.isInAnyStructure(query.getWorld(event), query.getPos(event)) == c);
+    }
+
     private void addStructureCheck(List<String> structures) {
         if (structures.size() == 1) {
             String structure = structures.get(0);
-            checks.add((event,query) -> StructureCache.CACHE.isInStructure(query.getWorld(event), structure, query.getPos(event)));
+            checks.add((event, query) -> StructureCache.CACHE.isInStructure(query.getWorld(event), structure, query.getPos(event)));
         } else {
             Set<String> structureNames = new HashSet<>(structures);
-            checks.add((event,query) -> {
+            checks.add((event, query) -> {
                 for (String structure : structureNames) {
                     if (StructureCache.CACHE.isInStructure(query.getWorld(event), structure, query.getPos(event))) {
                         return true;
@@ -488,7 +528,7 @@ public class GenericRuleEvaluator {
 
     private void addStructureTagsCheck(List<String> tags) {
         Set<TagKey<Structure>> tagSet = tags.stream().map(s -> TagKey.create(Registries.STRUCTURE, new ResourceLocation(s))).collect(Collectors.toSet());
-        checks.add((event,query) -> {
+        checks.add((event, query) -> {
             LevelAccessor world = query.getWorld(event);
             BlockPos pos = query.getPos(event);
             if (TestingTools.isChunkInvalid(world, pos)) return false;
@@ -519,13 +559,13 @@ public class GenericRuleEvaluator {
     private void addBiomesCheck(List<String> biomes) {
         if (biomes.size() == 1) {
             String biomename = biomes.get(0);
-            checks.add((event,query) -> {
+            checks.add((event, query) -> {
                 Holder<Biome> biome = query.getWorld(event).getBiome(query.getPos(event));
                 return Tools.getBiomeId(biome).equals(biomename);
             });
         } else {
             Set<String> biomenames = new HashSet<>(biomes);
-            checks.add((event,query) -> {
+            checks.add((event, query) -> {
                 Holder<Biome> biome = query.getWorld(event).getBiome(query.getPos(event));
                 String biomeId = Tools.getBiomeId(biome);
                 return biomenames.contains(biomeId);
@@ -538,7 +578,7 @@ public class GenericRuleEvaluator {
         biomeTypes.stream().map(s -> BiomeManager.BiomeType.valueOf(s.toUpperCase())).
                 forEach(type -> BiomeManager.getBiomes(type).forEach(t -> biomes.add(ForgeRegistries.BIOMES.getValue(t.getKey().registry()))));
 
-        checks.add((event,query) -> {
+        checks.add((event, query) -> {
             Holder<Biome> biome = query.getWorld(event).getBiome(query.getPos(event));
             return biomes.contains(biome.value());
         });
@@ -572,7 +612,7 @@ public class GenericRuleEvaluator {
                 blockMatchers.add(blockMatcher);
             }
 
-            checks.add((event,query) -> {
+            checks.add((event, query) -> {
                 BlockPos pos = posFunction.apply(event, query);
                 if (pos != null) {
                     LevelAccessor world = query.getWorld(event);
@@ -590,10 +630,10 @@ public class GenericRuleEvaluator {
     private void addTimeCheck(String time) {
         Predicate<Integer> expression = Tools.parseExpression(time);
         if (expression != null) {
-            checks.add((event,query) -> {
+            checks.add((event, query) -> {
                 LevelAccessor world = query.getWorld(event);
                 if (world instanceof Level) {
-                    long t = ((Level)world).getDayTime();
+                    long t = ((Level) world).getDayTime();
                     return expression.test((int) (t % 24000));
                 } else {
                     return false;
@@ -603,10 +643,10 @@ public class GenericRuleEvaluator {
     }
 
     private void addMinTimeCheck(int mintime) {
-        checks.add((event,query) -> {
+        checks.add((event, query) -> {
             LevelAccessor world = query.getWorld(event);
             if (world instanceof Level) {
-                long time = ((Level)world).getDayTime();
+                long time = ((Level) world).getDayTime();
                 return (time % 24000) >= mintime;
             } else {
                 return false;
@@ -615,10 +655,10 @@ public class GenericRuleEvaluator {
     }
 
     private void addMaxTimeCheck(int maxtime) {
-        checks.add((event,query) -> {
+        checks.add((event, query) -> {
             LevelAccessor world = query.getWorld(event);
             if (world instanceof Level) {
-                long time = ((Level)world).getDayTime();
+                long time = ((Level) world).getDayTime();
                 return (time % 24000) <= maxtime;
             } else {
                 return false;
@@ -628,7 +668,7 @@ public class GenericRuleEvaluator {
 
     private void addMinSpawnDistCheck(float v) {
         final float d = v * v;
-        checks.add((event,query) -> {
+        checks.add((event, query) -> {
             BlockPos pos = query.getPos(event);
             ServerLevel sw = Tools.getServerWorld(query.getWorld(event));
             double sqdist = pos.distSqr(sw.getSharedSpawnPos());
@@ -638,7 +678,7 @@ public class GenericRuleEvaluator {
 
     private void addMaxSpawnDistCheck(float v) {
         final float d = v * v;
-        checks.add((event,query) -> {
+        checks.add((event, query) -> {
             BlockPos pos = query.getPos(event);
             ServerLevel sw = Tools.getServerWorld(query.getWorld(event));
             double sqdist = pos.distSqr(sw.getSharedSpawnPos());
@@ -659,7 +699,7 @@ public class GenericRuleEvaluator {
     }
 
     private void addMinLightCheck(int minlight) {
-        checks.add((event,query) -> {
+        checks.add((event, query) -> {
             BlockPos pos = query.getPos(event);
             LevelAccessor world = query.getWorld(event);
             if (TestingTools.isChunkInvalid(world, pos)) return false;
@@ -668,7 +708,7 @@ public class GenericRuleEvaluator {
     }
 
     private void addMinLightCheckCorrect(int minlight) {
-        checks.add((event,query) -> {
+        checks.add((event, query) -> {
             BlockPos pos = query.getPos(event);
             LevelAccessor world = query.getWorld(event);
             if (TestingTools.isChunkInvalid(world, pos)) return false;
@@ -677,7 +717,7 @@ public class GenericRuleEvaluator {
     }
 
     private void addMaxLightCheck(int maxlight) {
-        checks.add((event,query) -> {
+        checks.add((event, query) -> {
             BlockPos pos = query.getPos(event);
             LevelAccessor world = query.getWorld(event);
             if (TestingTools.isChunkInvalid(world, pos)) return false;
@@ -686,7 +726,7 @@ public class GenericRuleEvaluator {
     }
 
     private void addMaxLightCheckCorrect(int maxlight) {
-        checks.add((event,query) -> {
+        checks.add((event, query) -> {
             BlockPos pos = query.getPos(event);
             LevelAccessor world = query.getWorld(event);
             if (TestingTools.isChunkInvalid(world, pos)) return false;
@@ -695,11 +735,11 @@ public class GenericRuleEvaluator {
     }
 
     private void addMinAdditionalDifficultyCheck(Float mindifficulty) {
-        checks.add((event,query) -> query.getWorld(event).getCurrentDifficultyAt(query.getPos(event)).getEffectiveDifficulty() >= mindifficulty);
+        checks.add((event, query) -> query.getWorld(event).getCurrentDifficultyAt(query.getPos(event)).getEffectiveDifficulty() >= mindifficulty);
     }
 
     private void addMaxAdditionalDifficultyCheck(Float maxdifficulty) {
-        checks.add((event,query) -> query.getWorld(event).getCurrentDifficultyAt(query.getPos(event)).getEffectiveDifficulty() <= maxdifficulty);
+        checks.add((event, query) -> query.getWorld(event).getCurrentDifficultyAt(query.getPos(event)).getEffectiveDifficulty() <= maxdifficulty);
     }
 
     private void addHeightCheck(String input) {
@@ -710,11 +750,11 @@ public class GenericRuleEvaluator {
     }
 
     private void addMaxHeightCheck(int maxheight) {
-        checks.add((event,query) -> query.getY(event) <= maxheight);
+        checks.add((event, query) -> query.getY(event) <= maxheight);
     }
 
     private void addMinHeightCheck(int minheight) {
-        checks.add((event,query) -> query.getY(event) >= minheight);
+        checks.add((event, query) -> query.getY(event) >= minheight);
     }
 
     private void addHelmetCheck(List<String> itemList) {
@@ -758,7 +798,7 @@ public class GenericRuleEvaluator {
     }
 
     private void addArmorCheck(List<Predicate<ItemStack>> items, EquipmentSlot slot, boolean lacking) {
-        checks.add((event,query) -> {
+        checks.add((event, query) -> {
             Player player = query.getPlayer(event);
             if (player != null) {
                 ItemStack armorItem = player.getItemBySlot(slot);
@@ -776,7 +816,7 @@ public class GenericRuleEvaluator {
 
     private void addHeldItemCheck(List<String> itemList, boolean lacking) {
         List<Predicate<ItemStack>> items = TestingTools.getItems(itemList);
-        checks.add((event,query) -> {
+        checks.add((event, query) -> {
             Player player = query.getPlayer(event);
             if (player != null) {
                 ItemStack mainhand = player.getMainHandItem();
@@ -794,7 +834,7 @@ public class GenericRuleEvaluator {
 
     private void addOffHandItemCheck(List<String> itemList, boolean lacking) {
         List<Predicate<ItemStack>> items = TestingTools.getItems(itemList);
-        checks.add((event,query) -> {
+        checks.add((event, query) -> {
             Player player = query.getPlayer(event);
             if (player != null) {
                 ItemStack offhand = player.getOffhandItem();
@@ -812,7 +852,7 @@ public class GenericRuleEvaluator {
 
     private void addBothHandsItemCheck(List<String> itemList) {
         List<Predicate<ItemStack>> items = TestingTools.getItems(itemList);
-        checks.add((event,query) -> {
+        checks.add((event, query) -> {
             Player player = query.getPlayer(event);
             if (player != null) {
                 ItemStack offhand = player.getOffhandItem();
@@ -912,9 +952,9 @@ public class GenericRuleEvaluator {
             return;
         }
         if (incity) {
-            checks.add((event,query) -> compatibility.isCity(query, event));
+            checks.add((event, query) -> compatibility.isCity(query, event));
         } else {
-            checks.add((event,query) -> !compatibility.isCity(query, event));
+            checks.add((event, query) -> !compatibility.isCity(query, event));
         }
     }
 
@@ -924,9 +964,9 @@ public class GenericRuleEvaluator {
             return;
         }
         if (instreet) {
-            checks.add((event,query) -> compatibility.isStreet(query, event));
+            checks.add((event, query) -> compatibility.isStreet(query, event));
         } else {
-            checks.add((event,query) -> !compatibility.isStreet(query, event));
+            checks.add((event, query) -> !compatibility.isStreet(query, event));
         }
     }
 
@@ -936,9 +976,9 @@ public class GenericRuleEvaluator {
             return;
         }
         if (insphere) {
-            checks.add((event,query) -> compatibility.inSphere(query, event));
+            checks.add((event, query) -> compatibility.inSphere(query, event));
         } else {
-            checks.add((event,query) -> !compatibility.inSphere(query, event));
+            checks.add((event, query) -> !compatibility.inSphere(query, event));
         }
     }
 
@@ -948,9 +988,9 @@ public class GenericRuleEvaluator {
             return;
         }
         if (inbuilding) {
-            checks.add((event,query) -> compatibility.isBuilding(query, event));
+            checks.add((event, query) -> compatibility.isBuilding(query, event));
         } else {
-            checks.add((event,query) -> !compatibility.isBuilding(query, event));
+            checks.add((event, query) -> !compatibility.isBuilding(query, event));
         }
     }
 
@@ -960,7 +1000,7 @@ public class GenericRuleEvaluator {
             return;
         }
         Set<String> buildingSet = new HashSet<>(buildings);
-        checks.add((event,query) -> {
+        checks.add((event, query) -> {
             String building = compatibility.getBuilding(query, event);
             return building != null && buildingSet.contains(building);
         });
@@ -973,7 +1013,7 @@ public class GenericRuleEvaluator {
         }
 
         List<Predicate<ItemStack>> items = TestingTools.getItems(itemList);
-        checks.add((event,query) -> {
+        checks.add((event, query) -> {
             Player player = query.getPlayer(event);
             if (player != null) {
                 for (int slot : slotSupplier.get()) {

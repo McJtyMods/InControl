@@ -3,7 +3,6 @@ package mcjty.incontrol.tools.cache;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import mcjty.incontrol.tools.varia.Tools;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -29,6 +28,22 @@ public class StructureCache {
 
     public void clean() {
         structureCache.clear();
+    }
+
+    public boolean isInAnyStructure(LevelAccessor world, BlockPos pos) {
+        ServerLevel sw = Tools.getServerWorld(world);
+        ChunkAccess chunk = sw.getChunk(pos.getX() >> 4, pos.getZ() >> 4, ChunkStatus.STRUCTURE_REFERENCES, false);
+        if (chunk == null) {
+            return false;
+        }
+        Map<Structure, LongSet> references = chunk.getAllReferences();
+        for (Map.Entry<Structure, LongSet> e : references.entrySet()) {
+            LongSet longs = e.getValue();
+            if (!longs.isEmpty()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean isInStructure(LevelAccessor world, String structure, BlockPos pos) {

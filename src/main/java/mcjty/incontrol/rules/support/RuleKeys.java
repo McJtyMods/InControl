@@ -35,6 +35,7 @@ public interface RuleKeys {
     Key<Float> MINDIFFICULTY = Key.create(Type.FLOAT, "mindifficulty");
     Key<Float> MAXDIFFICULTY = Key.create(Type.FLOAT, "maxdifficulty");
 
+    Key<Boolean> CAVE = Key.create(Type.BOOLEAN, "cave");
     Key<Float> RANDOM = Key.create(Type.FLOAT, "random");
     Key<Boolean> SEESKY = Key.create(Type.BOOLEAN, "seesky");
     Key<Boolean> SLIME = Key.create(Type.BOOLEAN, "slime");
@@ -47,6 +48,7 @@ public interface RuleKeys {
     Key<String> BIOMETYPE = Key.create(Type.STRING, "biometype");
     Key<String> BIOMETAGS = Key.create(Type.STRING, "biometags");
     Key<String> STRUCTURE = Key.create(Type.STRING, "structure");
+    Key<Boolean> HASSTRUCTURE = Key.create(Type.BOOLEAN, "hasstructure");
     Key<String> STRUCTURETAGS = Key.create(Type.STRING, "structuretags");
     Key<ResourceKey<Level>> DIMENSION = Key.create(Type.DIMENSION_TYPE, "dimension");
     Key<String> DIMENSION_MOD = Key.create(Type.STRING, "dimensionmod");
