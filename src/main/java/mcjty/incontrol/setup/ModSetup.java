@@ -27,6 +27,8 @@ public class ModSetup {
     private Logger logger;
     public RuleCache cache = new RuleCache();
 
+    public static final TagKey<Block> CAVE_BLOCK = TagKey.create(Registries.BLOCK, new ResourceLocation(InControl.MODID, "cave_block"));
+
     public void init() {
         logger = LogManager.getLogger(InControl.MODID);
         setupModCompat();
