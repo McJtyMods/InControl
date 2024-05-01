@@ -1,0 +1,12 @@
+{
+  "values": [
+    "#forge:stone",
+    "#forge:ores",
+    "#minecraft:cave_vines",
+    "#minecraft:dripstone_replaceable_blocks",
+    "minecraft:dripstone_block",
+    "minecraft:pointed_dripstone",
+    "minecraft:calcite",
+    "minecraft:tuff"
+  ]
+}

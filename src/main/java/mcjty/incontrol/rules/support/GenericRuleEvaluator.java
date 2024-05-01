@@ -10,6 +10,7 @@ import mcjty.incontrol.areas.AreaSystem;
 import mcjty.incontrol.compat.ModRuleCompatibilityLayer;
 import mcjty.incontrol.data.DataStorage;
 import mcjty.incontrol.events.EventsSystem;
+import mcjty.incontrol.setup.ModSetup;
 import mcjty.incontrol.spawner.SpawnerSystem;
 import mcjty.incontrol.tools.cache.StructureCache;
 import mcjty.incontrol.tools.rules.TestingBlockTools;
@@ -368,13 +369,13 @@ public class GenericRuleEvaluator {
                 for (int i = 0; i < 50; i++) {
                     p = p.relative(direction);
                     BlockState state = world.getBlockState(p);
-                    if (state.is(Tags.Blocks.STONE) || state.is(Tags.Blocks.ORES)) {
+                    if (state.is(ModSetup.CAVE_BLOCK)) {
                         cnt++;
                         break;
                     }
                 }
             }
-            return cnt >= 8 == cave;
+            return cnt >= 7 == cave;
         });
     }
 

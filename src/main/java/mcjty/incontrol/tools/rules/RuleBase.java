@@ -151,7 +151,6 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         map.consume2(ACTION_DAMAGEMULTIPLY, ACTION_DAMAGEADD, this::addDamageAction);
         map.consume2(ACTION_SIZEMULTIPLY, ACTION_SIZEADD, this::addSizeActions);
         map.consumeAsList(ACTION_POTION, this::addPotionsAction);
-        map.consume(ACTION_MAKE_PASSIVE, this::addMakePassiveAction);
         map.consume(ACTION_NODESPAWN, this::addNoDespawnAction);
         map.consume(ACTION_ANGRY, this::addAngryAction);
         map.consume(ACTION_CUSTOMNAME, this::addCustomName);
@@ -635,34 +634,6 @@ public class RuleBase<T extends RuleBase.EventGetter> {
 //                event.getWorld().createExplosion(null, pos.getX() + .5, pos.getY() + .5, pos.getZ() + .5, finalStrength, finalFlaming, finalSmoking);
                 if (event.getWorld() instanceof Level) {
                     ((Level) event.getWorld()).explode(null, pos.getX() + .5, pos.getY() + .5, pos.getZ() + .5, finalStrength, finalFlaming, Level.ExplosionInteraction.TNT);
-                }
-            }
-        });
-    }
-
-    private void addMakePassiveAction(boolean passive) {
-        actions.add(event -> {
-            LivingEntity living = event.getEntityLiving();
-            if (living instanceof Mob mob) {
-                List<Goal> goalsToRemove = new ArrayList<>();
-                Set<WrappedGoal> goals = mob.goalSelector.getAvailableGoals();
-                for (WrappedGoal goal : goals) {
-                    if (goal.getGoal() instanceof MeleeAttackGoal) {
-                        goalsToRemove.add(goal.getGoal());
-                    } else if (goal.getGoal() instanceof RangedAttackGoal) {
-                        goalsToRemove.add(goal.getGoal());
-                    } else if (goal.getGoal() instanceof NearestAttackableTargetGoal) {
-                        goalsToRemove.add(goal.getGoal());
-                    }
-                }
-                for (Goal goal : goalsToRemove) {
-                    mob.goalSelector.removeGoal(goal);
-                }
-            }
-            if (living != null) {
-
-                if (living instanceof NeutralMob) {
-                    ((NeutralMob) living).setTarget(null);
                 }
             }
         });

@@ -9,6 +9,10 @@ import mcjty.incontrol.events.EventsParser;
 import mcjty.incontrol.rules.support.RuleCache;
 import mcjty.incontrol.rules.RulesManager;
 import mcjty.incontrol.spawner.SpawnerParser;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.level.block.Block;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.loading.FMLPaths;
@@ -26,6 +30,8 @@ public class ModSetup {
 
     private Logger logger;
     public RuleCache cache = new RuleCache();
+
+    public static final TagKey<Block> CAVE_BLOCK = TagKey.create(Registries.BLOCK, new ResourceLocation(InControl.MODID, "cave_block"));
 
     public void init() {
         logger = LogManager.getLogger(InControl.MODID);
