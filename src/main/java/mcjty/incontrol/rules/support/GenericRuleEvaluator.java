@@ -36,6 +36,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.*;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.levelgen.structure.Structure;
@@ -373,9 +374,12 @@ public class GenericRuleEvaluator {
                         cnt++;
                         break;
                     }
+                    if (!state.isAir() && !state.is(Blocks.WATER) && !state.is(Blocks.LAVA)) {
+                        break;
+                    }
                 }
             }
-            return cnt >= 7 == cave;
+            return cnt >= 6 == cave;
         });
     }
 
