@@ -172,8 +172,8 @@ public class LeftClickRule extends RuleBase<RuleBase.EventGetter> {
     private Event.Result result;
     private final GenericRuleEvaluator ruleEvaluator;
 
-    private LeftClickRule(AttributeMap map, Set<String> phases) {
-        super(phases);
+    private LeftClickRule(AttributeMap map, Set<String> phases, int index) {
+        super(phases, index);
         ruleEvaluator = new GenericRuleEvaluator(map);
         addActions(map, new ModRuleCompatibilityLayer());
     }
@@ -232,7 +232,7 @@ public class LeftClickRule extends RuleBase<RuleBase.EventGetter> {
     }
 
 
-    public static LeftClickRule parse(JsonElement element) {
+    public static LeftClickRule parse(JsonElement element, int index) {
         if (element == null) {
             return null;
         } else {
@@ -243,7 +243,7 @@ public class LeftClickRule extends RuleBase<RuleBase.EventGetter> {
                 InControl.setup.getLogger().log(org.apache.logging.log4j.Level.ERROR, e);
                 return null;
             }
-            return new LeftClickRule(map, PhaseTools.getPhases(element));
+            return new LeftClickRule(map, PhaseTools.getPhases(element), index);
         }
     }
 }

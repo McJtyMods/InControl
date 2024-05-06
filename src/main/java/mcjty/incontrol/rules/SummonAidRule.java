@@ -171,6 +171,18 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
                 .attribute(Attribute.create(ACTION_DAMAGESET))
                 .attribute(Attribute.create(ACTION_DAMAGEMULTIPLY))
                 .attribute(Attribute.create(ACTION_DAMAGEADD))
+                .attribute(Attribute.create(ACTION_ARMORSET))
+                .attribute(Attribute.create(ACTION_ARMORMULTIPLY))
+                .attribute(Attribute.create(ACTION_ARMORADD))
+                .attribute(Attribute.create(ACTION_ARMORTOUGHNESSSET))
+                .attribute(Attribute.create(ACTION_ARMORTOUGHNESSMULTIPLY))
+                .attribute(Attribute.create(ACTION_ARMORTOUGHNESSADD))
+                .attribute(Attribute.create(ACTION_ATTACKSPEEDSET))
+                .attribute(Attribute.create(ACTION_ATTACKSPEEDMULTIPLY))
+                .attribute(Attribute.create(ACTION_ATTACKSPEEDADD))
+                .attribute(Attribute.create(ACTION_FOLLOWRANGESET))
+                .attribute(Attribute.create(ACTION_FOLLOWRANGEMULTIPLY))
+                .attribute(Attribute.create(ACTION_FOLLOWRANGEADD))
                 .attribute(Attribute.create(ACTION_SIZEMULTIPLY))
                 .attribute(Attribute.create(ACTION_SIZEADD))
                 .attribute(Attribute.create(ACTION_ANGRY))
@@ -187,18 +199,18 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
     private final GenericRuleEvaluator ruleEvaluator;
     private Event.Result result;
 
-    private SummonAidRule(AttributeMap map, Set<String> phases) {
-        super(phases);
+    private SummonAidRule(AttributeMap map, Set<String> phases, int index) {
+        super(phases, index);
         ruleEvaluator = new GenericRuleEvaluator(map);
         addActions(map, new ModRuleCompatibilityLayer());
     }
 
-    public static SummonAidRule parse(JsonElement element) {
+    public static SummonAidRule parse(JsonElement element, int index) {
         if (element == null) {
             return null;
         } else {
             AttributeMap map = FACTORY.parse(element, "summonaid.json");
-            return new SummonAidRule(map, PhaseTools.getPhases(element));
+            return new SummonAidRule(map, PhaseTools.getPhases(element), index);
         }
     }
 

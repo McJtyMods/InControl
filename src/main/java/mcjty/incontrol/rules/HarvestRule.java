@@ -172,8 +172,8 @@ public class HarvestRule extends RuleBase<RuleBase.EventGetter> {
     private Event.Result result;
     private final GenericRuleEvaluator ruleEvaluator;
 
-    private HarvestRule(AttributeMap map, Set<String> phases) {
-        super(phases);
+    private HarvestRule(AttributeMap map, Set<String> phases, int index) {
+        super(phases, index);
         ruleEvaluator = new GenericRuleEvaluator(map);
         addActions(map, new ModRuleCompatibilityLayer());
     }
@@ -232,7 +232,7 @@ public class HarvestRule extends RuleBase<RuleBase.EventGetter> {
     }
 
 
-    public static HarvestRule parse(JsonElement element) {
+    public static HarvestRule parse(JsonElement element, int index) {
         if (element == null) {
             return null;
         } else {
@@ -243,7 +243,7 @@ public class HarvestRule extends RuleBase<RuleBase.EventGetter> {
                 InControl.setup.getLogger().log(Level.ERROR, e);
                 return null;
             }
-            return new HarvestRule(map, PhaseTools.getPhases(element));
+            return new HarvestRule(map, PhaseTools.getPhases(element), index);
         }
     }
 }

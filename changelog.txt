@@ -1,8 +1,11 @@
-Upcoming:
+1.20-9.2.5:
 - New 'hasstructure' boolean test to test if the current position has any structure
 - New 'cave' test that tries to see if the position is in a cave
 - The 'mod' test in item filters was not working at all
 - Item filters have improved. It's now possible to not have to specify the item but instead match on tag or mod only
+- New 'armorset', 'armormultiply', 'armoradd', 'followrangeset', 'followrangemultiply', and 'followrangeadd' actions to change the armor and follow range of mobs
+- New 'attackspeedset', 'attackspeedmultiply', 'attackspeedadd', 'armortoughnessset', 'armortoughnessmultiply', and 'armortoughnessadd' actions to change the attack speed and armor toughness of mobs
+- All actions that modify attributes will now work properly if spread out in multiple rules
 
 1.20-9.2.4:
 - The remove gamestage action did actually add the stage instead of removing it

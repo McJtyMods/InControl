@@ -188,18 +188,18 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
     private final List<Pair<ItemStack, Function<Integer, Integer>>> toAddItems = new ArrayList<>();
     private boolean removeAll = false;
 
-    private LootRule(AttributeMap map, Set<String> phases) {
-        super(phases);
+    private LootRule(AttributeMap map, Set<String> phases, int index) {
+        super(phases, index);
         ruleEvaluator = new GenericRuleEvaluator(map);
         addActions(map, new ModRuleCompatibilityLayer());
     }
 
-    public static LootRule parse(JsonElement element) {
+    public static LootRule parse(JsonElement element, int index) {
         if (element == null) {
             return null;
         } else {
             AttributeMap map = FACTORY.parse(element, "loot.json");
-            return new LootRule(map, PhaseTools.getPhases(element));
+            return new LootRule(map, PhaseTools.getPhases(element), index);
         }
     }
 

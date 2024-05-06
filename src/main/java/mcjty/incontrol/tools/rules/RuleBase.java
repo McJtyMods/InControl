@@ -35,13 +35,9 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.NeutralMob;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.goal.Goal;
-import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
-import net.minecraft.world.entity.ai.goal.RangedAttackGoal;
-import net.minecraft.world.entity.ai.goal.WrappedGoal;
-import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.EnderMan;
 import net.minecraft.world.entity.player.Player;
@@ -63,6 +59,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nonnull;
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -72,15 +69,21 @@ public class RuleBase<T extends RuleBase.EventGetter> {
 
     protected final List<Consumer<T>> actions = new ArrayList<>();
     private final Set<String> phases;
+    private final int index;
 
     private static final Random rnd = new Random();
 
-    public RuleBase(Set<String> phases) {
+    public RuleBase(Set<String> phases, int index) {
         this.phases = phases;
+        this.index = index;
     }
 
     public Set<String> getPhases() {
         return phases;
+    }
+
+    public int getIndex() {
+        return index;
     }
 
     protected List<Pair<Float, ItemStack>> getItemsWeighted(List<String> itemNames) {
@@ -143,12 +146,46 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         map.consume(ACTION_COMMAND, this::addCommandAction);
         map.consume(ACTION_ADDSTAGE, stage -> addAddStage(stage, layer));
         map.consume(ACTION_REMOVESTAGE, stage -> addRemoveStage(stage, layer));
-        map.consume(ACTION_HEALTHSET, this::addHealthSetAction);
-        map.consume2(ACTION_HEALTHMULTIPLY, ACTION_HEALTHADD, this::addHealthAction);
-        map.consume(ACTION_SPEEDSET, this::addSpeedSetAction);
-        map.consume2(ACTION_SPEEDMULTIPLY, ACTION_SPEEDADD, this::addSpeedAction);
-        map.consume(ACTION_DAMAGESET, this::addDamageSetAction);
-        map.consume2(ACTION_DAMAGEMULTIPLY, ACTION_DAMAGEADD, this::addDamageAction);
+
+        map.consume(ACTION_HEALTHSET, v -> addAttributeAction("ctrlHealthS" + index, Attributes.MAX_HEALTH, (m, a) -> {
+            a.setBaseValue(v);
+            m.setHealth(v);
+        }));
+        map.consume(ACTION_HEALTHMULTIPLY, v -> addAttributeAction("ctrlHealthM" + index, Attributes.MAX_HEALTH, (m, a) -> {
+            double newMax = a.getBaseValue() * v;
+            a.setBaseValue(newMax);
+            m.setHealth((float) newMax);
+        }));
+        map.consume(ACTION_HEALTHADD, v -> addAttributeAction("ctrlHealthA" + index, Attributes.MAX_HEALTH, (m, a) -> {
+            double newMax = a.getBaseValue() + v;
+            a.setBaseValue(newMax);
+            m.setHealth((float) newMax);
+        }));
+
+        map.consume(ACTION_SPEEDSET, v -> addAttributeAction("ctrlSpeedS" + index, Attributes.MOVEMENT_SPEED, (m, a) -> a.setBaseValue(v)));
+        map.consume(ACTION_SPEEDMULTIPLY, v -> addAttributeAction("ctrlSpeedM" + index, Attributes.MOVEMENT_SPEED, (m, a) -> a.setBaseValue(a.getBaseValue() * v)));
+        map.consume(ACTION_SPEEDADD, v -> addAttributeAction("ctrlSpeedA" + index, Attributes.MOVEMENT_SPEED, (m, a) -> a.setBaseValue(a.getBaseValue() + v)));
+
+        map.consume(ACTION_DAMAGESET, v -> addAttributeAction("ctrlDamageS" + index, Attributes.ATTACK_DAMAGE, (m, a) -> a.setBaseValue(v)));
+        map.consume(ACTION_DAMAGEMULTIPLY, v -> addAttributeAction("ctrlDamageM" + index, Attributes.ATTACK_DAMAGE, (m, a) -> a.setBaseValue(a.getBaseValue() * v)));
+        map.consume(ACTION_DAMAGEADD, v -> addAttributeAction("ctrlDamageA" + index, Attributes.ATTACK_DAMAGE, (m, a) -> a.setBaseValue(a.getBaseValue() + v)));
+
+        map.consume(ACTION_ARMORSET, v -> addAttributeAction("ctrlArmorS" + index, Attributes.ARMOR, (m, a) -> a.setBaseValue(v)));
+        map.consume(ACTION_ARMORMULTIPLY, v -> addAttributeAction("ctrlArmorM" + index, Attributes.ARMOR, (m, a) -> a.setBaseValue(a.getBaseValue() * v)));
+        map.consume(ACTION_ARMORADD, v -> addAttributeAction("ctrlArmorA" + index, Attributes.ARMOR, (m, a) -> a.setBaseValue(a.getBaseValue() + v)));
+
+        map.consume(ACTION_ARMORTOUGHNESSSET, v -> addAttributeAction("ctrlArmorToS" + index, Attributes.ARMOR_TOUGHNESS, (m, a) -> a.setBaseValue(v)));
+        map.consume(ACTION_ARMORTOUGHNESSMULTIPLY, v -> addAttributeAction("ctrlArmorToM" + index, Attributes.ARMOR_TOUGHNESS, (m, a) -> a.setBaseValue(a.getBaseValue() * v)));
+        map.consume(ACTION_ARMORTOUGHNESSADD, v -> addAttributeAction("ctrlArmorToA" + index, Attributes.ARMOR_TOUGHNESS, (m, a) -> a.setBaseValue(a.getBaseValue() + v)));
+
+        map.consume(ACTION_ATTACKSPEEDSET, v -> addAttributeAction("ctrlAttackSpS" + index, Attributes.ATTACK_SPEED, (m, a) -> a.setBaseValue(v)));
+        map.consume(ACTION_ATTACKSPEEDMULTIPLY, v -> addAttributeAction("ctrlAttackSpM" + index, Attributes.ATTACK_SPEED, (m, a) -> a.setBaseValue(a.getBaseValue() * v)));
+        map.consume(ACTION_ATTACKSPEEDADD, v -> addAttributeAction("ctrlAttackSpA" + index, Attributes.ATTACK_SPEED, (m, a) -> a.setBaseValue(a.getBaseValue() + v)));
+
+        map.consume(ACTION_FOLLOWRANGESET, v -> addAttributeAction("ctrlFollowS" + index, Attributes.FOLLOW_RANGE, (m, a) -> a.setBaseValue(v)));
+        map.consume(ACTION_FOLLOWRANGEMULTIPLY, v -> addAttributeAction("ctrlFollowM" + index, Attributes.FOLLOW_RANGE, (m, a) -> a.setBaseValue(a.getBaseValue() * v)));
+        map.consume(ACTION_FOLLOWRANGEADD, v -> addAttributeAction("ctrlFollowA" + index, Attributes.FOLLOW_RANGE, (m, a) -> a.setBaseValue(a.getBaseValue() + v)));
+
         map.consume2(ACTION_SIZEMULTIPLY, ACTION_SIZEADD, this::addSizeActions);
         map.consumeAsList(ACTION_POTION, this::addPotionsAction);
         map.consume(ACTION_NODESPAWN, this::addNoDespawnAction);
@@ -687,68 +724,15 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         });
     }
 
-    private void addHealthSetAction(float s) {
+    private void addAttributeAction(String key, Attribute attribute, BiConsumer<LivingEntity, AttributeInstance> action) {
         actions.add(event -> {
             LivingEntity entityLiving = event.getEntityLiving();
             if (entityLiving != null) {
-                if (!entityLiving.getTags().contains("ctrlHealth")) {
-                    AttributeInstance entityAttribute = entityLiving.getAttribute(Attributes.MAX_HEALTH);
-                    if (entityAttribute != null) {
-                        entityAttribute.setBaseValue(s);
-                        entityLiving.setHealth((float) (double) s);
-                        entityLiving.addTag("ctrlHealth");
-                    }
-                }
-            }
-        });
-    }
-
-    private void addHealthAction(Float m, Float a) {
-        float finalM = m == null ? 1 : m;
-        float finalA = a == null ? 0 : a;
-        actions.add(event -> {
-            LivingEntity entityLiving = event.getEntityLiving();
-            if (entityLiving != null) {
-                if (!entityLiving.getTags().contains("ctrlHealth")) {
-                    AttributeInstance entityAttribute = entityLiving.getAttribute(Attributes.MAX_HEALTH);
-                    if (entityAttribute != null) {
-                        double newMax = entityAttribute.getBaseValue() * finalM + finalA;
-                        entityAttribute.setBaseValue(newMax);
-                        entityLiving.setHealth((float) newMax);
-                        entityLiving.addTag("ctrlHealth");
-                    }
-                }
-            }
-        });
-    }
-
-    private void addSpeedSetAction(float s) {
-        actions.add(event -> {
-            LivingEntity entityLiving = event.getEntityLiving();
-            if (entityLiving != null) {
-                if (!entityLiving.getTags().contains("ctrlSpeed")) {
-                    AttributeInstance entityAttribute = entityLiving.getAttribute(Attributes.MOVEMENT_SPEED);
-                    if (entityAttribute != null) {
-                        entityAttribute.setBaseValue(s);
-                        entityLiving.addTag("ctrlSpeed");
-                    }
-                }
-            }
-        });
-    }
-
-    private void addSpeedAction(Float m, Float a) {
-        float finalM = m == null ? 1 : m;
-        float finalA = a == null ? 0 : a;
-        actions.add(event -> {
-            LivingEntity entityLiving = event.getEntityLiving();
-            if (entityLiving != null) {
-                if (!entityLiving.getTags().contains("ctrlSpeed")) {
-                    AttributeInstance entityAttribute = entityLiving.getAttribute(Attributes.MOVEMENT_SPEED);
-                    if (entityAttribute != null) {
-                        double newMax = entityAttribute.getBaseValue() * finalM + finalA;
-                        entityAttribute.setBaseValue(newMax);
-                        entityLiving.addTag("ctrlSpeed");
+                if (!entityLiving.getTags().contains(key)) {
+                    AttributeInstance attr = entityLiving.getAttribute(attribute);
+                    if (attr != null) {
+                        action.accept(entityLiving, attr);
+                        entityLiving.addTag(key);
                     }
                 }
             }
@@ -768,33 +752,33 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         });
     }
 
-    private void addDamageSetAction(float s) {
+    private void addDamageSetAction(float s, int index) {
         actions.add(event -> {
             LivingEntity entityLiving = event.getEntityLiving();
             if (entityLiving != null) {
-                if (!entityLiving.getTags().contains("ctrlDamage")) {
+                if (!entityLiving.getTags().contains("ctrlDamageSet" + index)) {
                     AttributeInstance entityAttribute = entityLiving.getAttribute(Attributes.ATTACK_DAMAGE);
                     if (entityAttribute != null) {
                         entityAttribute.setBaseValue(s);
-                        entityLiving.addTag("ctrlDamage");
+                        entityLiving.addTag("ctrlDamageSet" + index);
                     }
                 }
             }
         });
     }
 
-    private void addDamageAction(Float m, Float a) {
+    private void addDamageAction(Float m, Float a, int index) {
         float finalM = m == null ? 1 : m;
         float finalA = a == null ? 0 : a;
         actions.add(event -> {
             LivingEntity entityLiving = event.getEntityLiving();
             if (entityLiving != null) {
-                if (!entityLiving.getTags().contains("ctrlDamage")) {
+                if (!entityLiving.getTags().contains("ctrlDamage" + index)) {
                     AttributeInstance entityAttribute = entityLiving.getAttribute(Attributes.ATTACK_DAMAGE);
                     if (entityAttribute != null) {
                         double newMax = entityAttribute.getBaseValue() * finalM + finalA;
                         entityAttribute.setBaseValue(newMax);
-                        entityLiving.addTag("ctrlDamage");
+                        entityLiving.addTag("ctrlDamage" + index);
                     }
                 }
             }
@@ -906,6 +890,4 @@ public class RuleBase<T extends RuleBase.EventGetter> {
             });
         }
     }
-
-
 }

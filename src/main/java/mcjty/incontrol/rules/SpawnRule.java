@@ -327,6 +327,18 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(ACTION_DAMAGESET))
                 .attribute(Attribute.create(ACTION_DAMAGEMULTIPLY))
                 .attribute(Attribute.create(ACTION_DAMAGEADD))
+                .attribute(Attribute.create(ACTION_ARMORSET))
+                .attribute(Attribute.create(ACTION_ARMORMULTIPLY))
+                .attribute(Attribute.create(ACTION_ARMORADD))
+                .attribute(Attribute.create(ACTION_ARMORTOUGHNESSSET))
+                .attribute(Attribute.create(ACTION_ARMORTOUGHNESSMULTIPLY))
+                .attribute(Attribute.create(ACTION_ARMORTOUGHNESSADD))
+                .attribute(Attribute.create(ACTION_ATTACKSPEEDSET))
+                .attribute(Attribute.create(ACTION_ATTACKSPEEDMULTIPLY))
+                .attribute(Attribute.create(ACTION_ATTACKSPEEDADD))
+                .attribute(Attribute.create(ACTION_FOLLOWRANGESET))
+                .attribute(Attribute.create(ACTION_FOLLOWRANGEMULTIPLY))
+                .attribute(Attribute.create(ACTION_FOLLOWRANGEADD))
                 .attribute(Attribute.create(ACTION_SIZEMULTIPLY))
                 .attribute(Attribute.create(ACTION_SIZEADD))
                 .attribute(Attribute.create(ACTION_ANGRY))
@@ -351,8 +363,8 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
     private ICResult result = null;
     private boolean doContinue = false;
 
-    private SpawnRule(AttributeMap map, SpawnWhen when, Set<String> phases) {
-        super(phases);
+    private SpawnRule(AttributeMap map, SpawnWhen when, Set<String> phases, int index) {
+        super(phases, index);
         this.when = when;
         ruleEvaluator = new GenericRuleEvaluator(map);
         addActions(map, new ModRuleCompatibilityLayer());
@@ -363,7 +375,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
         }
     }
 
-    public static SpawnRule parse(JsonElement element) {
+    public static SpawnRule parse(JsonElement element, int index) {
         if (element == null) {
             return null;
         } else {
@@ -373,7 +385,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
             if (when == null) {
                 ErrorHandler.error("Invalid spawn rule 'when' value '" + whenS + "'!. Should be one of " + Arrays.toString(SpawnWhen.values()) + "");
             }
-            return new SpawnRule(map, when, PhaseTools.getPhases(element));
+            return new SpawnRule(map, when, PhaseTools.getPhases(element), index);
         }
     }
 

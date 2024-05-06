@@ -169,8 +169,8 @@ public class EffectRule extends RuleBase<RuleBase.EventGetter> {
     private final GenericRuleEvaluator ruleEvaluator;
     private final int timeout;
 
-    private EffectRule(AttributeMap map, int time, Set<String> phases) {
-        super(phases);
+    private EffectRule(AttributeMap map, int time, Set<String> phases, int index) {
+        super(phases, index);
         ruleEvaluator = new GenericRuleEvaluator(map);
         this.timeout = time > 0 ? time : 1;
         addActions(map, new ModRuleCompatibilityLayer());
@@ -212,7 +212,7 @@ public class EffectRule extends RuleBase<RuleBase.EventGetter> {
     }
 
 
-    public static EffectRule parse(JsonElement element) {
+    public static EffectRule parse(JsonElement element, int index) {
         if (element == null) {
             return null;
         } else {
@@ -224,7 +224,7 @@ public class EffectRule extends RuleBase<RuleBase.EventGetter> {
                 return null;
             }
             int time = element.getAsJsonObject().has("timeout") ? element.getAsJsonObject().get("timeout").getAsInt() : 20;
-            return new EffectRule(map, time, PhaseTools.getPhases(element));
+            return new EffectRule(map, time, PhaseTools.getPhases(element), index);
         }
     }
 }
