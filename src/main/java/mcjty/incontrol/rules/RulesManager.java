@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -130,14 +131,14 @@ public class RulesManager {
         }
     }
 
-    private static <T> void readRules(String path, String filename, Function<JsonElement, T> parser, List<T> rules) {
+    private static <T> void readRules(String path, String filename, BiFunction<JsonElement, Integer, T> parser, List<T> rules) {
         JsonElement element = getRootElement(path, filename);
         if (element == null) {
             return;
         }
         int i = 0;
         for (JsonElement entry : element.getAsJsonArray()) {
-            T rule = parser.apply(entry);
+            T rule = parser.apply(entry, i);
             if (rule != null) {
                 rules.add(rule);
             } else {

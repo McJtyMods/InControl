@@ -173,6 +173,18 @@ public class SpecialRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(ACTION_DAMAGESET))
                 .attribute(Attribute.create(ACTION_DAMAGEMULTIPLY))
                 .attribute(Attribute.create(ACTION_DAMAGEADD))
+                .attribute(Attribute.create(ACTION_ARMORSET))
+                .attribute(Attribute.create(ACTION_ARMORMULTIPLY))
+                .attribute(Attribute.create(ACTION_ARMORADD))
+                .attribute(Attribute.create(ACTION_ARMORTOUGHNESSSET))
+                .attribute(Attribute.create(ACTION_ARMORTOUGHNESSMULTIPLY))
+                .attribute(Attribute.create(ACTION_ARMORTOUGHNESSADD))
+                .attribute(Attribute.create(ACTION_ATTACKSPEEDSET))
+                .attribute(Attribute.create(ACTION_ATTACKSPEEDMULTIPLY))
+                .attribute(Attribute.create(ACTION_ATTACKSPEEDADD))
+                .attribute(Attribute.create(ACTION_FOLLOWRANGESET))
+                .attribute(Attribute.create(ACTION_FOLLOWRANGEMULTIPLY))
+                .attribute(Attribute.create(ACTION_FOLLOWRANGEADD))
                 .attribute(Attribute.create(ACTION_SIZEMULTIPLY))
                 .attribute(Attribute.create(ACTION_SIZEADD))
                 .attribute(Attribute.create(ACTION_ANGRY))
@@ -197,14 +209,16 @@ public class SpecialRule extends RuleBase<RuleBase.EventGetter> {
 
     private final GenericRuleEvaluator ruleEvaluator;
     private final Set<String> phases;
+    private final int index;
     private SpecialResult result = SpecialResult.AFTER;
     private boolean doContinue = false;
 
-    private SpecialRule(AttributeMap map, Set<String> phases) {
+    private SpecialRule(AttributeMap map, Set<String> phases, int index) {
         super(InControl.setup.getLogger());
         this.phases = phases;
+        this.index = index;
         ruleEvaluator = new GenericRuleEvaluator(map);
-        addActions(map, new ModRuleCompatibilityLayer());
+        addActions(map, new ModRuleCompatibilityLayer(), index);
         if (!map.isEmpty()) {
             StringBuffer buffer = new StringBuffer();
             map.getKeys().forEach(k -> buffer.append(k).append(' '));
@@ -216,18 +230,18 @@ public class SpecialRule extends RuleBase<RuleBase.EventGetter> {
         return phases;
     }
 
-    public static SpecialRule parse(JsonElement element) {
+    public static SpecialRule parse(JsonElement element, int index) {
         if (element == null) {
             return null;
         } else {
             AttributeMap map = FACTORY.parse(element, "spawn.json");
-            return new SpecialRule(map, PhaseTools.getPhases(element));
+            return new SpecialRule(map, PhaseTools.getPhases(element), index);
         }
     }
 
     @Override
-    protected void addActions(AttributeMap map, IModRuleCompatibilityLayer layer) {
-        super.addActions(map, layer);
+    protected void addActions(AttributeMap map, IModRuleCompatibilityLayer layer, int index) {
+        super.addActions(map, layer, index);
 
         map.consumeOrElse(ACTION_RESULT, br -> {
             if ("before".equals(br)) {

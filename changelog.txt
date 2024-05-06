@@ -1,3 +1,8 @@
+1.19-7.1.14:
+- New 'armorset', 'armormultiply', 'armoradd', 'followrangeset', 'followrangemultiply', and 'followrangeadd' actions to change the armor and follow range of mobs
+- New 'attackspeedset', 'attackspeedmultiply', 'attackspeedadd', 'armortoughnessset', 'armortoughnessmultiply', and 'armortoughnessadd' actions to change the attack speed and armor toughness of mobs
+- All actions that modify attributes will now work properly if spread out in multiple rules
+
 1.19-7.1.13:
 - The remove gamestage action did actually8 add the stage instead of removing it
 

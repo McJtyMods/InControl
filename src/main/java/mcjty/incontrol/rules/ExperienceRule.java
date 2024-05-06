@@ -143,28 +143,30 @@ public class ExperienceRule extends RuleBase<RuleBase.EventGetter> {
 
     private final GenericRuleEvaluator ruleEvaluator;
     private final Set<String> phases;
+    private final int index;
     private Event.Result result;
     private Integer xp = null;
     private float multxp = 1.0f;
     private float addxp = 0.0f;
 
-    private ExperienceRule(AttributeMap map, Set<String> phases) {
+    private ExperienceRule(AttributeMap map, Set<String> phases, int index) {
         super(InControl.setup.getLogger());
         this.phases = phases;
+        this.index = index;
         ruleEvaluator = new GenericRuleEvaluator(map);
-        addActions(map, new ModRuleCompatibilityLayer());
+        addActions(map, new ModRuleCompatibilityLayer(), index);
     }
 
     public Set<String> getPhases() {
         return phases;
     }
 
-    public static ExperienceRule parse(JsonElement element) {
+    public static ExperienceRule parse(JsonElement element, int index) {
         if (element == null) {
             return null;
         } else {
             AttributeMap map = FACTORY.parse(element, "experience.json");
-            return new ExperienceRule(map, PhaseTools.getPhases(element));
+            return new ExperienceRule(map, PhaseTools.getPhases(element), index);
         }
     }
 
@@ -176,8 +178,8 @@ public class ExperienceRule extends RuleBase<RuleBase.EventGetter> {
     }
 
     @Override
-    protected void addActions(AttributeMap map, IModRuleCompatibilityLayer layer) {
-        super.addActions(map, layer);
+    protected void addActions(AttributeMap map, IModRuleCompatibilityLayer layer, int index) {
+        super.addActions(map, layer, index);
 
         map.consumeOrElse(ACTION_RESULT, br -> {
             if ("default".equals(br) || br.startsWith("def")) {
