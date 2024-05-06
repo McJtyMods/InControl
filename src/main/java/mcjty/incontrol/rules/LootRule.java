@@ -177,33 +177,35 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
 
     private final GenericRuleEvaluator ruleEvaluator;
     private final Set<String> phases;
+    private final int index;
     private final List<Predicate<ItemStack>> toRemoveItems = new ArrayList<>();
     private final List<Pair<ItemStack, Function<Integer, Integer>>> toAddItems = new ArrayList<>();
     private boolean removeAll = false;
 
-    private LootRule(AttributeMap map, Set<String> phases) {
+    private LootRule(AttributeMap map, Set<String> phases, int index) {
         super(InControl.setup.getLogger());
         this.phases = phases;
+        this.index = index;
         ruleEvaluator = new GenericRuleEvaluator(map);
-        addActions(map, new ModRuleCompatibilityLayer());
+        addActions(map, new ModRuleCompatibilityLayer(), index);
     }
 
     public Set<String> getPhases() {
         return phases;
     }
 
-    public static LootRule parse(JsonElement element) {
+    public static LootRule parse(JsonElement element, int index) {
         if (element == null) {
             return null;
         } else {
             AttributeMap map = FACTORY.parse(element, "loot.json");
-            return new LootRule(map, PhaseTools.getPhases(element));
+            return new LootRule(map, PhaseTools.getPhases(element), index);
         }
     }
 
     @Override
-    protected void addActions(AttributeMap map, IModRuleCompatibilityLayer layer) {
-        super.addActions(map, layer);
+    protected void addActions(AttributeMap map, IModRuleCompatibilityLayer layer, int index) {
+        super.addActions(map, layer, index);
 
         map.consumeAsList(ACTION_ITEM, itemList -> addItem(map, itemList));
         map.consumeAsList(ACTION_REMOVE, this::removeItem);

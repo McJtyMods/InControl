@@ -20,6 +20,7 @@ import static mcjty.incontrol.tools.rules.CommonRuleKeys.*;
 public class PhaseRule {
 
     private final String name;
+    private final int index;
     private final GenericRuleEvaluator ruleEvaluator;
 
 
@@ -88,8 +89,9 @@ public class PhaseRule {
         ;
     }
 
-    private PhaseRule(String name, AttributeMap map) {
+    private PhaseRule(String name, AttributeMap map, int index) {
         this.name = name;
+        this.index = index;
         ruleEvaluator = new GenericRuleEvaluator(map);
     }
 
@@ -102,7 +104,7 @@ public class PhaseRule {
     }
 
 
-    public static PhaseRule parse(JsonElement element) {
+    public static PhaseRule parse(JsonElement element, int index) {
         if (element == null) {
             return null;
         }
@@ -110,7 +112,7 @@ public class PhaseRule {
         JsonElement conditions = object.get("conditions");
         AttributeMap map = FACTORY.parse(conditions, "phases.json");
 
-        return new PhaseRule(object.get("name").getAsString(), map);
+        return new PhaseRule(object.get("name").getAsString(), map, index);
     }
 
 
