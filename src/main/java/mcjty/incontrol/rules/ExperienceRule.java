@@ -153,18 +153,18 @@ public class ExperienceRule extends RuleBase<RuleBase.EventGetter> {
     private float multxp = 1.0f;
     private float addxp = 0.0f;
 
-    private ExperienceRule(AttributeMap map, Set<String> phases) {
-        super(phases);
+    private ExperienceRule(AttributeMap map, Set<String> phases, int index) {
+        super(phases, index);
         ruleEvaluator = new GenericRuleEvaluator(map);
         addActions(map, new ModRuleCompatibilityLayer());
     }
 
-    public static ExperienceRule parse(JsonElement element) {
+    public static ExperienceRule parse(JsonElement element, int index) {
         if (element == null) {
             return null;
         } else {
             AttributeMap map = FACTORY.parse(element, "experience.json");
-            return new ExperienceRule(map, PhaseTools.getPhases(element));
+            return new ExperienceRule(map, PhaseTools.getPhases(element), index);
         }
     }
 

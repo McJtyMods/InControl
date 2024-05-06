@@ -172,8 +172,8 @@ public class PlaceRule extends RuleBase<RuleBase.EventGetter> {
     private MobSpawnEvent.SpawnPlacementCheck.Result result;
     private final GenericRuleEvaluator ruleEvaluator;
 
-    private PlaceRule(AttributeMap map, Set<String> phases) {
-        super(phases);
+    private PlaceRule(AttributeMap map, Set<String> phases, int index) {
+        super(phases, index);
         ruleEvaluator = new GenericRuleEvaluator(map);
         addActions(map, new ModRuleCompatibilityLayer());
     }
@@ -232,7 +232,7 @@ public class PlaceRule extends RuleBase<RuleBase.EventGetter> {
     }
 
 
-    public static PlaceRule parse(JsonElement element) {
+    public static PlaceRule parse(JsonElement element, int index) {
         if (element == null) {
             return null;
         } else {
@@ -243,7 +243,7 @@ public class PlaceRule extends RuleBase<RuleBase.EventGetter> {
                 InControl.setup.getLogger().log(Level.ERROR, e);
                 return null;
             }
-            return new PlaceRule(map, PhaseTools.getPhases(element));
+            return new PlaceRule(map, PhaseTools.getPhases(element), index);
         }
     }
 }

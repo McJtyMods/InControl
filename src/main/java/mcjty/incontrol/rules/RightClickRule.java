@@ -171,8 +171,8 @@ public class RightClickRule extends RuleBase<RuleBase.EventGetter> {
     private MobSpawnEvent.SpawnPlacementCheck.Result result;
     private final GenericRuleEvaluator ruleEvaluator;
 
-    private RightClickRule(AttributeMap map, Set<String> phases) {
-        super(phases);
+    private RightClickRule(AttributeMap map, Set<String> phases, int index) {
+        super(phases, index);
         ruleEvaluator = new GenericRuleEvaluator(map);
         addActions(map, new ModRuleCompatibilityLayer());
     }
@@ -231,7 +231,7 @@ public class RightClickRule extends RuleBase<RuleBase.EventGetter> {
     }
 
 
-    public static RightClickRule parse(JsonElement element) {
+    public static RightClickRule parse(JsonElement element, int index) {
         if (element == null) {
             return null;
         } else {
@@ -242,7 +242,7 @@ public class RightClickRule extends RuleBase<RuleBase.EventGetter> {
                 InControl.setup.getLogger().log(org.apache.logging.log4j.Level.ERROR, e);
                 return null;
             }
-            return new RightClickRule(map, PhaseTools.getPhases(element));
+            return new RightClickRule(map, PhaseTools.getPhases(element), index);
         }
     }
 }
