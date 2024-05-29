@@ -1,3 +1,6 @@
+1.20-9.2.6:
+- Fixed a problem with the 'hasstructure' test
+
 1.20-9.2.5:
 - New 'hasstructure' boolean test to test if the current position has any structure
 - New 'cave' test that tries to see if the position is in a cave
