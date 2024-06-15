@@ -42,6 +42,8 @@ public interface CommonRuleKeys {
     Key<String> BIOME = Key.create(Type.STRING, "biome");
     Key<String> BIOMETYPE = Key.create(Type.STRING, "biometype");
     Key<String> STRUCTURE = Key.create(Type.STRING, "structure");
+    Key<Boolean> HASSTRUCTURE = Key.create(Type.BOOLEAN, "hasstructure");
+    Key<String> STRUCTURETAGS = Key.create(Type.STRING, "structuretags");
     Key<ResourceKey<Level>> DIMENSION = Key.create(Type.DIMENSION_TYPE, "dimension");
     Key<String> DIMENSION_MOD = Key.create(Type.STRING, "dimensionmod");
 

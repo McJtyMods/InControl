@@ -129,7 +129,7 @@ public class SpecialRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(WEATHER))
                 .attribute(Attribute.createMulti(BIOMETAGS))
                 .attribute(Attribute.create(DIFFICULTY))
-                .attribute(Attribute.create(STRUCTURE))
+                .attribute(Attribute.createMulti(STRUCTURE))
                 .attribute(Attribute.create(WINTER))
                 .attribute(Attribute.create(SUMMER))
                 .attribute(Attribute.create(SPRING))

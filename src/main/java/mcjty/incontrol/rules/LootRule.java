@@ -127,7 +127,7 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(WEATHER))
                 .attribute(Attribute.createMulti(BIOMETAGS))
                 .attribute(Attribute.create(DIFFICULTY))
-                .attribute(Attribute.create(STRUCTURE))
+                .attribute(Attribute.createMulti(STRUCTURE))
                 .attribute(Attribute.create(PLAYER))
                 .attribute(Attribute.create(REALPLAYER))
                 .attribute(Attribute.create(FAKEPLAYER))

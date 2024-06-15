@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.tools.cache.StructureCache;
 import mcjty.incontrol.tools.typed.AttributeMap;
@@ -33,9 +34,11 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
+import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.WorldgenRandom;
+import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.common.BiomeManager;
@@ -109,7 +112,9 @@ public class CommonRuleEvaluator {
         map.consumeAsList(HELDITEM, this::addHeldItemCheck);
         map.consumeAsList(OFFHANDITEM, this::addOffHandItemCheck);
         map.consumeAsList(BOTHHANDSITEM, this::addBothHandsItemCheck);
-        map.consume(STRUCTURE, this::addStructureCheck);
+        map.consumeAsList(STRUCTURE, this::addStructureCheck);
+        map.consume(HASSTRUCTURE, this::addHasStructureCheck);
+        map.consumeAsList(STRUCTURETAGS, this::addStructureTagsCheck);
         map.consumeAsList(SCOREBOARDTAGS_ALL, this::addAllScoreboardTagsCheck);
         map.consumeAsList(SCOREBOARDTAGS_ANY, this::addAnyScoreboardTagsCheck);
 
@@ -285,8 +290,55 @@ public class CommonRuleEvaluator {
         });
     }
 
-    private void addStructureCheck(String structure) {
-        checks.add((event,query) -> StructureCache.CACHE.isInStructure(query.getWorld(event), structure, query.getPos(event)));
+    private void addHasStructureCheck(boolean c) {
+        checks.add((event, query) -> StructureCache.CACHE.isInAnyStructure(query.getWorld(event), query.getPos(event)) == c);
+    }
+
+    private void addStructureCheck(List<String> structures) {
+        if (structures.size() == 1) {
+            String structure = structures.get(0);
+            checks.add((event, query) -> StructureCache.CACHE.isInStructure(query.getWorld(event), structure, query.getPos(event)));
+        } else {
+            Set<String> structureNames = new HashSet<>(structures);
+            checks.add((event, query) -> {
+                for (String structure : structureNames) {
+                    if (StructureCache.CACHE.isInStructure(query.getWorld(event), structure, query.getPos(event))) {
+                        return true;
+                    }
+                }
+                return false;
+            });
+        }
+    }
+
+    private void addStructureTagsCheck(List<String> tags) {
+        Set<TagKey<Structure>> tagSet = tags.stream().map(s -> TagKey.create(Registry.STRUCTURE_REGISTRY, new ResourceLocation(s))).collect(Collectors.toSet());
+        checks.add((event, query) -> {
+            LevelAccessor world = query.getWorld(event);
+            BlockPos pos = query.getPos(event);
+            if (Tools.isChunkInvalid(world, pos)) return false;
+            ChunkAccess chunk = world.getChunk(pos);
+            if (chunk == null) {
+                return false;
+            }
+            Map<Structure, LongSet> references = chunk.getAllReferences();
+            for (Map.Entry<Structure, LongSet> e : references.entrySet()) {
+                LongSet longs = e.getValue();
+                if (!longs.isEmpty()) {
+                    Structure struct = e.getKey();
+                    Optional<ResourceKey<Structure>> resourceKey = world.registryAccess().registryOrThrow(Registry.STRUCTURE_REGISTRY).getResourceKey(struct);
+                    if (resourceKey.isPresent()) {
+                        Holder<Structure> holder = world.registryAccess().registryOrThrow(Registry.STRUCTURE_REGISTRY).getHolder(resourceKey.get()).get();
+                        for (TagKey<Structure> tagKey : tagSet) {
+                            if (holder.is(tagKey)) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        });
     }
 
     private void addBiomesCheck(List<String> biomes) {
