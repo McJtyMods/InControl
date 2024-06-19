@@ -1,5 +1,5 @@
 modLoader="javafml"
-loaderVersion="[47,)"
+loaderVersion="[2,)"
 license="MIT License https://github.com/McJtyMods/FXControl/blob/1.16/LICENCE"
 issueTrackerURL="http://github.com/McJtyMods/InControl/issues"
 displayURL="http://github.com/McJtyMods/InControl/"
@@ -14,9 +14,9 @@ description='''
 Be in control of spawns
 '''
 [[dependencies.incontrol]]
-    modId="forge"
-    mandatory=true
-    versionRange="[43.1.30,)"
+    modId="neoforge"
+    type="required"
+    versionRange="[20.4,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.incontrol]]

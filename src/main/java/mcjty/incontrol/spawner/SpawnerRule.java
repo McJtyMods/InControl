@@ -7,6 +7,7 @@ import mcjty.incontrol.InControl;
 import mcjty.incontrol.rules.support.RuleKeys;
 import mcjty.incontrol.tools.rules.TestingTools;
 import mcjty.incontrol.tools.varia.Tools;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -247,7 +248,7 @@ public class SpawnerRule {
     }
 
     private static void addMob(Builder builder, JsonElement element) {
-        EntityType<?> value = BuiltInRegistries.ENTITY_TYPE.getValue(new ResourceLocation(element.getAsString()));
+        EntityType<?> value = BuiltInRegistries.ENTITY_TYPE.get(ResourceLocation.parse(element.getAsString()));
         if (value == null) {
             InControl.setup.getLogger().error("Error finding entity " + element.getAsString() + "!");
             throw new RuntimeException("Error finding entity " + element.getAsString() + "!");

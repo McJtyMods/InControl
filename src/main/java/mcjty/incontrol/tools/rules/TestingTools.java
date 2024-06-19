@@ -9,6 +9,7 @@ import mcjty.incontrol.InControl;
 import mcjty.incontrol.tools.varia.Tools;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -33,7 +34,6 @@ import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.neoforged.neoforge.common.capabilities.ForgeCapabilities;
 import net.neoforged.neoforge.common.util.FakePlayer;
 import net.neoforged.neoforge.energy.IEnergyStorage;
-import net.neoforged.neoforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -156,9 +156,9 @@ public class TestingTools {
         if (!stack.isEmpty()) {
             // Stack matching
             if (name.contains("/") && name.contains("@")) {
-                return s -> ItemStack.isSameItem(s, stack) && ItemStack.isSameItemSameTags(s, stack);
+                return s -> ItemStack.isSameItem(s, stack) && ItemStack.isSameItemSameComponents(s, stack);
             } else if (name.contains("/")) {
-                return s -> ItemStack.isSameItemSameTags(s, stack) && ItemStack.isSameItemSameTags(s, stack);
+                return s -> ItemStack.isSameItemSameComponents(s, stack) && ItemStack.isSameItemSameComponents(s, stack);
             } else if (name.contains("@")) {
                 return s -> ItemStack.isSameItem(s, stack);
             } else {
@@ -175,7 +175,7 @@ public class TestingTools {
         }
 
         String name = obj.get("item").getAsString();
-        Item item = BuiltInRegistries.ITEM.getValue(new ResourceLocation(name));
+        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(name));
         if (item == null) {
             ErrorHandler.error("Unknown item '" + name + "'!");
             return null;
@@ -200,7 +200,7 @@ public class TestingTools {
             }
         }
         if (obj.has("tag")) {
-            ResourceLocation tagname = new ResourceLocation(obj.get("tag").getAsString());
+            ResourceLocation tagname = ResourceLocation.parse(obj.get("tag").getAsString());
             TagKey<Item> key = TagKey.create(Registries.ITEM, tagname);
             Predicate<ItemStack> finalTest = test;
             test = s -> finalTest.test(s) && s.is(key);

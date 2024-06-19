@@ -3,8 +3,8 @@ package mcjty.incontrol.events;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import mcjty.incontrol.ErrorHandler;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.registries.ForgeRegistries;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +40,7 @@ public class EventTypeMobKilled implements EventType {
         }
         if (mob.isJsonArray()) {
             for (JsonElement element : mob.getAsJsonArray()) {
-                ResourceLocation rl = new ResourceLocation(element.getAsString());
+                ResourceLocation rl = ResourceLocation.parse(element.getAsString());
                 if (!BuiltInRegistries.ENTITY_TYPE.containsKey(rl)) {
                     ErrorHandler.error("Unknown mob '" + rl + "'!");
                     return true;
@@ -48,7 +48,7 @@ public class EventTypeMobKilled implements EventType {
                 mobs.add(rl);
             }
         } else {
-            ResourceLocation rl = new ResourceLocation(mob.getAsString());
+            ResourceLocation rl = ResourceLocation.parse(mob.getAsString());
             if (!BuiltInRegistries.ENTITY_TYPE.containsKey(rl)) {
                 ErrorHandler.error("Unknown mob '" + rl + "'!");
                 return true;

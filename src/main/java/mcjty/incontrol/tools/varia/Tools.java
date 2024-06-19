@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import mcjty.incontrol.ErrorHandler;
 import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.resources.ResourceKey;
@@ -15,7 +16,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.biome.Biome;
-import net.neoforged.neoforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nonnull;
@@ -112,7 +112,7 @@ public class Tools {
             return ItemStack.EMPTY;
         }
         String name = obj.get("item").getAsString();
-        Item item = BuiltInRegistries.ITEM.getValue(new ResourceLocation(name));
+        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(name));
         if (item == null) {
             ErrorHandler.error("Unknown item '" + name + "'!");
             return null;
@@ -139,7 +139,7 @@ public class Tools {
     }
 
     private static ItemStack parseStackNoNBT(String name) {
-        Item item = BuiltInRegistries.ITEM.getValue(new ResourceLocation(name));
+        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(name));
         if (item == null) {
             return ItemStack.EMPTY;
         }

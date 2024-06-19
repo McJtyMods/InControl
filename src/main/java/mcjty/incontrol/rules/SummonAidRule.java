@@ -14,6 +14,7 @@ import mcjty.incontrol.tools.typed.Attribute;
 import mcjty.incontrol.tools.typed.AttributeMap;
 import mcjty.incontrol.tools.typed.GenericAttributeMapFactory;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
@@ -26,9 +27,6 @@ import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.event.entity.living.ZombieEvent;
-import net.neoforged.neoforge.eventbus.api.Event;
-import net.neoforged.neoforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -232,7 +230,7 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
                 InControl.setup.getLogger().log(org.apache.logging.log4j.Level.ERROR, "Bad potion specifier '" + p + "'! Use <potion>,<duration>,<amplifier>");
                 continue;
             }
-            MobEffect potion = ForgeRegistries.MOB_EFFECTS.getValue(new ResourceLocation(splitted[0]));
+            MobEffect potion = BuiltInRegistries.MOB_EFFECT.get(ResourceLocation.parse(splitted[0]));
             if (potion == null) {
                 InControl.setup.getLogger().log(org.apache.logging.log4j.Level.ERROR, "Can't find potion '" + p + "'!");
                 continue;

@@ -8,6 +8,7 @@ import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.tools.varia.LookAtTools;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -19,7 +20,6 @@ import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.neoforged.neoforge.registries.ForgeRegistries;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -62,25 +62,25 @@ public class TestingBlockTools
         if (element.isJsonPrimitive()) {
             String blockname = element.getAsString();
             if (blockname.startsWith("tag:")) {
-                ResourceLocation tagname = new ResourceLocation(blockname.substring(4));
+                ResourceLocation tagname = ResourceLocation.parse(blockname.substring(4));
                 TagKey<Block> key = TagKey.create(Registries.BLOCK, tagname);
                 return (world, pos) -> {
                     BlockState state = world.getBlockState(pos);
                     return state.is(key);
                 };
             } else {
-                if (!ForgeRegistries.BLOCKS.containsKey(new ResourceLocation(blockname))) {
+                if (!BuiltInRegistries.BLOCK.containsKey(ResourceLocation.parse(blockname))) {
                     ErrorHandler.error("Block '" + blockname + "' is not valid!");
                     return null;
                 }
-                Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(blockname));
+                Block block = BuiltInRegistries.BLOCK.get(ResourceLocation.parse(blockname));
                 return (world, pos) -> testBlockStateSafe(world, pos, block);
             }
         } else if (element.isJsonObject()) {
             JsonObject obj = element.getAsJsonObject();
             BiPredicate<LevelAccessor, BlockPos> test;
             if (obj.has("tag")) {
-                ResourceLocation tagname = new ResourceLocation(obj.get("tag").getAsString());
+                ResourceLocation tagname = ResourceLocation.parse(obj.get("tag").getAsString());
                 TagKey<Block> key = TagKey.create(Registries.BLOCK, tagname);
                 test = (world, pos) -> {
                     BlockState state = world.getBlockState(pos);
@@ -88,11 +88,11 @@ public class TestingBlockTools
                 };
             } else if (obj.has("block")) {
                 String blockname = obj.get("block").getAsString();
-                if (!ForgeRegistries.BLOCKS.containsKey(new ResourceLocation(blockname))) {
+                if (!BuiltInRegistries.BLOCK.containsKey(ResourceLocation.parse(blockname))) {
                     ErrorHandler.error("Block '" + blockname + "' is not valid!");
                     return null;
                 }
-                Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(blockname));
+                Block block = BuiltInRegistries.BLOCK.get(ResourceLocation.parse(blockname));
                 if (obj.has("properties")) {
                     BlockState blockState = block.defaultBlockState();
                     JsonArray propArray = obj.get("properties").getAsJsonArray();
@@ -121,7 +121,7 @@ public class TestingBlockTools
                 test = (world, pos) -> {
                     LevelChunk chunk = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
                     if (chunk != null) {
-                        return finalTest.test(world, pos) && mod.equals(ForgeRegistries.BLOCKS.getKey(world.getBlockState(pos).getBlock()).getNamespace());
+                        return finalTest.test(world, pos) && mod.equals(BuiltInRegistries.BLOCK.getKey(world.getBlockState(pos).getBlock()).getNamespace());
                     } else {
                         return false;
                     }

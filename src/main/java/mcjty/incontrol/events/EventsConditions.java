@@ -82,11 +82,11 @@ public class EventsConditions {
                     JsonElement value = object.get(attr);
                     if (value.isJsonArray()) {
                         for (JsonElement element : value.getAsJsonArray()) {
-                            ResourceKey<Level> key = ResourceKey.create(Registries.DIMENSION, new ResourceLocation(element.getAsString()));
+                            ResourceKey<Level> key = ResourceKey.create(Registries.DIMENSION, ResourceLocation.parse(element.getAsString()));
                             builder.dimensions(key);
                         }
                     } else {
-                        ResourceKey<Level> key = ResourceKey.create(Registries.DIMENSION, new ResourceLocation(value.getAsString()));
+                        ResourceKey<Level> key = ResourceKey.create(Registries.DIMENSION, ResourceLocation.parse(value.getAsString()));
                         builder.dimensions(key);
                     }
                 }

@@ -3,8 +3,8 @@ package mcjty.incontrol.events;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import mcjty.incontrol.ErrorHandler;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -25,7 +25,7 @@ public record SpawnEventAction(List<ResourceLocation> mobid, int attempts,
         JsonElement mob = value.get("mob");
         if (mob.isJsonArray()) {
             for (JsonElement element : mob.getAsJsonArray()) {
-                ResourceLocation mobid = new ResourceLocation(element.getAsString());
+                ResourceLocation mobid = ResourceLocation.parse(element.getAsString());
                 if (!BuiltInRegistries.ENTITY_TYPE.containsKey(mobid)) {
                     ErrorHandler.error("Invalid mob '" + mobid + "' for events rule!");
                     return null;
@@ -33,7 +33,7 @@ public record SpawnEventAction(List<ResourceLocation> mobid, int attempts,
                 mobs.add(mobid);
             }
         } else {
-            ResourceLocation mobid = new ResourceLocation(mob.getAsString());
+            ResourceLocation mobid = ResourceLocation.parse(mob.getAsString());
             if (!BuiltInRegistries.ENTITY_TYPE.containsKey(mobid)) {
                 ErrorHandler.error("Invalid mob '" + mobid + "' for events rule!");
                 return null;

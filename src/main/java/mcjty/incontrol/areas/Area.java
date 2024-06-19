@@ -16,7 +16,7 @@ public record Area(ResourceKey<Level> dimension, String name, Type type, BlockPo
 
     public static boolean parse(JsonObject object, Builder builder) {
         if (object.has("dimension")) {
-            ResourceKey<Level> key = ResourceKey.create(Registries.DIMENSION, new ResourceLocation(object.get("dimension").getAsString()));
+            ResourceKey<Level> key = ResourceKey.create(Registries.DIMENSION, ResourceLocation.parse(object.get("dimension").getAsString()));
             builder.dimension(key);
         } else {
             ErrorHandler.error("Area has no dimension!");

@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.InControl;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -171,7 +172,7 @@ class CountInfo {
     }
 
     private static EntityType findEntity(String id) {
-        EntityType<?> ee = BuiltInRegistries.ENTITY_TYPE.getValue(new ResourceLocation(id));
+        EntityType<?> ee = BuiltInRegistries.ENTITY_TYPE.get(ResourceLocation.parse(id));
         if (ee == null) {
             ErrorHandler.error("Unknown mob '" + id + "'!");
             return null;

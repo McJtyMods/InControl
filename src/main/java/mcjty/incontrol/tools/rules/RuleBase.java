@@ -18,6 +18,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
@@ -51,7 +52,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.registries.ForgeRegistries;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -312,7 +312,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
     private void addDoDamageAction(String damage) {
         String[] split = StringUtils.split(damage, "=");
         Registry<DamageType> damageTypes = ServerLifecycleHooks.getCurrentServer().registryAccess().registryOrThrow(Registries.DAMAGE_TYPE);
-        Optional<Holder.Reference<DamageType>> type = damageTypes.getHolder(ResourceKey.create(Registries.DAMAGE_TYPE, new ResourceLocation(split[0])));
+        Optional<Holder.Reference<DamageType>> type = damageTypes.getHolder(ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.parse(split[0])));
         if (!type.isPresent()) {
             ErrorHandler.error("Can't find damage source '" + split[0] + "'!");
             return;
@@ -509,7 +509,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         JsonElement element = parser.parse(json);
         if (element.isJsonPrimitive()) {
             String blockname = element.getAsString();
-            Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(blockname));
+            Block block = BuiltInRegistries.BLOCK.get(ResourceLocation.parse(blockname));
             if (block == null) {
                 ErrorHandler.error("Block '" + blockname + "' is not valid!");
                 return;
@@ -529,7 +529,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
             }
 
             String blockname = obj.get("block").getAsString();
-            Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(blockname));
+            Block block = BuiltInRegistries.BLOCK.get(ResourceLocation.parse(blockname));
             if (block == null) {
                 ErrorHandler.error("Block '" + blockname + "' is not valid!");
                 return;
@@ -643,8 +643,8 @@ public class RuleBase<T extends RuleBase.EventGetter> {
                 ErrorHandler.error("Bad potion specifier '" + p + "'! Use <potion>,<duration>,<amplifier>");
                 continue;
             }
-            MobEffect potion = ForgeRegistries.MOB_EFFECTS.getValue(new ResourceLocation(splitted[0]));
-            if (potion == null) {
+            Optional<Holder.Reference<MobEffect>> potion = BuiltInRegistries.MOB_EFFECT.getHolder(ResourceLocation.parse(splitted[0]));
+            if (potion.isEmpty()) {
                 ErrorHandler.error("Can't find potion '" + p + "'!");
                 continue;
             }
@@ -657,7 +657,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
                 ErrorHandler.error("Bad duration or amplifier integer for '" + p + "'!");
                 continue;
             }
-            effects.add(new MobEffectInstance(potion, duration, amplifier));
+            effects.add(new MobEffectInstance(potion.get(), duration, amplifier));
         }
         if (!effects.isEmpty()) {
             actions.add(event -> {

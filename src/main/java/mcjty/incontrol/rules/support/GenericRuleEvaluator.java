@@ -20,6 +20,7 @@ import mcjty.incontrol.tools.typed.AttributeMap;
 import mcjty.incontrol.tools.varia.Tools;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -296,17 +297,17 @@ public class GenericRuleEvaluator {
     private void addMobsCheck(List<String> mobs) {
         if (mobs.size() == 1) {
             String id = mobs.get(0);
-            if (!BuiltInRegistries.ENTITY_TYPE.containsKey(new ResourceLocation(id))) {
+            if (!BuiltInRegistries.ENTITY_TYPE.containsKey(ResourceLocation.parse(id))) {
                 ErrorHandler.error("Unknown mob '" + id + "'!");
             }
-            EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.getValue(new ResourceLocation(id));
+            EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(ResourceLocation.parse(id));
             if (type != null) {
                 checks.add((event, query) -> type.equals(query.getEntity(event).getType()));
             }
         } else {
             Set<EntityType> classes = new HashSet<>();
             for (String id : mobs) {
-                EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.getValue(new ResourceLocation(id));
+                EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(ResourceLocation.parse(id));
                 if (type != null) {
                     classes.add(type);
                 } else {
@@ -426,7 +427,7 @@ public class GenericRuleEvaluator {
     }
 
     private void addBiomeTagCheck(List<String> list) {
-        Set<TagKey<Biome>> tags = list.stream().map(s -> TagKey.create(Registries.BIOME, new ResourceLocation(s))).collect(Collectors.toSet());
+        Set<TagKey<Biome>> tags = list.stream().map(s -> TagKey.create(Registries.BIOME, ResourceLocation.parse(s))).collect(Collectors.toSet());
         if (tags.size() == 1) {
             TagKey<Biome> key = tags.iterator().next();
             checks.add((event,query) -> {
@@ -487,7 +488,7 @@ public class GenericRuleEvaluator {
     }
 
     private void addStructureTagsCheck(List<String> tags) {
-        Set<TagKey<Structure>> tagSet = tags.stream().map(s -> TagKey.create(Registries.STRUCTURE, new ResourceLocation(s))).collect(Collectors.toSet());
+        Set<TagKey<Structure>> tagSet = tags.stream().map(s -> TagKey.create(Registries.STRUCTURE, ResourceLocation.parse(s))).collect(Collectors.toSet());
         checks.add((event,query) -> {
             LevelAccessor world = query.getWorld(event);
             BlockPos pos = query.getPos(event);

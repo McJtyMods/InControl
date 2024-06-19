@@ -3,11 +3,11 @@ package mcjty.incontrol;
 
 import mcjty.incontrol.setup.ModSetup;
 import mcjty.incontrol.tools.cache.StructureCache;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
-import net.neoforged.neoforge.fml.common.Mod;
-import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.neoforged.neoforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 @Mod(InControl.MODID)
 public class InControl {
@@ -16,9 +16,9 @@ public class InControl {
 
     public static ModSetup setup = new ModSetup();
 
-    public InControl() {
-        FMLJavaModLoadingContext.get().getModEventBus().addListener((FMLCommonSetupEvent event) -> setup.init());
-        MinecraftForge.EVENT_BUS.addListener((ServerStoppedEvent event) -> StructureCache.CACHE.clean());
-        MinecraftForge.EVENT_BUS.addListener(ErrorHandler::onPlayerJoinWorld);
+    public InControl(IEventBus bus) {
+        bus.addListener((FMLCommonSetupEvent event) -> setup.init());
+        NeoForge.EVENT_BUS.addListener((ServerStoppedEvent event) -> StructureCache.CACHE.clean());
+        NeoForge.EVENT_BUS.addListener(ErrorHandler::onPlayerJoinWorld);
     }
 }
