@@ -244,15 +244,21 @@ public class TestingTools {
             List<Predicate<CompoundTag>> nbtMatchers = getNbtMatchers(obj);
             if (nbtMatchers != null) {
                     // @todo 1.21 better system!
-		    xxx
-                    //DataComponentPatch patch = s.getComponentsPatch();
-                    //DataResult<Tag> result = DataComponentPatch.CODEC.encodeStart(NbtOps.INSTANCE, patch);
-                    //Tag tag = result.getOrThrow();
                 if (test == null) {
-                    test = s -> nbtMatchers.stream().allMatch(p -> p.test(s.getTag()));
+                    test = s -> nbtMatchers.stream().allMatch(p -> {
+                        DataComponentPatch patch = s.getComponentsPatch();
+                        DataResult<Tag> result = DataComponentPatch.CODEC.encodeStart(NbtOps.INSTANCE, patch);
+                        Tag tag = result.getOrThrow();
+                        return p.test((CompoundTag) tag);
+                    });
                 } else {
                     Predicate<ItemStack> finalTest = test;
-                    test = s -> finalTest.test(s) && nbtMatchers.stream().allMatch(p -> p.test(s.getTag()));
+                    test = s -> finalTest.test(s) && nbtMatchers.stream().allMatch(p -> {
+                        DataComponentPatch patch = s.getComponentsPatch();
+                        DataResult<Tag> result = DataComponentPatch.CODEC.encodeStart(NbtOps.INSTANCE, patch);
+                        Tag tag = result.getOrThrow();
+                        return p.test((CompoundTag) tag);
+                    });
                 }
             }
         }

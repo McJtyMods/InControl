@@ -724,7 +724,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         });
     }
 
-    private void addAttributeAction(String key, Attribute attribute, BiConsumer<LivingEntity, AttributeInstance> action) {
+    private void addAttributeAction(String key, Holder<Attribute> attribute, BiConsumer<LivingEntity, AttributeInstance> action) {
         actions.add(event -> {
             LivingEntity entityLiving = event.getEntityLiving();
             if (entityLiving != null) {
