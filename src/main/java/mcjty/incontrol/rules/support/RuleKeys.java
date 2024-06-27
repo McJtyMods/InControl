@@ -44,7 +44,6 @@ public interface RuleKeys {
     Key<String> AREA = Key.create(Type.STRING, "area");
     Key<String> BLOCKOFFSET = Key.create(Type.JSON, "blockoffset");
     Key<String> BIOME = Key.create(Type.STRING, "biome");
-    Key<String> BIOMETYPE = Key.create(Type.STRING, "biometype");
     Key<String> BIOMETAGS = Key.create(Type.STRING, "biometags");
     Key<String> STRUCTURE = Key.create(Type.STRING, "structure");
     Key<String> STRUCTURETAGS = Key.create(Type.STRING, "structuretags");

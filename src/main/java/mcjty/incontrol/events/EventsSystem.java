@@ -2,6 +2,7 @@ package mcjty.incontrol.events;
 
 import mcjty.incontrol.data.DataStorage;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -12,11 +13,10 @@ import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
-import net.neoforged.neoforge.event.ForgeEventFactory;
-import net.neoforged.neoforge.event.TickEvent;
+import net.neoforged.neoforge.event.EventHooks;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
-import net.neoforged.neoforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.event.tick.LevelTickEvent;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -85,7 +85,7 @@ public class EventsSystem {
             List<ResourceLocation> mobs = action.mobid();
             // Pick a random mob
             ResourceLocation mob = mobs.get(rnd.nextInt(mobs.size()));
-            EntityType<?> entityType = BuiltInRegistries.ENTITY_TYPE.getValue(mob);
+            EntityType<?> entityType = BuiltInRegistries.ENTITY_TYPE.get(mob);
             if (entityType != null) {
                 // Get a random count
                 int count = action.minamount() + rnd.nextInt(action.maxamount() - action.minamount() + 1);
@@ -170,7 +170,7 @@ public class EventsSystem {
         entity.moveTo(pos.getX(), pos.getY(), pos.getZ(), rnd.nextFloat() * 360.0F, 0.0F);
         busySpawning = mobEntity;
         if (canSpawn(world.getLevel(), mobEntity, action) && isNotColliding(world.getLevel(), mobEntity, action)) {
-            ForgeEventFactory.onFinalizeSpawn(mobEntity, world, world.getCurrentDifficultyAt(pos), MobSpawnType.NATURAL, null, null);
+            EventHooks.finalizeMobSpawn(mobEntity, world, world.getCurrentDifficultyAt(pos), MobSpawnType.NATURAL, null);
             busySpawning = null;
             if (!((Mob) entity).isSpawnCancelled()) {
                 world.addFreshEntityWithPassengers(entity);
@@ -186,7 +186,7 @@ public class EventsSystem {
         if (action.norestrictions()) {
             return true;
         } else {
-            return ForgeEventFactory.checkSpawnPosition(mobEntity, (ServerLevelAccessor) world, MobSpawnType.NATURAL);
+            return EventHooks.checkSpawnPosition(mobEntity, (ServerLevelAccessor) world, MobSpawnType.NATURAL);
         }
     }
 
@@ -222,14 +222,14 @@ public class EventsSystem {
 
     private static Map<Level, List<ScheduledCustomEvent>> customEventMap = new HashMap<>();
 
-    public static void onLevelTick(TickEvent.LevelTickEvent event) {
-        List<ScheduledCustomEvent> events = customEventMap.get(event.level);
+    public static void onLevelTick(LevelTickEvent.Pre event) {
+        List<ScheduledCustomEvent> events = customEventMap.get(event.getLevel());
         if (events != null && !events.isEmpty()) {
             // Make a copy of events and loop over the copy
             var copy = new ArrayList<>(events);
             events.clear();
             for (ScheduledCustomEvent scheduledCustomEvent : copy) {
-                handleCustomEvent((ServerLevel) event.level, scheduledCustomEvent.pos, scheduledCustomEvent.name);
+                handleCustomEvent((ServerLevel) event.getLevel(), scheduledCustomEvent.pos, scheduledCustomEvent.name);
             }
         }
     }

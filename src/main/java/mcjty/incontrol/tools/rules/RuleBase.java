@@ -602,7 +602,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
             LivingEntity living = event.getEntityLiving();
             if (living != null) {
                 living.hurt(living.damageSources().onFire(), 0.1f);
-                living.setSecondsOnFire(fireAction);
+                living.igniteForTicks(fireAction * 20);
             }
         });
     }

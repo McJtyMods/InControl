@@ -4,17 +4,21 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.mojang.serialization.DataResult;
 import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.tools.varia.Tools;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.tags.TagKey;
@@ -28,12 +32,13 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
-import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.levelgen.WorldgenRandom;
-import net.neoforged.neoforge.common.capabilities.ForgeCapabilities;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.common.util.FakePlayer;
 import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.items.IItemHandler;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -214,7 +219,13 @@ public class TestingTools {
             List<Predicate<CompoundTag>> nbtMatchers = getNbtMatchers(obj);
             if (nbtMatchers != null) {
                 Predicate<ItemStack> finalTest = test;
-                test = s -> finalTest.test(s) && nbtMatchers.stream().allMatch(p -> p.test(s.getTag()));
+                test = s -> finalTest.test(s) && nbtMatchers.stream().allMatch(p -> {
+                    // @todo 1.21 better system!
+                    DataComponentPatch patch = s.getComponentsPatch();
+                    DataResult<Tag> result = DataComponentPatch.CODEC.encodeStart(NbtOps.INSTANCE, patch);
+                    Tag tag = result.getOrThrow();
+                    return p.test((CompoundTag) tag);
+                });
             }
         }
         if (obj.has("energy")) {
@@ -229,13 +240,22 @@ public class TestingTools {
     }
 
     private static int getEnergy(ItemStack stack) {
-        return stack.getCapability(ForgeCapabilities.ENERGY).map(IEnergyStorage::getEnergyStored).orElse(0);
+        IEnergyStorage capability = stack.getCapability(Capabilities.EnergyStorage.ITEM);
+        if (capability == null) {
+            return 0;
+        } else {
+            return capability.getEnergyStored();
+        }
     }
 
     public static boolean contains(LevelAccessor world, BlockPos pos, @Nullable Direction side, @Nonnull List<Predicate<ItemStack>> matchers) {
+        if (!(world instanceof ServerLevel serverLevel)) {
+            return false;
+        }
         BlockEntity tileEntity = world.getBlockEntity(pos);
         if (tileEntity != null) {
-            return tileEntity.getCapability(ForgeCapabilities.ITEM_HANDLER, side).map(h -> {
+            IItemHandler h = serverLevel.getCapability(Capabilities.ItemHandler.BLOCK, pos, side);
+            if (h != null) {
                 for (int i = 0 ; i < h.getSlots() ; i++) {
                     ItemStack stack = h.getStackInSlot(i);
                     if (!stack.isEmpty()) {
@@ -247,15 +267,21 @@ public class TestingTools {
                     }
                 }
                 return false;
-            }).orElse(false);
+            }
         }
         return false;
     }
 
     public static int getEnergy(LevelAccessor world, BlockPos pos, @Nullable Direction side) {
+        if (!(world instanceof ServerLevel serverLevel)) {
+            return 0;
+        }
         BlockEntity tileEntity = world.getBlockEntity(pos);
         if (tileEntity != null) {
-            return tileEntity.getCapability(ForgeCapabilities.ENERGY, side).map(IEnergyStorage::getEnergyStored).orElse(0);
+            IEnergyStorage s = serverLevel.getCapability(Capabilities.EnergyStorage.BLOCK, pos, side);
+            if (s != null) {
+                return s.getEnergyStored();
+            }
         }
         return 0;
     }
@@ -362,7 +388,7 @@ public class TestingTools {
 
     public static boolean isChunkInvalid(LevelAccessor world, BlockPos pos) {
         LevelChunk chunk = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
-        if (chunk == null || !chunk.getStatus().isOrAfter(ChunkStatus.FULL)) {
+        if (chunk == null || !chunk.getPersistedStatus().isOrAfter(ChunkStatus.FULL)) {
             return true;
         }
         return false;

@@ -18,8 +18,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.event.entity.living.MobSpawnEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
-import net.neoforged.neoforge.eventbus.api.Event;
 
 import java.util.Set;
 import java.util.function.Consumer;
@@ -138,7 +138,6 @@ public class LeftClickRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.createMulti(LACKOFFHANDITEM))
                 .attribute(Attribute.createMulti(BOTHHANDSITEM))
                 .attribute(Attribute.createMulti(BIOME))
-                .attribute(Attribute.createMulti(BIOMETYPE))
                 .attribute(Attribute.createMulti(DIMENSION))
                 .attribute(Attribute.createMulti(DIMENSION_MOD))
 
@@ -167,7 +166,7 @@ public class LeftClickRule extends RuleBase<RuleBase.EventGetter> {
         ;
     }
 
-    private Event.Result result;
+    private MobSpawnEvent.SpawnPlacementCheck.Result result;
     private final GenericRuleEvaluator ruleEvaluator;
 
     private LeftClickRule(AttributeMap map, Set<String> phases) {
@@ -183,14 +182,14 @@ public class LeftClickRule extends RuleBase<RuleBase.EventGetter> {
         if (map.has(ACTION_RESULT)) {
             String br = map.get(ACTION_RESULT);
             if ("default".equals(br) || br.startsWith("def")) {
-                this.result = Event.Result.DEFAULT;
+                this.result = MobSpawnEvent.SpawnPlacementCheck.Result.DEFAULT;
             } else if ("allow".equals(br) || "true".equals(br)) {
-                this.result = Event.Result.ALLOW;
+                this.result = MobSpawnEvent.SpawnPlacementCheck.Result.SUCCEED;
             } else {
-                this.result = Event.Result.DENY;
+                this.result = MobSpawnEvent.SpawnPlacementCheck.Result.FAIL;
             }
         } else {
-            this.result = Event.Result.DEFAULT;
+            this.result = MobSpawnEvent.SpawnPlacementCheck.Result.DEFAULT;
         }
     }
 
@@ -225,7 +224,7 @@ public class LeftClickRule extends RuleBase<RuleBase.EventGetter> {
         }
     }
 
-    public Event.Result getResult() {
+    public MobSpawnEvent.SpawnPlacementCheck.Result getResult() {
         return result;
     }
 

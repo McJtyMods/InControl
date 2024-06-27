@@ -2,6 +2,8 @@ package mcjty.incontrol.rules;
 
 import com.google.gson.JsonElement;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.JsonOps;
 import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.compat.ModRuleCompatibilityLayer;
@@ -16,6 +18,10 @@ import mcjty.incontrol.tools.typed.AttributeMap;
 import mcjty.incontrol.tools.typed.GenericAttributeMapFactory;
 import mcjty.incontrol.tools.varia.Tools;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -145,7 +151,6 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.createMulti(BLOCK))
                 .attribute(Attribute.create(BLOCKOFFSET))
                 .attribute(Attribute.createMulti(BIOME))
-                .attribute(Attribute.createMulti(BIOMETYPE))
                 .attribute(Attribute.createMulti(DIMENSION))
                 .attribute(Attribute.createMulti(DIMENSION_MOD))
                 .attribute(Attribute.createMulti(SOURCE))
@@ -290,7 +295,10 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
             } else {
                 if (nbtJson != null) {
                     try {
-                        stack.setTag(TagParser.parseTag(nbtJson));
+                        // @todo 1.21 fix with better system?
+                        CompoundTag tag = TagParser.parseTag(nbtJson);
+                        DataResult<com.mojang.datafixers.util.Pair<DataComponentPatch, Tag>> decoded = DataComponentPatch.CODEC.decode(NbtOps.INSTANCE, tag);
+                        stack.applyComponents(decoded.result().get().getFirst());
                     } catch (CommandSyntaxException e) {
                         InControl.setup.getLogger().log(org.apache.logging.log4j.Level.ERROR, "Bad nbt for '" + name + "'!");
                     }

@@ -2,6 +2,7 @@ package mcjty.incontrol.data;
 
 import mcjty.incontrol.rules.PhaseRule;
 import mcjty.incontrol.rules.RulesManager;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
@@ -59,7 +60,7 @@ public class DataStorage extends SavedData {
         ServerLevel overworld = server.getLevel(Level.OVERWORLD);
 
         DimensionDataStorage storage = overworld.getDataStorage();
-        return storage.computeIfAbsent(DataStorage::new, DataStorage::new, NAME);
+        return storage.computeIfAbsent(new Factory<>(DataStorage::new, (compoundTag, provider) -> new DataStorage(compoundTag)), NAME);
     }
 
     public int getDaycounter() {
@@ -160,7 +161,7 @@ public class DataStorage extends SavedData {
     }
 
     @Override
-    public CompoundTag save(CompoundTag tag) {
+    public CompoundTag save(CompoundTag tag, HolderLookup.Provider provider) {
         tag.putInt("daycounter", daycounter);
         if (isDay != null) {
             tag.putBoolean("isday", isDay);

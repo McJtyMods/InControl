@@ -3,14 +3,10 @@ package mcjty.incontrol.compat;
 import mcjty.incontrol.setup.ModSetup;
 import mcjty.incontrol.tools.rules.IEventQuery;
 import mcjty.incontrol.tools.rules.IModRuleCompatibilityLayer;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.biome.Biome;
-import net.neoforged.neoforge.registries.ForgeRegistries;
 
 public class ModRuleCompatibilityLayer implements IModRuleCompatibilityLayer {
 
@@ -157,12 +153,5 @@ public class ModRuleCompatibilityLayer implements IModRuleCompatibilityLayer {
     @Override
     public void setState(LevelAccessor world, String statename, String statevalue) {
         // Not supported by In Control
-    }
-
-    @Override
-    public String getBiomeName(Biome biome) {
-        ResourceLocation resourceLocation = ForgeRegistries.BIOMES.getKey(biome);
-        String s = "biome." + resourceLocation.getNamespace() + "." + resourceLocation.getPath();
-        return Component.translatable(s).getString();
     }
 }

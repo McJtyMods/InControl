@@ -18,7 +18,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.event.entity.living.LivingExperienceDropEvent;
-import net.neoforged.neoforge.eventbus.api.Event;
+import net.neoforged.neoforge.event.entity.living.MobSpawnEvent;
 
 import java.util.Set;
 
@@ -130,7 +130,6 @@ public class ExperienceRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.createMulti(BLOCK))
                 .attribute(Attribute.create(BLOCKOFFSET))
                 .attribute(Attribute.createMulti(BIOME))
-                .attribute(Attribute.createMulti(BIOMETYPE))
                 .attribute(Attribute.createMulti(DIMENSION))
                 .attribute(Attribute.createMulti(DIMENSION_MOD))
                 .attribute(Attribute.createMulti(HELDITEM))
@@ -147,7 +146,7 @@ public class ExperienceRule extends RuleBase<RuleBase.EventGetter> {
     }
 
     private final GenericRuleEvaluator ruleEvaluator;
-    private Event.Result result;
+    private MobSpawnEvent.SpawnPlacementCheck.Result result;
     private Integer xp = null;
     private float multxp = 1.0f;
     private float addxp = 0.0f;
@@ -180,14 +179,14 @@ public class ExperienceRule extends RuleBase<RuleBase.EventGetter> {
 
         map.consumeOrElse(ACTION_RESULT, br -> {
             if ("default".equals(br) || br.startsWith("def")) {
-                this.result = Event.Result.DEFAULT;
+                this.result = MobSpawnEvent.SpawnPlacementCheck.Result.DEFAULT;
             } else if ("allow".equals(br) || "true".equals(br)) {
-                this.result = Event.Result.ALLOW;
+                this.result = MobSpawnEvent.SpawnPlacementCheck.Result.SUCCEED;
             } else {
-                this.result = Event.Result.DENY;
+                this.result = MobSpawnEvent.SpawnPlacementCheck.Result.FAIL;
             }
         }, () -> {
-            this.result = Event.Result.DEFAULT;
+            this.result = MobSpawnEvent.SpawnPlacementCheck.Result.DEFAULT;
         });
 
         map.consume(ACTION_SETXP, v -> xp = v);
@@ -205,7 +204,7 @@ public class ExperienceRule extends RuleBase<RuleBase.EventGetter> {
         return ruleEvaluator.match(event, EVENT_QUERY);
     }
 
-    public Event.Result getResult() {
+    public MobSpawnEvent.SpawnPlacementCheck.Result getResult() {
         return result;
     }
 }

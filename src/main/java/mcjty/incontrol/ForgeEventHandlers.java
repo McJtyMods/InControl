@@ -18,18 +18,18 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
+import net.neoforged.neoforge.common.util.TriState;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
-import net.neoforged.neoforge.event.TickEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.living.*;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
-import net.neoforged.neoforge.eventbus.api.Event;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.fml.LogicalSide;
+import net.neoforged.neoforge.event.tick.LevelTickEvent;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
@@ -123,18 +123,18 @@ public class ForgeEventHandlers {
     }
 
     @SubscribeEvent
-    public void onWorldTick(TickEvent.LevelTickEvent event) {
-        if (event.phase == TickEvent.Phase.START && !event.level.isClientSide) {
+    public void onWorldTick(LevelTickEvent.Pre event) {
+        if (!event.getLevel().isClientSide) {
             // For every world tick we reset the cache
-            InControl.setup.cache.performCount(event.level);
+            InControl.setup.cache.performCount(event.getLevel());
 
-            if (!event.level.players().isEmpty()) {
+            if (!event.getLevel().players().isEmpty()) {
                 // If a world has players we do mob spawning in it
                 SpawnerSystem.checkRules(event);
             }
 
-            if (event.level.dimension().equals(Level.OVERWORLD)) {
-                DataStorage.getData(event.level).tick(event.level);
+            if (event.getLevel().dimension().equals(Level.OVERWORLD)) {
+                DataStorage.getData(event.getLevel()).tick(event.getLevel());
             }
 
             EventsSystem.onLevelTick(event);
@@ -142,7 +142,7 @@ public class ForgeEventHandlers {
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
-    public void onEntitySpawnEvent(MobSpawnEvent.FinalizeSpawn event) {
+    public void onEntitySpawnEvent(FinalizeSpawnEvent event) {
         int i = 0;
         for (SpawnRule rule : RulesManager.getFilteredRules(event.getEntity().getCommandSenderWorld(), SpawnWhen.FINALIZE)) {
             if (rule.match(event)) {
@@ -201,21 +201,21 @@ public class ForgeEventHandlers {
                 }
                 switch (result) {
                     case ALLOW:
-                        event.setResult(Event.Result.ALLOW);
+                        event.setResult(MobSpawnEvent.PositionCheck.Result.SUCCEED);
                         Statistics.addSpawnStat(i, false);
                         rule.action(event);
                         break;
                     case DEFAULT:
-                        event.setResult(Event.Result.DEFAULT);
+                        event.setResult(MobSpawnEvent.PositionCheck.Result.DEFAULT);
                         Statistics.addSpawnStat(i, false);
                         rule.action(event);
                         break;
                     case DENY:
-                        event.setResult(Event.Result.DENY);
+                        event.setResult(MobSpawnEvent.PositionCheck.Result.FAIL);
                         Statistics.addSpawnStat(i, true);
                         break;
                     case DENY_WITH_ACTIONS:
-                        event.setResult(Event.Result.DENY);
+                        event.setResult(MobSpawnEvent.PositionCheck.Result.FAIL);
                         Statistics.addSpawnStat(i, true);
                         rule.action(event);
                         break;
@@ -230,7 +230,7 @@ public class ForgeEventHandlers {
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
-    public void onCheckDespawn(MobSpawnEvent.AllowDespawn event) {
+    public void onCheckDespawn(MobDespawnEvent event) {
         int i = 0;
         for (SpawnRule rule : RulesManager.getFilteredRules(event.getEntity().getCommandSenderWorld(), SpawnWhen.DESPAWN)) {
             if (rule.match(event)) {
@@ -245,18 +245,18 @@ public class ForgeEventHandlers {
                 }
                 switch (result) {
                     case ALLOW:
-                        event.setResult(Event.Result.ALLOW);
+                        event.setResult(MobDespawnEvent.Result.ALLOW);
                         rule.action(event);
                         break;
                     case DEFAULT:
-                        event.setResult(Event.Result.DEFAULT);
+                        event.setResult(MobDespawnEvent.Result.DEFAULT);
                         rule.action(event);
                         break;
                     case DENY:
-                        event.setResult(Event.Result.DENY);
+                        event.setResult(MobDespawnEvent.Result.DENY);
                         break;
                     case DENY_WITH_ACTIONS:
-                        event.setResult(Event.Result.DENY);
+                        event.setResult(MobDespawnEvent.Result.DENY);
                         rule.action(event);
                         break;
                 }
@@ -270,11 +270,12 @@ public class ForgeEventHandlers {
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
-    public void onSummonAidEvent(ZombieEvent.SummonAidEvent event) {
+    public void onSummonAidEvent(FinalizeSpawnEvent event) {
+        // @todo 1.21 check that this finalize event is actually a summon aid event
         int i = 0;
-        for (SummonAidRule rule : RulesManager.getFilteredSummonAidRules(event.getLevel())) {
+        for (SummonAidRule rule : RulesManager.getFilteredSummonAidRules(event.getLevel().getLevel())) {
             if (rule.match(event)) {
-                Event.Result result = rule.getResult();
+                MobSpawnEvent.SpawnPlacementCheck.Result result = rule.getResult();
                 if (debug) {
                     Holder<Biome> biome = event.getLevel().getBiome(new BlockPos((int) event.getX(), (int) event.getY(), (int) event.getZ()));
                     String biomeId = Tools.getBiomeId(biome);
@@ -283,9 +284,10 @@ public class ForgeEventHandlers {
                             + " y: " + event.getY()
                             + " biome: " + biomeId);
                 }
-                event.setResult(result);
-                if (result != Event.Result.DENY) {
+                if (result != MobSpawnEvent.SpawnPlacementCheck.Result.FAIL) {
                     rule.action(event);
+                } else {
+                    event.setCanceled(true);
                 }
                 return;
             }
@@ -299,13 +301,13 @@ public class ForgeEventHandlers {
         int i = 0;
         for (ExperienceRule rule : RulesManager.getFilteredExperienceRuiles(event.getEntity().level())) {
             if (rule.match(event)) {
-                Event.Result result = rule.getResult();
+                MobSpawnEvent.SpawnPlacementCheck.Result result = rule.getResult();
                 if (debug) {
                     InControl.setup.getLogger().log(org.apache.logging.log4j.Level.INFO, "Experience Rule " + i + ": " + result
                             + " entity: " + event.getEntity().getName()
                             + " y: " + event.getEntity().blockPosition().getY());
                 }
-                if (result != Event.Result.DENY) {
+                if (result != MobSpawnEvent.SpawnPlacementCheck.Result.FAIL) {
                     int newxp = rule.modifyXp(event.getDroppedExperience());
                     event.setDroppedExperience(newxp);
                 } else {
@@ -355,7 +357,7 @@ public class ForgeEventHandlers {
 
                 for (Pair<ItemStack, Function<Integer, Integer>> pair : rule.getToAddItems()) {
                     ItemStack item = pair.getLeft();
-                    int fortune = event.getLootingLevel();
+                    int fortune = 0;// @todo 1.21, this no longer exists: event.getLootingLevel();
                     int amount = pair.getValue().apply(fortune);
                     BlockPos pos = event.getEntity().blockPosition();
                     while (amount > item.getMaxStackSize()) {
@@ -387,7 +389,7 @@ public class ForgeEventHandlers {
         int i = 0;
         for (RightClickRule rule : RulesManager.getFilteredRightClickRules(event.getLevel())) {
             if (rule.match(event)) {
-                Event.Result result = rule.getResult();
+                MobSpawnEvent.SpawnPlacementCheck.Result result = rule.getResult();
                 if (debug) {
                     Holder<Biome> biome = event.getLevel().getBiome(event.getPos());
                     String biomeId = Tools.getBiomeId(biome);
@@ -397,9 +399,17 @@ public class ForgeEventHandlers {
                             + " biome: " + biomeId);
                 }
                 rule.action(event);
-                event.setUseBlock(result);
-                if (result == Event.Result.DENY) {
-                    event.setCanceled(true);
+                switch (result) {
+                    case SUCCEED -> {
+                        event.setUseBlock(TriState.TRUE);
+                    }
+                    case DEFAULT -> {
+                        event.setUseBlock(TriState.DEFAULT);
+                    }
+                    case FAIL -> {
+                        event.setUseBlock(TriState.FALSE);
+                        event.setCanceled(true);
+                    }
                 }
                 return;
             }
@@ -415,7 +425,7 @@ public class ForgeEventHandlers {
         int i = 0;
         for (LeftClickRule rule : RulesManager.getFilteredLeftClickRules(event.getLevel())) {
             if (rule.match(event)) {
-                Event.Result result = rule.getResult();
+                MobSpawnEvent.SpawnPlacementCheck.Result result = rule.getResult();
                 if (debug) {
                     Holder<Biome> biome = event.getLevel().getBiome(event.getPos());
                     String biomeId = Tools.getBiomeId(biome);
@@ -425,9 +435,17 @@ public class ForgeEventHandlers {
                             + " biome: " + biomeId);
                 }
                 rule.action(event);
-                event.setUseBlock(result);
-                if (result == Event.Result.DENY) {
-                    event.setCanceled(true);
+                switch (result) {
+                    case SUCCEED -> {
+                        event.setUseBlock(TriState.TRUE);
+                    }
+                    case DEFAULT -> {
+                        event.setUseBlock(TriState.DEFAULT);
+                    }
+                    case FAIL -> {
+                        event.setUseBlock(TriState.FALSE);
+                        event.setCanceled(true);
+                    }
                 }
                 return;
             }
@@ -444,7 +462,7 @@ public class ForgeEventHandlers {
         int i = 0;
         for (PlaceRule rule : RulesManager.getFilteredPlaceRules(event.getLevel())) {
             if (rule.match(event)) {
-                Event.Result result = rule.getResult();
+                MobSpawnEvent.SpawnPlacementCheck.Result result = rule.getResult();
                 if (debug) {
                     Holder<Biome> biome = event.getLevel().getBiome(event.getPos());
                     String biomeId = Tools.getBiomeId(biome);
@@ -454,7 +472,7 @@ public class ForgeEventHandlers {
                             + " biome: " + biomeId);
                 }
                 rule.action(event);
-                if (result == Event.Result.DENY) {
+                if (result == MobSpawnEvent.SpawnPlacementCheck.Result.FAIL) {
                     event.setCanceled(true);
                 }
                 return;
@@ -471,7 +489,7 @@ public class ForgeEventHandlers {
         int i = 0;
         for (HarvestRule rule : RulesManager.getFilteredHarvestRules(event.getLevel())) {
             if (rule.match(event)) {
-                Event.Result result = rule.getResult();
+                MobSpawnEvent.SpawnPlacementCheck.Result result = rule.getResult();
                 if (debug) {
                     Holder<Biome> biome = event.getLevel().getBiome(event.getPos());
                     String biomeId = Tools.getBiomeId(biome);
@@ -481,7 +499,7 @@ public class ForgeEventHandlers {
                             + " biome: " + biomeId);
                 }
                 rule.action(event);
-                if (result == Event.Result.DENY) {
+                if (result == MobSpawnEvent.SpawnPlacementCheck.Result.FAIL) {
                     event.setCanceled(true);
                 }
                 return;
@@ -493,27 +511,24 @@ public class ForgeEventHandlers {
     }
 
     @SubscribeEvent
-    public void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) {
-            return;
-        }
-        if (event.side != LogicalSide.SERVER) {
+    public void onPlayerTick(PlayerTickEvent.Post event) {
+        if (event.getEntity().level().isClientSide) {
             return;
         }
 
-        int id = event.player.getId();
+        int id = event.getEntity().getId();
         if (!tickCounters.containsKey(id)) {
             tickCounters.put(id, 0);
         }
         int tickCounter = tickCounters.get(id) + 1;
         tickCounters.put(id, tickCounter);
         int i = 0;
-        for (EffectRule rule : RulesManager.getFilteredEffectRules(event.player.getCommandSenderWorld())) {
+        for (EffectRule rule : RulesManager.getFilteredEffectRules(event.getEntity().getCommandSenderWorld())) {
             if (tickCounter % rule.getTimeout() == 0 && rule.match(event)) {
                 if (debug) {
                     InControl.setup.getLogger().log(org.apache.logging.log4j.Level.INFO, "Join Rule " + i
-                            + " entity: " + event.player.getName()
-                            + " y: " + event.player.blockPosition().getY());
+                            + " entity: " + event.getEntity().getName()
+                            + " y: " + event.getEntity().blockPosition().getY());
                 }
                 rule.action(event);
                 return;

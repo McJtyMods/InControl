@@ -4,14 +4,11 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.InControl;
-import mcjty.incontrol.rules.support.RuleKeys;
 import mcjty.incontrol.tools.rules.TestingTools;
-import mcjty.incontrol.tools.varia.Tools;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
-import net.neoforged.neoforge.registries.ForgeRegistries;
 
 import java.util.*;
 import java.util.function.Predicate;

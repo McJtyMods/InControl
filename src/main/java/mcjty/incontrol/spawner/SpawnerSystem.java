@@ -17,21 +17,19 @@ import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.entity.LevelEntityGetter;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.AABB;
-import net.neoforged.neoforge.common.ForgeHooks;
-import net.neoforged.neoforge.event.ForgeEventFactory;
-import net.neoforged.neoforge.event.TickEvent;
+import net.neoforged.neoforge.event.EventHooks;
+import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
@@ -57,8 +55,8 @@ public class SpawnerSystem {
         }
     }
 
-    public static void checkRules(TickEvent.LevelTickEvent event) {
-        Level world = event.level;
+    public static void checkRules(LevelTickEvent.Pre event) {
+        Level world = event.getLevel();
         WorldSpawnerData spawnerData = worldData.get(world.dimension());
         if (spawnerData == null) {
             return;
@@ -171,7 +169,7 @@ public class SpawnerSystem {
                     if (spawnable == null) {
                         return;
                     }
-                    boolean nocollisions = world.noCollision(spawnable.getAABB(pos.getX(), pos.getY(), pos.getZ()));
+                    boolean nocollisions = world.noCollision(spawnable.getSpawnAABB(pos.getX(), pos.getY(), pos.getZ()));
                     if (nocollisions) {
                         Entity entity = spawnable.create(world);
                         if (entity instanceof Mob) {
@@ -183,7 +181,7 @@ public class SpawnerSystem {
                                 }
                                 busySpawning = mobEntity;   // @todo check in spawn rule
                                 if (canSpawn(world, mobEntity, conditions) && isNotColliding(world, mobEntity, conditions)) {
-                                    ForgeEventFactory.onFinalizeSpawn(mobEntity, world, world.getCurrentDifficultyAt(pos), MobSpawnType.NATURAL, null, null);
+                                    EventHooks.finalizeMobSpawn(mobEntity, world, world.getCurrentDifficultyAt(pos), MobSpawnType.NATURAL, null);
                                     busySpawning = null;
                                     if (!((Mob) entity).isSpawnCancelled()) {
                                         world.addFreshEntityWithPassengers(entity);
@@ -240,7 +238,7 @@ public class SpawnerSystem {
         if (conditions.isNoRestrictions()) {
             return true;
         } else {
-            return ForgeEventFactory.checkSpawnPosition(mobEntity, (ServerLevelAccessor) world, MobSpawnType.NATURAL);
+            return EventHooks.checkSpawnPosition(mobEntity, (ServerLevelAccessor) world, MobSpawnType.NATURAL);
         }
     }
 
@@ -322,7 +320,7 @@ public class SpawnerSystem {
         while (pos == null || sqdist < mindist * mindist || sqdist > maxdist * maxdist) {
             pos = box.randomPos(random, groupCenterPos, groupDistance);
             LevelChunk c = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
-            if (c != null && c.getStatus() == ChunkStatus.FULL) {
+            if (c != null && c.getPersistedStatus() == ChunkStatus.FULL) {
                 // If vertical distance is beyond range then don't use this position (set it to null)
                 if (verticalMindist != -1 || verticalMaxdist != -1) {
                     int y = pos.getY();
@@ -379,7 +377,7 @@ public class SpawnerSystem {
         while (pos == null || sqdist < mindist * mindist || sqdist > maxdist * maxdist) {
             pos = box.randomPos(random, groupCenterPos, groupDistance);
             LevelChunk c = world.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
-            if (c != null && c.getStatus() == ChunkStatus.FULL) {
+            if (c != null && c.getPersistedStatus() == ChunkStatus.FULL) {
                 pos = getValidSpawnablePosition(world, pos.getX(), pos.getZ(), minheight, maxheight, validSpawn);
                 if (pos != null && (verticalMindist != -1 || verticalMaxdist != -1)) {
                     int y = pos.getY();
@@ -477,7 +475,7 @@ public class SpawnerSystem {
     }
 
     private static boolean isValidSpawnPos(LevelReader world, BlockPos pos) {
-        if (!world.getBlockState(pos).isPathfindable(world, pos, PathComputationType.LAND)) {
+        if (!world.getBlockState(pos).isPathfindable(PathComputationType.LAND)) {
             return false;
         }
         return world.getBlockState(pos.below()).canOcclude();

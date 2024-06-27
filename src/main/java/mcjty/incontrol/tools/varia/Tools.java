@@ -2,10 +2,14 @@ package mcjty.incontrol.tools.varia;
 
 import com.google.gson.JsonObject;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.serialization.DataResult;
 import mcjty.incontrol.ErrorHandler;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -84,7 +88,10 @@ public class Tools {
                 ErrorHandler.error("Error parsing NBT in '" + name + "'!");
                 return ItemStack.EMPTY;
             }
-            stack.setTag(nbt);
+            // @todo 1.21 check for better system
+            DataResult<com.mojang.datafixers.util.Pair<DataComponentPatch, Tag>> decoded = DataComponentPatch.CODEC.decode(NbtOps.INSTANCE, nbt);
+            DataComponentPatch patch = decoded.getOrThrow().getFirst();
+            stack.applyComponents(patch);
             return stack;
         } else if (name.contains("/")) {
             int idx = name.indexOf('/');
@@ -99,7 +106,10 @@ public class Tools {
                 ErrorHandler.error("Error parsing NBT in '" + name + "'!");
                 return ItemStack.EMPTY;
             }
-            stack.setTag(nbt);
+            // @todo 1.21 check for better system
+            DataResult<com.mojang.datafixers.util.Pair<DataComponentPatch, Tag>> decoded = DataComponentPatch.CODEC.decode(NbtOps.INSTANCE, nbt);
+            DataComponentPatch patch = decoded.getOrThrow().getFirst();
+            stack.applyComponents(patch);
             return stack;
         } else {
             return parseStackNoNBT(name);
@@ -133,7 +143,10 @@ public class Tools {
                 ErrorHandler.error("Error parsing json '" + nbt + "'!");
                 return ItemStack.EMPTY;
             }
-            stack.setTag(tag);
+            // @todo 1.21 check for better system
+            DataResult<com.mojang.datafixers.util.Pair<DataComponentPatch, Tag>> decoded = DataComponentPatch.CODEC.decode(NbtOps.INSTANCE, tag);
+            DataComponentPatch patch = decoded.getOrThrow().getFirst();
+            stack.applyComponents(patch);
         }
         return stack;
     }

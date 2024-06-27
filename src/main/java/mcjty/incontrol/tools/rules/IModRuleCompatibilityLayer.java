@@ -85,9 +85,4 @@ public interface IModRuleCompatibilityLayer {
     void setState(LevelAccessor world, String statename, String statevalue);
 
     String getState(LevelAccessor world, String statename);
-
-    // --------------------
-    // Specific methods to avoid AT issues in McJtyTools
-    // --------------------
-    String getBiomeName(Biome biome);
 }

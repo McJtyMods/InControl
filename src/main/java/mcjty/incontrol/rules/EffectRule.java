@@ -17,7 +17,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.event.TickEvent;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
 import java.util.Set;
 import java.util.function.Consumer;
@@ -27,49 +27,49 @@ import static mcjty.incontrol.rules.support.RuleKeys.*;
 public class EffectRule extends RuleBase<RuleBase.EventGetter> {
 
     private static final GenericAttributeMapFactory FACTORY = new GenericAttributeMapFactory();
-    public static final IEventQuery<TickEvent.PlayerTickEvent> EVENT_QUERY = new IEventQuery<>() {
+    public static final IEventQuery<PlayerTickEvent> EVENT_QUERY = new IEventQuery<>() {
         @Override
-        public Level getWorld(TickEvent.PlayerTickEvent o) {
-            return o.player.getCommandSenderWorld();
+        public Level getWorld(PlayerTickEvent o) {
+            return o.getEntity().getCommandSenderWorld();
         }
 
         @Override
-        public BlockPos getPos(TickEvent.PlayerTickEvent o) {
-            return o.player.blockPosition();
+        public BlockPos getPos(PlayerTickEvent o) {
+            return o.getEntity().blockPosition();
         }
 
         @Override
-        public BlockPos getValidBlockPos(TickEvent.PlayerTickEvent o) {
-            return o.player.blockPosition().below();
+        public BlockPos getValidBlockPos(PlayerTickEvent o) {
+            return o.getEntity().blockPosition().below();
         }
 
         @Override
-        public int getY(TickEvent.PlayerTickEvent o) {
-            return o.player.blockPosition().getY();
+        public int getY(PlayerTickEvent o) {
+            return o.getEntity().blockPosition().getY();
         }
 
         @Override
-        public Entity getEntity(TickEvent.PlayerTickEvent o) {
-            return o.player;
+        public Entity getEntity(PlayerTickEvent o) {
+            return o.getEntity();
         }
 
         @Override
-        public DamageSource getSource(TickEvent.PlayerTickEvent o) {
+        public DamageSource getSource(PlayerTickEvent o) {
             return null;
         }
 
         @Override
-        public Entity getAttacker(TickEvent.PlayerTickEvent o) {
+        public Entity getAttacker(PlayerTickEvent o) {
             return null;
         }
 
         @Override
-        public Player getPlayer(TickEvent.PlayerTickEvent o) {
-            return o.player;
+        public Player getPlayer(PlayerTickEvent o) {
+            return o.getEntity();
         }
 
         @Override
-        public ItemStack getItem(TickEvent.PlayerTickEvent o) {
+        public ItemStack getItem(PlayerTickEvent o) {
             return ItemStack.EMPTY;
         }
     };
@@ -136,7 +136,6 @@ public class EffectRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.createMulti(LACKOFFHANDITEM))
                 .attribute(Attribute.createMulti(BOTHHANDSITEM))
                 .attribute(Attribute.createMulti(BIOME))
-                .attribute(Attribute.createMulti(BIOMETYPE))
                 .attribute(Attribute.createMulti(DIMENSION))
                 .attribute(Attribute.createMulti(DIMENSION_MOD))
 
@@ -178,30 +177,30 @@ public class EffectRule extends RuleBase<RuleBase.EventGetter> {
         return timeout;
     }
 
-    public boolean match(TickEvent.PlayerTickEvent event) {
+    public boolean match(PlayerTickEvent event) {
         return ruleEvaluator.match(event, EVENT_QUERY);
     }
 
-    public void action(TickEvent.PlayerTickEvent event) {
+    public void action(PlayerTickEvent event) {
         EventGetter getter = new EventGetter() {
             @Override
             public LivingEntity getEntityLiving() {
-                return event.player;
+                return event.getEntity();
             }
 
             @Override
             public Player getPlayer() {
-                return event.player;
+                return event.getEntity();
             }
 
             @Override
             public Level getWorld() {
-                return event.player.getCommandSenderWorld();
+                return event.getEntity().getCommandSenderWorld();
             }
 
             @Override
             public BlockPos getPosition() {
-                return event.player.blockPosition();
+                return event.getEntity().blockPosition();
             }
         };
         for (Consumer<EventGetter> action : actions) {

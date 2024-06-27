@@ -6,7 +6,6 @@ import mcjty.incontrol.InControl;
 import mcjty.incontrol.compat.ModRuleCompatibilityLayer;
 import mcjty.incontrol.data.PhaseTools;
 import mcjty.incontrol.rules.support.GenericRuleEvaluator;
-import mcjty.incontrol.rules.support.SummonEventGetter;
 import mcjty.incontrol.tools.rules.IEventQuery;
 import mcjty.incontrol.tools.rules.IModRuleCompatibilityLayer;
 import mcjty.incontrol.tools.rules.RuleBase;
@@ -14,6 +13,7 @@ import mcjty.incontrol.tools.typed.Attribute;
 import mcjty.incontrol.tools.typed.AttributeMap;
 import mcjty.incontrol.tools.typed.GenericAttributeMapFactory;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
@@ -27,63 +27,62 @@ import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.event.entity.living.FinalizeSpawnEvent;
+import net.neoforged.neoforge.event.entity.living.MobSpawnEvent;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 
 import static mcjty.incontrol.rules.support.RuleKeys.*;
 
 
-public class SummonAidRule extends RuleBase<SummonEventGetter> {
+public class SummonAidRule extends RuleBase<RuleBase.EventGetter> {
 
-    public static final IEventQuery<ZombieEvent.SummonAidEvent> EVENT_QUERY = new IEventQuery<>() {
+    public static final IEventQuery<FinalizeSpawnEvent> EVENT_QUERY = new IEventQuery<>() {
         @Override
-        public Level getWorld(ZombieEvent.SummonAidEvent o) {
-            return o.getLevel();
+        public Level getWorld(FinalizeSpawnEvent o) {
+            return o.getLevel().getLevel();
         }
 
         @Override
-        public BlockPos getPos(ZombieEvent.SummonAidEvent o) {
-            return new BlockPos(o.getX(), o.getY(), o.getZ());
+        public BlockPos getPos(FinalizeSpawnEvent o) {
+            return new BlockPos((int) o.getX(), (int) o.getY(), (int) o.getZ());
         }
 
         @Override
-        public BlockPos getValidBlockPos(ZombieEvent.SummonAidEvent o) {
-            return new BlockPos(o.getX(), o.getY() - 1, o.getZ());
+        public BlockPos getValidBlockPos(FinalizeSpawnEvent o) {
+            return new BlockPos((int) o.getX(), (int) (o.getY() - 1), (int) o.getZ());
         }
 
         @Override
-        public int getY(ZombieEvent.SummonAidEvent o) {
-            return o.getY();
+        public int getY(FinalizeSpawnEvent o) {
+            return (int) o.getY();
         }
 
         @Override
-        public Entity getEntity(ZombieEvent.SummonAidEvent o) {
+        public Entity getEntity(FinalizeSpawnEvent o) {
             return o.getEntity();
         }
 
         @Override
-        public DamageSource getSource(ZombieEvent.SummonAidEvent o) {
+        public DamageSource getSource(FinalizeSpawnEvent o) {
             return null;
         }
 
         @Override
-        public Entity getAttacker(ZombieEvent.SummonAidEvent o) {
+        public Entity getAttacker(FinalizeSpawnEvent o) {
             return null;
         }
 
         @Override
-        public Player getPlayer(ZombieEvent.SummonAidEvent o) {
+        public Player getPlayer(FinalizeSpawnEvent o) {
             return null;
         }
 
         @Override
-        public ItemStack getItem(ZombieEvent.SummonAidEvent o) {
+        public ItemStack getItem(FinalizeSpawnEvent o) {
             return ItemStack.EMPTY;
         }
     };
@@ -148,7 +147,6 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
                 .attribute(Attribute.createMulti(BLOCK))
                 .attribute(Attribute.create(BLOCKOFFSET))
                 .attribute(Attribute.createMulti(BIOME))
-                .attribute(Attribute.createMulti(BIOMETYPE))
                 .attribute(Attribute.createMulti(DIMENSION))
                 .attribute(Attribute.createMulti(DIMENSION_MOD))
                 .attribute(Attribute.create(STATE))
@@ -181,7 +179,7 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
     }
 
     private final GenericRuleEvaluator ruleEvaluator;
-    private Event.Result result;
+    private MobSpawnEvent.SpawnPlacementCheck.Result result;
 
     private SummonAidRule(AttributeMap map, Set<String> phases) {
         super(phases);
@@ -204,11 +202,11 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
 
         map.consumeOrElse(ACTION_RESULT, br -> {
             if ("default".equals(br) || br.startsWith("def")) {
-                this.result = Event.Result.DEFAULT;
+                this.result = MobSpawnEvent.SpawnPlacementCheck.Result.DEFAULT;
             } else if ("allow".equals(br) || "true".equals(br)) {
-                this.result = Event.Result.ALLOW;
+                this.result = MobSpawnEvent.SpawnPlacementCheck.Result.SUCCEED;
             } else {
-                this.result = Event.Result.DENY;
+                this.result = MobSpawnEvent.SpawnPlacementCheck.Result.FAIL;
             }
         }, () -> {
             this.result = null;
@@ -230,8 +228,8 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
                 InControl.setup.getLogger().log(org.apache.logging.log4j.Level.ERROR, "Bad potion specifier '" + p + "'! Use <potion>,<duration>,<amplifier>");
                 continue;
             }
-            MobEffect potion = BuiltInRegistries.MOB_EFFECT.get(ResourceLocation.parse(splitted[0]));
-            if (potion == null) {
+            Optional<Holder.Reference<MobEffect>> potion = BuiltInRegistries.MOB_EFFECT.getHolder(ResourceLocation.parse(splitted[0]));
+            if (potion.isEmpty()) {
                 InControl.setup.getLogger().log(org.apache.logging.log4j.Level.ERROR, "Can't find potion '" + p + "'!");
                 continue;
             }
@@ -244,11 +242,11 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
                 InControl.setup.getLogger().log(org.apache.logging.log4j.Level.ERROR, "Bad duration or amplifier integer for '" + p + "'!");
                 continue;
             }
-            effects.add(new MobEffectInstance(potion, duration, amplifier));
+            effects.add(new MobEffectInstance(potion.get(), duration, amplifier));
         }
         if (!effects.isEmpty()) {
             actions.add(event -> {
-                LivingEntity living = event.getZombieHelper();
+                LivingEntity living = event.getEntityLiving();
                 for (MobEffectInstance effect : effects) {
                     MobEffectInstance neweffect = new MobEffectInstance(effect.getEffect(), effect.getDuration(), effect.getAmplifier());
                     living.addEffect(neweffect);
@@ -266,14 +264,16 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
         if (items.size() == 1) {
             Pair<Float, ItemStack> pair = items.get(0);
             actions.add(event -> {
-                Zombie helper = event.getZombieHelper();
+//                Zombie helper = event.getZombieHelper();  // @todo 1.21 check
+                LivingEntity helper = event.getEntityLiving();
                 helper.setItemSlot(slot, pair.getRight().copy());
             });
         } else {
             final float total = getTotal(items);
             actions.add(event -> {
                 ItemStack item = getRandomItem(items, total);
-                Zombie helper = event.getZombieHelper();
+//                Zombie helper = event.getZombieHelper();  // @todo 1.21 check
+                LivingEntity helper = event.getEntityLiving();
                 helper.setItemSlot(slot, item.copy());
             });
         }
@@ -288,14 +288,16 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
         if (items.size() == 1) {
             Pair<Float, ItemStack> pair = items.get(0);
             actions.add(event -> {
-                Zombie helper = event.getZombieHelper();
+//                Zombie helper = event.getZombieHelper();  @todo 1.21 check
+                LivingEntity helper = event.getEntityLiving();
                 helper.setItemInHand(InteractionHand.MAIN_HAND, pair.getRight().copy());
             });
         } else {
             final float total = getTotal(items);
             actions.add(event -> {
                 ItemStack item = getRandomItem(items, total);
-                Zombie helper = event.getZombieHelper();
+//                Zombie helper = event.getZombieHelper();  @todo 1.21 check
+                LivingEntity helper = event.getEntityLiving();
                 helper.setItemInHand(InteractionHand.MAIN_HAND, item.copy());
             });
         }
@@ -305,24 +307,25 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
     protected void addAngryAction(boolean angry) {
         if (angry) {
             actions.add(event -> {
-                Zombie helper = event.getZombieHelper();
+//                Zombie helper = event.getZombieHelper();  @todo 1.21 check
+                LivingEntity helper = event.getEntityLiving();
                 Player player = event.getWorld().getNearestPlayer(helper, 50);
-                if (player != null) {
-                    helper.setTarget(player);
+                if (player != null && helper instanceof Zombie zombie) {
+                    zombie.setTarget(player);
                 }
             });
         }
     }
 
-    public boolean match(ZombieEvent.SummonAidEvent event) {
+    public boolean match(FinalizeSpawnEvent event) {
         return ruleEvaluator.match(event, EVENT_QUERY);
     }
 
-    public void action(ZombieEvent.SummonAidEvent event) {
-        SummonEventGetter getter = new SummonEventGetter() {
+    public void action(FinalizeSpawnEvent event) {
+        EventGetter getter = new EventGetter() {
             @Override
             public LivingEntity getEntityLiving() {
-                return event.getEntity() instanceof LivingEntity ? (LivingEntity) event.getEntity() : null;
+                return event.getEntity();
             }
 
             @Override
@@ -332,29 +335,20 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
 
             @Override
             public Level getWorld() {
-                return event.getLevel();
+                return event.getLevel().getLevel();
             }
 
             @Override
             public BlockPos getPosition() {
-                return new BlockPos(event.getX(), event.getY(), event.getZ());
-            }
-
-            @Override
-            public Zombie getZombieHelper() {
-                Zombie helper = event.getCustomSummonedAid();
-                if (helper == null) {
-                    helper = new Zombie(event.getLevel());
-                }
-                return helper;
+                return new BlockPos((int) event.getX(), (int) event.getY(), (int) event.getZ());
             }
         };
-        for (Consumer<SummonEventGetter> action : actions) {
+        for (Consumer<EventGetter> action : actions) {
             action.accept(getter);
         }
     }
 
-    public Event.Result getResult() {
+    public MobSpawnEvent.SpawnPlacementCheck.Result getResult() {
         return result;
     }
 }

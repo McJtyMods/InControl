@@ -1,7 +1,6 @@
 package mcjty.incontrol.rules.support;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import mcjty.incontrol.ErrorHandler;
@@ -12,9 +11,9 @@ import mcjty.incontrol.data.DataStorage;
 import mcjty.incontrol.events.EventsSystem;
 import mcjty.incontrol.spawner.SpawnerSystem;
 import mcjty.incontrol.tools.cache.StructureCache;
-import mcjty.incontrol.tools.rules.TestingBlockTools;
 import mcjty.incontrol.tools.rules.IEventQuery;
 import mcjty.incontrol.tools.rules.IModRuleCompatibilityLayer;
+import mcjty.incontrol.tools.rules.TestingBlockTools;
 import mcjty.incontrol.tools.rules.TestingTools;
 import mcjty.incontrol.tools.typed.AttributeMap;
 import mcjty.incontrol.tools.varia.Tools;
@@ -33,13 +32,15 @@ import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.*;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.levelgen.structure.Structure;
-import net.minecraftforge.common.BiomeManager;
-import net.minecraftforge.event.entity.living.MobSpawnEvent;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.event.entity.living.FinalizeSpawnEvent;
+import net.neoforged.neoforge.event.entity.living.MobSpawnEvent;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
@@ -93,7 +94,6 @@ public class GenericRuleEvaluator {
 
         map.consumeAsList(BLOCK, b1 -> addBlocksCheck(map, b1));
         map.consumeAsList(BIOME, this::addBiomesCheck);
-        map.consumeAsList(BIOMETYPE, this::addBiomeTypesCheck);
 
         map.consumeAsList(HELMET, this::addHelmetCheck);
         map.consumeAsList(CHESTPLATE, this::addChestplateCheck);
@@ -247,7 +247,7 @@ public class GenericRuleEvaluator {
     private void addSpawnerCheck(boolean c) {
         if (c) {
             checks.add((event, query) -> {
-                if (event instanceof MobSpawnEvent.FinalizeSpawn checkSpawn) {
+                if (event instanceof FinalizeSpawnEvent checkSpawn) {
                     return checkSpawn.getSpawnType().equals(MobSpawnType.SPAWNER);
                 } else if (event instanceof MobSpawnEvent.PositionCheck checkSpawn) {
                     return checkSpawn.getSpawnType().equals(MobSpawnType.SPAWNER);
@@ -257,7 +257,7 @@ public class GenericRuleEvaluator {
             });
         } else {
             checks.add((event, query) -> {
-                if (event instanceof MobSpawnEvent.FinalizeSpawn checkSpawn) {
+                if (event instanceof FinalizeSpawnEvent checkSpawn) {
                     return !checkSpawn.getSpawnType().equals(MobSpawnType.SPAWNER);
                 } else if (event instanceof MobSpawnEvent.PositionCheck checkSpawn) {
                     return !checkSpawn.getSpawnType().equals(MobSpawnType.SPAWNER);
@@ -532,17 +532,6 @@ public class GenericRuleEvaluator {
                 return biomenames.contains(biomeId);
             });
         }
-    }
-
-    private void addBiomeTypesCheck(List<String> biomeTypes) {
-        Set<Biome> biomes = new HashSet<>();
-        biomeTypes.stream().map(s -> BiomeManager.BiomeType.valueOf(s.toUpperCase())).
-                forEach(type -> BiomeManager.getBiomes(type).forEach(t -> biomes.add(ForgeRegistries.BIOMES.getValue(t.getKey().registry()))));
-
-        checks.add((event,query) -> {
-            Holder<Biome> biome = query.getWorld(event).getBiome(query.getPos(event));
-            return biomes.contains(biome.value());
-        });
     }
 
     private void addBlocksCheck(AttributeMap map, List<String> blocks) {
