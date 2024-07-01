@@ -28,10 +28,10 @@ sourceSets.main.resources {
 
 dependencies {
     mc()
-//    jei()
+    jei()
     top()
     lostcities()
-    gamestages()
+//    gamestages()
     sereneseasons()
 }
 
@@ -40,8 +40,8 @@ modrinth(['the-lost-cities'], [], [])
 
 subsystems {
     parchment {
-        minecraftVersion = "1.20.6"
-        mappingsVersion = "2024.06.02"
+        minecraftVersion = "1.21"
+        mappingsVersion = "2024.06.23"
     }
 }
 

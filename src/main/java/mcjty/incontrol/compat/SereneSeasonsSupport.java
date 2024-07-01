@@ -20,6 +20,7 @@ public class SereneSeasonsSupport {
     public static boolean isWinter(Level world) {
         ISeasonState seasonState = SeasonHelper.getSeasonState(world);
         return Season.WINTER.equals(seasonState.getSeason());
+
     }
 
     public static boolean isAutumn(Level world) {

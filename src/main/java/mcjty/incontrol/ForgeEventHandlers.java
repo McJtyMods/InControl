@@ -12,10 +12,13 @@ import mcjty.incontrol.spawner.SpawnerSystem;
 import mcjty.incontrol.tools.varia.Tools;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.neoforged.neoforge.common.util.TriState;
@@ -271,7 +274,9 @@ public class ForgeEventHandlers {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onSummonAidEvent(FinalizeSpawnEvent event) {
-        // @todo 1.21 check that this finalize event is actually a summon aid event
+        if (event.getSpawnType() != MobSpawnType.REINFORCEMENT) {
+            return;
+        }
         int i = 0;
         for (SummonAidRule rule : RulesManager.getFilteredSummonAidRules(event.getLevel().getLevel())) {
             if (rule.match(event)) {
@@ -357,7 +362,8 @@ public class ForgeEventHandlers {
 
                 for (Pair<ItemStack, Function<Integer, Integer>> pair : rule.getToAddItems()) {
                     ItemStack item = pair.getLeft();
-                    int fortune = 0;// @todo 1.21, this no longer exists: event.getLootingLevel();
+                    // @todo 1.21 is this correct?
+                    int fortune = (int) EnchantmentHelper.processEquipmentDropChance((ServerLevel) event.getEntity().level(), event.getEntity(), event.getSource(), 0.0f);
                     int amount = pair.getValue().apply(fortune);
                     BlockPos pos = event.getEntity().blockPosition();
                     while (amount > item.getMaxStackSize()) {
