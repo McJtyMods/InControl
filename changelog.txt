@@ -1,3 +1,6 @@
+1.21-10.0.0:
+- First version for 1.21
+
 1.20-9.2.6:
 - Fixed a problem with the 'hasstructure' test
 
