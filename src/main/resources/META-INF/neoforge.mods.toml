@@ -1,6 +1,6 @@
 modLoader="javafml"
 loaderVersion="[2,)"
-license="MIT License https://github.com/McJtyMods/FXControl/blob/1.16/LICENCE"
+license="MIT License https://github.com/McJtyMods/InControl/blob/1.21_neo/LICENSE"
 issueTrackerURL="http://github.com/McJtyMods/InControl/issues"
 displayURL="http://github.com/McJtyMods/InControl/"
 authors="McJty"
@@ -16,7 +16,7 @@ Be in control of spawns
 [[dependencies.incontrol]]
     modId="neoforge"
     type="required"
-    versionRange="[20.4,)"
+    versionRange="[21.0,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.incontrol]]
