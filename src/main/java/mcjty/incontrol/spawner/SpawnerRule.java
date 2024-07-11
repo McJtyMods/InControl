@@ -169,7 +169,7 @@ public class SpawnerRule {
                         throw new RuntimeException("'mobsfrombiome' cannot be combined with manual mobs!");
                     }
                     String name = object.get("mobsfrombiome").getAsString().toLowerCase();
-                    MobCategory classification = MobCategory.byName(name);
+                    MobCategory classification = MobCategory.valueOf(name);
                     if (classification == null) {
                         InControl.setup.getLogger().error("Unknown classification " + name + "!");
                         throw new RuntimeException("Unknown classification " + name + "!");
