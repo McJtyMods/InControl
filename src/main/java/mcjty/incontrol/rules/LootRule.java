@@ -35,6 +35,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static mcjty.incontrol.rules.support.RuleKeys.*;
+import static mcjty.incontrol.rules.support.RuleKeys.STRUCTURETAGS;
 
 public class LootRule extends RuleBase<RuleBase.EventGetter> {
 
@@ -127,7 +128,9 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(WEATHER))
                 .attribute(Attribute.createMulti(BIOMETAGS))
                 .attribute(Attribute.create(DIFFICULTY))
+                .attribute(Attribute.create(HASSTRUCTURE))
                 .attribute(Attribute.createMulti(STRUCTURE))
+                .attribute(Attribute.createMulti(STRUCTURETAGS))
                 .attribute(Attribute.create(PLAYER))
                 .attribute(Attribute.create(REALPLAYER))
                 .attribute(Attribute.create(FAKEPLAYER))

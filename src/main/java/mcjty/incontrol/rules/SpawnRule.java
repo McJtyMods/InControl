@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import static mcjty.incontrol.rules.support.RuleKeys.*;
+import static mcjty.incontrol.rules.support.RuleKeys.STRUCTURETAGS;
 
 public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
 
@@ -179,7 +180,9 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(WEATHER))
                 .attribute(Attribute.createMulti(BIOMETAGS))
                 .attribute(Attribute.create(DIFFICULTY))
+                .attribute(Attribute.create(HASSTRUCTURE))
                 .attribute(Attribute.createMulti(STRUCTURE))
+                .attribute(Attribute.createMulti(STRUCTURETAGS))
                 .attribute(Attribute.create(WINTER))
                 .attribute(Attribute.create(SUMMER))
                 .attribute(Attribute.create(SPRING))

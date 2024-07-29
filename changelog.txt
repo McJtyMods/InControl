@@ -1,3 +1,6 @@
+Upcoming:
+- 'hasstructure' and 'structuretags' now actually work
+
 1.19-7.1.15:
 - The 'structure' test now supports lists
 - New 'hasstructure' boolean test
