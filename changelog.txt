@@ -1,4 +1,4 @@
-Upcoming:
+1.18-6.1.14:
 - Fixed a problem with "onjoin" rules where the "incontrol" tag would not work properly
 
 1.18-6.1.13:
