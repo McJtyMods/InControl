@@ -105,8 +105,18 @@ public class ModRuleCompatibilityLayer implements IModRuleCompatibilityLayer {
     }
 
     @Override
+    public <T> boolean isMultiBuilding(IEventQuery<T> query, T event) {
+        return LostCitySupport.isMultiBuilding(query, event);
+    }
+
+    @Override
     public <T> String getBuilding(IEventQuery<T> query, T event) {
         return LostCitySupport.getBuildingName(query, event);
+    }
+
+    @Override
+    public <T> String getMultiBuilding(IEventQuery<T> query, T event) {
+        return LostCitySupport.getMultiBuildingName(query, event);
     }
 
     @Override
