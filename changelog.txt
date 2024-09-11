@@ -1,3 +1,6 @@
+Upcoming:
+- Fixed a problem with "onjoin" rules where the "incontrol" tag would not work properly
+
 1.18-6.1.13:
 - New 'armorset', 'armormultiply', 'armoradd', 'followrangeset', 'followrangemultiply', and 'followrangeadd' actions to change the armor and follow range of mobs
 - New 'attackspeedset', 'attackspeedmultiply', 'attackspeedadd', 'armortoughnessset', 'armortoughnessmultiply', and 'armortoughnessadd' actions to change the attack speed and armor toughness of mobs
