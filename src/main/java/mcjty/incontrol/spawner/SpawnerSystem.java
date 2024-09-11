@@ -182,7 +182,6 @@ public class SpawnerSystem {
                                 busySpawning = mobEntity;   // @todo check in spawn rule
                                 if (canSpawn(world, mobEntity, conditions) && isNotColliding(world, mobEntity, conditions)) {
                                     EventHooks.finalizeMobSpawn(mobEntity, world, world.getCurrentDifficultyAt(pos), MobSpawnType.NATURAL, null);
-                                    busySpawning = null;
                                     if (!((Mob) entity).isSpawnCancelled()) {
                                         world.addFreshEntityWithPassengers(entity);
                                         Statistics.addSpawnerStat(ruleNr);
@@ -191,12 +190,12 @@ public class SpawnerSystem {
                                             groupCenterPos = pos;
                                         }
                                         if (spawned >= desiredAmount) {
+                                            busySpawning = null;
                                             return;
                                         }
                                     }
-                                } else {
-                                    busySpawning = null;
                                 }
+                                busySpawning = null;
                             }
                         }
                     }

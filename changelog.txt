@@ -1,4 +1,5 @@
 Upcoming:
+- Fixed a problem with "onjoin" rules where the "incontrol" tag would not work properly
 - Some fixes
 
 1.21-10.0.0:
