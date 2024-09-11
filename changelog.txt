@@ -1,3 +1,6 @@
+Upcoming:
+- Fixed a problem with "onjoin" rules where the "incontrol" tag would not work properly
+
 1.20-9.2.6:
 - Fixed a problem with the 'hasstructure' test
 
