@@ -177,7 +177,6 @@ public class SpawnerSystem {
                                     }
                                     busySpawning = mobEntity;   // @todo check in spawn rule
                                     int result = ForgeHooks.canEntitySpawn(mobEntity, world, pos.getX(), pos.getY(), pos.getZ(), null, MobSpawnType.NATURAL);
-                                    busySpawning = null;
                                     if (result != -1) {
                                         if (canSpawn(world, mobEntity, conditions) && isNotColliding(world, mobEntity, conditions)) {
                                             if (!ForgeEventFactory.doSpecialSpawn(mobEntity, (LevelAccessor) world, pos.getX(), pos.getY(), pos.getZ(), null, MobSpawnType.NATURAL)) {
@@ -190,10 +189,12 @@ public class SpawnerSystem {
                                                 groupCenterPos = pos;
                                             }
                                             if (spawned >= desiredAmount) {
+                                                busySpawning = null;
                                                 return;
                                             }
                                         }
                                     }
+                                    busySpawning = null;
                                 }
                             }
                         }
