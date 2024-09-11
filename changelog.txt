@@ -1,5 +1,6 @@
 Upcoming:
 - Fixed a problem with "onjoin" rules where the "incontrol" tag would not work properly
+- Added two new keywords: "inmultibuilding" and "multibuilding" that work similar to the "inbuilding" and "building" keywords but for multi buildings (Lost Cities)
 - Some fixes
 
 1.21-10.0.0:

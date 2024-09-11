@@ -71,9 +71,11 @@ public interface RuleKeys {
 
     Key<Boolean> INCITY = Key.create(Type.BOOLEAN, "incity");
     Key<Boolean> INBUILDING = Key.create(Type.BOOLEAN, "inbuilding");
+    Key<Boolean> INMULTIBUILDING = Key.create(Type.BOOLEAN, "inmultibuilding");
     Key<Boolean> INSTREET = Key.create(Type.BOOLEAN, "instreet");
     Key<Boolean> INSPHERE = Key.create(Type.BOOLEAN, "insphere");
     Key<String> BUILDING = Key.create(Type.STRING, "building");
+    Key<String> MULTIBUILDING = Key.create(Type.STRING, "multibuilding");
 
     Key<String> GAMESTAGE = Key.create(Type.STRING, "gamestage");
 

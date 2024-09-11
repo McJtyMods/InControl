@@ -108,6 +108,24 @@ public class LostCitySupport {
         return false;
     }
 
+    public static <T> boolean isMultiBuilding(IEventQuery<T> query, T event) {
+        Level w = getWorld(query, event);
+        if (w == null) {
+            return false;   // This test don't work client side
+        }
+        ILostCityInformation info = lostCities.getLostInfo(w);
+        if (info != null) {
+            BlockPos pos = query.getPos(event);
+            ILostChunkInfo chunkInfo = info.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
+            if (!chunkInfo.isCity()) {
+                return false;
+            }
+            ILostChunkInfo.MultiBuildingInfo mi = chunkInfo.getMultiBuildingInfo();
+            return mi != null;
+        }
+        return false;
+    }
+
     // Get the name of the building
     public static <T> String getBuildingName(IEventQuery<T> query, T event) {
         Level w = getWorld(query, event);
@@ -119,6 +137,22 @@ public class LostCitySupport {
             BlockPos pos = query.getPos(event);
             ILostChunkInfo chunkInfo = info.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
             return chunkInfo.getBuildingType();
+        }
+        return null;
+    }
+
+    // Get the name of the multi building
+    public static <T> String getMultiBuildingName(IEventQuery<T> query, T event) {
+        Level w = getWorld(query, event);
+        if (w == null) {
+            return null;   // This test don't work client side
+        }
+        ILostCityInformation info = lostCities.getLostInfo(w);
+        if (info != null) {
+            BlockPos pos = query.getPos(event);
+            ILostChunkInfo chunkInfo = info.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
+            ILostChunkInfo.MultiBuildingInfo mi = chunkInfo.getMultiBuildingInfo();
+            return mi != null ? mi.buildingType().toString() : null;
         }
         return null;
     }

@@ -108,6 +108,9 @@ public class EffectRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(AUTUMN))
 
                 .attribute(Attribute.create(INBUILDING))
+                .attribute(Attribute.create(INMULTIBUILDING))
+                .attribute(Attribute.createMulti(BUILDING))
+                .attribute(Attribute.createMulti(MULTIBUILDING))
                 .attribute(Attribute.create(INCITY))
                 .attribute(Attribute.create(INSTREET))
                 .attribute(Attribute.create(INSPHERE))

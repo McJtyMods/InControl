@@ -138,7 +138,9 @@ public class GenericRuleEvaluator {
         map.consume(INSTREET, this::addInStreetCheck);
         map.consume(INSPHERE, this::addInSphereCheck);
         map.consume(INBUILDING, this::addInBuildingCheck);
+        map.consume(INMULTIBUILDING, this::addInMultiBuildingCheck);
         map.consumeAsList(BUILDING, this::addBuildingCheck);
+        map.consumeAsList(MULTIBUILDING, this::addMultiBuildingCheck);
 
         map.consumeAsList(AMULET, v -> addBaubleCheck(v, compatibility::getAmuletSlots));
         map.consumeAsList(RING, v -> addBaubleCheck(v, compatibility::getRingSlots));
@@ -988,6 +990,18 @@ public class GenericRuleEvaluator {
         }
     }
 
+    private void addInMultiBuildingCheck(boolean inbuilding) {
+        if (!compatibility.hasLostCities()) {
+            TestingTools.warn("The Lost Cities is missing: the 'inbuilding' test cannot work!");
+            return;
+        }
+        if (inbuilding) {
+            checks.add((event, query) -> compatibility.isMultiBuilding(query, event));
+        } else {
+            checks.add((event, query) -> !compatibility.isMultiBuilding(query, event));
+        }
+    }
+
     private void addBuildingCheck(List<String> buildings) {
         if (!compatibility.hasLostCities()) {
             TestingTools.warn("The Lost Cities is missing: the 'building' test cannot work!");
@@ -996,6 +1010,18 @@ public class GenericRuleEvaluator {
         Set<String> buildingSet = new HashSet<>(buildings);
         checks.add((event, query) -> {
             String building = compatibility.getBuilding(query, event);
+            return building != null && buildingSet.contains(building);
+        });
+    }
+
+    private void addMultiBuildingCheck(List<String> buildings) {
+        if (!compatibility.hasLostCities()) {
+            TestingTools.warn("The Lost Cities is missing: the 'building' test cannot work!");
+            return;
+        }
+        Set<String> buildingSet = new HashSet<>(buildings);
+        checks.add((event, query) -> {
+            String building = compatibility.getMultiBuilding(query, event);
             return building != null && buildingSet.contains(building);
         });
     }
