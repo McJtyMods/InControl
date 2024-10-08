@@ -9,7 +9,7 @@ import java.util.Arrays;
 
 public class BaublesContainer extends ItemStackHandler implements IBaublesItemHandler {
 
-	private final static int BAUBLE_SLOTS = 7;
+	private static final int BAUBLE_SLOTS = 7;
 	
 	public BaublesContainer()
     {
