@@ -569,7 +569,8 @@ public class CommonRuleEvaluator {
             if (blockMatcher != null) {
                 checks.add((event, query) -> {
                     BlockPos pos = posFunction.apply(event, query);
-                    return pos != null && blockMatcher.test(query.getWorld(event), pos);
+                    LevelAccessor world = query.getWorld(event);
+                    return pos != null && (!Tools.isChunkInvalid(world, pos)) && blockMatcher.test(world, pos);
                 });
             }
         } else {
@@ -586,6 +587,9 @@ public class CommonRuleEvaluator {
                 BlockPos pos = posFunction.apply(event, query);
                 if (pos != null) {
                     LevelAccessor world = query.getWorld(event);
+                    if (Tools.isChunkInvalid(world, pos)) {
+                        return false;
+                    }
                     for (BiPredicate<LevelAccessor, BlockPos> matcher : blockMatchers) {
                         if (matcher.test(world, pos)) {
                             return true;
