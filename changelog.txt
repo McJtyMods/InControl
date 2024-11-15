@@ -1,3 +1,6 @@
+Upcoming:
+- The 'command' action now supports a list of commands
+
 1.21-10.0.2:
 - Fixed a problem with the block test sometimes crashing
 

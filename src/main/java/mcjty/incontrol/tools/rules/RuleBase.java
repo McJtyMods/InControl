@@ -143,7 +143,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
 
     protected void addActions(AttributeMap map, IModRuleCompatibilityLayer layer) {
         map.consume(ACTION_CUSTOMEVENT, this::addCustomEventAction);
-        map.consume(ACTION_COMMAND, this::addCommandAction);
+        map.consumeAsList(ACTION_COMMAND, this::addCommandAction);
         map.consume(ACTION_ADDSTAGE, stage -> addAddStage(stage, layer));
         map.consume(ACTION_REMOVESTAGE, stage -> addRemoveStage(stage, layer));
 
@@ -314,13 +314,15 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         });
     }
 
-    private void addCommandAction(String command) {
+    private void addCommandAction(List<String> commands) {
         actions.add(event -> {
             MinecraftServer server = event.getWorld().getServer();
             Player player = event.getPlayer();
             CommandSourceStack stack = new CommandSourceStack(EMPTY, Vec3.atCenterOf(event.getPosition()), Vec2.ZERO, (ServerLevel) event.getWorld(), 2,
                     DEFAULT_NAME.getString(), DEFAULT_NAME, server, player);
-            server.getCommands().performPrefixedCommand(stack, command);
+            for (String command : commands) {
+                server.getCommands().performPrefixedCommand(stack, command);
+            }
         });
     }
 
