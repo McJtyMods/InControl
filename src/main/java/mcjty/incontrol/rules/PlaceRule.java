@@ -149,7 +149,7 @@ public class PlaceRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.createMulti(DIMENSION_MOD))
 
                 .attribute(Attribute.create(ACTION_CUSTOMEVENT))
-                .attribute(Attribute.create(ACTION_COMMAND))
+                .attribute(Attribute.createMulti(ACTION_COMMAND))
                 .attribute(Attribute.create(ACTION_ADDSTAGE))
                 .attribute(Attribute.create(ACTION_REMOVESTAGE))
                 .attribute(Attribute.create(ACTION_MESSAGE))
