@@ -171,7 +171,6 @@ public class EventsSystem {
         busySpawning = mobEntity;
         if (canSpawn(world.getLevel(), mobEntity, action) && isNotColliding(world.getLevel(), mobEntity, action)) {
             ForgeEventFactory.onFinalizeSpawn(mobEntity, world, world.getCurrentDifficultyAt(pos), MobSpawnType.NATURAL, null, null);
-            busySpawning = null;
             if (!((Mob) entity).isSpawnCancelled()) {
                 world.addFreshEntityWithPassengers(entity);
                 busySpawning = null;
