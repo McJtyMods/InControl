@@ -152,7 +152,7 @@ public class GenericRuleEvaluator {
 
         map.consume(WHEN, b -> {
         });
-        map.consume(PHASE, b -> {
+        map.consumeAsList(PHASE, b -> {
         });
         map.consume(NUMBER, this::addNumberCheck);
         map.consume(HOSTILE, this::addHostileCheck);

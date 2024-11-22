@@ -76,7 +76,7 @@ public class EffectRule extends RuleBase<RuleBase.EventGetter> {
 
     static {
         FACTORY
-                .attribute(Attribute.create(PHASE))
+                .attribute(Attribute.createMulti(PHASE))
                 .attribute(Attribute.create(NUMBER))
 
                 .attribute(Attribute.create(TIMEOUT))

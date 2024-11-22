@@ -1,3 +1,7 @@
+Upcoming:
+- The 'phase' command now actually supports multiple phases now
+- The 'eventspawn' condition will now also work correctly even with "when": "onjoin"
+
 1.21-10.0.3:
 - The 'command' action now supports a list of commands
 
