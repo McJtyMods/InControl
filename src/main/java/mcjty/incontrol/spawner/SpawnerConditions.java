@@ -240,10 +240,10 @@ public class SpawnerConditions {
                     builder.distance(builder.mindist, object.getAsJsonPrimitive("maxdist").getAsInt());
                 }
                 case MINVERTICALDIST -> {
-                    builder.verticalDistance(object.getAsJsonPrimitive("minverticaldist").getAsInt(), builder.maxdist);
+                    builder.verticalDistance(object.getAsJsonPrimitive("minverticaldist").getAsInt(), builder.verticalMaxdist);
                 }
                 case MAXVERTICALDIST -> {
-                    builder.verticalDistance(builder.mindist, object.getAsJsonPrimitive("maxverticaldist").getAsInt());
+                    builder.verticalDistance(builder.verticalMindist, object.getAsJsonPrimitive("maxverticaldist").getAsInt());
                 }
                 case MINDAYCOUNT -> {
                     builder.daycount(object.getAsJsonPrimitive("mindaycount").getAsInt(), builder.maxdaycount);
