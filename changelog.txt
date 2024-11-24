@@ -1,3 +1,6 @@
+1.20-9.2.11:
+- Fixed a bug in minverticaldist/maxverticaldist
+
 1.20-9.2.10:
 - The 'phase' command now actually supports multiple phases now
 - The 'eventspawn' condition will now also work correctly even with "when": "onjoin"
