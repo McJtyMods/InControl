@@ -1,3 +1,6 @@
+Upcoming:
+- Fixed the 'area' sphere test. It was incorrect
+
 1.21-10.0.5:
 - Fixed a bug in minverticaldist/maxverticaldist
 
