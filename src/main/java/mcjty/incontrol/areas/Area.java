@@ -85,7 +85,7 @@ public record Area(ResourceKey<Level> dimension, String name, Type type, BlockPo
         if (type == Type.BOX) {
             return isInBox(x, y, z);
         } else {
-            return isInSphere(x, y, z);
+            return isInEllipsoid(x, y, z);
         }
     }
 
@@ -96,13 +96,12 @@ public record Area(ResourceKey<Level> dimension, String name, Type type, BlockPo
         return dx <= dimx && dy <= dimy && dz <= dimz;
     }
 
-    private boolean isInSphere(int x, int y, int z) {
+    private boolean isInEllipsoid(int x, int y, int z) {
         int dx = Math.abs(x - center.getX());
         int dy = Math.abs(y - center.getY());
         int dz = Math.abs(z - center.getZ());
-        return dx*dx + dy*dy + dz*dz <= dimx*dimx + dimy*dimy + dimz*dimz;
+        return (dx * dx) / (dimx * dimx) + (dy * dy) / (dimy * dimy) + (dz * dz) / (dimz * dimz) <= 1;
     }
-
     enum Type {
         BOX,
         SPHERE
