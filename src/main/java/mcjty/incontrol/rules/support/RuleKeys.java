@@ -143,6 +143,12 @@ public interface RuleKeys {
     Key<Float> ACTION_FOLLOWRANGESET = Key.create(Type.FLOAT, "followrangeset");
     Key<Float> ACTION_FOLLOWRANGEMULTIPLY = Key.create(Type.FLOAT, "followrangemultiply");
     Key<Float> ACTION_FOLLOWRANGEADD = Key.create(Type.FLOAT, "followrangeadd");
+    Key<Float> ACTION_KNOCKBACKSET = Key.create(Type.FLOAT, "knockbackset");
+    Key<Float> ACTION_KNOCKBACKMULTIPLY = Key.create(Type.FLOAT, "knockbackmultiply");
+    Key<Float> ACTION_KNOCKBACKADD = Key.create(Type.FLOAT, "knockbackadd");
+    Key<Float> ACTION_KNOCKBACKRESISTANCESET = Key.create(Type.FLOAT, "knockbackresistanceset");
+    Key<Float> ACTION_KNOCKBACKRESISTANCEMULTIPLY = Key.create(Type.FLOAT, "knockbackresistancemultiply");
+    Key<Float> ACTION_KNOCKBACKRESISTANCEADD = Key.create(Type.FLOAT, "knockbackresistanceadd");
     Key<Float> ACTION_SIZEMULTIPLY = Key.create(Type.FLOAT, "sizemultiply");
     Key<Float> ACTION_SIZEADD = Key.create(Type.FLOAT, "sizeadd");
     Key<Boolean> ACTION_NODESPAWN = Key.create(Type.BOOLEAN, "nodespawn");
