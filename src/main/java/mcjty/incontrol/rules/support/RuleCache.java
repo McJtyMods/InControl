@@ -4,6 +4,7 @@ import mcjty.incontrol.tools.varia.Tools;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.animal.Animal;
@@ -24,6 +25,23 @@ public class RuleCache {
         // Get a cache or create it when it doesn't exist
         CachePerWorld cache = caches.computeIfAbsent(key, k -> new CachePerWorld());
         cache.count(world);
+    }
+
+    public void addMob(LevelAccessor world, Entity entity) {
+        ResourceKey<Level> key = Tools.getDimensionKey(world);
+        CachePerWorld cache = caches.computeIfAbsent(key, k -> new CachePerWorld());
+        cache.addCountedMob(entity);
+    }
+
+    public void removeMob(LevelAccessor world, Entity entity) {
+        ResourceKey<Level> key = Tools.getDimensionKey(world);
+        CachePerWorld cache = caches.get(key);
+        if (cache != null) {
+            if (!cache.removeCountedMob(entity)) {
+                // The cache is probably invalid so we need to recalculate
+                cache.setDirtyCounter(0);
+            }
+        }
     }
 
     public int getValidSpawnChunks(LevelAccessor world) {
@@ -86,15 +104,15 @@ public class RuleCache {
         return countPerMod == null ? 0 : countPerMod.total;
     }
 
-    public void registerSpawn(LevelAccessor world, EntityType entityType) {
-        CachePerWorld cache = getOrCreateCache(world);
-        cache.registerSpawn(entityType);
-    }
+//    public void registerSpawn(LevelAccessor world, EntityType entityType) {
+//        CachePerWorld cache = getOrCreateCache(world);
+//        cache.registerSpawn(entityType);
+//    }
 
-    public void registerDespawn(LevelAccessor world, EntityType entityType) {
-        CachePerWorld cache = getOrCreateCache(world);
-        cache.registerDespawn(entityType);
-    }
+//    public void registerDespawn(LevelAccessor world, EntityType entityType) {
+//        CachePerWorld cache = getOrCreateCache(world);
+//        cache.registerDespawn(entityType);
+//    }
 
     private CachePerWorld getOrCreateCache(LevelAccessor world) {
         ResourceKey<Level> key = Tools.getDimensionKey(world);
@@ -123,6 +141,7 @@ public class RuleCache {
         private int countNeutral = -1;
         private int validSpawnChunks = -1;
         private int validPlayers = -1;
+        private int dirtyCounter = 0;
 
         public int getValidSpawnChunks() {
             return validSpawnChunks;
@@ -148,6 +167,14 @@ public class RuleCache {
             return countNeutral;
         }
 
+        public int getDirtyCounter() {
+            return dirtyCounter;
+        }
+
+        public void setDirtyCounter(int dirtyCounter) {
+            this.dirtyCounter = dirtyCounter;
+        }
+
         private int countValidPlayers(LevelAccessor world) {
             int cnt = 0;
             for (Player entityplayer : world.players()) {
@@ -159,6 +186,11 @@ public class RuleCache {
         }
 
         private void count(LevelAccessor world) {
+            dirtyCounter--;
+            if (dirtyCounter > 0) {
+                return;
+            }
+            dirtyCounter = 10;
             ServerLevel sw1 = Tools.getServerWorld(world);
             validSpawnChunks = sw1.getChunkSource().chunkMap.size();
             validPlayers = countValidPlayers(world);
@@ -171,27 +203,68 @@ public class RuleCache {
 
             ServerLevel sw = Tools.getServerWorld(world);
 
-            sw.getEntities().getAll().forEach(entity -> {
-                if (entity instanceof Mob) {
-                    int cnt = cachedCounters.getOrDefault(entity.getType(), 0) + 1;
-                    cachedCounters.put(entity.getType(), cnt);
+            sw.getEntities().getAll().forEach(this::addCountedMob);
+        }
+
+        public void addCountedMob(Entity entity) {
+            if (entity instanceof Mob) {
+                int cnt = cachedCounters.getOrDefault(entity.getType(), 0) + 1;
+                cachedCounters.put(entity.getType(), cnt);
 
                     String mod = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()).getNamespace();
                     CountPerMod count = countPerMod.computeIfAbsent(mod, s -> new CountPerMod());
                     count.total++;
 
+                if (entity instanceof Enemy) {
+                    count.hostile++;
+                    countHostile++;
+                } else if (entity instanceof Animal) {
+                    count.passive++;
+                    countPassive++;
+                } else {
+                    count.neutral++;
+                    countNeutral++;
+                }
+            }
+        }
+
+        // This function returns false if the cache is probably invalid and needs to be recalculated
+        public boolean removeCountedMob(Entity entity) {
+            if (entity instanceof Mob) {
+                int cnt = cachedCounters.getOrDefault(entity.getType(), 0);
+                if (cnt > 0) {
+                    cachedCounters.put(entity.getType(), cnt - 1);
+                } else {
+                    // We can't go negative so the cache is probably not up to date
+                    return false;
+                }
+
+                String mod = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()).getNamespace();
+                CountPerMod count = countPerMod.get(mod);
+                if (count != null) {
+                    count.total--;
                     if (entity instanceof Enemy) {
-                        count.hostile++;
-                        countHostile++;
+                        if (count.hostile <= 0 || countHostile <= 0) {
+                            return false;
+                        }
+                        count.hostile--;
+                        countHostile--;
                     } else if (entity instanceof Animal) {
-                        count.passive++;
-                        countPassive++;
+                        if (count.passive <= 0 || countPassive <= 0) {
+                            return false;
+                        }
+                        count.passive--;
+                        countPassive--;
                     } else {
-                        count.neutral++;
-                        countNeutral++;
+                        if (count.neutral <= 0 || countNeutral <= 0) {
+                            return false;
+                        }
+                        count.neutral--;
+                        countNeutral--;
                     }
                 }
-            });
+            }
+            return true;
         }
 
         public int getCount(EntityType entityType) {
@@ -202,16 +275,16 @@ public class RuleCache {
             return countPerMod.get(mod);
         }
 
-        public void registerSpawn(EntityType entityType) {
-            cachedCounters.put(entityType, cachedCounters.getOrDefault(entityType, 0) + 1);
-        }
-
-        public void registerDespawn(EntityType entityType) {
-            Integer cnt = cachedCounters.getOrDefault(entityType, 0);
-            if (cnt > 0) {
-                cachedCounters.put(entityType, cnt-1);
-            }
-        }
+//        public void registerSpawn(EntityType entityType) {
+//            cachedCounters.put(entityType, cachedCounters.getOrDefault(entityType, 0) + 1);
+//        }
+//
+//        public void registerDespawn(EntityType entityType) {
+//            Integer cnt = cachedCounters.getOrDefault(entityType, 0);
+//            if (cnt > 0) {
+//                cachedCounters.put(entityType, cnt-1);
+//            }
+//        }
     }
 
 }

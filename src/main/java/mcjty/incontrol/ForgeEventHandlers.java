@@ -21,16 +21,17 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.common.util.TriState;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
+import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
 import net.neoforged.neoforge.event.entity.living.*;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
-import net.neoforged.bus.api.EventPriority;
-import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import org.apache.commons.lang3.tuple.Pair;
@@ -120,9 +121,20 @@ public class ForgeEventHandlers {
         // do into account
         if (!event.getLevel().isClientSide() && event.getEntity() instanceof LivingEntity) {
             if (!(event.getEntity() instanceof Player)) {
-                InControl.setup.cache.registerSpawn(event.getLevel(), event.getEntity().getType());
+                InControl.setup.cache.addMob(event.getLevel(), event.getEntity());
             }
         }
+    }
+
+    @SubscribeEvent
+    public void onEntityLeavesWorld(EntityLeaveLevelEvent event) {
+        if (event.getEntity() instanceof Player) {
+            return;
+        }
+        if (event.getLevel().isClientSide) {
+            return;
+        }
+        InControl.setup.cache.removeMob(event.getLevel(), event.getEntity());
     }
 
     @SubscribeEvent
