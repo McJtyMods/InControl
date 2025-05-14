@@ -21,6 +21,7 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
+import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
 import net.minecraftforge.event.entity.living.*;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.level.BlockEvent;
@@ -117,9 +118,20 @@ public class ForgeEventHandlers {
         // do into account
         if (!event.getLevel().isClientSide() && event.getEntity() instanceof LivingEntity) {
             if (!(event.getEntity() instanceof Player)) {
-                InControl.setup.cache.registerSpawn(event.getLevel(), event.getEntity().getType());
+                InControl.setup.cache.addMob(event.getLevel(), event.getEntity());
             }
         }
+    }
+
+    @SubscribeEvent
+    public void onEntityLeavesWorld(EntityLeaveLevelEvent event) {
+        if (event.getEntity() instanceof Player) {
+            return;
+        }
+        if (event.getLevel().isClientSide) {
+            return;
+        }
+        InControl.setup.cache.removeMob(event.getLevel(), event.getEntity());
     }
 
     @SubscribeEvent
