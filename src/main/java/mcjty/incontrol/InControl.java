@@ -1,6 +1,7 @@
 package mcjty.incontrol;
 
 
+import mcjty.incontrol.setup.Config;
 import mcjty.incontrol.setup.ModSetup;
 import mcjty.incontrol.tools.cache.StructureCache;
 import net.minecraftforge.common.MinecraftForge;
@@ -17,6 +18,7 @@ public class InControl {
     public static ModSetup setup = new ModSetup();
 
     public InControl() {
+        Config.register();
         FMLJavaModLoadingContext.get().getModEventBus().addListener((FMLCommonSetupEvent event) -> setup.init());
         MinecraftForge.EVENT_BUS.addListener((ServerStoppedEvent event) -> StructureCache.CACHE.clean());
         MinecraftForge.EVENT_BUS.addListener(ErrorHandler::onPlayerJoinWorld);
