@@ -187,6 +187,14 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         map.consume(ACTION_FOLLOWRANGEMULTIPLY, v -> addAttributeAction("ctrlFollowM" + index, Attributes.FOLLOW_RANGE, (m, a) -> a.setBaseValue(a.getBaseValue() * v)));
         map.consume(ACTION_FOLLOWRANGEADD, v -> addAttributeAction("ctrlFollowA" + index, Attributes.FOLLOW_RANGE, (m, a) -> a.setBaseValue(a.getBaseValue() + v)));
 
+        map.consume(ACTION_KNOCKBACKSET, v -> addAttributeAction("ctrlKnockbackS" + index, Attributes.ATTACK_KNOCKBACK, (m, a) -> a.setBaseValue(v)));
+        map.consume(ACTION_KNOCKBACKMULTIPLY, v -> addAttributeAction("ctrlKnockbackM" + index, Attributes.ATTACK_KNOCKBACK, (m, a) -> a.setBaseValue(a.getBaseValue() * v)));
+        map.consume(ACTION_KNOCKBACKADD, v -> addAttributeAction("ctrlKnockbackA" + index, Attributes.ATTACK_KNOCKBACK, (m, a) -> a.setBaseValue(a.getBaseValue() + v)));
+
+        map.consume(ACTION_KNOCKBACKRESISTANCESET, v -> addAttributeAction("ctrlKnockbackResS" + index, Attributes.KNOCKBACK_RESISTANCE, (m, a) -> a.setBaseValue(v)));
+        map.consume(ACTION_KNOCKBACKRESISTANCEMULTIPLY, v -> addAttributeAction("ctrlKnockbackResM" + index, Attributes.KNOCKBACK_RESISTANCE, (m, a) -> a.setBaseValue(a.getBaseValue() * v)));
+        map.consume(ACTION_KNOCKBACKRESISTANCEADD, v -> addAttributeAction("ctrlKnockbackResA" + index, Attributes.KNOCKBACK_RESISTANCE, (m, a) -> a.setBaseValue(a.getBaseValue() + v)));
+        
         map.consume2(ACTION_SIZEMULTIPLY, ACTION_SIZEADD, this::addSizeActions);
         map.consumeAsList(ACTION_POTION, this::addPotionsAction);
         map.consume(ACTION_NODESPAWN, this::addNoDespawnAction);
