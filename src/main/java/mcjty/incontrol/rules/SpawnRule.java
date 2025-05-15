@@ -7,6 +7,7 @@ import mcjty.incontrol.data.PhaseTools;
 import mcjty.incontrol.rules.support.GenericRuleEvaluator;
 import mcjty.incontrol.rules.support.ICResult;
 import mcjty.incontrol.rules.support.SpawnWhen;
+import mcjty.incontrol.setup.Config;
 import mcjty.incontrol.tools.rules.IEventQuery;
 import mcjty.incontrol.tools.rules.IModRuleCompatibilityLayer;
 import mcjty.incontrol.tools.rules.RuleBase;
@@ -225,7 +226,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
     private static final GenericAttributeMapFactory FACTORY = new GenericAttributeMapFactory();
 
     private static Player getClosestPlayer(LevelAccessor world, BlockPos pos) {
-        return world.getNearestPlayer(pos.getX(), pos.getY(), pos.getZ(), 100, false);
+        return world.getNearestPlayer(pos.getX(), pos.getY(), pos.getZ(), Config.PERPLAYER_RADIUS.get(), false);
     }
 
     static {

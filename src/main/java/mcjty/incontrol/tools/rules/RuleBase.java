@@ -10,6 +10,7 @@ import mcjty.incontrol.InControl;
 import mcjty.incontrol.data.DataStorage;
 import mcjty.incontrol.events.EventsSystem;
 import mcjty.incontrol.events.NumberAction;
+import mcjty.incontrol.setup.Config;
 import mcjty.incontrol.tools.typed.AttributeMap;
 import mcjty.incontrol.tools.varia.LookAtTools;
 import mcjty.incontrol.tools.varia.Tools;
@@ -388,7 +389,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         actions.add(event -> {
             Player player = event.getPlayer();
             if (player == null) {
-                player = event.getWorld().getNearestPlayer(event.getEntityLiving(), 100);
+                player = event.getWorld().getNearestPlayer(event.getEntityLiving(), Config.PERPLAYER_RADIUS.get());
             }
             if (player != null) {
                 player.displayClientMessage(Component.literal(message), false);

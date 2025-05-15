@@ -1,5 +1,6 @@
 package mcjty.incontrol.rules.support;
 
+import mcjty.incontrol.setup.Config;
 import mcjty.incontrol.tools.varia.Tools;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
@@ -190,7 +191,7 @@ public class RuleCache {
             if (dirtyCounter > 0) {
                 return;
             }
-            dirtyCounter = 10;
+            dirtyCounter = Config.CACHE_RETENTION_TICKS.get();
             ServerLevel sw1 = Tools.getServerWorld(world);
             validSpawnChunks = sw1.getChunkSource().chunkMap.size();
             validPlayers = countValidPlayers(world);
