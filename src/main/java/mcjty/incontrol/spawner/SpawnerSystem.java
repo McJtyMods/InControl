@@ -293,7 +293,7 @@ public class SpawnerSystem {
         } else {
             pos = getRandomPositionOnGround(world, player, mob, conditions, groupCenterPos, groupDistance);
         }
-        if (conditions.getExtraConditions().apply(world, groupCenterPos, player)) {
+        if (pos != null && conditions.getExtraConditions().apply(world, pos, player)) {
             return pos;
         }
         return null;
