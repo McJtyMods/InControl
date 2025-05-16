@@ -66,6 +66,15 @@ public class LostCitySupport {
         return false;
     }
 
+    public static boolean isCity(Level world, BlockPos pos) {
+        ILostCityInformation info = lostCities.getLostInfo(world);
+        if (info != null) {
+            ILostChunkInfo chunkInfo = info.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
+            return chunkInfo.isCity();
+        }
+        return false;
+    }
+
     public static <T> boolean isStreet(IEventQuery<T> query, T event) {
         Level w = getWorld(query, event);
         if (w == null) {
@@ -74,6 +83,15 @@ public class LostCitySupport {
         ILostCityInformation info = lostCities.getLostInfo(w);
         if (info != null) {
             BlockPos pos = query.getPos(event);
+            ILostChunkInfo chunkInfo = info.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
+            return chunkInfo.isCity() && chunkInfo.getBuildingType() == null;
+        }
+        return false;
+    }
+
+    public static boolean isStreet(Level world, BlockPos pos) {
+        ILostCityInformation info = lostCities.getLostInfo(world);
+        if (info != null) {
             ILostChunkInfo chunkInfo = info.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
             return chunkInfo.isCity() && chunkInfo.getBuildingType() == null;
         }
@@ -94,6 +112,15 @@ public class LostCitySupport {
         return false;
     }
 
+    public static boolean inSphere(Level world, BlockPos pos) {
+        ILostCityInformation info = lostCities.getLostInfo(world);
+        if (info != null) {
+            ILostSphere sphere = info.getSphere(pos.getX(), pos.getZ());
+            return sphere != null;
+        }
+        return false;
+    }
+
     public static <T> boolean isBuilding(IEventQuery<T> query, T event) {
         Level w = getWorld(query, event);
         if (w == null) {
@@ -108,6 +135,15 @@ public class LostCitySupport {
         return false;
     }
 
+    public static boolean isBuilding(Level world, BlockPos pos) {
+        ILostCityInformation info = lostCities.getLostInfo(world);
+        if (info != null) {
+            ILostChunkInfo chunkInfo = info.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
+            return chunkInfo.isCity() && chunkInfo.getBuildingType() != null;
+        }
+        return false;
+    }
+
     public static <T> boolean isMultiBuilding(IEventQuery<T> query, T event) {
         Level w = getWorld(query, event);
         if (w == null) {
@@ -116,6 +152,19 @@ public class LostCitySupport {
         ILostCityInformation info = lostCities.getLostInfo(w);
         if (info != null) {
             BlockPos pos = query.getPos(event);
+            ILostChunkInfo chunkInfo = info.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
+            if (!chunkInfo.isCity()) {
+                return false;
+            }
+            ILostChunkInfo.MultiBuildingInfo mi = chunkInfo.getMultiBuildingInfo();
+            return mi != null;
+        }
+        return false;
+    }
+
+    public static boolean isMultiBuilding(Level world, BlockPos pos) {
+        ILostCityInformation info = lostCities.getLostInfo(world);
+        if (info != null) {
             ILostChunkInfo chunkInfo = info.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
             if (!chunkInfo.isCity()) {
                 return false;

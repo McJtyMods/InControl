@@ -46,6 +46,7 @@ import net.minecraft.world.level.levelgen.structure.Structure;
 import net.neoforged.neoforge.event.entity.living.FinalizeSpawnEvent;
 import net.neoforged.neoforge.event.entity.living.MobSpawnEvent;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.function.*;
@@ -360,29 +361,33 @@ public class GenericRuleEvaluator {
             LevelAccessor world = query.getWorld(event);
             BlockPos pos = query.getPos(event);
             if (TestingTools.isChunkInvalid(world, pos)) return false;
-            if (world.canSeeSkyFromBelowWater(pos)) {
-                // We can see the sky, so not a cave
-                return !cave;
-            }
-            // To qualify as a cave we will scan the area in all 8 cardinal directions for at least 30 blocks and try to find stone.
-            // If we can find stone in six of those cardinal directions then we are in a cave.
-            int cnt = 0;
-            for (Direction direction : Direction.values()) {
-                BlockPos p = pos;
-                for (int i = 0; i < 50; i++) {
-                    p = p.relative(direction);
-                    BlockState state = world.getBlockState(p);
-                    if (state.is(ModSetup.CAVE_BLOCK)) {
-                        cnt++;
-                        break;
-                    }
-                    if (!state.isAir() && !state.is(Blocks.WATER) && !state.is(Blocks.LAVA)) {
-                        break;
-                    }
+            return checkCave(world, pos) == cave;
+        });
+    }
+
+    public static boolean checkCave(LevelAccessor world, BlockPos pos) {
+        if (world.canSeeSkyFromBelowWater(pos)) {
+            // We can see the sky, so not a cave
+            return false;
+        }
+        // To qualify as a cave we will scan the area in all 8 cardinal directions for at least 30 blocks and try to find stone.
+        // If we can find stone in six of those cardinal directions then we are in a cave.
+        int cnt = 0;
+        for (Direction direction : Direction.values()) {
+            BlockPos p = pos;
+            for (int i = 0; i < 50; i++) {
+                p = p.relative(direction);
+                BlockState state = world.getBlockState(p);
+                if (state.is(ModSetup.CAVE_BLOCK)) {
+                    cnt++;
+                    break;
+                }
+                if (!state.isAir() && !state.is(Blocks.WATER) && !state.is(Blocks.LAVA)) {
+                    break;
                 }
             }
-            return cnt >= 6 == cave;
-        });
+        }
+        return cnt >= 6;
     }
 
     private void addSeeSkyCheck(boolean seesky) {
