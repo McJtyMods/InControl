@@ -1,5 +1,11 @@
 Upcoming:
 - Fixed the 'area' sphere test. It was incorrect
+- Much improved caching for counting. This has a great effect on performance
+- New server config file where you can control this counting cache as well as change the radius used for nearest player tests
+- TqLxQuanZ added knockbackset/multiply/add as well as knockbackresistanceset/multiply/add
+- The spawner system (spawner.json) now supports many new conditions to improve performance and make rules easier to write (avoid the need for spawn.json rules)
+
+TODO: find a way to test for spawner in onjoin
 
 1.20-9.2.11:
 - Fixed a bug in minverticaldist/maxverticaldist

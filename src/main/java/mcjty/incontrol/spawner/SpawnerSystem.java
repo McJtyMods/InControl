@@ -286,18 +286,24 @@ public class SpawnerSystem {
         boolean inLava = conditions.isInLava();
         boolean inLiquid = conditions.isInLiquid();
 
+        List<? extends Player> players = world.players();
+        Player player = players.get(random.nextInt(players.size()));
+
+        BlockPos pos;
         if (inAir || inWater || inLava || inLiquid) {
-            return getRandomPositionInBox(world, mob, conditions, groupCenterPos, groupDistance);
+            pos = getRandomPositionInBox(world, player, mob, conditions, groupCenterPos, groupDistance);
         } else {
-            return getRandomPositionOnGround(world, mob, conditions, groupCenterPos, groupDistance);
+            pos = getRandomPositionOnGround(world, player, mob, conditions, groupCenterPos, groupDistance);
         }
+        if (conditions.getExtraConditions().apply(world, groupCenterPos, player)) {
+            return pos;
+        }
+        return null;
     }
 
     @Nullable
-    private static BlockPos getRandomPositionInBox(Level world, EntityType<?> mob, SpawnerConditions conditions,
+    private static BlockPos getRandomPositionInBox(Level world, Player player, EntityType<?> mob, SpawnerConditions conditions,
                                                    @Nullable BlockPos groupCenterPos, int groupDistance) {
-        List<? extends Player> players = world.players();
-        Player player = players.get(random.nextInt(players.size()));
 
         Box box = createSpawnBox(conditions, player.blockPosition());
 
@@ -346,11 +352,8 @@ public class SpawnerSystem {
     }
 
     @Nullable
-    private static BlockPos getRandomPositionOnGround(Level world, EntityType<?> mob, SpawnerConditions conditions,
+    private static BlockPos getRandomPositionOnGround(Level world, Player player, EntityType<?> mob, SpawnerConditions conditions,
                                                       @Nullable BlockPos groupCenterPos, int groupDistance) {
-        List<? extends Player> players = world.players();
-        Player player = players.get(random.nextInt(players.size()));
-
         Box box = createSpawnBox(conditions, player.blockPosition());
 
         if (!box.isValid()) {
