@@ -17,7 +17,6 @@ import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.biome.MobSpawnSettings;
@@ -29,7 +28,6 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.TickEvent;
 import org.jetbrains.annotations.NotNull;
@@ -295,7 +293,13 @@ public class SpawnerSystem {
         } else {
             pos = getRandomPositionOnGround(world, player, mob, conditions, groupCenterPos, groupDistance);
         }
-        if (pos != null && conditions.getExtraConditions().apply(world, pos, player)) {
+        if (pos != null) {
+            if (!conditions.getPositiveCheck().getExtraConditions().apply(world, pos, player)) {
+                return null;
+            }
+            if (conditions.getNegativeCheck().getExtraConditions().apply(world, pos, player)) {
+                return null;
+            }
             return pos;
         }
         return null;
