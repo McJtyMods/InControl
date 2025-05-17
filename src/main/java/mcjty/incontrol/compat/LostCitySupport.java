@@ -190,6 +190,15 @@ public class LostCitySupport {
         return null;
     }
 
+    public static String getBuildingName(Level world, BlockPos pos) {
+        ILostCityInformation info = lostCities.getLostInfo(world);
+        if (info != null) {
+            ILostChunkInfo chunkInfo = info.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
+            return chunkInfo.getBuildingType();
+        }
+        return null;
+    }
+
     // Get the name of the multi building
     public static <T> String getMultiBuildingName(IEventQuery<T> query, T event) {
         Level w = getWorld(query, event);
@@ -199,6 +208,16 @@ public class LostCitySupport {
         ILostCityInformation info = lostCities.getLostInfo(w);
         if (info != null) {
             BlockPos pos = query.getPos(event);
+            ILostChunkInfo chunkInfo = info.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
+            ILostChunkInfo.MultiBuildingInfo mi = chunkInfo.getMultiBuildingInfo();
+            return mi != null ? mi.buildingType().toString() : null;
+        }
+        return null;
+    }
+
+    public static String getMultiBuildingName(Level world, BlockPos pos) {
+        ILostCityInformation info = lostCities.getLostInfo(world);
+        if (info != null) {
             ILostChunkInfo chunkInfo = info.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
             ILostChunkInfo.MultiBuildingInfo mi = chunkInfo.getMultiBuildingInfo();
             return mi != null ? mi.buildingType().toString() : null;

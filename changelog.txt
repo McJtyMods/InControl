@@ -3,7 +3,7 @@ Upcoming:
 - Much improved caching for counting. This has a great effect on performance
 - New server config file where you can control this counting cache as well as change the radius used for nearest player tests
 - TqLxQuanZ added knockbackset/multiply/add as well as knockbackresistanceset/multiply/add
-- The spawner system (spawner.json) now supports many new conditions to improve performance and make rules easier to write (avoid the need for spawn.json rules)
+- The spawner system (spawner.json) now supports many new conditions to improve performance and make rules easier to write (avoid the need for spawn.json rules). These conditions are encapsulated in a new 'and' block. There is also a 'not' block for negative conditions
 
 TODO: find a way to test for spawner in onjoin
 
