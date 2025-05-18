@@ -196,6 +196,7 @@ public class SummonAidRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.createMulti(ACTION_ARMORCHEST))
                 .attribute(Attribute.createMulti(ACTION_ARMORHELMET))
                 .attribute(Attribute.createMulti(ACTION_POTION))
+                .attribute(Attribute.createMulti(ACTION_POTION_NOPARTICLES))
                 .attribute(Attribute.create(ACTION_NODESPAWN))
         ;
     }
@@ -242,7 +243,7 @@ public class SummonAidRule extends RuleBase<RuleBase.EventGetter> {
     }
 
     @Override
-    protected void addPotionsAction(List<String> potions) {
+    protected void addPotionsAction(List<String> potions, boolean particles) {
         List<MobEffectInstance> effects = new ArrayList<>();
         for (String p : potions) {
             String[] splitted = StringUtils.split(p, ',');
@@ -270,7 +271,7 @@ public class SummonAidRule extends RuleBase<RuleBase.EventGetter> {
             actions.add(event -> {
                 LivingEntity living = event.getEntityLiving();
                 for (MobEffectInstance effect : effects) {
-                    MobEffectInstance neweffect = new MobEffectInstance(effect.getEffect(), effect.getDuration(), effect.getAmplifier());
+                    MobEffectInstance neweffect = new MobEffectInstance(effect.getEffect(), effect.getDuration(), effect.getAmplifier(), false, particles);
                     living.addEffect(neweffect);
                 }
             });

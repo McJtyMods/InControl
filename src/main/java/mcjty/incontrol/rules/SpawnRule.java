@@ -365,6 +365,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.createMulti(ACTION_ARMORCHEST))
                 .attribute(Attribute.createMulti(ACTION_ARMORHELMET))
                 .attribute(Attribute.createMulti(ACTION_POTION))
+                .attribute(Attribute.createMulti(ACTION_POTION_NOPARTICLES))
                 .attribute(Attribute.create(ACTION_NODESPAWN))
         ;
     }

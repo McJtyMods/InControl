@@ -154,6 +154,7 @@ public interface RuleKeys {
     Key<Boolean> ACTION_NODESPAWN = Key.create(Type.BOOLEAN, "nodespawn");
 
     Key<String> ACTION_POTION = Key.create(Type.STRING, "potion");
+    Key<String> ACTION_POTION_NOPARTICLES = Key.create(Type.STRING, "potionnoparticles");
     Key<String> ACTION_HELDITEM = Key.create(Type.JSON, "helditem");
     Key<String> ACTION_ARMORCHEST = Key.create(Type.JSON, "armorchest");
     Key<String> ACTION_ARMORHELMET = Key.create(Type.JSON, "armorhelmet");
