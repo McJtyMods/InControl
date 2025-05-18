@@ -372,13 +372,13 @@ public class SpawnerConditions {
                     if (value.isJsonArray()) {
                         Set<ResourceKey<Biome>> keys = new HashSet<>();
                         for (JsonElement element : value.getAsJsonArray()) {
-                            ResourceKey<Biome> key = ResourceKey.create(Registries.BIOME, new ResourceLocation(element.getAsString()));
+                            ResourceKey<Biome> key = ResourceKey.create(Registries.BIOME, ResourceLocation.parse(element.getAsString()));
                             keys.add(key);
                         }
                         Predicate<ResourceKey<Biome>> predicate = key -> keys.contains(key);
                         builder.extraCondition((level, pos, player) -> level.getBiome(pos).is(predicate));
                     } else {
-                        ResourceKey<Biome> key = ResourceKey.create(Registries.BIOME, new ResourceLocation(value.getAsString()));
+                        ResourceKey<Biome> key = ResourceKey.create(Registries.BIOME, ResourceLocation.parse(value.getAsString()));
                         builder.extraCondition((level, pos, player) -> level.getBiome(pos).is(key));
                     }
                 }
@@ -387,13 +387,13 @@ public class SpawnerConditions {
                     if (value.isJsonArray()) {
                         Set<ResourceLocation> keys = new HashSet<>();
                         for (JsonElement element : value.getAsJsonArray()) {
-                            ResourceLocation key = new ResourceLocation(element.getAsString());
+                            ResourceLocation key = ResourceLocation.parse(element.getAsString());
                             keys.add(key);
                         }
                         Predicate<ResourceKey<Biome>> predicate = key -> keys.contains(key.location());
                         builder.extraCondition((level, pos, player) -> level.getBiome(pos).is(predicate));
                     } else {
-                        ResourceLocation key = new ResourceLocation(value.getAsString());
+                        ResourceLocation key = ResourceLocation.parse(value.getAsString());
                         builder.extraCondition((level, pos, player) -> level.getBiome(pos).is(key));
                     }
                 }
@@ -434,12 +434,12 @@ public class SpawnerConditions {
                     Set<TagKey<Structure>> tagSet = new HashSet<>();
                     if (value.isJsonArray()) {
                         for (JsonElement element : value.getAsJsonArray()) {
-                            ResourceLocation key = new ResourceLocation(element.getAsString());
+                            ResourceLocation key = ResourceLocation.parse(element.getAsString());
                             TagKey<Structure> tag = TagKey.create(Registries.STRUCTURE, key);
                             tagSet.add(tag);
                         }
                     } else {
-                        ResourceLocation key = new ResourceLocation(value.getAsString());
+                        ResourceLocation key = ResourceLocation.parse(value.getAsString());
                         TagKey<Structure> tag = TagKey.create(Registries.STRUCTURE, key);
                         tagSet.add(tag);
                     }
