@@ -1,16 +1,16 @@
 package mcjty.incontrol.setup;
 
-import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.config.ModConfig;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class Config {
 
-    public static ForgeConfigSpec.IntValue CACHE_RETENTION_TICKS;
-    public static ForgeConfigSpec.IntValue PERPLAYER_RADIUS;
+    public static ModConfigSpec.IntValue CACHE_RETENTION_TICKS;
+    public static ModConfigSpec.IntValue PERPLAYER_RADIUS;
 
-    public static void register() {
-        ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+    public static void register(ModContainer container) {
+        ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
 
         builder.comment("General settings").push("general");
 
@@ -23,6 +23,6 @@ public class Config {
 
         builder.pop();
 
-        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, builder.build());
+        container.registerConfig(ModConfig.Type.SERVER, builder.build());
     }
 }

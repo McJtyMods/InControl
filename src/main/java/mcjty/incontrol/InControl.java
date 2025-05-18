@@ -5,6 +5,7 @@ import mcjty.incontrol.setup.Config;
 import mcjty.incontrol.setup.ModSetup;
 import mcjty.incontrol.tools.cache.StructureCache;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
@@ -17,8 +18,8 @@ public class InControl {
 
     public static ModSetup setup = new ModSetup();
 
-    public InControl(IEventBus bus) {
-        Config.register();
+    public InControl(ModContainer container, IEventBus bus) {
+        Config.register(container);
         bus.addListener((FMLCommonSetupEvent event) -> setup.init());
         NeoForge.EVENT_BUS.addListener((ServerStoppedEvent event) -> StructureCache.CACHE.clean());
         NeoForge.EVENT_BUS.addListener(ErrorHandler::onPlayerJoinWorld);
