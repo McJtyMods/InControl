@@ -264,7 +264,7 @@ public class GenericRuleEvaluator {
             types.add(type);
         }
         checks.add((event, query) -> {
-            if (event instanceof MobSpawnEvent.FinalizeSpawn checkSpawn) {
+            if (event instanceof FinalizeSpawnEvent checkSpawn) {
                 return types.contains(checkSpawn.getSpawnType());
             } else if (event instanceof MobSpawnEvent.PositionCheck checkSpawn) {
                 return types.contains(checkSpawn.getSpawnType());
