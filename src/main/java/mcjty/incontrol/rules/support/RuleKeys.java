@@ -112,6 +112,7 @@ public interface RuleKeys {
     Key<String> MOD = Key.create(Type.STRING, "mod");
 
     Key<Boolean> SPAWNER = Key.create(Type.BOOLEAN, "spawner");
+    Key<String> SPAWNTYPE = Key.create(Type.STRING, "spawntype");
     Key<Boolean> INCONTROL = Key.create(Type.BOOLEAN, "incontrol");
     Key<Boolean> EVENTSPAWN = Key.create(Type.BOOLEAN, "eventspawn");
 

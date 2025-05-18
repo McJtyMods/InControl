@@ -262,6 +262,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(CANSPAWNHERE))
                 .attribute(Attribute.create(NOTCOLLIDING))
                 .attribute(Attribute.create(SPAWNER))
+                .attribute(Attribute.createMulti(SPAWNTYPE))
                 .attribute(Attribute.create(INCONTROL))
                 .attribute(Attribute.create(EVENTSPAWN))
                 .attribute(Attribute.create(INBUILDING))

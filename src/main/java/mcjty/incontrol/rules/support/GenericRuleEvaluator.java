@@ -1,7 +1,6 @@
 package mcjty.incontrol.rules.support;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import mcjty.incontrol.ErrorHandler;
@@ -41,11 +40,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraftforge.common.BiomeManager;
-import net.minecraftforge.common.Tags;
 import net.minecraftforge.event.entity.living.MobSpawnEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.function.*;
@@ -162,6 +159,7 @@ public class GenericRuleEvaluator {
         map.consume(CANSPAWNHERE, this::addCanSpawnHereCheck);
         map.consume(NOTCOLLIDING, this::addNotCollidingCheck);
         map.consume(SPAWNER, this::addSpawnerCheck);
+        map.consumeAsList(SPAWNTYPE, this::addSpawnTypeCheck);
         map.consume(INCONTROL, this::addInControlCheck);
         map.consume(EVENTSPAWN, this::addEventSpawnCheck);
         map.consumeAsList(MOB, this::addMobsCheck);
@@ -255,6 +253,23 @@ public class GenericRuleEvaluator {
 
     private void addEventSpawnCheck(boolean c) {
         checks.add((event, query) -> c == (EventsSystem.busySpawning != null));
+    }
+
+    private void addSpawnTypeCheck(List<String> tp) {
+        Set<MobSpawnType> types = new HashSet<>();
+        for (String s : tp) {
+            MobSpawnType type = MobSpawnType.valueOf(s.toUpperCase());
+            types.add(type);
+        }
+        checks.add((event, query) -> {
+            if (event instanceof MobSpawnEvent.FinalizeSpawn checkSpawn) {
+                return types.contains(checkSpawn.getSpawnType());
+            } else if (event instanceof MobSpawnEvent.PositionCheck checkSpawn) {
+                return types.contains(checkSpawn.getSpawnType());
+            } else {
+                return query.getEntity(event) instanceof Mob mob && mob.getSpawnType() != null && types.contains(mob.getSpawnType());
+            }
+        });
     }
 
     private void addSpawnerCheck(boolean c) {
