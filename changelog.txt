@@ -5,6 +5,7 @@ Upcoming:
 - TqLxQuanZ added knockbackset/multiply/add as well as knockbackresistanceset/multiply/add
 - The spawner system (spawner.json) now supports many new conditions to improve performance and make rules easier to write (avoid the need for spawn.json rules). These conditions are encapsulated in a new 'and' block. There is also a 'not' block for negative conditions
 - New 'spawntype' condition for spawn.json. This will allow you to test what type of spawn it is. Possible values are 'spawn_egg', 'natural', 'chunk_generation', 'structure', 'mob_summoned', 'conversion', ...
+- New 'potionnoparticles' action for effects.json. This will allow you to do potion effects without particles
 
 1.20-9.2.11:
 - Fixed a bug in minverticaldist/maxverticaldist

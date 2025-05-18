@@ -197,6 +197,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         
         map.consume2(ACTION_SIZEMULTIPLY, ACTION_SIZEADD, this::addSizeActions);
         map.consumeAsList(ACTION_POTION, this::addPotionsAction);
+        map.consumeAsList(ACTION_POTION_NOPARTICLES, this::addPotionsNoParticlesAction);
         map.consume(ACTION_NODESPAWN, this::addNoDespawnAction);
         map.consume(ACTION_ANGRY, this::addAngryAction);
         map.consume(ACTION_CUSTOMNAME, this::addCustomName);
@@ -687,7 +688,15 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         });
     }
 
-    protected void addPotionsAction(List<String> potions) {
+    private void addPotionsAction(List<String> potions) {
+        this.addPotionsAction(potions, true);
+    }
+
+    private void addPotionsNoParticlesAction(List<String> potions) {
+        this.addPotionsAction(potions, false);
+    }
+
+    protected void addPotionsAction(List<String> potions, boolean showParticles) {
         List<MobEffectInstance> effects = new ArrayList<>();
         for (String p : potions) {
             String[] splitted = StringUtils.split(p, ',');
@@ -716,7 +725,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
                 LivingEntity living = event.getEntityLiving();
                 if (living != null) {
                     for (MobEffectInstance effect : effects) {
-                        MobEffectInstance neweffect = new MobEffectInstance(effect.getEffect(), effect.getDuration(), effect.getAmplifier());
+                        MobEffectInstance neweffect = new MobEffectInstance(effect.getEffect(), effect.getDuration(), effect.getAmplifier(), false, showParticles);
                         living.addEffect(neweffect);
                     }
                 }

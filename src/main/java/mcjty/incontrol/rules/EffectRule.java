@@ -164,6 +164,7 @@ public class EffectRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(ACTION_TOGGLEPHASE))
                 .attribute(Attribute.create(ACTION_CHANGENUMBER))
                 .attribute(Attribute.createMulti(ACTION_POTION))
+                .attribute(Attribute.createMulti(ACTION_POTION_NOPARTICLES))
                 .attribute(Attribute.createMulti(ACTION_GIVE))
                 .attribute(Attribute.createMulti(ACTION_DROP))
         ;
