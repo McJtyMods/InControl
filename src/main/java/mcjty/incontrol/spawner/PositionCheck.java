@@ -69,8 +69,8 @@ public class PositionCheck {
     }
 
 
-    private PositionCheck(Builder builder) {
-        extraConditions = builder.extraConditions == null ? (level, blockPos, player) -> true : builder.extraConditions;
+    private PositionCheck(Builder builder, boolean defaultIfNone) {
+        extraConditions = builder.extraConditions == null ? (level, blockPos, player) -> defaultIfNone : builder.extraConditions;
     }
 
     @Nonnull
@@ -364,14 +364,13 @@ public class PositionCheck {
                 this.extraConditions = extraCondition;
             } else {
                 TriFunction<Level, BlockPos, Player, Boolean> oldCondition = this.extraConditions;
-//                this.extraConditions = (level, blockPos, player) -> oldCondition.apply(level, blockPos, player) && extraCondition.apply(level, blockPos, player);
-                this.extraConditions = combiner.apply(this.extraConditions, extraCondition);
+                this.extraConditions = combiner.apply(oldCondition, extraCondition);
             }
             return this;
         }
 
-        public PositionCheck build() {
-            return new PositionCheck(this);
+        public PositionCheck build(boolean defaultIfNone) {
+            return new PositionCheck(this, defaultIfNone);
         }
     }
 }
