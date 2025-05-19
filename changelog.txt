@@ -1,3 +1,6 @@
+1.20-9.3.1:
+- Fixed a bug in spawner.json which was now broken
+
 1.20-9.3.0:
 - Fixed the 'area' sphere test. It was incorrect
 - Much improved caching for counting. This has a great effect on performance

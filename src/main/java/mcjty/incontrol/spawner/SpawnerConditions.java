@@ -115,12 +115,12 @@ public class SpawnerConditions {
         validSpawn = builder.validSpawn;
         sturdy = builder.sturdy;
         if (builder.positiveCheck == null) {
-            positiveCheck = PositionCheck.create(AND_COMBINER).build();
+            positiveCheck = PositionCheck.create(AND_COMBINER).build(true);
         } else {
             positiveCheck = builder.positiveCheck;
         }
         if (builder.negativeCheck == null) {
-            negativeCheck = PositionCheck.create(OR_COMBINER).build();
+            negativeCheck = PositionCheck.create(OR_COMBINER).build(false);
         } else {
             negativeCheck = builder.negativeCheck;
         }
@@ -339,7 +339,7 @@ public class SpawnerConditions {
                     if (value.isJsonObject()) {
                         PositionCheck.Builder checkBuilder = new PositionCheck.Builder(AND_COMBINER);
                         PositionCheck.parse(value.getAsJsonObject(), checkBuilder);
-                        builder.positiveCheck(checkBuilder.build());
+                        builder.positiveCheck(checkBuilder.build(true));
                     } else {
                         ErrorHandler.error("Invalid condition '" + attr + "' for spawner rule!");
                     }
@@ -349,7 +349,7 @@ public class SpawnerConditions {
                     if (value.isJsonObject()) {
                         PositionCheck.Builder checkBuilder = new PositionCheck.Builder(OR_COMBINER);
                         PositionCheck.parse(value.getAsJsonObject(), checkBuilder);
-                        builder.negativeCheck(checkBuilder.build());
+                        builder.negativeCheck(checkBuilder.build(false));
                     } else {
                         ErrorHandler.error("Invalid condition '" + attr + "' for spawner rule!");
                     }
