@@ -133,16 +133,23 @@ public class PositionCheck {
                 case BIOMETAGS -> {
                     JsonElement value = object.get(attr);
                     if (value.isJsonArray()) {
-                        Set<ResourceLocation> keys = new HashSet<>();
+                        Set<TagKey<Biome>> keys = new HashSet<>();
                         for (JsonElement element : value.getAsJsonArray()) {
                             ResourceLocation key = ResourceLocation.parse(element.getAsString());
-                            keys.add(key);
+                            keys.add(TagKey.create(Registries.BIOME, key));
                         }
-                        Predicate<ResourceKey<Biome>> predicate = key -> keys.contains(key.location());
-                        builder.extraCondition((level, pos, player) -> level.getBiome(pos).is(predicate));
+                        builder.extraCondition((level, pos, player) -> {
+                            for (TagKey<Biome> key : keys) {
+                                Holder<Biome> biome = level.getBiome(pos);
+                                if (biome.is(key)) {
+                                    return true;
+                                }
+                            }
+                            return false;
+                        });
                     } else {
-                        ResourceLocation key = ResourceLocation.parse(value.getAsString());
-                        builder.extraCondition((level, pos, player) -> level.getBiome(pos).is(key));
+                        TagKey<Biome> tag = TagKey.create(Registries.BIOME, ResourceLocation.parse(value.getAsString()));
+                        builder.extraCondition((level, pos, player) -> level.getBiome(pos).is(tag));
                     }
                 }
                 case SEESKY -> {
