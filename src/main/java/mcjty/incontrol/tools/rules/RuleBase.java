@@ -295,8 +295,8 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         });
     }
 
-    private static final Component DEFAULT_NAME = Component.literal("@");
-    private static final CommandSource EMPTY = new CommandSource() {
+    public static final Component DEFAULT_NAME = Component.literal("@");
+    public static final CommandSource EMPTY = new CommandSource() {
         @Override
         public void sendSystemMessage(Component component) {
         }

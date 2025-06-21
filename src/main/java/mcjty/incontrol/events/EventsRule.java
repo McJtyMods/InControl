@@ -14,6 +14,7 @@ public class EventsRule {
     private final SpawnEventAction action;
     private final PhaseAction phaseAction;
     private final NumberAction numberAction;
+    private final CommandAction commandAction;
 
     enum Cmd {
         ON,
@@ -21,7 +22,8 @@ public class EventsRule {
         SPAWN,
         PHASE,
         NUMBER,
-        CONDITIONS
+        CONDITIONS,
+        COMMAND
     }
 
     private static final Map<String, Cmd> COMMANDS = new HashMap<>();
@@ -37,6 +39,7 @@ public class EventsRule {
         eventType = builder.eventType;
         phaseAction = builder.phaseAction;
         numberAction = builder.numberAction;
+        commandAction = builder.commandAction;
     }
 
 
@@ -81,6 +84,12 @@ public class EventsRule {
                 }
                 case NUMBER -> {
                     NumberAction action = NumberAction.parse(object);
+                    if (action != null) {
+                        builder.action(action);
+                    }
+                }
+                case COMMAND -> {
+                    CommandAction action = CommandAction.parse(object);
                     if (action != null) {
                         builder.action(action);
                     }
@@ -148,16 +157,26 @@ public class EventsRule {
         return numberAction;
     }
 
+    public CommandAction getCommandAction() {
+        return commandAction;
+    }
+
     public static class Builder {
 
         private EventsConditions conditions = EventsConditions.DEFAULT;
         private SpawnEventAction action;
         private PhaseAction phaseAction;
         private NumberAction numberAction;
+        private CommandAction commandAction;
         private EventType eventType;
 
         public Builder conditions(EventsConditions conditions) {
             this.conditions = conditions;
+            return this;
+        }
+
+        public Builder action(CommandAction commandAction) {
+            this.commandAction = commandAction;
             return this;
         }
 
