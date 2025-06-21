@@ -1,6 +1,7 @@
 package mcjty.incontrol.events;
 
 import mcjty.incontrol.data.DataStorage;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
@@ -13,13 +14,19 @@ import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.EventHooks;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Predicate;
+
+import static mcjty.incontrol.tools.rules.RuleBase.DEFAULT_NAME;
+import static mcjty.incontrol.tools.rules.RuleBase.EMPTY;
 
 public class EventsSystem {
 
@@ -68,15 +75,29 @@ public class EventsSystem {
                 if (!checkConditions(rule, entity.level())) {
                     continue;
                 }
-                doActions(rule, entity.blockPosition(), (ServerLevel) entity.level());
+                doActions(rule, entity.blockPosition(), (ServerLevel) entity.level(), event.getSource().getEntity());
             }
         }
     }
 
-    private static void doActions(EventsRule rule, BlockPos pos, ServerLevel level) {
+    private static void doActions(EventsRule rule, BlockPos pos, ServerLevel level, @Nullable Entity player) {
         doSpawnAction(rule, pos, level);
         doPhaseAction(rule, level);
         doNumberAction(rule, level);
+        doCommandAction(rule, pos, level, player);
+    }
+
+    private static void doCommandAction(EventsRule rule, BlockPos pos, ServerLevel level, @Nullable Entity player) {
+        CommandAction action = rule.getCommandAction();
+        if (action != null) {
+            List<String> commands = action.commands();
+            CommandSourceStack stack = new CommandSourceStack(EMPTY, Vec3.atCenterOf(pos), Vec2.ZERO, level, 2,
+                    DEFAULT_NAME.getString(), DEFAULT_NAME, level.getServer(), player);
+            for (String command : commands) {
+                level.getServer().getCommands().performPrefixedCommand(stack, command);
+
+            }
+        }
     }
 
     private static void doSpawnAction(EventsRule rule, BlockPos pos, ServerLevel level) {
@@ -211,7 +232,7 @@ public class EventsSystem {
                     continue;
                 }
                 if (eventType.getBlockTest().test(event.getLevel(), event.getPos())) {
-                    doActions(rule, event.getPos(), (ServerLevel) event.getLevel());
+                    doActions(rule, event.getPos(), (ServerLevel) event.getLevel(), event.getPlayer());
                 }
             }
         }
@@ -247,7 +268,7 @@ public class EventsSystem {
                     continue;
                 }
                 if (eventType.getName().equals(name)) {
-                    doActions(rule, pos, level);
+                    doActions(rule, pos, level, null);
                 }
             }
         }

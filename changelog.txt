@@ -1,3 +1,6 @@
+Upcoming:
+- New 'command' action for events. This is a json array of commands that will be executed when the event happens
+
 1.21-10.1.2:
 - The biometags test wasn't working in spawner.json
 
