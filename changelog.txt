@@ -1,4 +1,4 @@
-Upcoming:
+1.21-10.1.3:
 - New 'command' action for events. This is a json array of commands that will be executed when the event happens
 
 1.21-10.1.2:
