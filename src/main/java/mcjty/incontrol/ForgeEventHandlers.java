@@ -13,7 +13,15 @@ import mcjty.incontrol.tools.varia.Tools;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.world.entity.ai.goal.ZombieAttackGoal;
+import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.animal.Cow;
+import net.minecraft.world.entity.animal.Sheep;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.monster.ZombifiedPiglin;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -80,6 +88,17 @@ public class ForgeEventHandlers {
         if (event.getLevel().isClientSide) {
             return;
         }
+
+        if (event.getEntity() instanceof Mob mob) {
+            if (mob instanceof Cow cow) {
+                cow.targetSelector.addGoal(1, (new HurtByTargetGoal(cow)).setAlertOthers(ZombifiedPiglin.class));
+                cow.targetSelector.addGoal(2, new NearestAttackableTargetGoal(cow, Player.class, true));
+                cow.goalSelector.addGoal(1, new MeleeAttackGoal(cow, (double)1.0F, false));
+            }
+        } else if (event.getEntity() instanceof Sheep sheep) {
+        }
+
+
         for (SpawnRule rule : RulesManager.getFilteredRules(event.getLevel(), SpawnWhen.ONJOIN)) {
             if (rule.match(event)) {
                 ICResult result = rule.getResult();

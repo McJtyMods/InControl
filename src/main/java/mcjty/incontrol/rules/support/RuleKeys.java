@@ -153,6 +153,7 @@ public interface RuleKeys {
     Key<Float> ACTION_SIZEMULTIPLY = Key.create(Type.FLOAT, "sizemultiply");
     Key<Float> ACTION_SIZEADD = Key.create(Type.FLOAT, "sizeadd");
     Key<Boolean> ACTION_NODESPAWN = Key.create(Type.BOOLEAN, "nodespawn");
+    Key<String> ACTION_AI = Key.create(Type.JSON, "ai");
 
     Key<String> ACTION_POTION = Key.create(Type.STRING, "potion");
     Key<String> ACTION_POTION_NOPARTICLES = Key.create(Type.STRING, "potionnoparticles");

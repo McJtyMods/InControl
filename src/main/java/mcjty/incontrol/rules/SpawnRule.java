@@ -321,6 +321,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(ACTION_CONTINUE))
                 .attribute(Attribute.create(ACTION_RESULT))
                 .attribute(Attribute.create(ACTION_MESSAGE))
+                .attribute(Attribute.create(ACTION_AI))
                 .attribute(Attribute.create(ACTION_ADDSCOREBOARDTAGS))
                 .attribute(Attribute.create(ACTION_HEALTHSET))
                 .attribute(Attribute.create(ACTION_HEALTHMULTIPLY))
