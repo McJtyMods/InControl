@@ -7,6 +7,7 @@ import com.google.gson.JsonParser;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.InControl;
+import mcjty.incontrol.ai.AISystem;
 import mcjty.incontrol.data.DataStorage;
 import mcjty.incontrol.events.EventsSystem;
 import mcjty.incontrol.events.NumberAction;
@@ -212,6 +213,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         map.consume(ACTION_CLEAR, this::addClearAction);
         map.consume(ACTION_DAMAGE, this::addDoDamageAction);
         map.consume(ACTION_MESSAGE, this::addDoMessageAction);
+        map.consume(ACTION_AI, this::addAiAction);
         map.consumeAsList(ACTION_ADDSCOREBOARDTAGS, this::addAddScoreboardTagsAction);
         map.consumeAsList(ACTION_GIVE, this::addGiveAction);
         map.consumeAsList(ACTION_DROP, this::addDropAction);
@@ -234,6 +236,16 @@ public class RuleBase<T extends RuleBase.EventGetter> {
                 addPStateAction(state, layer);
             } else {
                 InControl.setup.getLogger().warn("EnigmaScript is missing: this action cannot work!");
+            }
+        });
+    }
+
+    private void addAiAction(String json) {
+        Consumer<Mob> action = AISystem.parse(json);
+        actions.add(event -> {
+            LivingEntity living = event.getEntityLiving();
+            if (living instanceof Mob mob) {
+                action.accept(mob);
             }
         });
     }
@@ -269,22 +281,6 @@ public class RuleBase<T extends RuleBase.EventGetter> {
             });
         } catch (Exception e) {
             ErrorHandler.error("Bad number=expression specifier '" + s + "'!");
-        }
-    }
-
-    private void addAddNumberAction(String s) {
-        try {
-            String[] split = StringUtils.split(s, '=');
-            String number = split[0];
-            String value = split[1];
-            int finalValue = Integer.parseInt(value);
-            actions.add(event -> {
-                DataStorage data = DataStorage.getData(Tools.getServerWorld(event.getWorld()));
-                int n = data.getNumber(number);
-                data.setNumber(number, n + finalValue);
-            });
-        } catch (Exception e) {
-            ErrorHandler.error("Bad number=value specifier '" + s + "'!");
         }
     }
 

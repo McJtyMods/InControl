@@ -23,6 +23,7 @@ public class InControl {
         Config.register(container);
         Registration.register(bus);
         bus.addListener((FMLCommonSetupEvent event) -> setup.init());
+        bus.addListener(ModBusHandler::addEntityAttributes);
         NeoForge.EVENT_BUS.addListener((ServerStoppedEvent event) -> StructureCache.CACHE.clean());
         NeoForge.EVENT_BUS.addListener(ErrorHandler::onPlayerJoinWorld);
     }
