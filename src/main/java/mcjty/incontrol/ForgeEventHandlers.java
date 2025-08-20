@@ -84,14 +84,14 @@ public class ForgeEventHandlers {
             return;
         }
 
-        if (event.getEntity() instanceof Mob mob) {
-            if (mob instanceof Cow cow) {
-                cow.targetSelector.addGoal(1, (new HurtByTargetGoal(cow)).setAlertOthers(ZombifiedPiglin.class));
-                cow.targetSelector.addGoal(2, new NearestAttackableTargetGoal(cow, Player.class, true));
-                cow.goalSelector.addGoal(1, new MeleeAttackGoal(cow, (double)1.0F, false));
-            }
-        } else if (event.getEntity() instanceof Sheep sheep) {
-        }
+//        if (event.getEntity() instanceof Mob mob) {
+//            if (mob instanceof Cow cow) {
+//                cow.targetSelector.addGoal(1, (new HurtByTargetGoal(cow)).setAlertOthers(ZombifiedPiglin.class));
+//                cow.targetSelector.addGoal(2, new NearestAttackableTargetGoal(cow, Player.class, true));
+//                cow.goalSelector.addGoal(1, new MeleeAttackGoal(cow, (double)1.0F, false));
+//            }
+//        } else if (event.getEntity() instanceof Sheep sheep) {
+//        }
 
 
         for (SpawnRule rule : RulesManager.getFilteredRules(event.getLevel(), SpawnWhen.ONJOIN)) {
