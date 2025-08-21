@@ -4,15 +4,18 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import mcjty.incontrol.ErrorHandler;
+import mcjty.incontrol.tools.varia.Tools;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.PathfinderMob;
-import net.minecraft.world.entity.ai.goal.FollowParentGoal;
-import net.minecraft.world.entity.ai.goal.GoalSelector;
-import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
-import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.world.entity.ai.goal.*;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -34,7 +37,9 @@ public class AISystem {
         LOOK_AT_PLAYER,
         HURT_BY_TARGET,
         NEAREST_ATTACKABLE_TARGET,
-        MELEE_ATTACK
+        MELEE_ATTACK,
+        RANDOM_LOOK_AROUND,
+        AVOID_ENTITY_GOAL
     }
 
     private static final Map<String, Cmd> ACTIONS = new HashMap<>();
@@ -119,12 +124,38 @@ public class AISystem {
         return defaultValue;
     }
 
+    private static double getDefaultDouble(JsonObject object, String key, double defaultValue) {
+        if (object.has(key)) {
+            JsonElement element = object.get(key);
+            return element.getAsDouble();
+        }
+        return defaultValue;
+    }
+
     private static boolean getDefaultBoolean(JsonObject object, String key, boolean defaultValue) {
         if (object.has(key)) {
             JsonElement element = object.get(key);
             return element.getAsBoolean();
         }
         return defaultValue;
+    }
+
+    private static Class getEntityClass(JsonObject object, String key, Class defaultClass) {
+        if (!object.has(key)) {
+            return defaultClass;
+        }
+        JsonElement element = object.get(key);
+        if (!element.isJsonPrimitive() || !element.getAsJsonPrimitive().isString()) {
+            ErrorHandler.error("Invalid entity class in '" + key + "' action! Expected a string.");
+            return null;
+        }
+        String entityName = element.getAsString();
+        EntityType<?> entityType = ForgeRegistries.ENTITY_TYPES.getValue(new ResourceLocation(entityName));
+        if (entityType == null) {
+            ErrorHandler.error("Unknown entity '" + entityName + "'!");
+            return null;
+        }
+        return entityType.getBaseClass();
     }
 
     private static BiConsumer<GoalSelector, Mob> parseGoal(JsonElement el) {
@@ -159,14 +190,39 @@ public class AISystem {
                         s.addGoal(priority, new HurtByTargetGoal(pf));
                     }
                 });
-            case NEAREST_ATTACKABLE_TARGET:
-                return combineConsumer(goalSelector, (s, e) -> s.addGoal(priority, new NearestAttackableTargetGoal(e, Player.class, true)));
-            case MELEE_ATTACK:
+            case NEAREST_ATTACKABLE_TARGET: {
+                boolean mustsee = getDefaultBoolean(goal, "mustsee", true);
+                boolean mustreach = getDefaultBoolean(goal, "mustreach", false);
+                int randomInterval = getDefaultInt(goal, "randominterval", 10);
+                return combineConsumer(goalSelector, (s, e) -> s.addGoal(priority, new NearestAttackableTargetGoal(e, Player.class, randomInterval, mustsee, mustreach, null)));
+            }
+            case MELEE_ATTACK: {
+                float speed = getDefaultFloat(goal, "speed", 1.0f);
+                boolean followingTargetEvenNotSeen = getDefaultBoolean(goal, "followingtarget", false);
                 return combineConsumer(goalSelector, (s, e) -> {
                     if (e instanceof PathfinderMob pf) {
-                        s.addGoal(priority, new MeleeAttackGoal(pf, 1.0f, false));
+                        s.addGoal(priority, new MeleeAttackGoal(pf, speed, followingTargetEvenNotSeen));
                     }
                 });
+            }
+            case RANDOM_LOOK_AROUND: {
+                return combineConsumer(goalSelector, (s, e) -> s.addGoal(priority, new RandomLookAroundGoal(e)));
+            }
+            case AVOID_ENTITY_GOAL: {
+                Class entityClass = getEntityClass(goal, "entity", Player.class);
+                if (entityClass == null) {
+                    return (s, e) -> {};
+                }
+                float maxDistance = getDefaultFloat(goal, "maxdistance", 10.0f);
+                double walkSpeedModifier = getDefaultDouble(goal, "walkspeedmodifier", 1.0f);
+                double sprintSpeedModifier = getDefaultDouble(goal, "sprintspeedmodifier", 1.2f);
+                boolean onlyWhenTargeting = getDefaultBoolean(goal, "onlyWhenTargeting", false);
+                return combineConsumer(goalSelector, (s, e) -> {
+                    if (e instanceof PathfinderMob pf) {
+                        s.addGoal(priority, new AvoidEntityGoal<>(pf, entityClass, maxDistance, walkSpeedModifier, sprintSpeedModifier));
+                    }
+                });
+            }
             default:
                 ErrorHandler.error("Unknown goal '" + g + "' in 'goals' action!");
                 return (s, e) -> {};
