@@ -10,6 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 
+import java.text.Normalizer;
 import java.util.*;
 import java.util.function.Predicate;
 
@@ -136,9 +137,19 @@ public class SpawnerRule {
 
     public static void parse(JsonObject object, Builder builder) {
         for (String attr : object.keySet()) {
-            Cmd cmd = COMMANDS.get(attr);
+            String normalized = Normalizer.normalize(attr, Normalizer.Form.NFD).trim();
+            Cmd cmd = COMMANDS.get(normalized);
             if (cmd == null) {
-                ErrorHandler.error("Invalid command '" + attr + "' for spawner rule!");
+                // Build a debug string showing code points
+                StringBuilder codes = new StringBuilder();
+                for (int i = 0; i < attr.length(); i++) {
+                    codes.append(String.format(" U+%04X", (int) attr.charAt(i)));
+                }
+                ErrorHandler.error(
+                        "Invalid command '" + attr + "' for spawner rule! " +
+                                "Detected characters:" + codes +
+                                " (normalized='" + normalized + "')"
+                );
                 return;
             }
 

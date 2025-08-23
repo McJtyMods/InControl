@@ -1,6 +1,8 @@
 Upcoming:
 - Fixed loot handling. It was 100% broken before
 - Removed summonaid.json. It's obsolete since you can now test for spawntype
+- New 'ai' command for spawn.json to change the ai of mobs. This is currently still experimental
+- Attempt to make parsing spawner.json more robust on foreign language systems
 
 1.21-10.1.4:
 - Fixed a problem with the 'mobsfrombiome' action in spawner
