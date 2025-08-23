@@ -9,6 +9,7 @@ import mcjty.incontrol.areas.AreaSystem;
 import mcjty.incontrol.compat.ModRuleCompatibilityLayer;
 import mcjty.incontrol.data.DataStorage;
 import mcjty.incontrol.events.EventsSystem;
+import mcjty.incontrol.mob.CNPCMob;
 import mcjty.incontrol.setup.ModSetup;
 import mcjty.incontrol.spawner.SpawnerSystem;
 import mcjty.incontrol.tools.cache.StructureCache;
@@ -165,6 +166,7 @@ public class GenericRuleEvaluator {
         map.consume(INCONTROL, this::addInControlCheck);
         map.consume(EVENTSPAWN, this::addEventSpawnCheck);
         map.consumeAsList(MOB, this::addMobsCheck);
+        map.consumeAsList(NPC, this::addNPCsCheck);
         map.consume(PLAYER, this::addPlayerCheck);
         map.consume(REALPLAYER, this::addRealPlayerCheck);
         map.consume(FAKEPLAYER, this::addFakePlayerCheck);
@@ -321,6 +323,27 @@ public class GenericRuleEvaluator {
             checks.add((event, query) -> (query.getEntity(event) instanceof Animal && !(query.getEntity(event) instanceof Enemy)));
         } else {
             checks.add((event, query) -> !(query.getEntity(event) instanceof Animal && !(query.getEntity(event) instanceof Enemy)));
+        }
+    }
+
+    private void addNPCsCheck(List<CNPCMob> mobs) {
+        if (mobs.size() == 1) {
+            CNPCMob npc = mobs.get(0);
+            if (npc != null) {
+                checks.add((event, query) -> npc.matches(query.getEntity(event)));
+            }
+        } else {
+            for (CNPCMob npc : mobs) {
+                if (npc != null) {
+                    try {
+                        checks.add((event, query) -> npc.matches(query.getEntity(event)));
+                    } catch (Exception e) {
+                        ErrorHandler.error("Unknown NPC with cloneTab = " + npc.getCloneTab() + " and cloneName = '" + npc.getCloneName() + "'!");
+                    }
+                } else {
+                    ErrorHandler.error("Unknown NPC!");
+                }
+            }
         }
     }
 

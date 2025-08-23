@@ -4,19 +4,40 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import mcjty.incontrol.ErrorHandler;
 import net.minecraft.core.registries.BuiltInRegistries;
+import mcjty.incontrol.mob.CNPCMob;
+import mcjty.incontrol.mob.DefaultMob;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public record SpawnEventAction(List<ResourceLocation> mobid, int attempts,
+public record SpawnEventAction(List<DefaultMob> mobid, int attempts,
                                float mindistance, float maxdistance, int minamount, int maxamount,
                                boolean norestrictions) {
 
     @Nullable
+    public static DefaultMob parseMob(JsonElement mob) {
+        ResourceLocation mobid;
+        if (mob.isJsonObject()){
+            JsonObject object = mob.getAsJsonObject();
+            String mobName = object.get("mob").getAsString();
+            if (mobName.equals("customnpcs:customnpc")){
+                return new CNPCMob(object.get("cloneTab").getAsInt(), object.get("cloneName").getAsString());
+            }
+            mobid = ResourceLocation.parse(mobName);
+        } else {
+            mobid = ResourceLocation.parse(mob.getAsString());
+        }
+        if (!BuiltInRegistries.ENTITY_TYPE.containsKey(mobid)) {
+            ErrorHandler.error("Invalid mob '" + mobid + "' for events rule!");
+            return null;
+        }
+        return new DefaultMob(mobid);
+    }
+    @Nullable
     static SpawnEventAction parse(JsonObject object) {
-        List<ResourceLocation> mobs = new ArrayList<>();
+        List<DefaultMob> mobs = new ArrayList<>();
         JsonObject value = object.getAsJsonObject("spawn");
         if (value == null) {
             // Valid
@@ -25,20 +46,10 @@ public record SpawnEventAction(List<ResourceLocation> mobid, int attempts,
         JsonElement mob = value.get("mob");
         if (mob.isJsonArray()) {
             for (JsonElement element : mob.getAsJsonArray()) {
-                ResourceLocation mobid = ResourceLocation.parse(element.getAsString());
-                if (!BuiltInRegistries.ENTITY_TYPE.containsKey(mobid)) {
-                    ErrorHandler.error("Invalid mob '" + mobid + "' for events rule!");
-                    return null;
-                }
-                mobs.add(mobid);
+                mobs.add(parseMob(element));
             }
         } else {
-            ResourceLocation mobid = ResourceLocation.parse(mob.getAsString());
-            if (!BuiltInRegistries.ENTITY_TYPE.containsKey(mobid)) {
-                ErrorHandler.error("Invalid mob '" + mobid + "' for events rule!");
-                return null;
-            }
-            mobs.add(mobid);
+            mobs.add(parseMob(mob));
         }
         if (mobs.isEmpty()) {
             ErrorHandler.error("No mobs specified for events rule!");

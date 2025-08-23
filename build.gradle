@@ -33,6 +33,7 @@ dependencies {
     lostcities()
 //    gamestages()
     sereneseasons()
+    implementation "curse.maven:customnpcs-unofficial-1052708:7005944"
 }
 
 cfdeps(['game-stages', 'the-lost-cities'], [], [])

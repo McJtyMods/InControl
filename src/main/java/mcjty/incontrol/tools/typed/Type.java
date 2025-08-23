@@ -1,6 +1,7 @@
 package mcjty.incontrol.tools.typed;
 
 
+import mcjty.incontrol.mob.CNPCMob;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 
@@ -24,6 +25,7 @@ public record Type<V>(@Nonnull Class<V> type) {
     public static final Type<Boolean> BOOLEAN = create(Boolean.class);
     public static final Type<String> JSON = create(String.class);
     public static final Type<ResourceKey<Level>> DIMENSION_TYPE = create(ResourceKey.class);
+    public static final Type<CNPCMob> NPC = create(CNPCMob.class);
 
     // Map
     public static final Type<AttributeMap> MAP = create(AttributeMap.class);

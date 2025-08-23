@@ -1,6 +1,9 @@
 package mcjty.incontrol.rules.support;
 
+import mcjty.incontrol.compat.CustomNPCSupport;
+import mcjty.incontrol.mob.CNPCMob;
 import mcjty.incontrol.setup.Config;
+import mcjty.incontrol.setup.ModSetup;
 import mcjty.incontrol.tools.varia.Tools;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
@@ -81,6 +84,11 @@ public class RuleCache {
         return cache.getCount(entityType);
     }
 
+    public int getNpcCount(LevelAccessor world, Entity entity) {
+        CachePerWorld cache = getOrCreateCache(world);
+        return cache.getNpcCount(entity);
+    }
+
     public int getCountPerMod(LevelAccessor world, String mod) {
         CachePerWorld cache = getOrCreateCache(world);
         CountPerMod countPerMod = cache.getCountPerMod(mod);
@@ -136,6 +144,7 @@ public class RuleCache {
     private static class CachePerWorld {
 
         private final Map<EntityType, Integer> cachedCounters = new HashMap<>();
+        private final Map<CNPCMob, Integer> cachedNpcCounters = new HashMap<>();
         private final Map<String, CountPerMod> countPerMod = new HashMap<>();
         private int countPassive = -1;
         private int countHostile = -1;
@@ -198,6 +207,7 @@ public class RuleCache {
 
             cachedCounters.clear();
             countPerMod.clear();
+            cachedNpcCounters.clear();
             countPassive = 0;
             countHostile = 0;
             countNeutral = 0;
@@ -225,6 +235,14 @@ public class RuleCache {
                 } else {
                     count.neutral++;
                     countNeutral++;
+                }
+
+                if (ModSetup.customnpcs) {
+                    if (CustomNPCSupport.hasNPCInterface(entity) && entity.getPersistentData().contains("InControlNatSpawnName") && entity.getPersistentData().contains("InControlNatSpawnTab")) {
+                        CNPCMob mob = new CNPCMob(entity.getPersistentData().getInt("InControlNatSpawnTab"), entity.getPersistentData().getString("InControlNatSpawnName"));
+                        cnt = cachedNpcCounters.getOrDefault(mob, 0) + 1;
+                        cachedNpcCounters.put(mob, cnt);
+                    }
                 }
             }
         }
@@ -275,6 +293,16 @@ public class RuleCache {
         public CountPerMod getCountPerMod(String mod) {
             return countPerMod.get(mod);
         }
+
+        // This function is only called if ModSetup.customnpcs is true
+        public int getNpcCount(Entity entity) {
+            if (CustomNPCSupport.hasNPCInterface(entity) && entity.getPersistentData().contains("InControlNatSpawnName") && entity.getPersistentData().contains("InControlNatSpawnTab")){
+                CNPCMob mob = new CNPCMob(entity.getPersistentData().getInt("InControlNatSpawnTab"), entity.getPersistentData().getString("InControlNatSpawnName"));
+                return cachedNpcCounters.getOrDefault(mob, 0);
+            }
+            return getCount(entity.getType());
+        }
+
 
 //        public void registerSpawn(EntityType entityType) {
 //            cachedCounters.put(entityType, cachedCounters.getOrDefault(entityType, 0) + 1);

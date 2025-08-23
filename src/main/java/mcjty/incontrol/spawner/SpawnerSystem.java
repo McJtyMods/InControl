@@ -3,6 +3,7 @@ package mcjty.incontrol.spawner;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.data.DataStorage;
 import mcjty.incontrol.data.Statistics;
+import mcjty.incontrol.mob.DefaultMob;
 import mcjty.incontrol.tools.varia.Box;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -34,7 +35,9 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 public class SpawnerSystem {
 
@@ -124,11 +127,11 @@ public class SpawnerSystem {
         if (rule.getMobsFromBiome() != null) {
             executeRule(ruleNr, rule, (ServerLevel) world, null, rule.getMobsFromBiome(), 1.0f);
         } else {
-            List<EntityType<?>> mobs = rule.getMobs();
+            List<DefaultMob> mobs = rule.getMobs();
             List<Float> weights = rule.getWeights();
             float maxWeight = rule.getMaxWeight();
             for (int i = 0; i < mobs.size(); i++) {
-                EntityType<?> mob = mobs.get(i);
+                DefaultMob mob = mobs.get(i);
                 float weight = i < weights.size() ? weights.get(i) : 1.0f;
                 executeRule(ruleNr, rule, (ServerLevel) world, mob, null, weight / maxWeight);
             }
@@ -136,7 +139,7 @@ public class SpawnerSystem {
     }
 
     // Note: if 'mob' is null we spawn a random mob from the biome spawn list
-    private static void executeRule(int ruleNr, SpawnerRule rule, ServerLevel world, @Nullable EntityType<?> mob, @Nullable MobCategory classification, float weight) {
+    private static void executeRule(int ruleNr, SpawnerRule rule, ServerLevel world, @Nullable DefaultMob mob, @Nullable MobCategory classification, float weight) {
         if (random.nextFloat() > rule.getPersecond()) {
             return;
         }
@@ -145,10 +148,14 @@ public class SpawnerSystem {
             return;
         }
 
+        EntityType<?> entityType = null;
+        if (mob != null) {
+            entityType = mob.getType();
+        }
         SpawnerConditions conditions = rule.getConditions();
 
         if (mob != null) {
-            if (checkTooMany(world, mob, conditions)) {
+            if (checkTooMany(world, entityType, conditions)) {
                 return;
             }
         }
@@ -162,20 +169,27 @@ public class SpawnerSystem {
         BlockPos groupCenterPos = null;
 
         for (int i = 0 ; i < rule.getAttempts() ; i++) {
-            BlockPos pos = getRandomPosition(world, mob, conditions, groupCenterPos, groupDistance);
+            BlockPos pos = getRandomPosition(world, entityType, conditions, groupCenterPos, groupDistance);
             if (pos != null) {
                 if (world.hasChunkAt(pos)) {
-                    EntityType<?> spawnable = selectMob(world, mob, classification, conditions, pos);
-                    if (spawnable == null) {
-                        return;
+                    Entity entity;
+                    if (mob == null) {
+                        // Select a random mob from the biome
+                        EntityType<?> spawnable = selectMob(world, classification, conditions, pos);
+                        if (spawnable == null) {
+                            return;
+                        }
+                        entity = spawnable.create(world);
+                    } else {
+                        entity = mob.getEntity(world);
                     }
-                    boolean nocollisions = world.noCollision(spawnable.getSpawnAABB(pos.getX(), pos.getY(), pos.getZ()));
+//                    boolean nocollisions = world.noCollision(spawnable.getSpawnAABB(pos.getX(), pos.getY(), pos.getZ()));
+                    entity.moveTo(pos.getX(), pos.getY(), pos.getZ(), random.nextFloat() * 360.0F, 0.0F);
+                    boolean nocollisions = world.noCollision(entity.getBoundingBox());
                     if (nocollisions) {
-                        Entity entity = spawnable.create(world);
                         if (entity instanceof Mob) {
                             if (!(entity instanceof Enemy) || world.getDifficulty() != Difficulty.PEACEFUL) {
                                 Mob mobEntity = (Mob) entity;
-                                entity.moveTo(pos.getX(), pos.getY(), pos.getZ(), random.nextFloat() * 360.0F, 0.0F);
                                 for (String tag : rule.getScoreboardTags()) {
                                     entity.addTag(tag);
                                 }
@@ -204,9 +218,9 @@ public class SpawnerSystem {
         }
     }
 
-    private static EntityType<?> selectMob(ServerLevel world, EntityType<?> mob, MobCategory classification, SpawnerConditions conditions, BlockPos pos) {
-        EntityType<?> spawnable = mob;
-        if (spawnable == null && classification != null) {
+    private static EntityType<?> selectMob(ServerLevel world, MobCategory classification, SpawnerConditions conditions, BlockPos pos) {
+        EntityType<?> spawnable = null;
+        if (classification != null) {
             WeightedRandomList<MobSpawnSettings.SpawnerData> spawners = world.getBiome(pos).value().getMobSettings().getMobs(classification);
             if (spawners.isEmpty()) {
                 return null;
