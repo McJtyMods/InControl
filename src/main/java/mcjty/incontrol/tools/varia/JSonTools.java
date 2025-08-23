@@ -7,6 +7,7 @@ import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
@@ -38,8 +39,8 @@ public class JSonTools {
 
         BufferedReader br;
         try {
-            br = new BufferedReader(new InputStreamReader(inputstream, "UTF-8"));
-        } catch (UnsupportedEncodingException e) {
+            br = new BufferedReader(new InputStreamReader(inputstream, StandardCharsets.UTF_8));
+        } catch (Exception e) {
             logger.log(Level.ERROR, "Error reading " + filename + "!");
             return null;
         }
