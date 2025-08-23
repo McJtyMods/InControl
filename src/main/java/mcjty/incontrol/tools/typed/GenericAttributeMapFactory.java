@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import mcjty.incontrol.ErrorHandler;
+import mcjty.incontrol.mob.CNPCMob;
 import mcjty.incontrol.tools.varia.JSonTools;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
@@ -86,6 +87,8 @@ public class GenericAttributeMapFactory {
                     }
                 } else if (type == Type.DIMENSION_TYPE) {
                     transformer = jsonElement -> ResourceKey.create(Registries.DIMENSION, new ResourceLocation(jsonElement.getAsString()));
+                } else if (type == Type.NPC) {
+                    transformer = jsonElement -> new CNPCMob(jsonElement.getAsJsonObject().get("cloneTab").getAsInt(), jsonElement.getAsJsonObject().get("cloneName").getAsString());
                 } else {
                     transformer = e -> "INVALID";
                 }
@@ -131,6 +134,11 @@ public class GenericAttributeMapFactory {
                     if (jsonObject.has(key.name())) {
                         JsonElement jsonElement = jsonObject.get(key.name());
                         map.setNonnull(key, ResourceKey.create(Registries.DIMENSION, new ResourceLocation(jsonElement.getAsString())));
+                    }
+                } else if (type == Type.NPC) {
+                    if (jsonObject.has(key.name())) {
+                        JsonObject jsonElement = jsonObject.get(key.name()).getAsJsonObject();
+                        map.setNonnull(key, new CNPCMob(jsonElement.get("cloneTab").getAsInt(), jsonElement.get("cloneName").getAsString()));
                     }
                 } else if (type == Type.JSON) {
                     if (jsonObject.has(key.name())) {

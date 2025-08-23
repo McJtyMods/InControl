@@ -6,6 +6,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.InControl;
+import mcjty.incontrol.compat.CustomNPCSupport;
+import mcjty.incontrol.setup.ModSetup;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -55,7 +57,11 @@ class CountInfo {
         } else {
             List<EntityType> infoEntityType = entityTypes;
             if (infoEntityType.isEmpty()) {
-                counter = (world, entity) -> InControl.setup.cache.getCount(world, entity.getType());
+                if (ModSetup.customnpcs) {
+                    counter = (world, entity) -> CustomNPCSupport.isNPC(entity) ? InControl.setup.cache.getNpcCount(world, entity) : InControl.setup.cache.getCount(world, entity.getType());
+                } else {
+                    counter = (world, entity) -> InControl.setup.cache.getCount(world, entity.getType());
+                }
             } else if (infoEntityType.size() == 1) {
                 counter = (world, entity) -> {
                     EntityType entityType = infoEntityType.get(0);

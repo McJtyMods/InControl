@@ -1,6 +1,7 @@
 package mcjty.incontrol.events;
 
 import mcjty.incontrol.data.DataStorage;
+import mcjty.incontrol.mob.DefaultMob;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
@@ -103,19 +104,16 @@ public class EventsSystem {
     private static void doSpawnAction(EventsRule rule, BlockPos pos, ServerLevel level) {
         SpawnEventAction action = rule.getSpawnAction();
         if (action != null) {
-            List<ResourceLocation> mobs = action.mobid();
+            List<DefaultMob> mobs = action.mobid();
             // Pick a random mob
-            ResourceLocation mob = mobs.get(rnd.nextInt(mobs.size()));
-            EntityType<?> entityType = ForgeRegistries.ENTITY_TYPES.getValue(mob);
-            if (entityType != null) {
-                // Get a random count
-                int count = action.minamount() + rnd.nextInt(action.maxamount() - action.minamount() + 1);
-                for (int i = 0; i < count; i++) {
-                    for (int a = 0; a < action.attempts(); a++) {
-                        BlockPos randomPos = getRandomPos(pos, action.mindistance(), action.maxdistance());
-                        if (spawn(entityType, action, level, randomPos)) {
-                            break;
-                        }
+            DefaultMob mob = mobs.get(rnd.nextInt(mobs.size()));
+            // Get a random count
+            int count = action.minamount() + rnd.nextInt(action.maxamount() - action.minamount() + 1);
+            for (int i = 0; i < count; i++) {
+                for (int a = 0; a < action.attempts(); a++) {
+                    BlockPos randomPos = getRandomPos(pos, action.mindistance(), action.maxdistance());
+                    if (spawn(mob, action, level, randomPos)) {
+                        break;
                     }
                 }
             }
@@ -185,8 +183,11 @@ public class EventsSystem {
         return new BlockPos(x, center.getY(), z);
     }
 
-    private static boolean spawn(EntityType<?> entityType, SpawnEventAction action, ServerLevelAccessor world, BlockPos pos) {
-        Entity entity = entityType.create(world.getLevel());
+    private static boolean spawn(DefaultMob mob, SpawnEventAction action, ServerLevelAccessor world, BlockPos pos) {
+        Entity entity = mob.getEntity(world.getLevel());
+        if (entity == null) {
+            return false;
+        }
         Mob mobEntity = (Mob) entity;
         entity.moveTo(pos.getX(), pos.getY(), pos.getZ(), rnd.nextFloat() * 360.0F, 0.0F);
         busySpawning = mobEntity;

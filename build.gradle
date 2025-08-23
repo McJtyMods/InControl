@@ -44,6 +44,7 @@ dependencies {
     lostcities()
     gamestages()
     sereneseasons()
+    implementation fg.deobf("curse.maven:customnpcs-unofficial-1052708:6866598")
 }
 
 cfdeps(['game-stages', 'the-lost-cities'], [], [])

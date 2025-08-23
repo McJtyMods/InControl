@@ -27,6 +27,7 @@ public class ModSetup {
     public static boolean sereneSeasons = false;
     public static boolean baubles = false;
     public static boolean enigma = false;
+    public static boolean customnpcs = false;
 
     private Logger logger;
     public RuleCache cache = new RuleCache();
@@ -54,6 +55,7 @@ public class ModSetup {
         sereneSeasons = ModList.get().isLoaded("sereneseasons");
         baubles = ModList.get().isLoaded("baubles");
         enigma = ModList.get().isLoaded("enigma");
+        customnpcs = ModList.get().isLoaded("customnpcs");
 
         if (ModSetup.lostcities) {
             LostCitySupport.register();
@@ -71,6 +73,9 @@ public class ModSetup {
         if (ModSetup.enigma) {
             EnigmaSupport.register();
             logger.log(Level.INFO, "Enabling support for EnigmaScript");
+        }
+        if (ModSetup.customnpcs) {
+            logger.log(Level.INFO, "Enabling support for CustomNPCs");
         }
     }
 }
