@@ -2,6 +2,7 @@ Upcoming:
 - New 'ai' command for spawn.json to change the ai of mobs. This is currently still experimental
 - Attempt to make parsing spawner.json more robust on foreign language systems
 - Thanks to Goodbird from CustomNPCs InControl now has support for CustomNPCs. You can use the 'npc' condition to test for NPCs and you can spawn npbs with spawner.json or events.json
+- New 'minlight_sky' and 'maxlight_sky' keywords to specifically test for skylight
 
 1.20-9.3.3:
 - New 'command' action for events. This is a json array of commands that will be executed when the event happens

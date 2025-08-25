@@ -102,6 +102,8 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(MAXLIGHT))
                 .attribute(Attribute.create(MINLIGHT_FULL))
                 .attribute(Attribute.create(MAXLIGHT_FULL))
+                .attribute(Attribute.create(MINLIGHT_SKY))
+                .attribute(Attribute.create(MAXLIGHT_SKY))
 
                 .attribute(Attribute.create(HEIGHT))
                 .attribute(Attribute.create(MINHEIGHT))

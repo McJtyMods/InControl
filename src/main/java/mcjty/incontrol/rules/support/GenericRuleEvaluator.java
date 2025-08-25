@@ -90,6 +90,8 @@ public class GenericRuleEvaluator {
         map.consume(MAXLIGHT, this::addMaxLightCheck);
         map.consume(MINLIGHT_FULL, this::addMinLightCheckCorrect);
         map.consume(MAXLIGHT_FULL, this::addMaxLightCheckCorrect);
+        map.consume(MINLIGHT_SKY, this::addMinLightCheckSky);
+        map.consume(MAXLIGHT_SKY, this::addMaxLightCheckSky);
 
         map.consume(MINDIFFICULTY, this::addMinAdditionalDifficultyCheck);
         map.consume(MAXDIFFICULTY, this::addMaxAdditionalDifficultyCheck);
@@ -761,6 +763,15 @@ public class GenericRuleEvaluator {
         });
     }
 
+    private void addMinLightCheckSky(int minlight) {
+        checks.add((event, query) -> {
+            BlockPos pos = query.getPos(event);
+            LevelAccessor world = query.getWorld(event);
+            if (TestingTools.isChunkInvalid(world, pos)) return false;
+            return world.getBrightness(LightLayer.SKY, pos) >= minlight;
+        });
+    }
+
     private void addMinLightCheckCorrect(int minlight) {
         checks.add((event, query) -> {
             BlockPos pos = query.getPos(event);
@@ -776,6 +787,15 @@ public class GenericRuleEvaluator {
             LevelAccessor world = query.getWorld(event);
             if (TestingTools.isChunkInvalid(world, pos)) return false;
             return world.getBrightness(LightLayer.BLOCK, pos) <= maxlight;
+        });
+    }
+
+    private void addMaxLightCheckSky(int maxlight) {
+        checks.add((event, query) -> {
+            BlockPos pos = query.getPos(event);
+            LevelAccessor world = query.getWorld(event);
+            if (TestingTools.isChunkInvalid(world, pos)) return false;
+            return world.getBrightness(LightLayer.SKY, pos) <= maxlight;
         });
     }
 

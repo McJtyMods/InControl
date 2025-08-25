@@ -25,6 +25,8 @@ public interface RuleKeys {
     Key<Integer> MAXLIGHT = Key.create(Type.INTEGER, "maxlight");
     Key<Integer> MINLIGHT_FULL = Key.create(Type.INTEGER, "minlight_full");
     Key<Integer> MAXLIGHT_FULL = Key.create(Type.INTEGER, "maxlight_full");
+    Key<Integer> MINLIGHT_SKY = Key.create(Type.INTEGER, "minlight_sky");
+    Key<Integer> MAXLIGHT_SKY = Key.create(Type.INTEGER, "maxlight_sky");
 
     Key<String> HEIGHT = Key.create(Type.STRING, "height");
     Key<Integer> MINHEIGHT = Key.create(Type.INTEGER, "minheight");
