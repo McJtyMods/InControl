@@ -182,6 +182,9 @@ public class SpawnerSystem {
                         entity = spawnable.create(world);
                     } else {
                         entity = mob.getEntity(world);
+                        if (entity == null) {
+                            return;
+                        }
                     }
                     entity.moveTo(pos.getX(), pos.getY(), pos.getZ(), random.nextFloat() * 360.0F, 0.0F);
                     boolean nocollisions = world.noCollision(entity.getBoundingBox());

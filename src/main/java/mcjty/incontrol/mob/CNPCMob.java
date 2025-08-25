@@ -11,6 +11,7 @@ import java.util.Objects;
 public class CNPCMob extends DefaultMob {
     private int cloneTab;
     private String cloneName;
+    private Entity cached;
 
     public CNPCMob(int cloneTab, String cloneName) {
         this.cloneName = cloneName;
@@ -50,10 +51,12 @@ public class CNPCMob extends DefaultMob {
     @Override
     public Entity getEntity(ServerLevel level) {
         if (ModSetup.customnpcs) {
-            return CustomNPCSupport.getNpcEntity(level, cloneTab, cloneName);
-        } else {
-            return null;
+            if (cached == null || cached.isAddedToWorld()) {
+                cached = CustomNPCSupport.getNpcEntity(level, cloneTab, cloneName);
+                return cached;
+            }
         }
+        return null;
     }
 
     @Override
