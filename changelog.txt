@@ -5,6 +5,7 @@ Upcoming:
 - Attempt to make parsing spawner.json more robust on foreign language systems
 - Thanks to Goodbird from CustomNPCs InControl now has support for CustomNPCs. You can use the 'npc' condition to test for NPCs and you can spawn npbs with spawner.json or events.json
 - New 'minlight_sky' and 'maxlight_sky' keywords to specifically test for skylight
+- Added new vertical 'cylinder' type for areas. x and z are the horizonal circumference and y is height
 
 1.21-10.1.4:
 - Fixed a problem with the 'mobsfrombiome' action in spawner

@@ -82,11 +82,11 @@ public record Area(ResourceKey<Level> dimension, String name, Type type, BlockPo
     }
 
     public boolean isInArea(int x, int y, int z) {
-        if (type == Type.BOX) {
-            return isInBox(x, y, z);
-        } else {
-            return isInEllipsoid(x, y, z);
-        }
+        return switch (type) {
+            case BOX -> isInBox(x, y, z);
+            case CYLINDER -> isInCylinder(x, y, z);
+            default -> isInEllipsoid(x, y, z);
+        };
     }
 
     private boolean isInBox(int x, int y, int z) {
@@ -96,6 +96,13 @@ public record Area(ResourceKey<Level> dimension, String name, Type type, BlockPo
         return dx <= dimx && dy <= dimy && dz <= dimz;
     }
 
+    private boolean isInCylinder(int x, int y, int z) {
+        int dx = Math.abs(x - center.getX());
+        int dy = Math.abs(y - center.getY());
+        int dz = Math.abs(z - center.getZ());
+        return (dx * dx) / (dimx * dimx) + (dz * dz) / (dimz * dimz) <= 1 && dy <= dimy;
+    }
+    
     private boolean isInEllipsoid(int x, int y, int z) {
         int dx = Math.abs(x - center.getX());
         int dy = Math.abs(y - center.getY());
@@ -104,7 +111,8 @@ public record Area(ResourceKey<Level> dimension, String name, Type type, BlockPo
     }
     enum Type {
         BOX,
-        SPHERE
+        SPHERE,
+        CYLINDER
     }
 
     public static class Builder {
