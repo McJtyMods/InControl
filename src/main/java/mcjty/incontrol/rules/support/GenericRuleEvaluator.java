@@ -36,6 +36,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.*;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
@@ -350,25 +351,59 @@ public class GenericRuleEvaluator {
     private void addMobsCheck(List<String> mobs) {
         if (mobs.size() == 1) {
             String id = mobs.get(0);
-            if (!ForgeRegistries.ENTITY_TYPES.containsKey(new ResourceLocation(id))) {
-                ErrorHandler.error("Unknown mob '" + id + "'!");
-            }
-            EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(new ResourceLocation(id));
-            if (type != null) {
-                checks.add((event, query) -> type.equals(query.getEntity(event).getType()));
+            if (id.startsWith("#")) {
+                TagKey<EntityType<?>> tagKey = TagKey.create(Registries.ENTITY_TYPE, new ResourceLocation(id.substring(1)));
+                checks.add((event, query) -> query.getEntity(event).getType().is(tagKey));
+            } else {
+                if (!ForgeRegistries.ENTITY_TYPES.containsKey(new ResourceLocation(id))) {
+                    ErrorHandler.error("Unknown mob '" + id + "'!");
+                }
+                EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(new ResourceLocation(id));
+                if (type != null) {
+                    checks.add((event, query) -> type.equals(query.getEntity(event).getType()));
+                }
             }
         } else {
             Set<EntityType> classes = new HashSet<>();
+            Set<TagKey<EntityType<?>>> tagKeys = new HashSet<>();
             for (String id : mobs) {
-                EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(new ResourceLocation(id));
-                if (type != null) {
-                    classes.add(type);
+                if (id.startsWith("#")) {
+                    TagKey<EntityType<?>> tagKey = TagKey.create(Registries.ENTITY_TYPE, new ResourceLocation(id.substring(1)));
+                    tagKeys.add(tagKey);
                 } else {
-                    ErrorHandler.error("Unknown mob '" + id + "'!");
+                    EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(new ResourceLocation(id));
+                    if (type != null) {
+                        classes.add(type);
+                    } else {
+                        ErrorHandler.error("Unknown mob '" + id + "'!");
+                    }
                 }
             }
-            if (!classes.isEmpty()) {
+            if (!classes.isEmpty() && tagKeys.isEmpty()) {
                 checks.add((event, query) -> classes.contains(query.getEntity(event).getType()));
+            } else if (!classes.isEmpty() && !tagKeys.isEmpty()) {
+                checks.add((event, query) -> {
+                    EntityType<?> entityType = query.getEntity(event).getType();
+                    if (classes.contains(entityType)) {
+                        return true;
+                    }
+                    for (TagKey<EntityType<?>> tagKey : tagKeys) {
+                        if (entityType.is(tagKey)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                });
+            } else if (classes.isEmpty() && !tagKeys.isEmpty()) {
+                checks.add((event, query) -> {
+                    EntityType<?> entityType = query.getEntity(event).getType();
+                    for (TagKey<EntityType<?>> tagKey : tagKeys) {
+                        if (entityType.is(tagKey)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                });
             }
         }
     }
