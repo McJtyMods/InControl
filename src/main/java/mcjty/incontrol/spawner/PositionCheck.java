@@ -40,6 +40,8 @@ public class PositionCheck {
         MAXLIGHT,
         MINLIGHT_FULL,
         MAXLIGHT_FULL,
+        MINLIGHT_SKY,
+        MAXLIGHT_SKY,
         BIOME,
         BIOMETAGS,
         SEESKY,
@@ -106,6 +108,14 @@ public class PositionCheck {
                 case MAXLIGHT -> {
                     final int maxlight = object.getAsJsonPrimitive("maxlight").getAsInt();
                     builder.extraCondition((level, pos, player) -> level.getBrightness(LightLayer.BLOCK, pos) <= maxlight);
+                }
+                case MINLIGHT_SKY -> {
+                    final int minlight = object.getAsJsonPrimitive("minlight_sky").getAsInt();
+                    builder.extraCondition((level, pos, player) -> level.getBrightness(LightLayer.SKY, pos) >= minlight);
+                }
+                case MAXLIGHT_SKY -> {
+                    final int maxlight = object.getAsJsonPrimitive("maxlight_sky").getAsInt();
+                    builder.extraCondition((level, pos, player) -> level.getBrightness(LightLayer.SKY, pos) <= maxlight);
                 }
                 case MINLIGHT_FULL -> {
                     final int minlight = object.getAsJsonPrimitive("minlight_full").getAsInt();
