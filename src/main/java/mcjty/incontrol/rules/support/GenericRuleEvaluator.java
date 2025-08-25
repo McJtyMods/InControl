@@ -352,25 +352,59 @@ public class GenericRuleEvaluator {
     private void addMobsCheck(List<String> mobs) {
         if (mobs.size() == 1) {
             String id = mobs.get(0);
-            if (!BuiltInRegistries.ENTITY_TYPE.containsKey(ResourceLocation.parse(id))) {
-                ErrorHandler.error("Unknown mob '" + id + "'!");
-            }
-            EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(ResourceLocation.parse(id));
-            if (type != null) {
-                checks.add((event, query) -> type.equals(query.getEntity(event).getType()));
+            if (id.startsWith("#")) {
+                TagKey<EntityType<?>> tagKey = TagKey.create(Registries.ENTITY_TYPE, ResourceLocation.parse(id.substring(1)));
+                checks.add((event, query) -> query.getEntity(event).getType().is(tagKey));
+            } else {
+                if (!BuiltInRegistries.ENTITY_TYPE.containsKey(ResourceLocation.parse(id))) {
+                    ErrorHandler.error("Unknown mob '" + id + "'!");
+                }
+                EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(ResourceLocation.parse(id));
+                if (type != null) {
+                    checks.add((event, query) -> type.equals(query.getEntity(event).getType()));
+                }
             }
         } else {
             Set<EntityType> classes = new HashSet<>();
+            Set<TagKey<EntityType<?>>> tagKeys = new HashSet<>();
             for (String id : mobs) {
-                EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(ResourceLocation.parse(id));
-                if (type != null) {
-                    classes.add(type);
+                if (id.startsWith("#")) {
+                    TagKey<EntityType<?>> tagKey = TagKey.create(Registries.ENTITY_TYPE, ResourceLocation.parse(id.substring(1)));
+                    tagKeys.add(tagKey);
                 } else {
-                    ErrorHandler.error("Unknown mob '" + id + "'!");
+                    EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(ResourceLocation.parse(id));
+                    if (type != null) {
+                        classes.add(type);
+                    } else {
+                        ErrorHandler.error("Unknown mob '" + id + "'!");
+                    }
                 }
             }
-            if (!classes.isEmpty()) {
+            if (!classes.isEmpty() && tagKeys.isEmpty()) {
                 checks.add((event, query) -> classes.contains(query.getEntity(event).getType()));
+            } else if (!classes.isEmpty() && !tagKeys.isEmpty()) {
+                checks.add((event, query) -> {
+                    EntityType<?> entityType = query.getEntity(event).getType();
+                    if (classes.contains(entityType)) {
+                        return true;
+                    }
+                    for (TagKey<EntityType<?>> tagKey : tagKeys) {
+                        if (entityType.is(tagKey)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                });
+            } else if (classes.isEmpty() && !tagKeys.isEmpty()) {
+                checks.add((event, query) -> {
+                    EntityType<?> entityType = query.getEntity(event).getType();
+                    for (TagKey<EntityType<?>> tagKey : tagKeys) {
+                        if (entityType.is(tagKey)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                });
             }
         }
     }

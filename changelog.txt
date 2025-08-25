@@ -7,6 +7,7 @@ Upcoming:
 - New 'minlight_sky' and 'maxlight_sky' keywords to specifically test for skylight
 - Also added 'minlight_sky' and 'maxlight_sky' to the spawner 'and' and 'not' blocks
 - Added new vertical 'cylinder' type for areas. x and z are the horizonal circumference and y is height
+- The 'mob' keyword for spawn.json now also understands mob tag id's (starting with '#')
 
 1.21-10.1.4:
 - Fixed a problem with the 'mobsfrombiome' action in spawner
