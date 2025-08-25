@@ -688,11 +688,13 @@ public class GenericRuleEvaluator {
                     for (int y = -matcher.distBelow(); y <= matcher.distAbove(); y++) {
                         if (y != 0) {
                             BlockPos checkPos = pos.offset(0, y, 0);
-                            if (matcher.matcher().test(world, checkPos)) {
-                                return true;
-                            }
-                            if (matcher.onlyAir() && !world.getBlockState(checkPos).isAir()) {
-                                break;
+                            if (checkPos.getY() >= world.getMinBuildHeight() && checkPos.getY() < world.getMaxBuildHeight()) {
+                                if (matcher.matcher().test(world, checkPos)) {
+                                    return true;
+                                }
+                                if (matcher.onlyAir() && !world.getBlockState(checkPos).isAir()) {
+                                    break;
+                                }
                             }
                         }
                     }
