@@ -45,6 +45,7 @@ public interface RuleKeys {
     Key<String> WEATHER = Key.create(Type.STRING, "weather");
     Key<String> DIFFICULTY = Key.create(Type.STRING, "difficulty");
     Key<String> BLOCK = Key.create(Type.JSON, "block");
+    Key<String> BLOCKTEST = Key.create(Type.JSON, "blocktest");
     Key<String> AREA = Key.create(Type.STRING, "area");
     Key<String> BLOCKOFFSET = Key.create(Type.JSON, "blockoffset");
     Key<String> BIOME = Key.create(Type.STRING, "biome");

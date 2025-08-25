@@ -103,6 +103,7 @@ public class GenericRuleEvaluator {
         map.consume(AREA, this::addAreaCheck);
 
         map.consumeAsList(BLOCK, b1 -> addBlocksCheck(map, b1));
+        map.consumeAsList(BLOCKTEST, b1 -> addBlockTestCheck(b1));
         map.consumeAsList(BIOME, this::addBiomesCheck);
 
         map.consumeAsList(HELMET, this::addHelmetCheck);
@@ -657,6 +658,37 @@ public class GenericRuleEvaluator {
                 Holder<Biome> biome = query.getWorld(event).getBiome(query.getPos(event));
                 String biomeId = Tools.getBiomeId(biome);
                 return biomenames.contains(biomeId);
+            });
+        }
+    }
+
+    private void addBlockTestCheck(List<String> blocks) {
+        List<TestingBlockTools.BlockMatcherWithSettings> matchers = new ArrayList<>();
+        for (String json : blocks) {
+            TestingBlockTools.BlockMatcherWithSettings matcher = TestingBlockTools.parseBlockWithSettings(json);
+            if (matcher != null) {
+                matchers.add(matcher);
+            }
+        }
+        if (!matchers.isEmpty()) {
+            checks.add((event, query) -> {
+                LevelAccessor world = query.getWorld(event);
+                BlockPos pos = query.getValidBlockPos(event);
+                if (TestingTools.isChunkInvalid(world, pos)) return false;
+                for (TestingBlockTools.BlockMatcherWithSettings matcher : matchers) {
+                    for (int y = -matcher.distBelow(); y <= matcher.distAbove(); y++) {
+                        if (y != 0) {
+                            BlockPos checkPos = pos.offset(0, y, 0);
+                            if (matcher.matcher().test(world, checkPos)) {
+                                return true;
+                            }
+                            if (matcher.onlyAir() && !world.getBlockState(checkPos).isAir()) {
+                                break;
+                            }
+                        }
+                    }
+                }
+                return false;
             });
         }
     }
