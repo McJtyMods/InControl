@@ -296,6 +296,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(AREA))
                 .attribute(Attribute.createMulti(BLOCK))
                 .attribute(Attribute.create(BLOCKOFFSET))
+                .attribute(Attribute.createMulti(BLOCKTEST))
                 .attribute(Attribute.createMulti(BIOME))
                 .attribute(Attribute.createMulti(BIOMETYPE))
                 .attribute(Attribute.createMulti(DIMENSION))

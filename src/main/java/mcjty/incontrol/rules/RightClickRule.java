@@ -128,6 +128,7 @@ public class RightClickRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(AREA))
                 .attribute(Attribute.createMulti(BLOCK))
                 .attribute(Attribute.create(BLOCKOFFSET))
+                .attribute(Attribute.createMulti(BLOCKTEST))
                 .attribute(Attribute.createMulti(HELMET))
                 .attribute(Attribute.createMulti(CHESTPLATE))
                 .attribute(Attribute.createMulti(LEGGINGS))

@@ -6,6 +6,7 @@ Upcoming:
 - Also added 'minlight_sky' and 'maxlight_sky' to the spawner 'and' and 'not' blocks
 - Added new vertical 'cylinder' type for areas. x and z are the horizonal circumference and y is height
 - The 'mob' keyword for spawn.json now also understands mob tag id's (starting with '#')
+- New 'blocktest' keyword which adds a much more flexible way to test for blocks above or under the spawn position
 
 1.20-9.3.3:
 - New 'command' action for events. This is a json array of commands that will be executed when the event happens

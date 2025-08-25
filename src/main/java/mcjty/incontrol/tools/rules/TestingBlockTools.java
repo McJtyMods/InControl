@@ -50,6 +50,37 @@ public class TestingBlockTools
         }
     }
 
+    public record BlockMatcherWithSettings(BiPredicate<LevelAccessor, BlockPos> matcher, int distBelow, int distAbove, boolean onlyAir) {
+
+    }
+
+    @Nullable
+    public static BlockMatcherWithSettings parseBlockWithSettings(String json) {
+        JsonParser parser = new JsonParser();
+        JsonElement element = parser.parse(json);
+        BiPredicate<LevelAccessor, BlockPos> matcher = parseBlockJson(element);
+        if (matcher == null) {
+            return null;
+        }
+
+        int distbelow = 1;
+        int distabove = 0;
+        boolean onlyAir = false;
+        if (element.isJsonObject()) {
+            JsonObject obj = element.getAsJsonObject();
+            if (obj.has("distbelow")) {
+                distbelow = obj.get("distbelow").getAsInt();
+            }
+            if (obj.has("distabove")) {
+                distabove = obj.get("distabove").getAsInt();
+            }
+            if (obj.has("onlyair")) {
+                onlyAir = obj.get("onlyair").getAsBoolean();
+            }
+        }
+        return new BlockMatcherWithSettings(matcher, distbelow, distabove, onlyAir);
+    }
+
     @Nullable
     public static BiPredicate<LevelAccessor, BlockPos> parseBlock(String json) {
         JsonParser parser = new JsonParser();
