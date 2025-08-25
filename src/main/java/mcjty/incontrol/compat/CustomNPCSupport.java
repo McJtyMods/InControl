@@ -1,5 +1,6 @@
 package mcjty.incontrol.compat;
 
+import mcjty.incontrol.ErrorHandler;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -15,7 +16,8 @@ public class CustomNPCSupport {
             entity.getPersistentData().putInt("InControlNatSpawnTab", cloneTab);
             entity.getPersistentData().putString("InControlNatSpawnName", cloneName);
             return entity;
-        }catch (Exception e){
+        } catch (Exception e) {
+            ErrorHandler.error("Error spawning NPC (" + e.getMessage() + ")");
             return null;
         }
     }
