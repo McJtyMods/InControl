@@ -6,6 +6,7 @@ import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import mcjty.incontrol.data.DataStorage;
 import mcjty.incontrol.tools.varia.Tools;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -15,6 +16,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.levelgen.structure.Structure;
@@ -45,6 +48,14 @@ public class CmdInfo implements Command<CommandSourceStack> {
                 player.sendSystemMessage(Component.literal(key.toString() + ": " + longs.size()));
             }
         }
+        int light = sw.getBrightness(LightLayer.BLOCK, pos);
+        int light_sky = sw.getBrightness(LightLayer.SKY, pos);
+        int light_full = sw.getMaxLocalRawBrightness(pos);
+        player.sendSystemMessage(Component.literal("Light: " + light + ", sky: " + light_sky + ", full: " + light_full));
+        DataStorage data = DataStorage.getData(sw);
+        player.sendSystemMessage(Component.literal("Current day is " + data.getDaycounter()));
+        long time = sw.getDayTime();
+        player.sendSystemMessage(Component.literal("Current time is " + time + " (daytime: " + (time % 24000) + ")"));
         return 0;
     }
 }
