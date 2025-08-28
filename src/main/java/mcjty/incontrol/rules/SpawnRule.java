@@ -292,6 +292,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(SPRING))
                 .attribute(Attribute.create(AUTUMN))
                 .attribute(Attribute.createMulti(MOB))
+                .attribute(Attribute.createMulti(NPC))
                 .attribute(Attribute.createMulti(MOD))
                 .attribute(Attribute.create(AREA))
                 .attribute(Attribute.createMulti(BLOCK))

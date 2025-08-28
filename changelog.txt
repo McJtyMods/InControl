@@ -1,3 +1,6 @@
+Upcoming:
+- Fixed the 'npc' keyword in spawn.json. It was broken
+
 1.20-9.4.0:
 - New 'ai' command for spawn.json to change the ai of mobs. This is currently still experimental
 - Attempt to make parsing spawner.json more robust on foreign language systems
