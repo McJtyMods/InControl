@@ -1,4 +1,4 @@
-Upcoming:
+1.20-9.4.1:
 - Fixed the 'npc' keyword in spawn.json. It was broken
 
 1.20-9.4.0:
