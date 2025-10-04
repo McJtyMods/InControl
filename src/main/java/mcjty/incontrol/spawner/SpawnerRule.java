@@ -168,7 +168,7 @@ public class SpawnerRule {
                         InControl.setup.getLogger().error("'mobsfrombiome' cannot be combined with manual mobs!");
                         throw new RuntimeException("'mobsfrombiome' cannot be combined with manual mobs!");
                     }
-                    String name = object.get("mobsfrombiome").getAsString().toLowerCase();
+                    String name = object.get("mobsfrombiome").getAsString().toUpperCase();
                     MobCategory classification = MobCategory.valueOf(name);
                     if (classification == null) {
                         InControl.setup.getLogger().error("Unknown classification " + name + "!");
