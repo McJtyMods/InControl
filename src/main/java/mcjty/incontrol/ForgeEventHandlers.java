@@ -12,13 +12,8 @@ import mcjty.incontrol.spawner.SpawnerSystem;
 import mcjty.incontrol.tools.varia.Tools;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.neoforged.bus.api.EventPriority;
@@ -34,11 +29,9 @@ import net.neoforged.neoforge.event.level.LevelEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
-import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.*;
-import java.util.function.Function;
-import java.util.function.Predicate;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ForgeEventHandlers {
 
@@ -285,35 +278,6 @@ public class ForgeEventHandlers {
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
-    public void onSummonAidEvent(FinalizeSpawnEvent event) {
-        if (event.getSpawnType() != MobSpawnType.REINFORCEMENT) {
-            return;
-        }
-        int i = 0;
-        for (SummonAidRule rule : RulesManager.getFilteredSummonAidRules(event.getLevel().getLevel())) {
-            if (rule.match(event)) {
-                MobSpawnEvent.SpawnPlacementCheck.Result result = rule.getResult();
-                if (debug) {
-                    Holder<Biome> biome = event.getLevel().getBiome(new BlockPos((int) event.getX(), (int) event.getY(), (int) event.getZ()));
-                    String biomeId = Tools.getBiomeId(biome);
-                    InControl.setup.getLogger().log(org.apache.logging.log4j.Level.INFO, "SummonAid " + i + ": " + result
-                            + " entity: " + event.getEntity().getName()
-                            + " y: " + event.getY()
-                            + " biome: " + biomeId);
-                }
-                if (result != MobSpawnEvent.SpawnPlacementCheck.Result.FAIL) {
-                    rule.action(event);
-                } else {
-                    event.setCanceled(true);
-                }
-                return;
-            }
-            i++;
-        }
-
-    }
-
-    @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onLivingExperienceDrop(LivingExperienceDropEvent event) {
         int i = 0;
         for (ExperienceRule rule : RulesManager.getFilteredExperienceRuiles(event.getEntity().level())) {
@@ -331,67 +295,6 @@ public class ForgeEventHandlers {
                     event.setCanceled(true);
                 }
                 return;
-            }
-            i++;
-        }
-    }
-
-    @SubscribeEvent(priority = EventPriority.LOWEST)
-    public void onLivingDrops(LivingDropsEvent event) {
-        Level world = event.getEntity().getCommandSenderWorld();
-        int i = 0;
-        for (LootRule rule : RulesManager.getFilteredLootRules(world)) {
-            if (rule.match(event)) {
-                if (debug) {
-                    InControl.setup.getLogger().log(org.apache.logging.log4j.Level.INFO, "Loot " + i + ": "
-                            + " entity: " + event.getEntity().getName());
-                }
-
-                if (rule.isRemoveAll()) {
-                    event.getDrops().clear();
-                } else {
-                    List<ItemEntity> toRemove = null;
-                    for (Predicate<ItemStack> stackTest : rule.getToRemoveItems()) {
-                        Collection<ItemEntity> drops = event.getDrops();
-                        for (ItemEntity drop : drops) {
-                            ItemStack stack = drop.getItem();
-                            if (stackTest.test(stack)) {
-                                if (toRemove == null) {
-                                    toRemove = new ArrayList<>();
-                                };
-                                toRemove.add(drop);
-                            }
-                        }
-                    }
-                    if (toRemove != null) {
-                        Collection<ItemEntity> drops = event.getDrops();
-                        for (ItemEntity entity : toRemove) {
-                            drops.remove(entity);
-                        }
-
-                    }
-                }
-
-                for (Pair<ItemStack, Function<Integer, Integer>> pair : rule.getToAddItems()) {
-                    ItemStack item = pair.getLeft();
-                    // @todo 1.21 is this correct?
-                    int fortune = (int) EnchantmentHelper.processEquipmentDropChance((ServerLevel) event.getEntity().level(), event.getEntity(), event.getSource(), 0.0f);
-                    int amount = pair.getValue().apply(fortune);
-                    BlockPos pos = event.getEntity().blockPosition();
-                    while (amount > item.getMaxStackSize()) {
-                        ItemStack copy = item.copy();
-                        copy.setCount(item.getMaxStackSize());
-                        amount -= item.getMaxStackSize();
-                        event.getDrops().add(new ItemEntity(world, pos.getX(), pos.getY(), pos.getZ(),
-                                copy));
-                    }
-                    if (amount > 0) {
-                        ItemStack copy = item.copy();
-                        copy.setCount(amount);
-                        event.getDrops().add(new ItemEntity(world, pos.getX(), pos.getY(), pos.getZ(),
-                                copy));
-                    }
-                }
             }
             i++;
         }

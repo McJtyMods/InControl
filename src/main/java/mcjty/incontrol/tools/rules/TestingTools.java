@@ -243,7 +243,6 @@ public class TestingTools {
         if (obj.has("nbt")) {
             List<Predicate<CompoundTag>> nbtMatchers = getNbtMatchers(obj);
             if (nbtMatchers != null) {
-                    // @todo 1.21 better system!
                 if (test == null) {
                     test = s -> nbtMatchers.stream().allMatch(p -> {
                         DataComponentPatch patch = s.getComponentsPatch();

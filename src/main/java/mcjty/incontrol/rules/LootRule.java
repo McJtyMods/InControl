@@ -3,7 +3,6 @@ package mcjty.incontrol.rules;
 import com.google.gson.JsonElement;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.DataResult;
-import com.mojang.serialization.JsonOps;
 import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.compat.ModRuleCompatibilityLayer;
@@ -28,7 +27,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
+import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -44,50 +44,53 @@ import static mcjty.incontrol.rules.support.RuleKeys.*;
 
 public class LootRule extends RuleBase<RuleBase.EventGetter> {
 
-    public static final IEventQuery<LivingDropsEvent> EVENT_QUERY = new IEventQuery<>() {
+    public static final IEventQuery<LootContext> EVENT_QUERY = new IEventQuery<>() {
         @Override
-        public Level getWorld(LivingDropsEvent o) {
-            return o.getEntity().getCommandSenderWorld();
+        public Level getWorld(LootContext o) {
+            return o.getLevel();
         }
 
         @Override
-        public BlockPos getPos(LivingDropsEvent o) {
-            return o.getEntity().blockPosition();
+        public BlockPos getPos(LootContext o) {
+            Entity entity = o.getParamOrNull(LootContextParams.THIS_ENTITY);
+            return entity == null ? null : entity.blockPosition();
         }
 
         @Override
-        public BlockPos getValidBlockPos(LivingDropsEvent o) {
-            return o.getEntity().blockPosition().below();
+        public BlockPos getValidBlockPos(LootContext o) {
+            Entity entity = o.getParamOrNull(LootContextParams.THIS_ENTITY);
+            return entity == null ? null : entity.blockPosition().below();
         }
 
         @Override
-        public int getY(LivingDropsEvent o) {
-            return o.getEntity().blockPosition().getY();
+        public int getY(LootContext o) {
+            Entity entity = o.getParamOrNull(LootContextParams.THIS_ENTITY);
+            return entity == null ? 0 : entity.blockPosition().getY();
         }
 
         @Override
-        public Entity getEntity(LivingDropsEvent o) {
-            return o.getEntity();
+        public Entity getEntity(LootContext o) {
+            return o.getParamOrNull(LootContextParams.THIS_ENTITY);
         }
 
         @Override
-        public DamageSource getSource(LivingDropsEvent o) {
-            return o.getSource();
+        public DamageSource getSource(LootContext o) {
+            return o.getParamOrNull(LootContextParams.DAMAGE_SOURCE);
         }
 
         @Override
-        public Entity getAttacker(LivingDropsEvent o) {
-            return o.getSource().getEntity();
+        public Entity getAttacker(LootContext o) {
+            return o.getParamOrNull(LootContextParams.ATTACKING_ENTITY);
         }
 
         @Override
-        public Player getPlayer(LivingDropsEvent o) {
-            Entity entity = o.getSource().getEntity();
+        public Player getPlayer(LootContext o) {
+            Entity entity = o.getParamOrNull(LootContextParams.ATTACKING_ENTITY);
             return entity instanceof Player ? (Player) entity : null;
         }
 
         @Override
-        public ItemStack getItem(LivingDropsEvent o) {
+        public ItemStack getItem(LootContext o) {
             return ItemStack.EMPTY;
         }
     };
@@ -299,7 +302,6 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
             } else {
                 if (nbtJson != null) {
                     try {
-                        // @todo 1.21 fix with better system?
                         CompoundTag tag = TagParser.parseTag(nbtJson);
                         DataResult<com.mojang.datafixers.util.Pair<DataComponentPatch, Tag>> decoded = DataComponentPatch.CODEC.decode(NbtOps.INSTANCE, tag);
                         stack.applyComponents(decoded.result().get().getFirst());
@@ -323,7 +325,7 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
         toRemoveItems.addAll(TestingTools.getItems(itemList));
     }
 
-    public boolean match(LivingDropsEvent event) {
+    public boolean match(LootContext event) {
         return ruleEvaluator.match(event, EVENT_QUERY);
     }
 }

@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class RulesManager {
@@ -25,9 +24,6 @@ public class RulesManager {
     private static List<SpawnRule> filteredRulesOnJoin = null;
     private static List<SpawnRule> filteredRulesFinalize = null;
     private static List<SpawnRule> filteredRulesDespawn = null;
-
-    private static final List<SummonAidRule> summonAidRules = new ArrayList<>();
-    private static List<SummonAidRule> filteredSummonAidRules = null;
 
     private static final List<LootRule> lootRules = new ArrayList<>();
     private static List<LootRule> filteredLootRules = null;
@@ -51,7 +47,6 @@ public class RulesManager {
 
     public static void reloadRules() {
         rules.clear();
-        summonAidRules.clear();
         lootRules.clear();
         experienceRules.clear();
         phaseRules.clear();
@@ -77,7 +72,6 @@ public class RulesManager {
         filteredRulesOnJoin = null;
         filteredRulesFinalize = null;
         filteredRulesDespawn = null;
-        filteredSummonAidRules = null;
         filteredLootRules = null;
         filteredExperienceRules = null;
         filteredEffectRules = null;
@@ -155,14 +149,6 @@ public class RulesManager {
         return correctList;
     }
 
-    public static List<SummonAidRule> getFilteredSummonAidRules(Level world) {
-        if (filteredSummonAidRules == null) {
-            Set<String> phases = DataStorage.getData(world).getPhases();
-            filteredSummonAidRules = summonAidRules.stream().filter(r -> phases.containsAll(r.getPhases())).collect(Collectors.toList());
-        }
-        return filteredSummonAidRules;
-    }
-
     public static List<LootRule> getFilteredLootRules(Level world) {
         if (filteredLootRules == null) {
             Set<String> phases = DataStorage.getData(world).getPhases();
@@ -191,7 +177,6 @@ public class RulesManager {
         }
 
         safeCall("spawn.json", () -> readRules(path, "spawn.json", SpawnRule::parse, rules));
-        safeCall("summonaid.json", () -> readRules(path, "summonaid.json", SummonAidRule::parse, summonAidRules));
         safeCall("loot.json", () -> readRules(path, "loot.json", LootRule::parse, lootRules));
         safeCall("experience.json", () -> readRules(path, "experience.json", ExperienceRule::parse, experienceRules));
         safeCall("phases.json", () -> readRules(path, "phases.json", PhaseRule::parse, phaseRules));

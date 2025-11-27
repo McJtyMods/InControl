@@ -88,7 +88,6 @@ public class Tools {
                 ErrorHandler.error("Error parsing NBT in '" + name + "'!");
                 return ItemStack.EMPTY;
             }
-            // @todo 1.21 check for better system
             DataResult<com.mojang.datafixers.util.Pair<DataComponentPatch, Tag>> decoded = DataComponentPatch.CODEC.decode(NbtOps.INSTANCE, nbt);
             DataComponentPatch patch = decoded.getOrThrow().getFirst();
             stack.applyComponents(patch);
@@ -106,7 +105,6 @@ public class Tools {
                 ErrorHandler.error("Error parsing NBT in '" + name + "'!");
                 return ItemStack.EMPTY;
             }
-            // @todo 1.21 check for better system
             DataResult<com.mojang.datafixers.util.Pair<DataComponentPatch, Tag>> decoded = DataComponentPatch.CODEC.decode(NbtOps.INSTANCE, nbt);
             DataComponentPatch patch = decoded.getOrThrow().getFirst();
             stack.applyComponents(patch);
@@ -143,7 +141,6 @@ public class Tools {
                 ErrorHandler.error("Error parsing json '" + nbt + "'!");
                 return ItemStack.EMPTY;
             }
-            // @todo 1.21 check for better system
             DataResult<com.mojang.datafixers.util.Pair<DataComponentPatch, Tag>> decoded = DataComponentPatch.CODEC.decode(NbtOps.INSTANCE, tag);
             DataComponentPatch patch = decoded.getOrThrow().getFirst();
             stack.applyComponents(patch);
