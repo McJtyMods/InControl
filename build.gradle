@@ -3,7 +3,7 @@ plugins {
     id 'eclipse'
     id 'idea'
     id 'maven-publish'
-    id "com.modrinth.minotaur" version "2.8.8"
+    id "com.modrinth.minotaur" version "2.+"
     id "com.matthewprenger.cursegradle" version "1.4.0"
     id 'net.neoforged.gradle.userdev' version '7.1.4'
 }
