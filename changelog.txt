@@ -1,4 +1,4 @@
-Upcoming:
+1.21-10.2.0:
 - Fixed loot handling. It was 100% broken before
 - Removed summonaid.json. It's obsolete since you can now test for spawntype
 - New 'ai' command for spawn.json to change the ai of mobs. This is currently still experimental
