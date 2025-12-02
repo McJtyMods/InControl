@@ -28,13 +28,13 @@ import java.util.function.Predicate;
 
 import static mcjty.incontrol.ForgeEventHandlers.debug;
 
-public class InControlLoodModifier extends LootModifier {
+public class InControlLootModifier extends LootModifier {
 
-    public static final MapCodec<InControlLoodModifier> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+    public static final MapCodec<InControlLootModifier> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             LOOT_CONDITIONS_CODEC.fieldOf("conditions").forGetter(l -> l.conditions)
-    ).apply(instance, InControlLoodModifier::new));
+    ).apply(instance, InControlLootModifier::new));
 
-    public InControlLoodModifier(LootItemCondition[] conditionsIn) {
+    public InControlLootModifier(LootItemCondition[] conditionsIn) {
         super(conditionsIn);
     }
 
