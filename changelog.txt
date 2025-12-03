@@ -1,3 +1,6 @@
+1.20-9.4.2:
+- Changed the 'ai' system. Removed 'cleargoals' and 'cleartargets' and made them part of the goal/target array by using "removeall" there
+
 1.20-9.4.1:
 - Fixed the 'npc' keyword in spawn.json. It was broken
 

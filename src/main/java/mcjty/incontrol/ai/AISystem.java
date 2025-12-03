@@ -27,8 +27,6 @@ import java.util.function.Consumer;
 public class AISystem {
 
     enum Cmd {
-        CLEARGOALS,
-        CLEARTARGETS,
         GOALS,
         TARGETS
     }
@@ -75,12 +73,6 @@ public class AISystem {
             }
             JsonElement value = object.get(attr);
             switch (cmd) {
-                case CLEARGOALS:
-                    action = combineConsumer(action, e -> e.goalSelector.removeAllGoals(g -> true));
-                    break;
-                case CLEARTARGETS:
-                    action = combineConsumer(action, e -> e.targetSelector.removeAllGoals(g -> true));
-                    break;
                 case GOALS:
                     if (value.isJsonArray()) {
                         for (JsonElement el : value.getAsJsonArray()) {
@@ -164,6 +156,10 @@ public class AISystem {
             return (s, e) -> {};
         }
         JsonObject goal = el.getAsJsonObject();
+        // If it has the atttributes 'removeall' then we remove all goals in this action
+        if (goal.has("removeall")) {
+            return (s, e) -> e.goalSelector.removeAllGoals(g -> true);
+        }
         // It has the attributes 'goal' and 'priority'. Then specific attributes for the goal.
         if (!goal.has("goal") || !goal.has("priority")) {
             ErrorHandler.error("Invalid goal in 'goals' action! Expected 'goal' and 'priority' attributes.");
