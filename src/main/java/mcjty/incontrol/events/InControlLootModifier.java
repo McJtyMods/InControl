@@ -40,6 +40,10 @@ public class InControlLootModifier extends LootModifier {
 
     @Override
     protected @NotNull ObjectArrayList<ItemStack> doApply(ObjectArrayList<ItemStack> generatedLoot, LootContext context) {
+        Entity entity = context.getParamOrNull(LootContextParams.THIS_ENTITY);
+        if (entity == null) {
+            return generatedLoot;
+        }
         ServerLevel level = context.getLevel();
         int looting = 0;
         if (context.getParamOrNull(LootContextParams.ATTACKING_ENTITY) instanceof LivingEntity attacker) {
@@ -53,7 +57,6 @@ public class InControlLootModifier extends LootModifier {
         for (LootRule rule : RulesManager.getFilteredLootRules(level)) {
             if (rule.match(context)) {
                 if (debug) {
-                    Entity entity = context.getParam(LootContextParams.THIS_ENTITY);
                     InControl.setup.getLogger().log(org.apache.logging.log4j.Level.INFO, "Loot " + i + ": "
                             + " entity: " + entity.getName());
                 }

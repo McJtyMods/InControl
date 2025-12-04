@@ -362,7 +362,13 @@ public class GenericRuleEvaluator {
                 }
                 EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(ResourceLocation.parse(id));
                 if (type != null) {
-                    checks.add((event, query) -> type.equals(query.getEntity(event).getType()));
+                    checks.add((event, query) -> {
+                        Entity entity = query.getEntity(event);
+                        if (entity == null) {
+                            return false;
+                        }
+                        return type.equals(entity.getType());
+                    });
                 }
             }
         } else {
