@@ -368,7 +368,7 @@ public class SpawnerConditions {
         private int mindaycount = 0;
         private int maxdaycount = Integer.MAX_VALUE;
         private int minheight = -64;
-        private int maxheight = 256;
+        private int maxheight = 320;
         private boolean inLiquid = false;
         private boolean inWater = false;
         private boolean inLava = false;
