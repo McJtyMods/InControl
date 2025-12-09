@@ -1,3 +1,6 @@
+1.21-10.2.4:
+- TqLxQuanZ fixed a problem with customnpcs stopping spawning after spawning a few
+
 1.21-10.2.3:
 - Fixed another problem with loot
 
