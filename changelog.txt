@@ -1,3 +1,6 @@
+1.20-9.4.3:
+- TqLxQuanZ fixed a problem with customnpcs stopping spawning after spawning a few
+
 1.20-9.4.2:
 - Changed the 'ai' system. Removed 'cleargoals' and 'cleartargets' and made them part of the goal/target array by using "removeall" there
 

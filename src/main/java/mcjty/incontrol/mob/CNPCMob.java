@@ -53,8 +53,8 @@ public class CNPCMob extends DefaultMob {
         if (ModSetup.customnpcs) {
             if (cached == null || cached.isAddedToWorld()) {
                 cached = CustomNPCSupport.getNpcEntity(level, cloneTab, cloneName);
-                return cached;
             }
+            return cached;
         }
         return null;
     }
