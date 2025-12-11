@@ -6,13 +6,8 @@ import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.events.SpawnEventAction;
 import mcjty.incontrol.mob.DefaultMob;
-import mcjty.incontrol.rules.support.RuleKeys;
 import mcjty.incontrol.tools.rules.TestingTools;
-import mcjty.incontrol.tools.varia.Tools;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.text.Normalizer;
 import java.util.*;
