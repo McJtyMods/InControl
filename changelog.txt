@@ -1,3 +1,6 @@
+1.21-10.2.6:
+- Small bugfix when checking things based on nearest player
+
 1.21-10.2.5:
 - Fixed a problem with spawning NPC mobs
 - 'mindist' and 'maxdist' are now also supported for spawn.json. They will use the position to the closest player
