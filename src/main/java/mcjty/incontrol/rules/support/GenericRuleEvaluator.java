@@ -84,6 +84,8 @@ public class GenericRuleEvaluator {
         map.consume(DIFFICULTY, this::addDifficultyCheck);
         map.consume(MINSPAWNDIST, this::addMinSpawnDistCheck);
         map.consume(MAXSPAWNDIST, this::addMaxSpawnDistCheck);
+        map.consume(MINDIST, this::addMinDistCheck);
+        map.consume(MAXDIST, this::addMaxDistCheck);
 
         map.consume(LIGHT, this::addLightCheck);
         map.consume(MINLIGHT, this::addMinLightCheck);
@@ -787,6 +789,26 @@ public class GenericRuleEvaluator {
             } else {
                 return false;
             }
+        });
+    }
+
+    private void addMinDistCheck(float v) {
+        final float d = v * v;
+        checks.add((event, query) -> {
+            BlockPos pos = query.getPos(event);
+            Player player = query.getPlayer(event);
+            double sqdist = pos.distSqr(player.blockPosition());
+            return sqdist >= d;
+        });
+    }
+
+    private void addMaxDistCheck(float v) {
+        final float d = v * v;
+        checks.add((event, query) -> {
+            BlockPos pos = query.getPos(event);
+            Player player = query.getPlayer(event);
+            double sqdist = pos.distSqr(player.blockPosition());
+            return sqdist <= d;
         });
     }
 

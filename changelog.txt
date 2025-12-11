@@ -1,3 +1,7 @@
+Upcoming:
+- Fixed a problem with spawning NPC mobs
+- 'mindist' and 'maxdist' are now also supported for spawn.json. They will use the position to the closest player
+
 1.20-9.4.3:
 - TqLxQuanZ fixed a problem with customnpcs stopping spawning after spawning a few
 

@@ -51,7 +51,7 @@ public class CNPCMob extends DefaultMob {
     @Override
     public Entity getEntity(ServerLevel level) {
         if (ModSetup.customnpcs) {
-            if (cached == null || cached.isAddedToWorld()) {
+            if (cached == null || cached.isAddedToWorld() || cached.isRemoved()) {
                 cached = CustomNPCSupport.getNpcEntity(level, cloneTab, cloneName);
             }
             return cached;

@@ -35,6 +35,9 @@ public interface RuleKeys {
     Key<Float> MINSPAWNDIST = Key.create(Type.FLOAT, "minspawndist");
     Key<Float> MAXSPAWNDIST = Key.create(Type.FLOAT, "maxspawndist");
 
+    Key<Float> MINDIST = Key.create(Type.FLOAT, "mindist");
+    Key<Float> MAXDIST = Key.create(Type.FLOAT, "maxdist");
+
     Key<Float> MINDIFFICULTY = Key.create(Type.FLOAT, "mindifficulty");
     Key<Float> MAXDIFFICULTY = Key.create(Type.FLOAT, "maxdifficulty");
 
