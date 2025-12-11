@@ -794,6 +794,9 @@ public class GenericRuleEvaluator {
         checks.add((event, query) -> {
             BlockPos pos = query.getPos(event);
             Player player = query.getPlayer(event);
+            if (player == null) {
+                return true;
+            }
             double sqdist = pos.distSqr(player.blockPosition());
             return sqdist >= d;
         });
@@ -804,6 +807,9 @@ public class GenericRuleEvaluator {
         checks.add((event, query) -> {
             BlockPos pos = query.getPos(event);
             Player player = query.getPlayer(event);
+            if (player == null) {
+                return false;
+            }
             double sqdist = pos.distSqr(player.blockPosition());
             return sqdist <= d;
         });
