@@ -1,4 +1,4 @@
-Upcoming:
+1.20-9.4.4:
 - Fixed a problem with spawning NPC mobs
 - 'mindist' and 'maxdist' are now also supported for spawn.json. They will use the position to the closest player
 
