@@ -260,6 +260,8 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
 
                 .attribute(Attribute.create(MINDIFFICULTY))
                 .attribute(Attribute.create(MAXDIFFICULTY))
+                .attribute(Attribute.create(MINDIST))
+                .attribute(Attribute.create(MAXDIST))
                 .attribute(Attribute.create(MINSPAWNDIST))
                 .attribute(Attribute.create(MAXSPAWNDIST))
                 .attribute(Attribute.create(RANDOM))
