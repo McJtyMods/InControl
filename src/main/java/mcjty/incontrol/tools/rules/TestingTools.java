@@ -452,6 +452,9 @@ public class TestingTools {
         String number = object.get("name").getAsString();
         String expression = object.get("expression").getAsString();
         Predicate<Integer> test = Tools.parseExpression(expression);
+        if (test == null) {
+            return null;
+        }
         return new NumberResult(number, test);
     }
 

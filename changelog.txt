@@ -1,5 +1,6 @@
 1.21-10.2.6:
 - Small bugfix when checking things based on nearest player
+- Small bugfix in the 'number' test. It would crash the game if there was a wrong expression
 
 1.21-10.2.5:
 - Fixed a problem with spawning NPC mobs
