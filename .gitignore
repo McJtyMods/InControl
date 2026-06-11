@@ -36,3 +36,30 @@ gradle-app.setting
 
 # # Work around https://youtrack.jetbrains.com/issue/IDEA-116898
 # gradle/wrapper/gradle-wrapper.properties
+
+# Gradle/NeoForge generated output
+.gradle/
+build/
+out/
+bin/
+run/
+runs/
+logs/
+crash-reports/
+src/generated/resources/.cache/
+
+# IDE metadata
+.idea/
+*.iml
+*.ipr
+*.iws
+.classpath
+.project
+.settings/
+.metadata/
+*.launch
+
+# Local machine/config files
+local.properties
+.env
+.env.*
