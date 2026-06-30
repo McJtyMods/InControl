@@ -25,6 +25,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class RuleCache {
 
     private final Map<ResourceKey<Level>, CachePerWorld> caches = new HashMap<>();
@@ -83,6 +86,7 @@ public class RuleCache {
         return cache.getCountNeutral();
     }
 
+
     public int getCount(LevelAccessor world, EntityType entityType) {
         CachePerWorld cache = getOrCreateCache(world);
         return cache.getCount(entityType);
@@ -116,6 +120,16 @@ public class RuleCache {
         CountPerMod countPerMod = cache.getCountPerMod(mod);
         return countPerMod == null ? 0 : countPerMod.total;
     }
+
+//    public void registerSpawn(LevelAccessor world, EntityType entityType) {
+//        CachePerWorld cache = getOrCreateCache(world);
+//        cache.registerSpawn(entityType);
+//    }
+
+//    public void registerDespawn(LevelAccessor world, EntityType entityType) {
+//        CachePerWorld cache = getOrCreateCache(world);
+//        cache.registerDespawn(entityType);
+//    }
 
     // Since the counting with 'perlocal' is local and not global, we need new count functions.
     // We pass minChunks and maxChunks as well as we're gonna count the entities between those boundaries.
@@ -180,6 +194,7 @@ public class RuleCache {
         }
         return cache;
     }
+
 
     private static class CountPerMod {
         private int hostile;
