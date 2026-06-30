@@ -1,9 +1,20 @@
 package mcjty.incontrol.rules.support;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Predicate;
+
+import javax.annotation.Nullable;
+
+import org.apache.commons.lang3.StringUtils;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+
 import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.compat.CustomNPCSupport;
@@ -13,14 +24,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.LevelAccessor;
-import org.apache.commons.lang3.StringUtils;
-
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Predicate;
 
 class CountInfo {
     public int amount;
@@ -28,6 +31,11 @@ class CountInfo {
     public List<EntityType> entityTypes = new ArrayList<>();
     public boolean scaledPerPlayer = false;
     public boolean scaledPerChunk = false;
+    public boolean scaledPerLocal = false;
+    public int minLocalDist = 0;    // Value in blocks from where the perlocal rule will start counting mobs.
+    public int maxLocalDist = 120;  // Value in blocks to where the perlocal rule will count mobs. Defaults to 120 since its the default maxdist value for spawner rules.
+    public int minLocalChunks = 0;  // Converted value in chunks since the algorithm works with chunks and not blocks.
+    public int maxLocalChunks = 8;  // Math.floor(120 + 8 / 16).
     public boolean passive = false;
     public boolean hostile = false;
     public boolean all = false;
@@ -36,39 +44,83 @@ class CountInfo {
     public CountInfo() {
     }
 
+    // Converts the block distances (minLocalDist/maxLocalDist) into chunk radius distances and registers them in
+    // LocalDistanceRegistry so that RuleCache knows which PlayerDistanceMap instances to maintain.
+    private void computeLocalChunks() {
+        if (this.scaledPerLocal) {
+            this.minLocalChunks = (int) Math.floor((this.minLocalDist + 8.0) / 16.0) - 1;
+            this.maxLocalChunks = (int) Math.floor((this.maxLocalDist + 8.0) / 16.0);
+            LocalDistanceRegistry.register(this.minLocalChunks);
+            LocalDistanceRegistry.register(this.maxLocalChunks);
+        }
+    }
+
     public BiFunction<LevelAccessor, Entity, Integer> getCounter() {
         BiFunction<LevelAccessor, Entity, Integer> counter;
         if (mod != null) {
             if (hostile) {
-                counter = (world, entity) -> InControl.setup.cache.getCountPerModHostile(world, mod);
+                counter = scaledPerLocal
+                        ? (world, entity) -> InControl.setup.cache.getLocalCountPerModHostile(world, entity, mod, minLocalChunks, maxLocalChunks)
+                        : (world, entity) -> InControl.setup.cache.getCountPerModHostile(world, mod);
             } else if (passive) {
-                counter = (world, entity) -> InControl.setup.cache.getCountPerModPassive(world, mod);
+                counter = scaledPerLocal
+                        ? (world, entity) -> InControl.setup.cache.getLocalCountPerModPassive(world, entity, mod, minLocalChunks, maxLocalChunks)
+                        : (world, entity) -> InControl.setup.cache.getCountPerModPassive(world, mod);
             } else if (all) {
-                counter = (world, entity) -> InControl.setup.cache.getCountPerModAll(world, mod);
+                counter = scaledPerLocal
+                        ? (world, entity) -> InControl.setup.cache.getLocalCountPerModAll(world, entity, mod, minLocalChunks, maxLocalChunks)
+                        : (world, entity) -> InControl.setup.cache.getCountPerModAll(world, mod);
             } else {
-                counter = (world, entity) -> InControl.setup.cache.getCountPerMod(world, mod);
+                counter = scaledPerLocal
+                        ? (world, entity) -> InControl.setup.cache.getLocalCountPerMod(world, entity, mod, minLocalChunks, maxLocalChunks)
+                        : (world, entity) -> InControl.setup.cache.getCountPerMod(world, mod);
             }
         } else if (hostile) {
-            counter = (world, entity) -> InControl.setup.cache.getCountHostile(world);
+            counter = scaledPerLocal
+                    ? (world, entity) -> InControl.setup.cache.getLocalCountHostile(world, entity, minLocalChunks, maxLocalChunks)
+                    : (world, entity) -> InControl.setup.cache.getCountHostile(world);
         } else if (passive) {
-            counter = (world, entity) -> InControl.setup.cache.getCountPassive(world);
+            counter = scaledPerLocal
+                    ? (world, entity) -> InControl.setup.cache.getLocalCountPassive(world, entity, minLocalChunks, maxLocalChunks)
+                    : (world, entity) -> InControl.setup.cache.getCountPassive(world);
         } else if (all) {
-            counter = (world, entity) -> InControl.setup.cache.getCountAll(world);
+            counter = scaledPerLocal
+                    ? (world, entity) -> InControl.setup.cache.getLocalCountAll(world, entity, minLocalChunks, maxLocalChunks)
+                    : (world, entity) -> InControl.setup.cache.getCountAll(world);
         } else {
             List<EntityType> infoEntityType = entityTypes;
             if (infoEntityType.isEmpty()) {
                 if (ModSetup.customnpcs) {
-                    counter = (world, entity) -> CustomNPCSupport.isNPC(entity) ? InControl.setup.cache.getNpcCount(world, entity) : InControl.setup.cache.getCount(world, entity.getType());
+                    counter = scaledPerLocal
+                            ? (world, entity) -> CustomNPCSupport.isNPC(entity)
+                                    ? InControl.setup.cache.getLocalNpcCount(world, entity, minLocalChunks, maxLocalChunks)
+                                    : InControl.setup.cache.getLocalCount(world, entity, entity.getType(), minLocalChunks, maxLocalChunks)
+                            : (world, entity) -> CustomNPCSupport.isNPC(entity)
+                                    ? InControl.setup.cache.getNpcCount(world, entity)
+                                    : InControl.setup.cache.getCount(world, entity.getType());
                 } else {
-                    counter = (world, entity) -> InControl.setup.cache.getCount(world, entity.getType());
+                    counter = scaledPerLocal 
+                        ? (world, entity) -> InControl.setup.cache.getLocalCount(world, entity, entity.getType(), minLocalChunks, maxLocalChunks)
+                        : (world, entity) -> InControl.setup.cache.getCount(world, entity.getType());
                 }
             } else if (infoEntityType.size() == 1) {
-                counter = (world, entity) -> {
+                counter = scaledPerLocal 
+                ? (world, entity) -> {
+                    EntityType entityType = infoEntityType.get(0);
+                    return InControl.setup.cache.getLocalCount(world, entity, entityType, minLocalChunks, maxLocalChunks);
+                } : (world, entity) -> {
                     EntityType entityType = infoEntityType.get(0);
                     return InControl.setup.cache.getCount(world, entityType);
                 };
             } else {
-                counter = (world, entity) -> {
+                counter = scaledPerLocal 
+                ? (world, entity) -> {
+                    int amount = 0;
+                    for (EntityType cls : infoEntityType) {
+                        amount += InControl.setup.cache.getLocalCount(world, entity, cls, minLocalChunks, maxLocalChunks);
+                    }
+                    return amount;
+                } : (world, entity) -> {
                     int amount = 0;
                     for (EntityType cls : infoEntityType) {
                         amount += InControl.setup.cache.getCount(world, cls);
@@ -155,6 +207,15 @@ class CountInfo {
             if (obj.has("perchunk")) {
                 info.setScaledPerChunk(obj.get("perchunk").getAsBoolean());
             }
+            if (obj.has("perlocal")) {
+                info.setScaledPerLocal(obj.get("perlocal").getAsBoolean());
+            }
+            if (obj.has("minlocaldist")) {
+                info.setMinLocalDist(obj.get("minlocaldist").getAsInt());
+            }
+            if (obj.has("maxlocaldist")) {
+                info.setMaxLocalDist(obj.get("maxlocaldist").getAsInt());
+            }
             if (obj.has("passive")) {
                 info.setPassive(obj.get("passive").getAsBoolean());
             }
@@ -169,6 +230,7 @@ class CountInfo {
                 ErrorHandler.error(error);
                 return null;
             }
+            info.computeLocalChunks();
             return info;
         } else {
             ErrorHandler.error("Count description '" + json + "' is not valid!");
@@ -212,6 +274,21 @@ class CountInfo {
         return this;
     }
 
+    public CountInfo setScaledPerLocal(boolean scaledPerLocal) {
+        this.scaledPerLocal = scaledPerLocal;
+        return this;
+    }
+
+    public CountInfo setMinLocalDist(int minLocalDist) {
+        this.minLocalDist = minLocalDist;
+        return this;
+    }
+
+    public CountInfo setMaxLocalDist(int maxLocalDist) {
+        this.maxLocalDist = maxLocalDist;
+        return this;
+    }
+
     public CountInfo setAll(boolean all) {
         this.all = all;
         return this;
@@ -235,6 +312,24 @@ class CountInfo {
     public String validate() {
         if (scaledPerPlayer && scaledPerChunk) {
             return "You cannot combine 'perchunk' and 'perplayer'!";
+        }
+        if (scaledPerPlayer && scaledPerLocal) {
+            return "You cannot combine 'perlocal' and 'perplayer'!";
+        }
+        if (scaledPerLocal && scaledPerChunk) {
+            return "You cannot combine 'perchunk' and 'perlocal'!";
+        }
+        if (minLocalDist < 0) {
+            return "'minlocaldist' cannot be negative!";
+        }
+        if (maxLocalDist <= 0) {
+            return "'maxlocaldist' must be positive!";
+        }
+        if (minLocalDist >= maxLocalDist) {
+            return "'minlocaldist' must be smaller than 'maxlocaldist'!";
+        }
+        if ((minLocalDist != 0 || maxLocalDist != 120) && !scaledPerLocal) {
+            return "'minlocaldist'/'maxlocaldist' only make sense together with 'perlocal: true'!";
         }
         if (mod != null && !entityTypes.isEmpty()) {
             return "You cannot combine 'mod' with 'mob'!";
