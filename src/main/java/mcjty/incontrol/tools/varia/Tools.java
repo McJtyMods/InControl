@@ -87,6 +87,11 @@ public class Tools {
             stack.setTag(nbt);
             return stack;
         } else if (name.contains("/")) {
+            // Some mods register item id's with / in them (like tfc). So we first check if the entire string is valid as an item
+            ItemStack st = parseStackNoNBT(name);
+            if (!st.isEmpty()) {
+                return st;
+            }
             int idx = name.indexOf('/');
             ItemStack stack = parseStackNoNBT(name.substring(0, idx));
             if (stack.isEmpty()) {

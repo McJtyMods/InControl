@@ -1,3 +1,6 @@
+1.20-9.4.7:
+- Fixed tfc items not being recognized because they contain a '/'
+
 1.20-9.4.6:
 - Small bugfix in the 'number' test. It would crash the game if there was a wrong expression
 
