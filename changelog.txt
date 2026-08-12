@@ -1,3 +1,6 @@
+1.21-10.2.7:
+- Fixed tfc items not being recognized because they contain a '/'
+
 1.21-10.2.6:
 - Small bugfix when checking things based on nearest player
 - Small bugfix in the 'number' test. It would crash the game if there was a wrong expression
