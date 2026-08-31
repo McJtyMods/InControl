@@ -1,0 +1,4 @@
+// Keep this checkout usable as its own Gradle build. When it is included from
+// the McTech20 multi-project build, that build's settings.gradle remains in
+// control and this file is intentionally ignored by Gradle.
+rootProject.name = 'InControl'
