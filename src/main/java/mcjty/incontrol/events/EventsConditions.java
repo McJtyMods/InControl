@@ -3,6 +3,7 @@ package mcjty.incontrol.events;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import mcjty.incontrol.ErrorHandler;
+import mcjty.incontrol.compat.KubeJSSupport;
 import mcjty.incontrol.tools.rules.TestingTools;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -10,6 +11,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 
 import java.util.*;
+import java.util.function.BooleanSupplier;
 import java.util.function.Predicate;
 
 public class EventsConditions {
@@ -18,6 +20,7 @@ public class EventsConditions {
     private final float random;
     private final Set<String> phases;
     private final Map<String, Predicate<Integer>> numbers;
+    private final BooleanSupplier kubejs;
 
     public static final EventsConditions DEFAULT = EventsConditions.create().build();
 
@@ -25,7 +28,8 @@ public class EventsConditions {
         DIMENSION,
         RANDOM,
         PHASE,
-        NUMBER
+        NUMBER,
+        KUBEJS
     }
 
     private static final Map<String, Cmd> CONDITIONS = new HashMap<>();
@@ -41,6 +45,7 @@ public class EventsConditions {
         random = builder.random;
         phases = builder.phases;
         numbers = builder.numbers;
+        kubejs = builder.kubejs;
     }
 
     public void validate() {
@@ -63,6 +68,10 @@ public class EventsConditions {
 
     public Map<String, Predicate<Integer>> getNumbers() {
         return numbers;
+    }
+
+    public boolean matchesKubeJS() {
+        return kubejs.getAsBoolean();
     }
 
     public static Builder create() {
@@ -119,6 +128,7 @@ public class EventsConditions {
                         }
                     }
                 }
+                case KUBEJS -> builder.kubejs(KubeJSSupport.parse(object.get(attr)));
             }
         }
     }
@@ -128,6 +138,7 @@ public class EventsConditions {
         private float random = -1;
         private final Set<String> phases = new HashSet<>();
         private final Map<String, Predicate<Integer>> numbers = new HashMap<>();
+        private BooleanSupplier kubejs = () -> true;
 
         public Builder dimensions(ResourceKey<Level>... dimensions) {
             Collections.addAll(this.dimensions, dimensions);
@@ -146,6 +157,11 @@ public class EventsConditions {
 
         public Builder number(String name, Predicate<Integer> predicate) {
             numbers.put(name, predicate);
+            return this;
+        }
+
+        public Builder kubejs(BooleanSupplier kubejs) {
+            this.kubejs = kubejs;
             return this;
         }
 

@@ -7,6 +7,7 @@ import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.areas.Area;
 import mcjty.incontrol.areas.AreaSystem;
 import mcjty.incontrol.compat.ModRuleCompatibilityLayer;
+import mcjty.incontrol.compat.KubeJSSupport;
 import mcjty.incontrol.data.DataStorage;
 import mcjty.incontrol.events.EventsSystem;
 import mcjty.incontrol.mob.CNPCMob;
@@ -78,6 +79,7 @@ public class GenericRuleEvaluator {
 
         map.consumeAsList(SOURCE, this::addSourceCheck);
         map.consumeAsList(MOD, this::addModsCheck);
+        map.consumeAsList(KUBEJS, this::addKubeJSCheck);
 
         map.consume(WEATHER, this::addWeatherCheck);
         map.consumeAsList(BIOMETAGS, this::addBiomeTagCheck);
@@ -196,6 +198,11 @@ public class GenericRuleEvaluator {
                 return result.test().test(data.getNumber(result.number()));
             });
         }
+    }
+
+    private void addKubeJSCheck(List<String> conditions) {
+        BooleanSupplier check = KubeJSSupport.parse(conditions);
+        checks.add((event, query) -> check.getAsBoolean());
     }
 
     private void addCanSpawnHereCheck(boolean c) {

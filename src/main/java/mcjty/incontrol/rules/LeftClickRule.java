@@ -80,6 +80,7 @@ public class LeftClickRule extends RuleBase<RuleBase.EventGetter> {
         FACTORY
                 .attribute(Attribute.createMulti(PHASE))
                 .attribute(Attribute.create(NUMBER))
+                .attribute(Attribute.createMulti(KUBEJS))
 
                 .attribute(Attribute.create(MINTIME))
                 .attribute(Attribute.create(MAXTIME))

@@ -30,6 +30,14 @@ archivesBaseName = "incontrol"
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 repos()
+repositories {
+    maven {
+        url = "https://maven.saps.dev/releases"
+        content {
+            includeGroup "dev.latvian.mods"
+        }
+    }
+}
 runs('incontrol')
 jars('incontrol')
 
@@ -44,7 +52,15 @@ dependencies {
     lostcities()
     gamestages()
     sereneseasons()
+    compileOnly("dev.latvian.mods:kubejs-forge:2001.6.5-build.26") {
+        transitive = false
+    }
     implementation fg.deobf("curse.maven:customnpcs-unofficial-1052708:6866598")
+    testImplementation "org.junit.jupiter:junit-jupiter:5.10.2"
+}
+
+test {
+    useJUnitPlatform()
 }
 
 modpublisher(['game-stages', 'the-lost-cities'], [], ['the-lost-cities'], [], [])

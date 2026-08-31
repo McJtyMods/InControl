@@ -86,6 +86,7 @@ public interface RuleKeys {
     Key<String> MULTIBUILDING = Key.create(Type.STRING, "multibuilding");
 
     Key<String> GAMESTAGE = Key.create(Type.STRING, "gamestage");
+    Key<String> KUBEJS = Key.create(Type.JSON, "kubejs");
 
     Key<Boolean> SUMMER = Key.create(Type.BOOLEAN, "summer");
     Key<Boolean> WINTER = Key.create(Type.BOOLEAN, "winter");

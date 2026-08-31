@@ -232,6 +232,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
                 .attribute(Attribute.create(WHEN))
                 .attribute(Attribute.createMulti(PHASE))
                 .attribute(Attribute.create(NUMBER))
+                .attribute(Attribute.createMulti(KUBEJS))
 
                 .attribute(Attribute.create(TIME))
                 .attribute(Attribute.create(MINTIME))

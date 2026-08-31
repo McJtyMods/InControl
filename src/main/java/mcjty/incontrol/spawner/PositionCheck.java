@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.compat.GameStageSupport;
+import mcjty.incontrol.compat.KubeJSSupport;
 import mcjty.incontrol.compat.LostCitySupport;
 import mcjty.incontrol.compat.SereneSeasonsSupport;
 import mcjty.incontrol.rules.support.GenericRuleEvaluator;
@@ -57,6 +58,7 @@ public class PositionCheck {
         INSTREET,
         INSPHERE,
         GAMESTAGE,
+        KUBEJS,
         SUMMER,
         WINTER,
         SPRING,
@@ -330,6 +332,10 @@ public class PositionCheck {
                         final String gamestage = value.getAsString();
                         builder.extraCondition((level, pos, player) -> GameStageSupport.hasGameStage(player, gamestage));
                     }
+                }
+                case KUBEJS -> {
+                    var check = KubeJSSupport.parse(object.get(attr));
+                    builder.extraCondition((level, pos, player) -> check.getAsBoolean());
                 }
                 case SUMMER -> {
                     if (!ModSetup.sereneSeasons) {

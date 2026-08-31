@@ -96,6 +96,7 @@ public class SummonAidRule extends RuleBase<SummonEventGetter> {
         FACTORY
                 .attribute(Attribute.createMulti(PHASE))
                 .attribute(Attribute.create(NUMBER))
+                .attribute(Attribute.createMulti(KUBEJS))
 
                 .attribute(Attribute.create(TIME))
                 .attribute(Attribute.create(MINTIME))
