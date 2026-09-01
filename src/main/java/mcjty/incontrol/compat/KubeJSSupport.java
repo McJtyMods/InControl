@@ -3,24 +3,26 @@ package mcjty.incontrol.compat;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import dev.latvian.mods.kubejs.BuiltinKubeJSPlugin;
+import dev.latvian.mods.kubejs.core.WithPersistentData;
 import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.setup.ModSetup;
 import mcjty.incontrol.tools.varia.JSonTools;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.server.MinecraftServer;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.function.BooleanSupplier;
+import java.util.function.Predicate;
 
 public class KubeJSSupport {
 
-    private static final BooleanSupplier NEVER = () -> false;
+    private static final Predicate<MinecraftServer> NEVER = server -> false;
 
     private KubeJSSupport() {
     }
 
-    public static BooleanSupplier parse(JsonElement element) {
+    public static Predicate<MinecraftServer> parse(JsonElement element) {
         if (!ModSetup.kubejs) {
             ErrorHandler.error("KubeJS condition specified but KubeJS is not loaded!");
             return NEVER;
@@ -39,10 +41,10 @@ public class KubeJSSupport {
             ErrorHandler.error("KubeJS condition needs at least one variable check!");
             return NEVER;
         }
-        return () -> matches(BuiltinKubeJSPlugin.GLOBAL, conditions);
+        return server -> server != null && matches(((WithPersistentData) server).kjs$getPersistentData(), conditions);
     }
 
-    public static BooleanSupplier parse(List<String> elements) {
+    public static Predicate<MinecraftServer> parse(List<String> elements) {
         if (!ModSetup.kubejs) {
             ErrorHandler.error("KubeJS condition specified but KubeJS is not loaded!");
             return NEVER;
@@ -62,7 +64,7 @@ public class KubeJSSupport {
             ErrorHandler.error("KubeJS condition needs at least one variable check!");
             return NEVER;
         }
-        return () -> matches(BuiltinKubeJSPlugin.GLOBAL, conditions);
+        return server -> server != null && matches(((WithPersistentData) server).kjs$getPersistentData(), conditions);
     }
 
     static VariableCondition parseCondition(JsonElement element) {
@@ -158,9 +160,9 @@ public class KubeJSSupport {
         };
     }
 
-    static boolean matches(Map<String, Object> variables, List<VariableCondition> conditions) {
+    static boolean matches(CompoundTag variables, List<VariableCondition> conditions) {
         for (VariableCondition condition : conditions) {
-            if (!condition.matches(variables.get(condition.variable()))) {
+            if (!condition.matches(variables)) {
                 return false;
             }
         }
@@ -170,33 +172,29 @@ public class KubeJSSupport {
     interface VariableCondition {
         String variable();
 
-        boolean matches(Object actual);
+        boolean matches(CompoundTag variables);
     }
 
     record BooleanCondition(String variable, boolean expected) implements VariableCondition {
         @Override
-        public boolean matches(Object actual) {
-            return actual instanceof Boolean value && value == expected;
+        public boolean matches(CompoundTag variables) {
+            return variables.contains(variable, Tag.TAG_BYTE) && variables.getBoolean(variable) == expected;
         }
     }
 
     record IntegerCondition(String variable, String operator, int expected) implements VariableCondition {
         @Override
-        public boolean matches(Object actual) {
-            if (!(actual instanceof Number value)) {
-                return false;
-            }
-            return compare(value.doubleValue(), operator, expected);
+        public boolean matches(CompoundTag variables) {
+            return variables.contains(variable, Tag.TAG_ANY_NUMERIC)
+                    && compare(variables.getDouble(variable), operator, expected);
         }
     }
 
     record DoubleCondition(String variable, String operator, double expected) implements VariableCondition {
         @Override
-        public boolean matches(Object actual) {
-            if (!(actual instanceof Number value)) {
-                return false;
-            }
-            return compare(value.doubleValue(), operator, expected);
+        public boolean matches(CompoundTag variables) {
+            return variables.contains(variable, Tag.TAG_ANY_NUMERIC)
+                    && compare(variables.getDouble(variable), operator, expected);
         }
     }
 

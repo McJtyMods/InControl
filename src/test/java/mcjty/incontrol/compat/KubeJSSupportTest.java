@@ -1,11 +1,10 @@
 package mcjty.incontrol.compat;
 
 import com.google.gson.JsonParser;
+import net.minecraft.nbt.CompoundTag;
 import org.junit.jupiter.api.Test;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -20,49 +19,68 @@ class KubeJSSupportTest {
         var integer = KubeJSSupport.parseCondition(parser.parse("{\"variable\":\"Amount\",\"condition\":\">=\",\"int\":5}"));
         var decimal = KubeJSSupport.parseCondition(parser.parse("{\"variable\":\"Ratio\",\"condition\":\"<\",\"double\":2.5}"));
 
-        assertTrue(bool.matches(true));
-        assertTrue(integer.matches(5.0D));
-        assertTrue(decimal.matches(2.25D));
+        CompoundTag variables = new CompoundTag();
+        variables.putBoolean("Potato", true);
+        variables.putInt("Amount", 5);
+        variables.putDouble("Ratio", 2.25D);
+
+        assertTrue(bool.matches(variables));
+        assertTrue(integer.matches(variables));
+        assertTrue(decimal.matches(variables));
     }
 
     @Test
-    void matchesBooleanVariablesByTypeAndValue() {
-        var condition = new KubeJSSupport.BooleanCondition("Potato", true);
+    void matchesBooleanStoredInServerPersistentData() {
+        var condition = new KubeJSSupport.BooleanCondition("extremeMode", true);
+        CompoundTag persistentData = new CompoundTag();
 
-        assertTrue(condition.matches(true));
-        assertFalse(condition.matches(false));
-        assertFalse(condition.matches(1));
-        assertFalse(condition.matches(null));
+        persistentData.putBoolean("extremeMode", true);
+        assertTrue(condition.matches(persistentData));
+
+        persistentData.putBoolean("extremeMode", false);
+        assertFalse(condition.matches(persistentData));
+
+        persistentData.putInt("extremeMode", 1);
+        assertFalse(condition.matches(persistentData));
+
+        persistentData.remove("extremeMode");
+        assertFalse(condition.matches(persistentData));
     }
 
     @Test
     void supportsAllIntegerOperatorsForAnyNumberType() {
-        assertTrue(new KubeJSSupport.IntegerCondition("Amount", ">=", 5).matches(5.0D));
-        assertTrue(new KubeJSSupport.IntegerCondition("Amount", ">", 5).matches(6L));
-        assertTrue(new KubeJSSupport.IntegerCondition("Amount", "<=", 5).matches(5F));
-        assertTrue(new KubeJSSupport.IntegerCondition("Amount", "<", 5).matches(4));
-        assertTrue(new KubeJSSupport.IntegerCondition("Amount", "=", 5).matches(5.0D));
-        assertTrue(new KubeJSSupport.IntegerCondition("Amount", "==", 5).matches(5));
-        assertTrue(new KubeJSSupport.IntegerCondition("Amount", "!=", 5).matches(6));
-        assertTrue(new KubeJSSupport.IntegerCondition("Amount", "<>", 5).matches(6));
-        assertFalse(new KubeJSSupport.IntegerCondition("Amount", ">=", 5).matches("5"));
+        assertTrue(new KubeJSSupport.IntegerCondition("Amount", ">=", 5).matches(number("Amount", 5.0D)));
+        assertTrue(new KubeJSSupport.IntegerCondition("Amount", ">", 5).matches(number("Amount", 6L)));
+        assertTrue(new KubeJSSupport.IntegerCondition("Amount", "<=", 5).matches(number("Amount", 5F)));
+        assertTrue(new KubeJSSupport.IntegerCondition("Amount", "<", 5).matches(number("Amount", 4)));
+        assertTrue(new KubeJSSupport.IntegerCondition("Amount", "=", 5).matches(number("Amount", 5.0D)));
+        assertTrue(new KubeJSSupport.IntegerCondition("Amount", "==", 5).matches(number("Amount", 5)));
+        assertTrue(new KubeJSSupport.IntegerCondition("Amount", "!=", 5).matches(number("Amount", 6)));
+        assertTrue(new KubeJSSupport.IntegerCondition("Amount", "<>", 5).matches(number("Amount", 6)));
+
+        CompoundTag nonNumeric = new CompoundTag();
+        nonNumeric.putString("Amount", "5");
+        assertFalse(new KubeJSSupport.IntegerCondition("Amount", ">=", 5).matches(nonNumeric));
     }
 
     @Test
     void comparesDoubleValuesWithoutIntegerTruncation() {
         var condition = new KubeJSSupport.DoubleCondition("Ratio", ">=", 5.25D);
 
-        assertTrue(condition.matches(5.25D));
-        assertTrue(condition.matches(5.5F));
-        assertFalse(condition.matches(5.2D));
-        assertFalse(condition.matches("5.25"));
+        assertTrue(condition.matches(number("Ratio", 5.25D)));
+        assertTrue(condition.matches(number("Ratio", 5.5F)));
+        assertFalse(condition.matches(number("Ratio", 5.2D)));
+
+        CompoundTag nonNumeric = new CompoundTag();
+        nonNumeric.putString("Ratio", "5.25");
+        assertFalse(condition.matches(nonNumeric));
     }
 
     @Test
     void requiresEveryVariableConditionToMatch() {
-        Map<String, Object> variables = new HashMap<>();
-        variables.put("Potato", true);
-        variables.put("Amount", 5.0D);
+        CompoundTag variables = new CompoundTag();
+        variables.putBoolean("Potato", true);
+        variables.putDouble("Amount", 5.0D);
         List<KubeJSSupport.VariableCondition> conditions = List.of(
                 new KubeJSSupport.BooleanCondition("Potato", true),
                 new KubeJSSupport.IntegerCondition("Amount", ">=", 5));
@@ -71,5 +89,19 @@ class KubeJSSupportTest {
 
         variables.remove("Amount");
         assertFalse(KubeJSSupport.matches(variables, conditions));
+    }
+
+    private static CompoundTag number(String variable, Number value) {
+        CompoundTag variables = new CompoundTag();
+        if (value instanceof Integer integer) {
+            variables.putInt(variable, integer);
+        } else if (value instanceof Long longValue) {
+            variables.putLong(variable, longValue);
+        } else if (value instanceof Float floatValue) {
+            variables.putFloat(variable, floatValue);
+        } else {
+            variables.putDouble(variable, value.doubleValue());
+        }
+        return variables;
     }
 }

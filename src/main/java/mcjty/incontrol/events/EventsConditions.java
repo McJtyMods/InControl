@@ -8,10 +8,10 @@ import mcjty.incontrol.tools.rules.TestingTools;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.Level;
 
 import java.util.*;
-import java.util.function.BooleanSupplier;
 import java.util.function.Predicate;
 
 public class EventsConditions {
@@ -20,7 +20,7 @@ public class EventsConditions {
     private final float random;
     private final Set<String> phases;
     private final Map<String, Predicate<Integer>> numbers;
-    private final BooleanSupplier kubejs;
+    private final Predicate<MinecraftServer> kubejs;
 
     public static final EventsConditions DEFAULT = EventsConditions.create().build();
 
@@ -70,8 +70,8 @@ public class EventsConditions {
         return numbers;
     }
 
-    public boolean matchesKubeJS() {
-        return kubejs.getAsBoolean();
+    public boolean matchesKubeJS(MinecraftServer server) {
+        return kubejs.test(server);
     }
 
     public static Builder create() {
@@ -138,7 +138,7 @@ public class EventsConditions {
         private float random = -1;
         private final Set<String> phases = new HashSet<>();
         private final Map<String, Predicate<Integer>> numbers = new HashMap<>();
-        private BooleanSupplier kubejs = () -> true;
+        private Predicate<MinecraftServer> kubejs = server -> true;
 
         public Builder dimensions(ResourceKey<Level>... dimensions) {
             Collections.addAll(this.dimensions, dimensions);
@@ -160,7 +160,7 @@ public class EventsConditions {
             return this;
         }
 
-        public Builder kubejs(BooleanSupplier kubejs) {
+        public Builder kubejs(Predicate<MinecraftServer> kubejs) {
             this.kubejs = kubejs;
             return this;
         }

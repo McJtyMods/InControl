@@ -335,7 +335,7 @@ public class PositionCheck {
                 }
                 case KUBEJS -> {
                     var check = KubeJSSupport.parse(object.get(attr));
-                    builder.extraCondition((level, pos, player) -> check.getAsBoolean());
+                    builder.extraCondition((level, pos, player) -> check.test(level.getServer()));
                 }
                 case SUMMER -> {
                     if (!ModSetup.sereneSeasons) {

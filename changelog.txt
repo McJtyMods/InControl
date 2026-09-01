@@ -1,5 +1,5 @@
 1.20-9.5.0:
-- Added KubeJS global variable conditions when KubeJS is installed
+- Added KubeJS server persistent-data conditions when KubeJS is installed
 
 1.20-9.4.7:
 - Fixed tfc items not being recognized because they contain a '/'

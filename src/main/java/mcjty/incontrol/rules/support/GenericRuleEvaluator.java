@@ -26,6 +26,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.Difficulty;
@@ -201,8 +202,8 @@ public class GenericRuleEvaluator {
     }
 
     private void addKubeJSCheck(List<String> conditions) {
-        BooleanSupplier check = KubeJSSupport.parse(conditions);
-        checks.add((event, query) -> check.getAsBoolean());
+        Predicate<MinecraftServer> check = KubeJSSupport.parse(conditions);
+        checks.add((event, query) -> check.test(query.getWorld(event).getServer()));
     }
 
     private void addCanSpawnHereCheck(boolean c) {
