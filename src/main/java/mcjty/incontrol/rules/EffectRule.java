@@ -78,6 +78,7 @@ public class EffectRule extends RuleBase<RuleBase.EventGetter> {
         FACTORY
                 .attribute(Attribute.createMulti(PHASE))
                 .attribute(Attribute.create(NUMBER))
+                .attribute(Attribute.createMulti(KUBEJS))
 
                 .attribute(Attribute.create(TIMEOUT))
                 .attribute(Attribute.create(MINTIME))

@@ -145,6 +145,7 @@ public class EventsSystem {
         }
         if (!checkPhases(level, conditions)) return false;
         if (!checkNumbers(level, conditions)) return false;
+        if (!conditions.matchesKubeJS(level.getServer())) return false;
         Set<ResourceKey<Level>> dimensions = conditions.getDimensions();
         if (!dimensions.isEmpty() && !dimensions.contains(level.dimension())) {
             return false;

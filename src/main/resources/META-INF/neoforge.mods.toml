@@ -25,3 +25,9 @@ Be in control of spawns
     versionRange="[1.21-8.2.1,)"
     ordering="NONE"
     side="BOTH"
+[[dependencies.incontrol]]
+    modId="kubejs"
+    type="optional"
+    versionRange="[2101,)"
+    ordering="AFTER"
+    side="BOTH"

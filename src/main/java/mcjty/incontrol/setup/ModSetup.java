@@ -28,6 +28,7 @@ public class ModSetup {
     public static boolean baubles = false;
     public static boolean enigma = false;
     public static boolean customnpcs = false;
+    public static boolean kubejs = false;
 
     private Logger logger;
     public RuleCache cache = new RuleCache();
@@ -56,6 +57,7 @@ public class ModSetup {
         baubles = ModList.get().isLoaded("baubles");
         enigma = ModList.get().isLoaded("enigma");
         customnpcs = ModList.get().isLoaded("customnpcs");
+        kubejs = ModList.get().isLoaded("kubejs");
 
         if (ModSetup.lostcities) {
             LostCitySupport.register();
@@ -76,6 +78,9 @@ public class ModSetup {
         }
         if (ModSetup.customnpcs) {
             logger.log(Level.INFO, "Enabling support for CustomNPCs");
+        }
+        if (ModSetup.kubejs) {
+            logger.log(Level.INFO, "Enabling support for KubeJS");
         }
     }
 }

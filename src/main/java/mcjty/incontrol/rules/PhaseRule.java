@@ -73,6 +73,7 @@ public class PhaseRule {
     private static final GenericAttributeMapFactory FACTORY = new GenericAttributeMapFactory();
     static {
         FACTORY
+                .attribute(Attribute.createMulti(KUBEJS))
                 .attribute(Attribute.create(TIME))
                 .attribute(Attribute.create(MINTIME))
                 .attribute(Attribute.create(MAXTIME))

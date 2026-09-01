@@ -6,6 +6,7 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.areas.Area;
 import mcjty.incontrol.areas.AreaSystem;
+import mcjty.incontrol.compat.KubeJSSupport;
 import mcjty.incontrol.compat.ModRuleCompatibilityLayer;
 import mcjty.incontrol.data.DataStorage;
 import mcjty.incontrol.events.EventsSystem;
@@ -26,6 +27,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.Difficulty;
@@ -81,6 +83,7 @@ public class GenericRuleEvaluator {
 
         map.consumeAsList(SOURCE, this::addSourceCheck);
         map.consumeAsList(MOD, this::addModsCheck);
+        map.consumeAsList(KUBEJS, this::addKubeJSCheck);
 
         map.consume(WEATHER, this::addWeatherCheck);
         map.consumeAsList(BIOMETAGS, this::addBiomeTagCheck);
@@ -198,6 +201,11 @@ public class GenericRuleEvaluator {
                 return result.test().test(data.getNumber(result.number()));
             });
         }
+    }
+
+    private void addKubeJSCheck(List<String> conditions) {
+        Predicate<MinecraftServer> check = KubeJSSupport.parse(conditions);
+        checks.add((event, query) -> check.test(query.getWorld(event).getServer()));
     }
 
     private void addCanSpawnHereCheck(boolean c) {
