@@ -1,13 +1,21 @@
 package mcjty.incontrol.rules.support;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.ToIntFunction;
+
 import mcjty.incontrol.compat.CustomNPCSupport;
 import mcjty.incontrol.mob.CNPCMob;
 import mcjty.incontrol.setup.Config;
 import mcjty.incontrol.setup.ModSetup;
+import mcjty.incontrol.tools.distance.PlayerDistanceMap;
 import mcjty.incontrol.tools.varia.Tools;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
@@ -123,6 +131,60 @@ public class RuleCache {
 //        cache.registerDespawn(entityType);
 //    }
 
+    // Since the counting with 'perlocal' is local and not global, we need new count functions.
+    // We pass minChunks and maxChunks as well as we're gonna count the entities between those boundaries.
+    public int getLocalCountAll(LevelAccessor world, Entity entity, int minChunks, int maxChunks) {
+        return getOrCreateCache(world).getLocalCountAll(entity, minChunks, maxChunks);
+    }
+
+    public int getLocalCountPassive(LevelAccessor world, Entity entity, int minChunks, int maxChunks) {
+        return getOrCreateCache(world).getLocalCountPassive(entity, minChunks, maxChunks);
+    }
+
+    public int getLocalCountHostile(LevelAccessor world, Entity entity, int minChunks, int maxChunks) {
+        return getOrCreateCache(world).getLocalCountHostile(entity, minChunks, maxChunks);
+    }
+
+    public int getLocalCountNeutral(LevelAccessor world, Entity entity, int minChunks, int maxChunks) {
+        return getOrCreateCache(world).getLocalCountNeutral(entity, minChunks, maxChunks);
+    }
+
+    public int getLocalCount(LevelAccessor world, Entity entity, EntityType entityType, int minChunks, int maxChunks) {
+        return getOrCreateCache(world).getLocalCount(entity, entityType, minChunks, maxChunks);
+    }
+
+    public int getLocalNpcCount(LevelAccessor world, Entity entity, int minChunks, int maxChunks) {
+        return getOrCreateCache(world).getLocalNpcCount(entity, minChunks, maxChunks);
+    }
+
+    public int getLocalCountPerMod(LevelAccessor world, Entity entity, String mod, int minChunks, int maxChunks) {
+        return getOrCreateCache(world).getLocalCountPerMod(entity, mod, minChunks, maxChunks);
+    }
+
+    public int getLocalCountPerModHostile(LevelAccessor world, Entity entity, String mod, int minChunks,
+            int maxChunks) {
+        return getOrCreateCache(world).getLocalCountPerModHostile(entity, mod, minChunks, maxChunks);
+    }
+
+    public int getLocalCountPerModPassive(LevelAccessor world, Entity entity, String mod, int minChunks,
+            int maxChunks) {
+        return getOrCreateCache(world).getLocalCountPerModPassive(entity, mod, minChunks, maxChunks);
+    }
+
+    public int getLocalCountPerModAll(LevelAccessor world, Entity entity, String mod, int minChunks, int maxChunks) {
+        return getOrCreateCache(world).getLocalCountPerModAll(entity, mod, minChunks, maxChunks);
+    }
+
+    // public void registerSpawn(LevelAccessor world, EntityType entityType) {
+    // CachePerWorld cache = getOrCreateCache(world);
+    // cache.registerSpawn(entityType);
+    // }
+
+    // public void registerDespawn(LevelAccessor world, EntityType entityType) {
+    // CachePerWorld cache = getOrCreateCache(world);
+    // cache.registerDespawn(entityType);
+    // }
+
     private CachePerWorld getOrCreateCache(LevelAccessor world) {
         ResourceKey<Level> key = Tools.getDimensionKey(world);
         CachePerWorld cache = caches.get(key);
@@ -142,6 +204,10 @@ public class RuleCache {
     }
 
     private static class CachePerWorld {
+        // One PlayerDistanceMap per registered chunk radius
+        private final Map<Integer, PlayerDistanceMap> distanceMaps = new HashMap<>();
+        // For each radius, a map from each player to their PlayerLocalCounts
+        private final Map<Integer, Map<ServerPlayer, PlayerLocalCounts>> localCountsByRadius = new HashMap<>();
 
         private final Map<EntityType, Integer> cachedCounters = new HashMap<>();
         private final Map<CNPCMob, Integer> cachedNpcCounters = new HashMap<>();
@@ -152,6 +218,25 @@ public class RuleCache {
         private int validSpawnChunks = -1;
         private int validPlayers = -1;
         private int dirtyCounter = 0;
+
+        // Updates all registered PlayerDistanceMap instances for the current player positions and prunes the ones that are no longer needed.
+        private void tickPlayerDistanceMap(LevelAccessor world) {
+            ServerLevel sw = Tools.getServerWorld(world);
+            List<ServerPlayer> players = sw.players();
+
+            Set<Integer> radii = LocalDistanceRegistry.getRadii();
+
+            for (Integer radius : radii) {
+                distanceMaps.computeIfAbsent(radius, r -> new PlayerDistanceMap()).update(players, radius);
+            }
+
+            distanceMaps.keySet().retainAll(radii);
+            localCountsByRadius.keySet().retainAll(radii);
+
+            for (Map<ServerPlayer, PlayerLocalCounts> counts : localCountsByRadius.values()) {
+                counts.keySet().retainAll(players);
+            }
+        }
 
         public int getValidSpawnChunks() {
             return validSpawnChunks;
@@ -196,6 +281,8 @@ public class RuleCache {
         }
 
         private void count(LevelAccessor world) {
+            tickPlayerDistanceMap(world);
+
             dirtyCounter--;
             if (dirtyCounter > 0) {
                 return;
@@ -208,6 +295,7 @@ public class RuleCache {
             cachedCounters.clear();
             countPerMod.clear();
             cachedNpcCounters.clear();
+            localCountsByRadius.clear();
             countPassive = 0;
             countHostile = 0;
             countNeutral = 0;
@@ -244,6 +332,9 @@ public class RuleCache {
                         cachedNpcCounters.put(mob, cnt);
                     }
                 }
+                boolean isHostile = entity instanceof Enemy;
+                boolean isPassive = entity instanceof Animal;
+                updateLocalCounts(entity, mod, isHostile, isPassive, +1);
             }
         }
 
@@ -282,8 +373,123 @@ public class RuleCache {
                         countNeutral--;
                     }
                 }
+                boolean isHostile = entity instanceof Enemy;
+                boolean isPassive = entity instanceof Animal;
+                updateLocalCounts(entity, mod, isHostile, isPassive, -1);
             }
             return true;
+        }
+
+        // For a given entity, finds which players have it within each registered radius using the
+        // PlayerDistanceMap and adds/removes it to/from their PlayerLocalCounts for that radius.
+        private void updateLocalCounts(Entity entity, String mod, boolean isHostile, boolean isPassive, int delta) {
+            long chunkKey = entity.chunkPosition().toLong();
+            for (Map.Entry<Integer, PlayerDistanceMap> entry : distanceMaps.entrySet()) {
+                PlayerDistanceMap map = entry.getValue();
+                Map<ServerPlayer, PlayerLocalCounts> localCounts = localCountsByRadius.computeIfAbsent(entry.getKey(), r -> new HashMap<>());
+
+                for (ServerPlayer player : map.getPlayersInRange(chunkKey)) {
+                    PlayerLocalCounts counts = localCounts.computeIfAbsent(player, p -> new PlayerLocalCounts());
+                    counts.perType.merge(entity.getType(), delta, Integer::sum);
+                    CountPerMod cpm = counts.perMod.computeIfAbsent(mod, s -> new CountPerMod());
+                    cpm.total += delta;
+                    if (isHostile) {
+                        counts.hostile += delta;
+                        cpm.hostile += delta;
+                    } else if (isPassive) {
+                        counts.passive += delta;
+                        cpm.passive += delta;
+                    } else {
+                        counts.neutral += delta;
+                        cpm.neutral += delta;
+                    }
+
+                    if (ModSetup.customnpcs && CustomNPCSupport.hasNPCInterface(entity) && entity.getPersistentData().contains("InControlNatSpawnName") && entity.getPersistentData().contains("InControlNatSpawnTab")) {
+                        CNPCMob mob = new CNPCMob(entity.getPersistentData().getInt("InControlNatSpawnTab"), entity.getPersistentData().getString("InControlNatSpawnName"));
+                        counts.perNpc.merge(mob, delta, Integer::sum);
+                    }
+                }
+            }
+        }
+
+        // For a given entity and radius range, it looks at every player who has that entity's chunk within their max-radius,
+        // subtracts the min-radius count if applicable and returns the maximum across all nearby players.
+        // The max is used because we want to know the most crowded player's neighborhood.
+        private int getMaxLocal(Entity entity, int minChunks, int maxChunks, ToIntFunction<PlayerLocalCounts> field) {
+            PlayerDistanceMap maxMap = distanceMaps.get(maxChunks);
+            if (maxMap == null) {
+                return 0;
+            }
+            Map<ServerPlayer, PlayerLocalCounts> maxCounts = localCountsByRadius.get(maxChunks);
+            Map<ServerPlayer, PlayerLocalCounts> minCounts = minChunks >= 0 ? localCountsByRadius.get(minChunks) : null;
+
+            long chunkKey = entity.chunkPosition().toLong();
+            int best = 0;
+            for (ServerPlayer player : maxMap.getPlayersInRange(chunkKey)) {
+                PlayerLocalCounts maxC = maxCounts == null ? null : maxCounts.get(player);
+                int maxVal = maxC == null ? 0 : field.applyAsInt(maxC);
+
+                int minVal = 0;
+                if (minCounts != null) {
+                    PlayerLocalCounts minC = minCounts.get(player);
+                    minVal = minC == null ? 0 : field.applyAsInt(minC);
+                }
+                best = Math.max(best, maxVal - minVal);
+            }
+            return best;
+        }
+
+        public int getLocalCountAll(Entity entity, int minChunks, int maxChunks) {
+            return getMaxLocal(entity, minChunks, maxChunks, c -> c.hostile + c.passive + c.neutral);
+        }
+
+        public int getLocalCountPassive(Entity entity, int minChunks, int maxChunks) {
+            return getMaxLocal(entity, minChunks, maxChunks, c -> c.passive);
+        }
+
+        public int getLocalCountHostile(Entity entity, int minChunks, int maxChunks) {
+            return getMaxLocal(entity, minChunks, maxChunks, c -> c.hostile);
+        }
+
+        public int getLocalCountNeutral(Entity entity, int minChunks, int maxChunks) {
+            return getMaxLocal(entity, minChunks, maxChunks, c -> c.neutral);
+        }
+
+        public int getLocalCount(Entity entity, EntityType entityType, int minChunks, int maxChunks) {
+            return getMaxLocal(entity, minChunks, maxChunks, c -> c.perType.getOrDefault(entityType, 0));
+        }
+
+        public int getLocalNpcCount(Entity entity, int minChunks, int maxChunks) {
+            if (ModSetup.customnpcs && CustomNPCSupport.hasNPCInterface(entity) && entity.getPersistentData().contains("InControlNatSpawnName") && entity.getPersistentData().contains("InControlNatSpawnTab")) {
+                CNPCMob mob = new CNPCMob( entity.getPersistentData().getInt("InControlNatSpawnTab"), entity.getPersistentData().getString("InControlNatSpawnName"));
+                return getMaxLocal(entity, minChunks, maxChunks, c -> c.perNpc.getOrDefault(mob, 0));
+            }
+            return getLocalCount(entity, entity.getType(), minChunks, maxChunks);
+        }
+
+        public int getLocalCountPerMod(Entity entity, String mod, int minChunks, int maxChunks) {
+            return getMaxLocal(entity, minChunks, maxChunks, c -> {
+                CountPerMod m = c.perMod.get(mod);
+                return m == null ? 0 : m.total;
+            });
+        }
+
+        public int getLocalCountPerModHostile(Entity entity, String mod, int minChunks, int maxChunks) {
+            return getMaxLocal(entity, minChunks, maxChunks, c -> {
+                CountPerMod m = c.perMod.get(mod);
+                return m == null ? 0 : m.hostile;
+            });
+        }
+
+        public int getLocalCountPerModPassive(Entity entity, String mod, int minChunks, int maxChunks) {
+            return getMaxLocal(entity, minChunks, maxChunks, c -> {
+                CountPerMod m = c.perMod.get(mod);
+                return m == null ? 0 : m.passive;
+            });
+        }
+
+        public int getLocalCountPerModAll(Entity entity, String mod, int minChunks, int maxChunks) {
+            return getLocalCountPerMod(entity, mod, minChunks, maxChunks);
         }
 
         public int getCount(EntityType entityType) {
@@ -314,6 +520,17 @@ public class RuleCache {
 //                cachedCounters.put(entityType, cnt-1);
 //            }
 //        }
+
+        // Per-player, per-radius counter storage
+        // Stores category totals, a per-EntityType map, a per-mod map and a per-npc map.
+        private static class PlayerLocalCounts {
+            private int hostile;
+            private int passive;
+            private int neutral;
+            private final Map<EntityType, Integer> perType = new HashMap<>();
+            private final Map<String, CountPerMod> perMod = new HashMap<>();
+            private final Map<CNPCMob, Integer> perNpc = new HashMap<>();
+        }
     }
 
 }
