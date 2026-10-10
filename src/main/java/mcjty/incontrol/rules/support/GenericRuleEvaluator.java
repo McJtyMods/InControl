@@ -46,8 +46,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.levelgen.structure.Structure;
-import net.neoforged.neoforge.event.entity.living.FinalizeSpawnEvent;
-import net.neoforged.neoforge.event.entity.living.MobSpawnEvent;
+import mcjty.incontrol.platform.RuleEvents.FinalizeSpawnEvent;
+import mcjty.incontrol.platform.RuleEvents.MobSpawnEvent;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
@@ -284,7 +284,7 @@ public class GenericRuleEvaluator {
             } else if (event instanceof MobSpawnEvent.PositionCheck checkSpawn) {
                 return types.contains(checkSpawn.getSpawnType());
             } else {
-                return query.getEntity(event) instanceof Mob mob && mob.getSpawnType() != null && types.contains(mob.getSpawnType());
+                return query.getEntity(event) instanceof Mob mob && ((mcjty.incontrol.platform.MobState) mob).incontrol$getSpawnType() != null && types.contains(((mcjty.incontrol.platform.MobState) mob).incontrol$getSpawnType());
             }
         });
     }
@@ -297,7 +297,7 @@ public class GenericRuleEvaluator {
                 } else if (event instanceof MobSpawnEvent.PositionCheck checkSpawn) {
                     return checkSpawn.getSpawnType().equals(MobSpawnType.SPAWNER);
                 } else {
-                    return query.getEntity(event) instanceof Mob mob && Objects.equals(mob.getSpawnType(), MobSpawnType.SPAWNER);
+                    return query.getEntity(event) instanceof Mob mob && Objects.equals(((mcjty.incontrol.platform.MobState) mob).incontrol$getSpawnType(), MobSpawnType.SPAWNER);
                 }
             });
         } else {
@@ -307,7 +307,7 @@ public class GenericRuleEvaluator {
                 } else if (event instanceof MobSpawnEvent.PositionCheck checkSpawn) {
                     return !checkSpawn.getSpawnType().equals(MobSpawnType.SPAWNER);
                 } else {
-                    return !(query.getEntity(event) instanceof Mob mob && Objects.equals(mob.getSpawnType(), MobSpawnType.SPAWNER));
+                    return !(query.getEntity(event) instanceof Mob mob && Objects.equals(((mcjty.incontrol.platform.MobState) mob).incontrol$getSpawnType(), MobSpawnType.SPAWNER));
                 }
             });
         }

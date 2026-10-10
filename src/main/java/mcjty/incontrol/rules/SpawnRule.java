@@ -22,10 +22,10 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
-import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
-import net.neoforged.neoforge.event.entity.living.FinalizeSpawnEvent;
-import net.neoforged.neoforge.event.entity.living.MobDespawnEvent;
-import net.neoforged.neoforge.event.entity.living.MobSpawnEvent;
+import mcjty.incontrol.platform.RuleEvents.EntityJoinLevelEvent;
+import mcjty.incontrol.platform.RuleEvents.FinalizeSpawnEvent;
+import mcjty.incontrol.platform.RuleEvents.MobDespawnEvent;
+import mcjty.incontrol.platform.RuleEvents.MobSpawnEvent;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;

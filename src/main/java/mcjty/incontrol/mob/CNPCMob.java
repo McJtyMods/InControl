@@ -43,15 +43,15 @@ public class CNPCMob extends DefaultMob {
 
     public boolean matches(Entity entity) {
         if (entity == null) return false;
-        if (!entity.getPersistentData().contains("InControlNatSpawnTab") || !entity.getPersistentData().contains("InControlNatSpawnName"))
+        if (!mcjty.incontrol.platform.EntityData.get(entity).contains("InControlNatSpawnTab") || !mcjty.incontrol.platform.EntityData.get(entity).contains("InControlNatSpawnName"))
             return false;
-        return entity.getPersistentData().getInt("InControlNatSpawnTab") == cloneTab && entity.getPersistentData().getString("InControlNatSpawnName").equals(cloneName);
+        return mcjty.incontrol.platform.EntityData.get(entity).getInt("InControlNatSpawnTab") == cloneTab && mcjty.incontrol.platform.EntityData.get(entity).getString("InControlNatSpawnName").equals(cloneName);
     }
 
     @Override
     public Entity getEntity(ServerLevel level) {
         if (ModSetup.customnpcs) {
-            if (cached == null || cached.isAddedToLevel() || cached.isRemoved()) {
+            if (cached == null || cached.level() instanceof ServerLevel server && server.getEntity(cached.getUUID()) != null || cached.isRemoved()) {
                 cached = CustomNPCSupport.getNpcEntity(level, cloneTab, cloneName);
             }
             return cached;

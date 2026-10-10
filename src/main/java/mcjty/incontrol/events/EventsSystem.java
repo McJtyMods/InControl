@@ -17,10 +17,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.event.EventHooks;
-import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
-import net.neoforged.neoforge.event.level.BlockEvent;
-import net.neoforged.neoforge.event.tick.LevelTickEvent;
+import mcjty.incontrol.platform.SpawnHooks;
+import mcjty.incontrol.platform.RuleEvents.LivingDeathEvent;
+import mcjty.incontrol.platform.RuleEvents.BlockEvent;
+import mcjty.incontrol.platform.RuleEvents.LevelTickEvent;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -193,8 +193,8 @@ public class EventsSystem {
         entity.moveTo(pos.getX(), pos.getY(), pos.getZ(), rnd.nextFloat() * 360.0F, 0.0F);
         busySpawning = mobEntity;
         if (canSpawn(world.getLevel(), mobEntity, action) && isNotColliding(world.getLevel(), mobEntity, action)) {
-            EventHooks.finalizeMobSpawn(mobEntity, world, world.getCurrentDifficultyAt(pos), MobSpawnType.NATURAL, null);
-            if (!((Mob) entity).isSpawnCancelled()) {
+            SpawnHooks.finalizeMobSpawn(mobEntity, world, world.getCurrentDifficultyAt(pos), MobSpawnType.NATURAL, null);
+            if (!((mcjty.incontrol.platform.MobState) entity).incontrol$isSpawnCancelled()) {
                 world.addFreshEntityWithPassengers(entity);
                 busySpawning = null;
                 return true;
@@ -208,7 +208,7 @@ public class EventsSystem {
         if (action.norestrictions()) {
             return true;
         } else {
-            return EventHooks.checkSpawnPosition(mobEntity, (ServerLevelAccessor) world, MobSpawnType.NATURAL);
+            return SpawnHooks.checkSpawnPosition(mobEntity, (ServerLevelAccessor) world, MobSpawnType.NATURAL);
         }
     }
 

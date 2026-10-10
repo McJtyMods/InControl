@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "id": "incontrol",
+  "version": "${version}",
+  "name": "InControl",
+  "description": "Be in control of mob spawns, loot, experience and world events.",
+  "authors": ["McJty"],
+  "license": "MIT",
+  "contact": { "homepage": "https://mcjty.eu/docs/mods/control-mods", "sources": "https://github.com/McJtyMods/InControl", "issues": "https://github.com/McJtyMods/InControl/issues" },
+  "environment": "*",
+  "entrypoints": { "main": ["mcjty.incontrol.InControl"] },
+  "mixins": ["incontrol.mixins.json"],
+  "accessWidener": "incontrol.accesswidener",
+  "depends": { "fabricloader": ">=0.16.14", "minecraft": "~1.21.1", "java": ">=21", "fabric-api": ">=0.116.6+1.21.1" }
+}

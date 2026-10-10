@@ -214,7 +214,7 @@ public class RuleCache {
 
             ServerLevel sw = Tools.getServerWorld(world);
 
-            sw.getEntities().getAll().forEach(this::addCountedMob);
+            sw.getAllEntities().forEach(this::addCountedMob);
         }
 
         public void addCountedMob(Entity entity) {
@@ -238,8 +238,8 @@ public class RuleCache {
                 }
 
                 if (ModSetup.customnpcs) {
-                    if (CustomNPCSupport.hasNPCInterface(entity) && entity.getPersistentData().contains("InControlNatSpawnName") && entity.getPersistentData().contains("InControlNatSpawnTab")) {
-                        CNPCMob mob = new CNPCMob(entity.getPersistentData().getInt("InControlNatSpawnTab"), entity.getPersistentData().getString("InControlNatSpawnName"));
+                    if (CustomNPCSupport.hasNPCInterface(entity) && mcjty.incontrol.platform.EntityData.get(entity).contains("InControlNatSpawnName") && mcjty.incontrol.platform.EntityData.get(entity).contains("InControlNatSpawnTab")) {
+                        CNPCMob mob = new CNPCMob(mcjty.incontrol.platform.EntityData.get(entity).getInt("InControlNatSpawnTab"), mcjty.incontrol.platform.EntityData.get(entity).getString("InControlNatSpawnName"));
                         cnt = cachedNpcCounters.getOrDefault(mob, 0) + 1;
                         cachedNpcCounters.put(mob, cnt);
                     }
@@ -296,8 +296,8 @@ public class RuleCache {
 
         // This function is only called if ModSetup.customnpcs is true
         public int getNpcCount(Entity entity) {
-            if (CustomNPCSupport.hasNPCInterface(entity) && entity.getPersistentData().contains("InControlNatSpawnName") && entity.getPersistentData().contains("InControlNatSpawnTab")){
-                CNPCMob mob = new CNPCMob(entity.getPersistentData().getInt("InControlNatSpawnTab"), entity.getPersistentData().getString("InControlNatSpawnName"));
+            if (CustomNPCSupport.hasNPCInterface(entity) && mcjty.incontrol.platform.EntityData.get(entity).contains("InControlNatSpawnName") && mcjty.incontrol.platform.EntityData.get(entity).contains("InControlNatSpawnTab")){
+                CNPCMob mob = new CNPCMob(mcjty.incontrol.platform.EntityData.get(entity).getInt("InControlNatSpawnTab"), mcjty.incontrol.platform.EntityData.get(entity).getString("InControlNatSpawnName"));
                 return cachedNpcCounters.getOrDefault(mob, 0);
             }
             return getCount(entity.getType());

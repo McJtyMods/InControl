@@ -29,8 +29,8 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.AABB;
-import net.neoforged.neoforge.event.EventHooks;
-import net.neoforged.neoforge.event.tick.LevelTickEvent;
+import mcjty.incontrol.platform.SpawnHooks;
+import mcjty.incontrol.platform.RuleEvents.LevelTickEvent;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
@@ -198,8 +198,8 @@ public class SpawnerSystem {
                                 }
                                 busySpawning = mobEntity;   // @todo check in spawn rule
                                 if (canSpawn(world, mobEntity, conditions) && isNotColliding(world, mobEntity, conditions)) {
-                                    EventHooks.finalizeMobSpawn(mobEntity, world, world.getCurrentDifficultyAt(pos), MobSpawnType.NATURAL, null);
-                                    if (!((Mob) entity).isSpawnCancelled()) {
+                                    SpawnHooks.finalizeMobSpawn(mobEntity, world, world.getCurrentDifficultyAt(pos), MobSpawnType.NATURAL, null);
+                                    if (!((mcjty.incontrol.platform.MobState) entity).incontrol$isSpawnCancelled()) {
                                         world.addFreshEntityWithPassengers(entity);
                                         Statistics.addSpawnerStat(ruleNr);
                                         spawned++;
@@ -254,7 +254,7 @@ public class SpawnerSystem {
         if (conditions.isNoRestrictions()) {
             return true;
         } else {
-            return EventHooks.checkSpawnPosition(mobEntity, (ServerLevelAccessor) world, MobSpawnType.NATURAL);
+            return SpawnHooks.checkSpawnPosition(mobEntity, (ServerLevelAccessor) world, MobSpawnType.NATURAL);
         }
     }
 
@@ -451,9 +451,9 @@ public class SpawnerSystem {
 
     private static boolean checkLocalCount(ServerLevel world, EntityType<?> mob, SpawnerConditions conditions, Box box) {
         if (conditions.getMaxlocal() != -1) {
-            LevelEntityGetter<Entity> entities = world.getEntities();
+            Iterable<Entity> entities = world.getAllEntities();
             long count = 0;
-            for (Entity entity : entities.getAll()) {
+            for (Entity entity : entities) {
                 if (entity.getType() == mob && box.in(entity.blockPosition())) {
                     count++;
                     if (count >= conditions.getMaxlocal()) {

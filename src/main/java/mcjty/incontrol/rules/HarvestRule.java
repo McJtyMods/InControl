@@ -18,8 +18,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.LevelAccessor;
-import net.neoforged.neoforge.event.entity.living.MobSpawnEvent;
-import net.neoforged.neoforge.event.level.BlockEvent;
+import mcjty.incontrol.platform.RuleEvents.MobSpawnEvent;
+import mcjty.incontrol.platform.RuleEvents.BlockEvent;
 import org.apache.logging.log4j.Level;
 
 import java.util.Set;

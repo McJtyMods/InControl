@@ -35,10 +35,6 @@ import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.levelgen.WorldgenRandom;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.common.util.FakePlayer;
-import net.neoforged.neoforge.energy.IEnergyStorage;
-import net.neoforged.neoforge.items.IItemHandler;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -280,50 +276,26 @@ public class TestingTools {
     }
 
     private static int getEnergy(ItemStack stack) {
-        IEnergyStorage capability = stack.getCapability(Capabilities.EnergyStorage.ITEM);
-        if (capability == null) {
-            return 0;
-        } else {
-            return capability.getEnergyStored();
-        }
+        var storage = team.reborn.energy.api.EnergyStorage.ITEM.find(stack, net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext.withConstant(stack));
+        return storage == null ? 0 : (int) Math.min(Integer.MAX_VALUE, storage.getAmount());
     }
 
     public static boolean contains(LevelAccessor world, BlockPos pos, @Nullable Direction side, @Nonnull List<Predicate<ItemStack>> matchers) {
-        if (!(world instanceof ServerLevel serverLevel)) {
-            return false;
-        }
-        BlockEntity tileEntity = world.getBlockEntity(pos);
-        if (tileEntity != null) {
-            IItemHandler h = serverLevel.getCapability(Capabilities.ItemHandler.BLOCK, pos, side);
-            if (h != null) {
-                for (int i = 0 ; i < h.getSlots() ; i++) {
-                    ItemStack stack = h.getStackInSlot(i);
-                    if (!stack.isEmpty()) {
-                        for (Predicate<ItemStack> matcher : matchers) {
-                            if (matcher.test(stack)) {
-                                return true;
-                            }
-                        }
-                    }
-                }
-                return false;
-            }
+        if (!(world instanceof ServerLevel level)) return false;
+        var storage = net.fabricmc.fabric.api.transfer.v1.item.ItemStorage.SIDED.find(level, pos, side);
+        if (storage == null) return false;
+        for (var view : storage) {
+            if (view.isResourceBlank() || view.getAmount() <= 0) continue;
+            ItemStack stack = view.getResource().toStack((int) Math.min(Integer.MAX_VALUE, view.getAmount()));
+            for (Predicate<ItemStack> matcher : matchers) if (matcher.test(stack)) return true;
         }
         return false;
     }
 
     public static int getEnergy(LevelAccessor world, BlockPos pos, @Nullable Direction side) {
-        if (!(world instanceof ServerLevel serverLevel)) {
-            return 0;
-        }
-        BlockEntity tileEntity = world.getBlockEntity(pos);
-        if (tileEntity != null) {
-            IEnergyStorage s = serverLevel.getCapability(Capabilities.EnergyStorage.BLOCK, pos, side);
-            if (s != null) {
-                return s.getEnergyStored();
-            }
-        }
-        return 0;
+        if (!(world instanceof ServerLevel level)) return 0;
+        var storage = team.reborn.energy.api.EnergyStorage.SIDED.find(level, pos, side);
+        return storage == null ? 0 : (int) Math.min(Integer.MAX_VALUE, storage.getAmount());
     }
 
     private static List<Predicate<CompoundTag>> getNbtMatchers(JsonObject obj) {
@@ -399,9 +371,6 @@ public class TestingTools {
             return false;
         }
 
-        if (entity instanceof FakePlayer) {
-            return true;
-        }
 
         // If this returns false it is still possible we have a fake player. Try to find the player in the list of online players
         PlayerList playerList = entity.getCommandSenderWorld().getServer().getPlayerList();

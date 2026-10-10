@@ -1,7 +1,5 @@
 package mcjty.incontrol.events;
 
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.rules.LootRule;
@@ -16,9 +14,6 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
-import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import net.neoforged.neoforge.common.loot.IGlobalLootModifier;
-import net.neoforged.neoforge.common.loot.LootModifier;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
@@ -26,20 +21,11 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import static mcjty.incontrol.ForgeEventHandlers.debug;
+import static mcjty.incontrol.FabricEventHandlers.debug;
 
-public class InControlLootModifier extends LootModifier {
+public final class InControlLootModifier {
 
-    public static final MapCodec<InControlLootModifier> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-            LOOT_CONDITIONS_CODEC.fieldOf("conditions").forGetter(l -> l.conditions)
-    ).apply(instance, InControlLootModifier::new));
-
-    public InControlLootModifier(LootItemCondition[] conditionsIn) {
-        super(conditionsIn);
-    }
-
-    @Override
-    protected @NotNull ObjectArrayList<ItemStack> doApply(ObjectArrayList<ItemStack> generatedLoot, LootContext context) {
+    public static @NotNull ObjectArrayList<ItemStack> apply(ObjectArrayList<ItemStack> generatedLoot, LootContext context) {
         Entity entity = context.getParamOrNull(LootContextParams.THIS_ENTITY);
         if (entity == null) {
             return generatedLoot;
@@ -47,9 +33,9 @@ public class InControlLootModifier extends LootModifier {
         ServerLevel level = context.getLevel();
         int looting = 0;
         if (context.getParamOrNull(LootContextParams.ATTACKING_ENTITY) instanceof LivingEntity attacker) {
-            Optional<Holder.Reference<Enchantment>> holder = level.registryAccess().holder(Enchantments.LOOTING);
+            Optional<Holder.Reference<Enchantment>> holder = level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolder(Enchantments.LOOTING);
             if (holder.isPresent()) {
-                looting = EnchantmentHelper.getTagEnchantmentLevel(holder.get(), attacker.getWeaponItem());
+                looting = EnchantmentHelper.getItemEnchantmentLevel(holder.get(), attacker.getWeaponItem());
             }
         }
 
@@ -94,8 +80,4 @@ public class InControlLootModifier extends LootModifier {
         return generatedLoot;
     }
 
-    @Override
-    public MapCodec<? extends IGlobalLootModifier> codec() {
-        return CODEC;
-    }
 }

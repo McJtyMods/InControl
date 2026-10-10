@@ -33,6 +33,7 @@ public class CmdReload implements Command<CommandSourceStack> {
         ErrorHandler.clearErrors();
         player.sendSystemMessage(Component.literal("Reloaded InControl rules"));
         try {
+            mcjty.incontrol.setup.Config.load();
             AreaSystem.reloadRules();
             RulesManager.reloadRules();
             SpawnerSystem.reloadRules();

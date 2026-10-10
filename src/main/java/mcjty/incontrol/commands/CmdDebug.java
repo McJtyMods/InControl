@@ -5,7 +5,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import mcjty.incontrol.ForgeEventHandlers;
+import mcjty.incontrol.FabricEventHandlers;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
@@ -25,8 +25,8 @@ public class CmdDebug implements Command<CommandSourceStack> {
     public int run(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         ServerPlayer player = context.getSource().getPlayerOrException();
         if (player != null) {
-            ForgeEventHandlers.debug = !ForgeEventHandlers.debug;
-            if (ForgeEventHandlers.debug) {
+            FabricEventHandlers.debug = !FabricEventHandlers.debug;
+            if (FabricEventHandlers.debug) {
                 player.sendSystemMessage(Component.literal("Enabled InControl debug mode"));
             } else {
                 player.sendSystemMessage(Component.literal("Disabled InControl debug mode"));

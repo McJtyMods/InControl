@@ -13,45 +13,28 @@ import mcjty.incontrol.tools.varia.Tools;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
-import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
-import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
-import net.minecraft.world.entity.animal.Cow;
-import net.minecraft.world.entity.animal.Sheep;
-import net.minecraft.world.entity.monster.ZombifiedPiglin;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
-import net.neoforged.bus.api.EventPriority;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.common.util.TriState;
-import net.neoforged.neoforge.event.RegisterCommandsEvent;
-import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
-import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
-import net.neoforged.neoforge.event.entity.living.*;
-import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
-import net.neoforged.neoforge.event.level.BlockEvent;
-import net.neoforged.neoforge.event.level.LevelEvent;
-import net.neoforged.neoforge.event.server.ServerStoppedEvent;
-import net.neoforged.neoforge.event.tick.LevelTickEvent;
-import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import mcjty.incontrol.platform.RuleEvents.TriState;
+import mcjty.incontrol.platform.RuleEvents.EntityJoinLevelEvent;
+import mcjty.incontrol.platform.RuleEvents.EntityLeaveLevelEvent;
+import mcjty.incontrol.platform.RuleEvents.*;
+import mcjty.incontrol.platform.RuleEvents.PlayerInteractEvent;
+import mcjty.incontrol.platform.RuleEvents.BlockEvent;
+import mcjty.incontrol.platform.RuleEvents.LevelTickEvent;
+import mcjty.incontrol.platform.RuleEvents.PlayerTickEvent;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class ForgeEventHandlers {
+public class FabricEventHandlers {
 
     public static boolean debug = false;
 
     public static boolean loaded = false;
 
-    @SubscribeEvent
-    public void onLevelLoad(LevelEvent.Load event) {
-        tryLoadRules();
-    }
-
-    private static void tryLoadRules() {
+    public static void tryLoadRules() {
         if (!loaded) {
             loaded = true;
             AreaSystem.reloadRules();
@@ -61,17 +44,10 @@ public class ForgeEventHandlers {
         }
     }
 
-    @SubscribeEvent
-    public void onServerStopping(ServerStoppedEvent event) {
+    public void onServerStopping() {
         loaded = false;
     }
 
-    @SubscribeEvent
-    public void registerCommands(RegisterCommandsEvent event) {
-        ModCommands.register(event.getDispatcher());
-    }
-
-    @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onEntityJoinWorld(EntityJoinLevelEvent event) {
         int i = 0;
         if (!(event.getEntity() instanceof LivingEntity)) {
@@ -83,16 +59,6 @@ public class ForgeEventHandlers {
         if (event.getLevel().isClientSide) {
             return;
         }
-
-//        if (event.getEntity() instanceof Mob mob) {
-//            if (mob instanceof Cow cow) {
-//                cow.targetSelector.addGoal(1, (new HurtByTargetGoal(cow)).setAlertOthers(ZombifiedPiglin.class));
-//                cow.targetSelector.addGoal(2, new NearestAttackableTargetGoal(cow, Player.class, true));
-//                cow.goalSelector.addGoal(1, new MeleeAttackGoal(cow, (double)1.0F, false));
-//            }
-//        } else if (event.getEntity() instanceof Sheep sheep) {
-//        }
-
 
         for (SpawnRule rule : RulesManager.getFilteredRules(event.getLevel(), SpawnWhen.ONJOIN)) {
             if (rule.match(event)) {
@@ -126,18 +92,6 @@ public class ForgeEventHandlers {
         }
     }
 
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
-    public void onEntityJoinWorldLast(EntityJoinLevelEvent event) {
-        // We register spawns in a high priority event so that we take things that other mods
-        // do into account
-        if (!event.getLevel().isClientSide() && event.getEntity() instanceof LivingEntity) {
-            if (!(event.getEntity() instanceof Player)) {
-                InControl.setup.cache.addMob(event.getLevel(), event.getEntity());
-            }
-        }
-    }
-
-    @SubscribeEvent
     public void onEntityLeavesWorld(EntityLeaveLevelEvent event) {
         if (event.getEntity() instanceof Player) {
             return;
@@ -148,7 +102,6 @@ public class ForgeEventHandlers {
         InControl.setup.cache.removeMob(event.getLevel(), event.getEntity());
     }
 
-    @SubscribeEvent
     public void onWorldTick(LevelTickEvent.Pre event) {
         if (!event.getLevel().isClientSide) {
             // For every world tick we reset the cache
@@ -167,7 +120,6 @@ public class ForgeEventHandlers {
         }
     }
 
-    @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onEntitySpawnEvent(FinalizeSpawnEvent event) {
         int i = 0;
         for (SpawnRule rule : RulesManager.getFilteredRules(event.getEntity().getCommandSenderWorld(), SpawnWhen.FINALIZE)) {
@@ -211,7 +163,6 @@ public class ForgeEventHandlers {
         }
     }
 
-    @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onPositionCheck(MobSpawnEvent.PositionCheck event) {
         int i = 0;
         for (SpawnRule rule : RulesManager.getFilteredRules(event.getEntity().getCommandSenderWorld(), SpawnWhen.POSITION)) {
@@ -255,7 +206,6 @@ public class ForgeEventHandlers {
         }
     }
 
-    @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onCheckDespawn(MobDespawnEvent event) {
         int i = 0;
         for (SpawnRule rule : RulesManager.getFilteredRules(event.getEntity().getCommandSenderWorld(), SpawnWhen.DESPAWN)) {
@@ -295,7 +245,6 @@ public class ForgeEventHandlers {
         }
     }
 
-    @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onLivingExperienceDrop(LivingExperienceDropEvent event) {
         int i = 0;
         for (ExperienceRule rule : RulesManager.getFilteredExperienceRuiles(event.getEntity().level())) {
@@ -320,7 +269,6 @@ public class ForgeEventHandlers {
 
     public static Map<Integer, Integer> tickCounters = new HashMap<>();
 
-    @SubscribeEvent
     public void onRightClickEvent(PlayerInteractEvent.RightClickBlock event) {
         if (event.getLevel().isClientSide) {
             return;
@@ -356,7 +304,6 @@ public class ForgeEventHandlers {
         }
     }
 
-    @SubscribeEvent
     public void onLeftClickEvent(PlayerInteractEvent.LeftClickBlock event) {
         if (event.getLevel().isClientSide) {
             return;
@@ -393,7 +340,6 @@ public class ForgeEventHandlers {
     }
 
 
-    @SubscribeEvent
     public void onBlockPaceEvent(BlockEvent.EntityPlaceEvent event) {
         if (event.getLevel().isClientSide()) {
             return;
@@ -420,7 +366,6 @@ public class ForgeEventHandlers {
         }
     }
 
-    @SubscribeEvent
     public void onBlockBreakEvent(BlockEvent.BreakEvent event) {
         if (event.getLevel().isClientSide()) {
             return;
@@ -449,7 +394,6 @@ public class ForgeEventHandlers {
         EventsSystem.onBlockBreak(event);
     }
 
-    @SubscribeEvent
     public void onPlayerTick(PlayerTickEvent.Post event) {
         if (event.getEntity().level().isClientSide) {
             return;
@@ -476,7 +420,6 @@ public class ForgeEventHandlers {
         }
     }
 
-    @SubscribeEvent
     public void onEntityKilled(LivingDeathEvent event) {
         if (!event.getEntity().level().isClientSide) {
             EventsSystem.onEntityKilled(event);

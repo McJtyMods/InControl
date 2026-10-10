@@ -1,0 +1,21 @@
+{
+  "required": true,
+  "package": "mcjty.incontrol.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "EntityMixin",
+    "MobMixin",
+    "NaturalSpawnerMixin",
+    "LootTableMixin",
+    "LivingEntityMixin",
+    "BlockItemMixin",
+    "EntitySectionManagerMixin",
+    "FinalizeSpawnMixin",
+    "BaseSpawnerMixin",
+    "TrialSpawnerMixin",
+    "ServerPlayerGameModeMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

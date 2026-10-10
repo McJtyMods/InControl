@@ -10,64 +10,34 @@ buildscript {
 }
 
 plugins {
-    id 'java-library'
-    id 'eclipse'
-    id 'idea'
+    id 'fabric-loom' version '1.10.5'
     id 'maven-publish'
-    id 'net.neoforged.gradle.userdev' version '7.1.4'
 }
 
 apply plugin: 'com.hypherionmc.modutils.modpublisher'
+apply from: 'gradletools.gradle'
 
-if (project.file('../gradletools.gradle').exists()) {
-    apply from: '../gradletools.gradle'
-} else {
-    apply from: 'https://raw.githubusercontent.com/McJtyMods/MultiWorkspace/1.21_neo/gradletools.gradle'
+group = mod_group_id
+base { archivesName = 'incontrol' }
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
+    withSourcesJar()
 }
-
-group= "com.github.mcjty"
-archivesBaseName = "incontrol"
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 repos()
-repositories {
-    maven {
-        url = "https://maven.saps.dev/releases"
-        content {
-            includeGroup "dev.latvian.mods"
-        }
-    }
-}
 runs()
 jars()
 
-sourceSets.main.resources {
-    srcDir 'src/generated/resources'
-}
+sourceSets.main.resources.srcDir 'src/generated/resources'
 
 dependencies {
     mc()
-    jei()
-    top()
-    lostcities()
-//    gamestages()
-    sereneseasons()
-    compileOnly("dev.latvian.mods:kubejs-neoforge:2101.7.2-build.303") {
-        transitive = false
-    }
-    implementation "curse.maven:customnpcs-unofficial-1052708:7005944"
-    testImplementation "org.junit.jupiter:junit-jupiter:5.10.2"
+    modImplementation include('teamreborn:energy:4.1.0')
+    compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
 }
 
-test {
-    useJUnitPlatform()
-}
+modpublisher(['game-stages', 'the-lost-cities'], ['fabric-api'], ['the-lost-cities'], ['fabric-api'], [])
 
-modpublisher(['game-stages', 'the-lost-cities'], [], ['the-lost-cities'], [], [])
-
-subsystems {
-    parchment {
-        minecraftVersion = "${parchment_minecraft_version}"
-        mappingsVersion = "${parchment_version}"
-    }
+publishing {
+    publications { mavenJava(MavenPublication) { from components.java } }
 }

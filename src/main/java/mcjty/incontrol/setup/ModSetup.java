@@ -1,6 +1,5 @@
 package mcjty.incontrol.setup;
 
-import mcjty.incontrol.ForgeEventHandlers;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.areas.AreaParser;
 import mcjty.incontrol.compat.EnigmaSupport;
@@ -13,12 +12,13 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.Block;
-import net.neoforged.fml.loading.FMLPaths;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.fml.ModList;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import net.fabricmc.loader.api.FabricLoader;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class ModSetup {
 
@@ -37,13 +37,15 @@ public class ModSetup {
 
     public void init() {
         logger = LogManager.getLogger(InControl.MODID);
+        Path configDir = FabricLoader.getInstance().getConfigDir();
+        try { Files.createDirectories(configDir.resolve("incontrol")); }
+        catch (IOException e) { throw new IllegalStateException("Cannot create InControl rule directory", e); }
         setupModCompat();
 
-        NeoForge.EVENT_BUS.register(new ForgeEventHandlers());
-        RulesManager.setRulePath(FMLPaths.CONFIGDIR.get());
-        SpawnerParser.setRulePath(FMLPaths.CONFIGDIR.get());
-        EventsParser.setRulePath(FMLPaths.CONFIGDIR.get());
-        AreaParser.setRulePath(FMLPaths.CONFIGDIR.get());
+        RulesManager.setRulePath(configDir);
+        SpawnerParser.setRulePath(configDir);
+        EventsParser.setRulePath(configDir);
+        AreaParser.setRulePath(configDir);
     }
 
     public Logger getLogger() {
@@ -51,13 +53,13 @@ public class ModSetup {
     }
 
     private void setupModCompat() {
-        lostcities = ModList.get().isLoaded("lostcities");
-        gamestages = ModList.get().isLoaded("gamestages");
-        sereneSeasons = ModList.get().isLoaded("sereneseasons");
-        baubles = ModList.get().isLoaded("baubles");
-        enigma = ModList.get().isLoaded("enigma");
-        customnpcs = ModList.get().isLoaded("customnpcs");
-        kubejs = ModList.get().isLoaded("kubejs");
+        lostcities = FabricLoader.getInstance().isModLoaded("lostcities");
+        gamestages = FabricLoader.getInstance().isModLoaded("gamestages");
+        sereneSeasons = FabricLoader.getInstance().isModLoaded("sereneseasons");
+        baubles = FabricLoader.getInstance().isModLoaded("baubles");
+        enigma = FabricLoader.getInstance().isModLoaded("enigma");
+        customnpcs = FabricLoader.getInstance().isModLoaded("customnpcs");
+        kubejs = FabricLoader.getInstance().isModLoaded("kubejs");
 
         if (ModSetup.lostcities) {
             LostCitySupport.register();

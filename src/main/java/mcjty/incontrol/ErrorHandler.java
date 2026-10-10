@@ -4,8 +4,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.neoforge.event.entity.player.PlayerEvent;
-import net.neoforged.neoforge.server.ServerLifecycleHooks;
+import mcjty.incontrol.platform.ServerLifecycleHooks;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -31,9 +30,9 @@ public class ErrorHandler {
         }
     }
 
-    public static void onPlayerJoinWorld(PlayerEvent.PlayerLoggedInEvent event) {
+    public static void onPlayerJoinWorld(ServerPlayer player) {
         for (String error : errors) {
-            event.getEntity().sendSystemMessage(Component.literal(ChatFormatting.RED + "InControl Error: " + ChatFormatting.GOLD + error));
+            player.sendSystemMessage(Component.literal(ChatFormatting.RED + "InControl Error: " + ChatFormatting.GOLD + error));
         }
     }
 }

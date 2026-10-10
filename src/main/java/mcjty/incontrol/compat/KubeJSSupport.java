@@ -3,7 +3,6 @@ package mcjty.incontrol.compat;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import dev.latvian.mods.kubejs.core.WithPersistentData;
 import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.setup.ModSetup;
 import mcjty.incontrol.tools.varia.JSonTools;
@@ -20,6 +19,11 @@ public class KubeJSSupport {
     private static final Predicate<MinecraftServer> NEVER = server -> false;
 
     private KubeJSSupport() {
+    }
+
+    private static CompoundTag getPersistentData(MinecraftServer server) {
+        Object data = OptionalApi.invoke(server, "kjs$getPersistentData");
+        return data instanceof CompoundTag tag ? tag : new CompoundTag();
     }
 
     public static Predicate<MinecraftServer> parse(JsonElement element) {
@@ -41,7 +45,7 @@ public class KubeJSSupport {
             ErrorHandler.error("KubeJS condition needs at least one variable check!");
             return NEVER;
         }
-        return server -> server != null && matches(((WithPersistentData) server).kjs$getPersistentData(), conditions);
+        return server -> server != null && matches(getPersistentData(server), conditions);
     }
 
     public static Predicate<MinecraftServer> parse(List<String> elements) {
@@ -63,7 +67,7 @@ public class KubeJSSupport {
             ErrorHandler.error("KubeJS condition needs at least one variable check!");
             return NEVER;
         }
-        return server -> server != null && matches(((WithPersistentData) server).kjs$getPersistentData(), conditions);
+        return server -> server != null && matches(getPersistentData(server), conditions);
     }
 
     static VariableCondition parseCondition(JsonElement element) {

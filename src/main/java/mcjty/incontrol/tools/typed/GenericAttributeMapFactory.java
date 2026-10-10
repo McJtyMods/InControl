@@ -12,7 +12,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.server.ServerLifecycleHooks;
+import mcjty.incontrol.platform.ServerLifecycleHooks;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;

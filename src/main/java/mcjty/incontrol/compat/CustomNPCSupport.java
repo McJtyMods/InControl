@@ -1,36 +1,35 @@
 package mcjty.incontrol.compat;
 
 import mcjty.incontrol.ErrorHandler;
+import mcjty.incontrol.platform.EntityData;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import noppes.npcs.CustomEntities;
-import noppes.npcs.api.NpcAPI;
-import noppes.npcs.entity.EntityNPCInterface;
 
-public class CustomNPCSupport {
-
+public final class CustomNPCSupport {
+    private CustomNPCSupport() {}
     public static Entity getNpcEntity(ServerLevel level, int cloneTab, String cloneName) {
-        try {
-            Entity entity = NpcAPI.Instance().getClones().get(cloneTab, cloneName, NpcAPI.Instance().getIWorld(level)).getMCEntity();
-            entity.getPersistentData().putInt("InControlNatSpawnTab", cloneTab);
-            entity.getPersistentData().putString("InControlNatSpawnName", cloneName);
+        Object api = OptionalApi.invoke(OptionalApi.type("noppes.npcs.api.NpcAPI"), "Instance");
+        Object clones = OptionalApi.invoke(api, "getClones");
+        Object world = OptionalApi.invoke(api, "getIWorld", level);
+        Object clone = OptionalApi.invoke(clones, "get", cloneTab, cloneName, world);
+        Object result = OptionalApi.invoke(clone, "getMCEntity");
+        if (result instanceof Entity entity) {
+            EntityData.get(entity).putInt("InControlNatSpawnTab", cloneTab);
+            EntityData.get(entity).putString("InControlNatSpawnName", cloneName);
             return entity;
-        } catch (Exception e) {
-            ErrorHandler.error("Error spawning NPC (" + e.getMessage() + ")");
-            return null;
         }
+        ErrorHandler.error("Cannot spawn CustomNPC clone: a compatible Fabric CustomNPCs API is required");
+        return null;
     }
-
     public static EntityType<?> getNPCEntityType() {
-        return CustomEntities.entityCustomNpc;
+        return BuiltInRegistries.ENTITY_TYPE.getOptional(ResourceLocation.fromNamespaceAndPath("customnpcs", "customnpc")).orElse(null);
     }
-
-    public static boolean isNPC(Entity entity) {
-        return entity.getType() == CustomEntities.entityCustomNpc;
-    }
-
+    public static boolean isNPC(Entity entity) { return entity.getType() == getNPCEntityType(); }
     public static boolean hasNPCInterface(Entity entity) {
-        return entity instanceof EntityNPCInterface;
+        Class<?> type = OptionalApi.type("noppes.npcs.entity.EntityNPCInterface");
+        return type != null && type.isInstance(entity);
     }
 }
