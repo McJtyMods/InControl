@@ -4,14 +4,14 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import mcjty.incontrol.ErrorHandler;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class EventTypeMobKilled implements EventType {
 
-    private List<ResourceLocation> mobs;
+    private List<Identifier> mobs;
     private boolean playerKill = false;
 
     public EventTypeMobKilled() {
@@ -22,7 +22,7 @@ public class EventTypeMobKilled implements EventType {
         return Type.MOB_KILLED;
     }
 
-    public List<ResourceLocation> getMobs() {
+    public List<Identifier> getMobs() {
         return mobs;
     }
 
@@ -40,7 +40,7 @@ public class EventTypeMobKilled implements EventType {
         }
         if (mob.isJsonArray()) {
             for (JsonElement element : mob.getAsJsonArray()) {
-                ResourceLocation rl = ResourceLocation.parse(element.getAsString());
+                Identifier rl = Identifier.parse(element.getAsString());
                 if (!BuiltInRegistries.ENTITY_TYPE.containsKey(rl)) {
                     ErrorHandler.error("Unknown mob '" + rl + "'!");
                     return true;
@@ -48,7 +48,7 @@ public class EventTypeMobKilled implements EventType {
                 mobs.add(rl);
             }
         } else {
-            ResourceLocation rl = ResourceLocation.parse(mob.getAsString());
+            Identifier rl = Identifier.parse(mob.getAsString());
             if (!BuiltInRegistries.ENTITY_TYPE.containsKey(rl)) {
                 ErrorHandler.error("Unknown mob '" + rl + "'!");
                 return true;

@@ -45,7 +45,7 @@ public class CNPCMob extends DefaultMob {
         if (entity == null) return false;
         if (!mcjty.incontrol.platform.EntityData.get(entity).contains("InControlNatSpawnTab") || !mcjty.incontrol.platform.EntityData.get(entity).contains("InControlNatSpawnName"))
             return false;
-        return mcjty.incontrol.platform.EntityData.get(entity).getInt("InControlNatSpawnTab") == cloneTab && mcjty.incontrol.platform.EntityData.get(entity).getString("InControlNatSpawnName").equals(cloneName);
+        return mcjty.incontrol.platform.EntityData.get(entity).getIntOr("InControlNatSpawnTab", 0) == cloneTab && mcjty.incontrol.platform.EntityData.get(entity).getStringOr("InControlNatSpawnName", "").equals(cloneName);
     }
 
     @Override

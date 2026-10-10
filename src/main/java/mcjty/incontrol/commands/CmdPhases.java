@@ -12,7 +12,7 @@ public class CmdPhases {
 
     public static ArgumentBuilder<CommandSourceStack, ?> register(CommandDispatcher<CommandSourceStack> dispatcher) {
         return Commands.literal("phases")
-                .requires(cs -> cs.hasPermission(2))
+                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .executes(CmdPhases::showPhases);
     }
 

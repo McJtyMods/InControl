@@ -30,7 +30,7 @@ public class EffectRule extends RuleBase<RuleBase.EventGetter> {
     public static final IEventQuery<PlayerTickEvent> EVENT_QUERY = new IEventQuery<>() {
         @Override
         public Level getWorld(PlayerTickEvent o) {
-            return o.getEntity().getCommandSenderWorld();
+            return o.getEntity().level();
         }
 
         @Override
@@ -203,7 +203,7 @@ public class EffectRule extends RuleBase<RuleBase.EventGetter> {
 
             @Override
             public Level getWorld() {
-                return event.getEntity().getCommandSenderWorld();
+                return event.getEntity().level();
             }
 
             @Override

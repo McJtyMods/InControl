@@ -12,7 +12,7 @@ public class CmdClearPhase {
 
     public static ArgumentBuilder<CommandSourceStack, ?> register(CommandDispatcher<CommandSourceStack> dispatcher) {
         return Commands.literal("clearphase")
-                .requires(cs -> cs.hasPermission(2))
+                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .then(Commands.argument("phase", StringArgumentType.word())
                         .executes(CmdClearPhase::clearPhase));
     }

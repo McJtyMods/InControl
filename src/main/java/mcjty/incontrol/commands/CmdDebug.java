@@ -17,7 +17,7 @@ public class CmdDebug implements Command<CommandSourceStack> {
 
     public static ArgumentBuilder<CommandSourceStack, ?> register(CommandDispatcher<CommandSourceStack> dispatcher) {
         return Commands.literal("debug")
-                .requires(cs -> cs.hasPermission(0))
+                .requires(Commands.hasPermission(Commands.LEVEL_ALL))
                 .executes(CMD);
     }
 

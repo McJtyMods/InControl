@@ -17,15 +17,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin {
-    @Shadow protected Player lastHurtByPlayer;
-    @Inject(method = "die", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/LivingEntity;dead:Z", opcode = org.objectweb.asm.Opcodes.PUTFIELD, shift = At.Shift.AFTER))
+    @Shadow public abstract Player getLastHurtByPlayer();
+    @Inject(method = "die", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;handleKillingBlow()V", shift = At.Shift.AFTER))
     private void incontrol$death(DamageSource source, CallbackInfo ci) {
         LivingEntity entity = (LivingEntity) (Object) this;
         if (!entity.level().isClientSide()) InControl.HANDLERS.onEntityKilled(new LivingDeathEvent(entity, source));
     }
     @Redirect(method = "dropExperience", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/ExperienceOrb;award(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/phys/Vec3;I)V"))
     private void incontrol$experience(ServerLevel level, Vec3 pos, int amount) {
-        LivingExperienceDropEvent event = new LivingExperienceDropEvent((LivingEntity) (Object) this, lastHurtByPlayer, amount);
+        LivingExperienceDropEvent event = new LivingExperienceDropEvent((LivingEntity) (Object) this, getLastHurtByPlayer(), amount);
         InControl.HANDLERS.onLivingExperienceDrop(event);
         if (!event.isCanceled() && event.getDroppedExperience() > 0) ExperienceOrb.award(level, pos, event.getDroppedExperience());
     }

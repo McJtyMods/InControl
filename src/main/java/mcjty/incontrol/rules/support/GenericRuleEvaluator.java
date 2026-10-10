@@ -26,7 +26,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
@@ -214,9 +214,9 @@ public class GenericRuleEvaluator {
                 Entity entity = query.getEntity(event);
                 if (entity instanceof Mob) {
                     BlockPos pos = entity.blockPosition();
-                    Level world = entity.getCommandSenderWorld();
+                    Level world = entity.level();
                     if (TestingTools.isChunkInvalid(world, pos)) return false;
-                    return Mob.checkMobSpawnRules((EntityType<? extends Mob>) entity.getType(), world, MobSpawnType.NATURAL, pos, null);
+                    return Mob.checkMobSpawnRules((EntityType<? extends Mob>) entity.getType(), world, EntitySpawnReason.NATURAL, pos, null);
                 } else {
                     return false;
                 }
@@ -226,9 +226,9 @@ public class GenericRuleEvaluator {
                 Entity entity = query.getEntity(event);
                 if (entity instanceof Mob) {
                     BlockPos pos = entity.blockPosition();
-                    Level world = entity.getCommandSenderWorld();
+                    Level world = entity.level();
                     if (TestingTools.isChunkInvalid(world, pos)) return false;
-                    return !Mob.checkMobSpawnRules((EntityType<? extends Mob>) entity.getType(), world, MobSpawnType.NATURAL, pos, null);
+                    return !Mob.checkMobSpawnRules((EntityType<? extends Mob>) entity.getType(), world, EntitySpawnReason.NATURAL, pos, null);
                 } else {
                     return true;
                 }
@@ -242,7 +242,7 @@ public class GenericRuleEvaluator {
                 Entity entity = query.getEntity(event);
                 if (entity instanceof Mob) {
                     BlockPos pos = entity.blockPosition();
-                    Level world = entity.getCommandSenderWorld();
+                    Level world = entity.level();
                     if (TestingTools.isChunkInvalid(world, pos)) return false;
                     return ((Mob) entity).checkSpawnObstruction(world);
                 } else {
@@ -254,7 +254,7 @@ public class GenericRuleEvaluator {
                 Entity entity = query.getEntity(event);
                 if (entity instanceof Mob mob) {
                     BlockPos pos = entity.blockPosition();
-                    Level world = entity.getCommandSenderWorld();
+                    Level world = entity.level();
                     if (TestingTools.isChunkInvalid(world, pos)) return false;
                     return !mob.checkSpawnObstruction(world);
                 } else {
@@ -273,9 +273,9 @@ public class GenericRuleEvaluator {
     }
 
     private void addSpawnTypeCheck(List<String> tp) {
-        Set<MobSpawnType> types = new HashSet<>();
+        Set<EntitySpawnReason> types = new HashSet<>();
         for (String s : tp) {
-            MobSpawnType type = MobSpawnType.valueOf(s.toUpperCase());
+            EntitySpawnReason type = EntitySpawnReason.valueOf(s.toUpperCase());
             types.add(type);
         }
         checks.add((event, query) -> {
@@ -293,21 +293,21 @@ public class GenericRuleEvaluator {
         if (c) {
             checks.add((event, query) -> {
                 if (event instanceof FinalizeSpawnEvent checkSpawn) {
-                    return checkSpawn.getSpawnType().equals(MobSpawnType.SPAWNER);
+                    return checkSpawn.getSpawnType().equals(EntitySpawnReason.SPAWNER);
                 } else if (event instanceof MobSpawnEvent.PositionCheck checkSpawn) {
-                    return checkSpawn.getSpawnType().equals(MobSpawnType.SPAWNER);
+                    return checkSpawn.getSpawnType().equals(EntitySpawnReason.SPAWNER);
                 } else {
-                    return query.getEntity(event) instanceof Mob mob && Objects.equals(((mcjty.incontrol.platform.MobState) mob).incontrol$getSpawnType(), MobSpawnType.SPAWNER);
+                    return query.getEntity(event) instanceof Mob mob && Objects.equals(((mcjty.incontrol.platform.MobState) mob).incontrol$getSpawnType(), EntitySpawnReason.SPAWNER);
                 }
             });
         } else {
             checks.add((event, query) -> {
                 if (event instanceof FinalizeSpawnEvent checkSpawn) {
-                    return !checkSpawn.getSpawnType().equals(MobSpawnType.SPAWNER);
+                    return !checkSpawn.getSpawnType().equals(EntitySpawnReason.SPAWNER);
                 } else if (event instanceof MobSpawnEvent.PositionCheck checkSpawn) {
-                    return !checkSpawn.getSpawnType().equals(MobSpawnType.SPAWNER);
+                    return !checkSpawn.getSpawnType().equals(EntitySpawnReason.SPAWNER);
                 } else {
-                    return !(query.getEntity(event) instanceof Mob mob && Objects.equals(((mcjty.incontrol.platform.MobState) mob).incontrol$getSpawnType(), MobSpawnType.SPAWNER));
+                    return !(query.getEntity(event) instanceof Mob mob && Objects.equals(((mcjty.incontrol.platform.MobState) mob).incontrol$getSpawnType(), EntitySpawnReason.SPAWNER));
                 }
             });
         }
@@ -364,13 +364,13 @@ public class GenericRuleEvaluator {
         if (mobs.size() == 1) {
             String id = mobs.get(0);
             if (id.startsWith("#")) {
-                TagKey<EntityType<?>> tagKey = TagKey.create(Registries.ENTITY_TYPE, ResourceLocation.parse(id.substring(1)));
-                checks.add((event, query) -> query.getEntity(event).getType().is(tagKey));
+                TagKey<EntityType<?>> tagKey = TagKey.create(Registries.ENTITY_TYPE, Identifier.parse(id.substring(1)));
+                checks.add((event, query) -> query.getEntity(event).is(tagKey));
             } else {
-                if (!BuiltInRegistries.ENTITY_TYPE.containsKey(ResourceLocation.parse(id))) {
+                if (!BuiltInRegistries.ENTITY_TYPE.containsKey(Identifier.parse(id))) {
                     ErrorHandler.error("Unknown mob '" + id + "'!");
                 }
-                EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(ResourceLocation.parse(id));
+                EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.getValue(Identifier.parse(id));
                 if (type != null) {
                     checks.add((event, query) -> {
                         Entity entity = query.getEntity(event);
@@ -386,10 +386,10 @@ public class GenericRuleEvaluator {
             Set<TagKey<EntityType<?>>> tagKeys = new HashSet<>();
             for (String id : mobs) {
                 if (id.startsWith("#")) {
-                    TagKey<EntityType<?>> tagKey = TagKey.create(Registries.ENTITY_TYPE, ResourceLocation.parse(id.substring(1)));
+                    TagKey<EntityType<?>> tagKey = TagKey.create(Registries.ENTITY_TYPE, Identifier.parse(id.substring(1)));
                     tagKeys.add(tagKey);
                 } else {
-                    EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(ResourceLocation.parse(id));
+                    EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.getValue(Identifier.parse(id));
                     if (type != null) {
                         classes.add(type);
                     } else {
@@ -406,7 +406,7 @@ public class GenericRuleEvaluator {
                         return true;
                     }
                     for (TagKey<EntityType<?>> tagKey : tagKeys) {
-                        if (entityType.is(tagKey)) {
+                        if (entityType.builtInRegistryHolder().is(tagKey)) {
                             return true;
                         }
                     }
@@ -416,7 +416,7 @@ public class GenericRuleEvaluator {
                 checks.add((event, query) -> {
                     EntityType<?> entityType = query.getEntity(event).getType();
                     for (TagKey<EntityType<?>> tagKey : tagKeys) {
-                        if (entityType.is(tagKey)) {
+                        if (entityType.builtInRegistryHolder().is(tagKey)) {
                             return true;
                         }
                     }
@@ -503,9 +503,9 @@ public class GenericRuleEvaluator {
 
     private void addSlimeChunkCheck(boolean slime) {
         if (slime) {
-            checks.add((event, query) -> TestingTools.isSlimeChunk(new ChunkPos(query.getPos(event)), query.getWorld(event)));
+            checks.add((event, query) -> TestingTools.isSlimeChunk(ChunkPos.containing(query.getPos(event)), query.getWorld(event)));
         } else {
-            checks.add((event, query) -> !TestingTools.isSlimeChunk(new ChunkPos(query.getPos(event)), query.getWorld(event)));
+            checks.add((event, query) -> !TestingTools.isSlimeChunk(ChunkPos.containing(query.getPos(event)), query.getWorld(event)));
         }
     }
 
@@ -522,10 +522,10 @@ public class GenericRuleEvaluator {
     private void addDimensionModCheck(List<String> dimensions) {
         if (dimensions.size() == 1) {
             String dimmod = dimensions.get(0);
-            checks.add((event, query) -> Tools.getDimensionKey(query.getWorld(event)).location().getNamespace().equals(dimmod));
+            checks.add((event, query) -> Tools.getDimensionKey(query.getWorld(event)).identifier().getNamespace().equals(dimmod));
         } else {
             Set<String> dims = new HashSet<>(dimensions);
-            checks.add((event, query) -> dims.contains(Tools.getDimensionKey(query.getWorld(event)).location().getNamespace()));
+            checks.add((event, query) -> dims.contains(Tools.getDimensionKey(query.getWorld(event)).identifier().getNamespace()));
         }
     }
 
@@ -567,7 +567,7 @@ public class GenericRuleEvaluator {
     }
 
     private void addBiomeTagCheck(List<String> list) {
-        Set<TagKey<Biome>> tags = list.stream().map(s -> TagKey.create(Registries.BIOME, ResourceLocation.parse(s))).collect(Collectors.toSet());
+        Set<TagKey<Biome>> tags = list.stream().map(s -> TagKey.create(Registries.BIOME, Identifier.parse(s))).collect(Collectors.toSet());
         if (tags.size() == 1) {
             TagKey<Biome> key = tags.iterator().next();
             checks.add((event, query) -> {
@@ -592,7 +592,7 @@ public class GenericRuleEvaluator {
         checks.add((event, query) -> {
             Entity entity = query.getEntity(event);
             if (entity instanceof LivingEntity living) {
-                return living.getTags().containsAll(tags);
+                return living.entityTags().containsAll(tags);
             }
             return false;
         });
@@ -603,8 +603,8 @@ public class GenericRuleEvaluator {
         checks.add((event, query) -> {
             Entity entity = query.getEntity(event);
             if (entity instanceof LivingEntity living) {
-                // Return true if entity.getTags() contains any key from tags
-                return living.getTags().stream().anyMatch(tags::contains);
+                // Return true if entity.entityTags() contains any key from tags
+                return living.entityTags().stream().anyMatch(tags::contains);
             }
             return false;
         });
@@ -632,7 +632,7 @@ public class GenericRuleEvaluator {
     }
 
     private void addStructureTagsCheck(List<String> tags) {
-        Set<TagKey<Structure>> tagSet = tags.stream().map(s -> TagKey.create(Registries.STRUCTURE, ResourceLocation.parse(s))).collect(Collectors.toSet());
+        Set<TagKey<Structure>> tagSet = tags.stream().map(s -> TagKey.create(Registries.STRUCTURE, Identifier.parse(s))).collect(Collectors.toSet());
         checks.add((event,query) -> {
             LevelAccessor world = query.getWorld(event);
             BlockPos pos = query.getPos(event);
@@ -646,9 +646,9 @@ public class GenericRuleEvaluator {
                 LongSet longs = e.getValue();
                 if (!longs.isEmpty()) {
                     Structure struct = e.getKey();
-                    Optional<ResourceKey<Structure>> resourceKey = world.registryAccess().registryOrThrow(Registries.STRUCTURE).getResourceKey(struct);
+                    Optional<ResourceKey<Structure>> resourceKey = world.registryAccess().lookupOrThrow(Registries.STRUCTURE).getResourceKey(struct);
                     if (resourceKey.isPresent()) {
-                        Holder.Reference<Structure> holder = world.registryAccess().registryOrThrow(Registries.STRUCTURE).getHolder(resourceKey.get()).get();
+                        Holder.Reference<Structure> holder = world.registryAccess().lookupOrThrow(Registries.STRUCTURE).get(resourceKey.get()).get();
                         for (TagKey<Structure> tagKey : tagSet) {
                             if (holder.is(tagKey)) {
                                 return true;
@@ -695,7 +695,7 @@ public class GenericRuleEvaluator {
                     for (int y = -matcher.distBelow(); y <= matcher.distAbove(); y++) {
                         if (y != 0) {
                             BlockPos checkPos = pos.offset(0, y, 0);
-                            if (checkPos.getY() >= world.getMinBuildHeight() && checkPos.getY() < world.getMaxBuildHeight()) {
+                            if (world.isInsideBuildHeight(checkPos)) {
                                 if (matcher.matcher().test(world, checkPos)) {
                                     return true;
                                 }
@@ -764,7 +764,7 @@ public class GenericRuleEvaluator {
             checks.add((event, query) -> {
                 LevelAccessor world = query.getWorld(event);
                 if (world instanceof Level) {
-                    long t = ((Level) world).getDayTime();
+                    long t = ((Level) world).getOverworldClockTime();
                     return expression.test((int) (t % 24000));
                 } else {
                     return false;
@@ -777,7 +777,7 @@ public class GenericRuleEvaluator {
         checks.add((event, query) -> {
             LevelAccessor world = query.getWorld(event);
             if (world instanceof Level) {
-                long time = ((Level) world).getDayTime();
+                long time = ((Level) world).getOverworldClockTime();
                 return (time % 24000) >= mintime;
             } else {
                 return false;
@@ -789,7 +789,7 @@ public class GenericRuleEvaluator {
         checks.add((event, query) -> {
             LevelAccessor world = query.getWorld(event);
             if (world instanceof Level) {
-                long time = ((Level) world).getDayTime();
+                long time = ((Level) world).getOverworldClockTime();
                 return (time % 24000) <= maxtime;
             } else {
                 return false;
@@ -828,7 +828,7 @@ public class GenericRuleEvaluator {
         checks.add((event, query) -> {
             BlockPos pos = query.getPos(event);
             ServerLevel sw = Tools.getServerWorld(query.getWorld(event));
-            double sqdist = pos.distSqr(sw.getSharedSpawnPos());
+            double sqdist = pos.distSqr(sw.getRespawnData().pos());
             return sqdist >= d;
         });
     }
@@ -838,7 +838,7 @@ public class GenericRuleEvaluator {
         checks.add((event, query) -> {
             BlockPos pos = query.getPos(event);
             ServerLevel sw = Tools.getServerWorld(query.getWorld(event));
-            double sqdist = pos.distSqr(sw.getSharedSpawnPos());
+            double sqdist = pos.distSqr(sw.getRespawnData().pos());
             return sqdist <= d;
         });
     }
@@ -910,11 +910,11 @@ public class GenericRuleEvaluator {
     }
 
     private void addMinAdditionalDifficultyCheck(Float mindifficulty) {
-        checks.add((event, query) -> query.getWorld(event).getCurrentDifficultyAt(query.getPos(event)).getEffectiveDifficulty() >= mindifficulty);
+        checks.add((event, query) -> Tools.getServerWorld(query.getWorld(event)).getCurrentDifficultyAt(query.getPos(event)).getEffectiveDifficulty() >= mindifficulty);
     }
 
     private void addMaxAdditionalDifficultyCheck(Float maxdifficulty) {
-        checks.add((event, query) -> query.getWorld(event).getCurrentDifficultyAt(query.getPos(event)).getEffectiveDifficulty() <= maxdifficulty);
+        checks.add((event, query) -> Tools.getServerWorld(query.getWorld(event)).getCurrentDifficultyAt(query.getPos(event)).getEffectiveDifficulty() <= maxdifficulty);
     }
 
     private void addHeightCheck(String input) {

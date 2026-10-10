@@ -52,40 +52,40 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
 
         @Override
         public BlockPos getPos(LootContext o) {
-            Entity entity = o.getParamOrNull(LootContextParams.THIS_ENTITY);
+            Entity entity = o.getOptionalParameter(LootContextParams.THIS_ENTITY);
             return entity == null ? null : entity.blockPosition();
         }
 
         @Override
         public BlockPos getValidBlockPos(LootContext o) {
-            Entity entity = o.getParamOrNull(LootContextParams.THIS_ENTITY);
+            Entity entity = o.getOptionalParameter(LootContextParams.THIS_ENTITY);
             return entity == null ? null : entity.blockPosition().below();
         }
 
         @Override
         public int getY(LootContext o) {
-            Entity entity = o.getParamOrNull(LootContextParams.THIS_ENTITY);
+            Entity entity = o.getOptionalParameter(LootContextParams.THIS_ENTITY);
             return entity == null ? 0 : entity.blockPosition().getY();
         }
 
         @Override
         public Entity getEntity(LootContext o) {
-            return o.getParamOrNull(LootContextParams.THIS_ENTITY);
+            return o.getOptionalParameter(LootContextParams.THIS_ENTITY);
         }
 
         @Override
         public DamageSource getSource(LootContext o) {
-            return o.getParamOrNull(LootContextParams.DAMAGE_SOURCE);
+            return o.getOptionalParameter(LootContextParams.DAMAGE_SOURCE);
         }
 
         @Override
         public Entity getAttacker(LootContext o) {
-            return o.getParamOrNull(LootContextParams.ATTACKING_ENTITY);
+            return o.getOptionalParameter(LootContextParams.ATTACKING_ENTITY);
         }
 
         @Override
         public Player getPlayer(LootContext o) {
-            Entity entity = o.getParamOrNull(LootContextParams.ATTACKING_ENTITY);
+            Entity entity = o.getOptionalParameter(LootContextParams.ATTACKING_ENTITY);
             return entity instanceof Player ? (Player) entity : null;
         }
 
@@ -306,7 +306,7 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
             } else {
                 if (nbtJson != null) {
                     try {
-                        CompoundTag tag = TagParser.parseTag(nbtJson);
+                        CompoundTag tag = TagParser.parseCompoundFully(nbtJson);
                         DataResult<com.mojang.datafixers.util.Pair<DataComponentPatch, Tag>> decoded = DataComponentPatch.CODEC.decode(NbtOps.INSTANCE, tag);
                         stack.applyComponents(decoded.result().get().getFirst());
                     } catch (CommandSyntaxException e) {

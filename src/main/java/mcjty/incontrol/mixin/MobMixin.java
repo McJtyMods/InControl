@@ -3,9 +3,10 @@ package mcjty.incontrol.mixin;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.platform.MobState;
 import mcjty.incontrol.platform.RuleEvents.*;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.EntitySpawnReason;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -14,10 +15,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Mob.class)
 public abstract class MobMixin implements MobState {
-    @Unique private MobSpawnType incontrol$spawnType;
+    @Unique private EntitySpawnReason incontrol$spawnType;
     @Unique private boolean incontrol$spawnCancelled;
-    public MobSpawnType incontrol$getSpawnType() { return incontrol$spawnType; }
-    public void incontrol$setSpawnType(MobSpawnType type) { incontrol$spawnType = type; }
+    public EntitySpawnReason incontrol$getSpawnType() { return incontrol$spawnType; }
+    public void incontrol$setSpawnType(EntitySpawnReason type) { incontrol$spawnType = type; }
     public boolean incontrol$isSpawnCancelled() { return incontrol$spawnCancelled; }
     public void incontrol$setSpawnCancelled(boolean canceled) { incontrol$spawnCancelled = canceled; }
 
@@ -31,13 +32,13 @@ public abstract class MobMixin implements MobState {
         else if (event.getResult() == MobDespawnEvent.Result.DENY) { mob.setNoActionTime(0); ci.cancel(); }
     }
     @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
-    private void incontrol$saveType(CompoundTag tag, CallbackInfo ci) {
-        if (incontrol$spawnType != null) tag.putString("InControlSpawnType", incontrol$spawnType.name());
+    private void incontrol$saveType(ValueOutput output, CallbackInfo ci) {
+        if (incontrol$spawnType != null) output.putString("InControlSpawnType", incontrol$spawnType.name());
     }
     @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
-    private void incontrol$loadType(CompoundTag tag, CallbackInfo ci) {
-        if (tag.contains("InControlSpawnType")) {
-            try { incontrol$spawnType = MobSpawnType.valueOf(tag.getString("InControlSpawnType")); }
+    private void incontrol$loadType(ValueInput input, CallbackInfo ci) {
+        if (input.getString("InControlSpawnType").isPresent()) {
+            try { incontrol$spawnType = EntitySpawnReason.valueOf(input.getStringOr("InControlSpawnType", "")); }
             catch (IllegalArgumentException ignored) { incontrol$spawnType = null; }
         }
     }

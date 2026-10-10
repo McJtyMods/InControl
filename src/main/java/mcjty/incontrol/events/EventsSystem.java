@@ -6,12 +6,12 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -35,7 +35,7 @@ public class EventsSystem {
     private static final Map<EventType.Type, List<EventsRule>> rules = new HashMap<>();
 
     // A map indexed by mob type that contains all rules for that mob type
-    private static final Map<ResourceLocation, List<EventsRule>> rulesByMob = new HashMap<>();
+    private static final Map<Identifier, List<EventsRule>> rulesByMob = new HashMap<>();
 
     private static final Random rnd = new Random();
 
@@ -57,7 +57,7 @@ public class EventsSystem {
     public static void addRule(EventsRule rule) {
         rules.computeIfAbsent(rule.getEventType().type(), k -> new ArrayList<>()).add(rule);
         if (rule.getEventType() instanceof EventTypeMobKilled mobKilled) {
-            for (ResourceLocation mob : mobKilled.getMobs()) {
+            for (Identifier mob : mobKilled.getMobs()) {
                 rulesByMob.computeIfAbsent(mob, k -> new ArrayList<>()).add(rule);
             }
         }
@@ -65,7 +65,7 @@ public class EventsSystem {
 
     public static void onEntityKilled(LivingDeathEvent event) {
         Entity entity = event.getEntity();
-        ResourceLocation key = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
+        Identifier key = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
         List<EventsRule> eventsRules = rulesByMob.get(key);
         if (eventsRules != null) {
             for (EventsRule rule : eventsRules) {
@@ -92,7 +92,7 @@ public class EventsSystem {
         CommandAction action = rule.getCommandAction();
         if (action != null) {
             List<String> commands = action.commands();
-            CommandSourceStack stack = new CommandSourceStack(EMPTY, Vec3.atCenterOf(pos), Vec2.ZERO, level, 2,
+            CommandSourceStack stack = new CommandSourceStack(EMPTY, Vec3.atCenterOf(pos), Vec2.ZERO, level, net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER,
                     DEFAULT_NAME.getString(), DEFAULT_NAME, level.getServer(), player);
             for (String command : commands) {
                 level.getServer().getCommands().performPrefixedCommand(stack, command);
@@ -190,10 +190,10 @@ public class EventsSystem {
             return false;
         }
         Mob mobEntity = (Mob) entity;
-        entity.moveTo(pos.getX(), pos.getY(), pos.getZ(), rnd.nextFloat() * 360.0F, 0.0F);
+        entity.snapTo(pos.getX(), pos.getY(), pos.getZ(), rnd.nextFloat() * 360.0F, 0.0F);
         busySpawning = mobEntity;
         if (canSpawn(world.getLevel(), mobEntity, action) && isNotColliding(world.getLevel(), mobEntity, action)) {
-            SpawnHooks.finalizeMobSpawn(mobEntity, world, world.getCurrentDifficultyAt(pos), MobSpawnType.NATURAL, null);
+            SpawnHooks.finalizeMobSpawn(mobEntity, world, world.getCurrentDifficultyAt(pos), EntitySpawnReason.NATURAL, null);
             if (!((mcjty.incontrol.platform.MobState) entity).incontrol$isSpawnCancelled()) {
                 world.addFreshEntityWithPassengers(entity);
                 busySpawning = null;
@@ -208,7 +208,7 @@ public class EventsSystem {
         if (action.norestrictions()) {
             return true;
         } else {
-            return SpawnHooks.checkSpawnPosition(mobEntity, (ServerLevelAccessor) world, MobSpawnType.NATURAL);
+            return SpawnHooks.checkSpawnPosition(mobEntity, (ServerLevelAccessor) world, EntitySpawnReason.NATURAL);
         }
     }
 

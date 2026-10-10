@@ -3,7 +3,7 @@ package mcjty.incontrol.compat;
 import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.platform.EntityData;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -25,7 +25,7 @@ public final class CustomNPCSupport {
         return null;
     }
     public static EntityType<?> getNPCEntityType() {
-        return BuiltInRegistries.ENTITY_TYPE.getOptional(ResourceLocation.fromNamespaceAndPath("customnpcs", "customnpc")).orElse(null);
+        return BuiltInRegistries.ENTITY_TYPE.getOptional(Identifier.fromNamespaceAndPath("customnpcs", "customnpc")).orElse(null);
     }
     public static boolean isNPC(Entity entity) { return entity.getType() == getNPCEntityType(); }
     public static boolean hasNPCInterface(Entity entity) {

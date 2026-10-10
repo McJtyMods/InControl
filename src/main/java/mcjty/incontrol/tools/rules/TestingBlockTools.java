@@ -10,7 +10,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.LevelAccessor;
@@ -93,25 +93,25 @@ public class TestingBlockTools
         if (element.isJsonPrimitive()) {
             String blockname = element.getAsString();
             if (blockname.startsWith("tag:")) {
-                ResourceLocation tagname = ResourceLocation.parse(blockname.substring(4));
+                Identifier tagname = Identifier.parse(blockname.substring(4));
                 TagKey<Block> key = TagKey.create(Registries.BLOCK, tagname);
                 return (world, pos) -> {
                     BlockState state = world.getBlockState(pos);
                     return state.is(key);
                 };
             } else {
-                if (!BuiltInRegistries.BLOCK.containsKey(ResourceLocation.parse(blockname))) {
+                if (!BuiltInRegistries.BLOCK.containsKey(Identifier.parse(blockname))) {
                     ErrorHandler.error("Block '" + blockname + "' is not valid!");
                     return null;
                 }
-                Block block = BuiltInRegistries.BLOCK.get(ResourceLocation.parse(blockname));
+                Block block = BuiltInRegistries.BLOCK.getValue(Identifier.parse(blockname));
                 return (world, pos) -> testBlockStateSafe(world, pos, block);
             }
         } else if (element.isJsonObject()) {
             JsonObject obj = element.getAsJsonObject();
             BiPredicate<LevelAccessor, BlockPos> test;
             if (obj.has("tag")) {
-                ResourceLocation tagname = ResourceLocation.parse(obj.get("tag").getAsString());
+                Identifier tagname = Identifier.parse(obj.get("tag").getAsString());
                 TagKey<Block> key = TagKey.create(Registries.BLOCK, tagname);
                 test = (world, pos) -> {
                     BlockState state = world.getBlockState(pos);
@@ -119,11 +119,11 @@ public class TestingBlockTools
                 };
             } else if (obj.has("block")) {
                 String blockname = obj.get("block").getAsString();
-                if (!BuiltInRegistries.BLOCK.containsKey(ResourceLocation.parse(blockname))) {
+                if (!BuiltInRegistries.BLOCK.containsKey(Identifier.parse(blockname))) {
                     ErrorHandler.error("Block '" + blockname + "' is not valid!");
                     return null;
                 }
-                Block block = BuiltInRegistries.BLOCK.get(ResourceLocation.parse(blockname));
+                Block block = BuiltInRegistries.BLOCK.getValue(Identifier.parse(blockname));
                 if (obj.has("properties")) {
                     BlockState blockState = block.defaultBlockState();
                     JsonArray propArray = obj.get("properties").getAsJsonArray();

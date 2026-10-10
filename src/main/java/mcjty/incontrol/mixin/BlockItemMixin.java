@@ -26,7 +26,8 @@ public abstract class BlockItemMixin {
         if (!event.isCanceled()) return true;
         level.setBlock(pos, before, 3);
         var restored = level.getBlockEntity(pos);
-        if (restored != null && beforeData != null) restored.loadWithComponents(beforeData, level.registryAccess());
+        if (restored != null && beforeData != null) restored.loadWithComponents(net.minecraft.world.level.storage.TagValueInput.create(
+                net.minecraft.util.ProblemReporter.DISCARDING, level.registryAccess(), beforeData));
         return false;
     }
 }

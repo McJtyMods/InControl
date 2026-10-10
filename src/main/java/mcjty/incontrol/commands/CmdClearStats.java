@@ -14,7 +14,7 @@ public class CmdClearStats implements Command<CommandSourceStack> {
     private static final CmdClearStats CMD = new CmdClearStats();
 
     public static ArgumentBuilder<CommandSourceStack, ?> register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        return Commands.literal("clearstats").requires(cs -> cs.hasPermission(0)).executes(CMD);
+        return Commands.literal("clearstats").requires(Commands.hasPermission(Commands.LEVEL_ALL)).executes(CMD);
     }
 
     @Override

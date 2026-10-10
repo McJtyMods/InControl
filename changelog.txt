@@ -1,3 +1,7 @@
+26.2-11.0.0-fabric:
+- Port to Minecraft 26.2 with Fabric and Java 25
+- Migrate existing phases, numbers, and day counters to the new saved-data format
+
 1.21-10.3.0-fabric:
 - Port to fabric
 

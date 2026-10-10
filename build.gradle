@@ -10,7 +10,7 @@ buildscript {
 }
 
 plugins {
-    id 'fabric-loom' version '1.10.5'
+    id 'net.fabricmc.fabric-loom' version "${loom_version}"
     id 'maven-publish'
 }
 
@@ -20,7 +20,7 @@ apply from: 'gradletools.gradle'
 group = mod_group_id
 base { archivesName = 'incontrol' }
 java {
-    toolchain.languageVersion = JavaLanguageVersion.of(21)
+    toolchain.languageVersion = JavaLanguageVersion.of(Integer.parseInt(java_version))
     withSourcesJar()
 }
 
@@ -32,7 +32,7 @@ sourceSets.main.resources.srcDir 'src/generated/resources'
 
 dependencies {
     mc()
-    modImplementation include('teamreborn:energy:4.1.0')
+    implementation include("teamreborn:energy:${energy_version}")
     compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
 }
 

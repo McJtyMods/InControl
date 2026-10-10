@@ -33,20 +33,20 @@ public final class RuleEvents {
     public static class MobSpawnEvent extends Cancellable {
         private final Mob entity;
         private final ServerLevelAccessor level;
-        private final MobSpawnType spawnType;
-        public MobSpawnEvent(Mob entity, ServerLevelAccessor level, MobSpawnType spawnType) {
+        private final EntitySpawnReason spawnType;
+        public MobSpawnEvent(Mob entity, ServerLevelAccessor level, EntitySpawnReason spawnType) {
             this.entity = entity; this.level = level; this.spawnType = spawnType;
         }
         public Mob getEntity() { return entity; }
         public ServerLevelAccessor getLevel() { return level; }
-        public MobSpawnType getSpawnType() { return spawnType; }
+        public EntitySpawnReason getSpawnType() { return spawnType; }
         public double getX() { return entity.getX(); }
         public double getY() { return entity.getY(); }
         public double getZ() { return entity.getZ(); }
         public static class PositionCheck extends MobSpawnEvent {
             public enum Result { DEFAULT, SUCCEED, FAIL }
             private Result result = Result.DEFAULT;
-            public PositionCheck(Mob mob, ServerLevelAccessor level, MobSpawnType type) { super(mob, level, type); }
+            public PositionCheck(Mob mob, ServerLevelAccessor level, EntitySpawnReason type) { super(mob, level, type); }
             public Result getResult() { return result; }
             public void setResult(Result result) { this.result = result; }
         }
@@ -56,7 +56,7 @@ public final class RuleEvents {
     }
     public static class FinalizeSpawnEvent extends MobSpawnEvent {
         private boolean spawnCancelled;
-        public FinalizeSpawnEvent(Mob mob, ServerLevelAccessor level, MobSpawnType type) { super(mob, level, type); }
+        public FinalizeSpawnEvent(Mob mob, ServerLevelAccessor level, EntitySpawnReason type) { super(mob, level, type); }
         public void setSpawnCancelled(boolean value) { spawnCancelled = value; }
         public boolean isSpawnCancelled() { return spawnCancelled; }
     }

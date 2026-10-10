@@ -11,7 +11,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -39,7 +39,7 @@ public class CmdList implements Command<CommandSourceStack> {
 
     public static ArgumentBuilder<CommandSourceStack, ?> register(CommandDispatcher<CommandSourceStack> dispatcher) {
         return Commands.literal("list")
-                .requires(cs -> cs.hasPermission(2))
+                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .executes(CMD);
     }
 
@@ -47,14 +47,14 @@ public class CmdList implements Command<CommandSourceStack> {
     public int run(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         ServerPlayer player = context.getSource().getPlayerOrException();
         if (player != null) {
-            ResourceKey<Level> dimension = player.getCommandSenderWorld().dimension();
+            ResourceKey<Level> dimension = player.level().dimension();
 
-            ServerLevel worldServer = player.getCommandSenderWorld().getServer().getLevel(dimension);
-            Counter<ResourceLocation> counter = new Counter<>();
+            ServerLevel worldServer = player.level().getServer().getLevel(dimension);
+            Counter<Identifier> counter = new Counter<>();
             worldServer.getEntities(ANY_TYPE, e -> e instanceof Mob).forEach(input -> {
                 counter.add(BuiltInRegistries.ENTITY_TYPE.getKey(input.getType()));
             });
-            for (Map.Entry<ResourceLocation, Integer> entry : counter.getMap().entrySet()) {
+            for (Map.Entry<Identifier, Integer> entry : counter.getMap().entrySet()) {
                 player.sendSystemMessage(Component.literal(ChatFormatting.YELLOW + "Mob " + entry.getKey().toString() + ": " + entry.getValue()));
             }
         }

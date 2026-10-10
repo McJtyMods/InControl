@@ -12,7 +12,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
-import net.minecraft.util.random.WeightedRandomList;
+import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.monster.Enemy;
@@ -179,7 +179,7 @@ public class SpawnerSystem {
                         if (spawnable == null) {
                             return;
                         }
-                        entity = spawnable.create(world);
+                        entity = spawnable.create(world, EntitySpawnReason.NATURAL);
                     } else {
                         entity = mob.getEntity(world);
                         if (entity == null) {
@@ -187,7 +187,7 @@ public class SpawnerSystem {
                         }
                     }
 //                    boolean nocollisions = world.noCollision(spawnable.getSpawnAABB(pos.getX(), pos.getY(), pos.getZ()));
-                    entity.moveTo(pos.getX(), pos.getY(), pos.getZ(), random.nextFloat() * 360.0F, 0.0F);
+                    entity.snapTo(pos.getX(), pos.getY(), pos.getZ(), random.nextFloat() * 360.0F, 0.0F);
                     boolean nocollisions = world.noCollision(entity.getBoundingBox());
                     if (nocollisions) {
                         if (entity instanceof Mob) {
@@ -198,7 +198,7 @@ public class SpawnerSystem {
                                 }
                                 busySpawning = mobEntity;   // @todo check in spawn rule
                                 if (canSpawn(world, mobEntity, conditions) && isNotColliding(world, mobEntity, conditions)) {
-                                    SpawnHooks.finalizeMobSpawn(mobEntity, world, world.getCurrentDifficultyAt(pos), MobSpawnType.NATURAL, null);
+                                    SpawnHooks.finalizeMobSpawn(mobEntity, world, world.getCurrentDifficultyAt(pos), EntitySpawnReason.NATURAL, null);
                                     if (!((mcjty.incontrol.platform.MobState) entity).incontrol$isSpawnCancelled()) {
                                         world.addFreshEntityWithPassengers(entity);
                                         Statistics.addSpawnerStat(ruleNr);
@@ -224,12 +224,12 @@ public class SpawnerSystem {
     private static EntityType<?> selectMob(ServerLevel world, MobCategory classification, SpawnerConditions conditions, BlockPos pos) {
         EntityType<?> spawnable = null;
         if (classification != null) {
-            WeightedRandomList<MobSpawnSettings.SpawnerData> spawners = world.getBiome(pos).value().getMobSettings().getMobs(classification);
+            WeightedList<MobSpawnSettings.SpawnerData> spawners = world.getBiome(pos).value().getMobSettings().getMobs(classification);
             if (spawners.isEmpty()) {
                 return null;
             }
-            spawnable = spawners.getRandom(world.random).map(item -> {
-                EntityType<?> type = item.type;
+            spawnable = spawners.getRandom(world.getRandom()).map(item -> {
+                EntityType<?> type = item.type();
                 if (checkTooMany(world, type, conditions)) {
                     return null;
                 } else {
@@ -254,7 +254,7 @@ public class SpawnerSystem {
         if (conditions.isNoRestrictions()) {
             return true;
         } else {
-            return SpawnHooks.checkSpawnPosition(mobEntity, (ServerLevelAccessor) world, MobSpawnType.NATURAL);
+            return SpawnHooks.checkSpawnPosition(mobEntity, (ServerLevelAccessor) world, EntitySpawnReason.NATURAL);
         }
     }
 
@@ -481,7 +481,7 @@ public class SpawnerSystem {
     private static BlockPos getValidSpawnablePosition(LevelReader worldIn, int x, int z, int minHeight, int maxHeight, Predicate<BlockPos> validSpawn) {
         int height = worldIn.getHeight(Heightmap.Types.WORLD_SURFACE, x, z) + 1;
         height = Math.min(height, maxHeight);
-        int minBuildHeight = worldIn.getMinBuildHeight();
+        int minBuildHeight = worldIn.getMinY();
         height = random.nextInt(height + 1 - minBuildHeight) + minBuildHeight;
         BlockPos blockPos = new BlockPos(x, height-1, z);
 //        while (blockPos.getY() >= minHeight && !isValidSpawnPos(worldIn, blockPos)) {

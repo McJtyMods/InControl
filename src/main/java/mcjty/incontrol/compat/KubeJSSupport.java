@@ -7,7 +7,8 @@ import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.setup.ModSetup;
 import mcjty.incontrol.tools.varia.JSonTools;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.ByteTag;
+import net.minecraft.nbt.NumericTag;
 import net.minecraft.server.MinecraftServer;
 
 import java.util.ArrayList;
@@ -181,23 +182,23 @@ public class KubeJSSupport {
     record BooleanCondition(String variable, boolean expected) implements VariableCondition {
         @Override
         public boolean matches(CompoundTag variables) {
-            return variables.contains(variable, Tag.TAG_BYTE) && variables.getBoolean(variable) == expected;
+            return variables.get(variable) instanceof ByteTag && variables.getBooleanOr(variable, false) == expected;
         }
     }
 
     record IntegerCondition(String variable, String operator, int expected) implements VariableCondition {
         @Override
         public boolean matches(CompoundTag variables) {
-            return variables.contains(variable, Tag.TAG_ANY_NUMERIC)
-                    && compare(variables.getDouble(variable), operator, expected);
+            return variables.get(variable) instanceof NumericTag
+                    && compare(variables.getDoubleOr(variable, 0.0), operator, expected);
         }
     }
 
     record DoubleCondition(String variable, String operator, double expected) implements VariableCondition {
         @Override
         public boolean matches(CompoundTag variables) {
-            return variables.contains(variable, Tag.TAG_ANY_NUMERIC)
-                    && compare(variables.getDouble(variable), operator, expected);
+            return variables.get(variable) instanceof NumericTag
+                    && compare(variables.getDoubleOr(variable, 0.0), operator, expected);
         }
     }
 

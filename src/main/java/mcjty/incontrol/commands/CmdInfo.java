@@ -13,7 +13,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
@@ -30,7 +30,7 @@ public class CmdInfo implements Command<CommandSourceStack> {
 
     public static ArgumentBuilder<CommandSourceStack, ?> register(CommandDispatcher<CommandSourceStack> dispatcher) {
         return Commands.literal("info")
-                .requires(cs -> cs.hasPermission(0))
+                .requires(Commands.hasPermission(Commands.LEVEL_ALL))
                 .executes(CMD);
     }
 
@@ -44,7 +44,7 @@ public class CmdInfo implements Command<CommandSourceStack> {
             Map<Structure, LongSet> references = chunk.getAllReferences();
             for (Structure s : references.keySet()) {
                 LongSet longs = references.get(s);
-                ResourceLocation key = sw.registryAccess().registryOrThrow(Registries.STRUCTURE).getKey(s);
+                Identifier key = sw.registryAccess().lookupOrThrow(Registries.STRUCTURE).getKey(s);
                 player.sendSystemMessage(Component.literal(key.toString() + ": " + longs.size()));
             }
         }
@@ -54,7 +54,7 @@ public class CmdInfo implements Command<CommandSourceStack> {
         player.sendSystemMessage(Component.literal("Light: " + light + ", sky: " + light_sky + ", full: " + light_full));
         DataStorage data = DataStorage.getData(sw);
         player.sendSystemMessage(Component.literal("Current day is " + data.getDaycounter()));
-        long time = sw.getDayTime();
+        long time = sw.getOverworldClockTime();
         player.sendSystemMessage(Component.literal("Current time is " + time + " (daytime: " + (time % 24000) + ")"));
         return 0;
     }

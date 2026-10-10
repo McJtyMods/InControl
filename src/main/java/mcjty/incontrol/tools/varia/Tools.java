@@ -12,7 +12,7 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -28,6 +28,20 @@ import java.util.function.Predicate;
 
 public class Tools {
 
+    public static CompoundTag saveEntityNbt(net.minecraft.world.entity.Entity entity) {
+        net.minecraft.world.level.storage.TagValueOutput output = net.minecraft.world.level.storage.TagValueOutput
+                .createWithContext(net.minecraft.util.ProblemReporter.DISCARDING, entity.registryAccess());
+        entity.saveWithoutId(output);
+        return output.buildResult();
+    }
+
+    public static void applyEntityNbt(net.minecraft.world.entity.Entity entity, CompoundTag patch) {
+        CompoundTag tag = saveEntityNbt(entity);
+        tag.merge(patch);
+        entity.load(net.minecraft.world.level.storage.TagValueInput.create(
+                net.minecraft.util.ProblemReporter.DISCARDING, entity.registryAccess(), tag));
+    }
+
     public static ResourceKey<Level> getDimensionKey(LevelAccessor world) {
         if (world instanceof Level) {
             return ((Level) world).dimension();
@@ -39,7 +53,7 @@ public class Tools {
     }
 
     public static String getBiomeId(Holder<Biome> biomeHolder) {
-        return biomeHolder.unwrap().map((key) -> key.location().toString(), (key) -> "[unregistered " + key + "]");
+        return biomeHolder.unwrap().map((key) -> key.identifier().toString(), (key) -> "[unregistered " + key + "]");
     }
 
     public static Pair<Float, ItemStack> parseStackWithFactor(String name) {
@@ -83,7 +97,7 @@ public class Tools {
             }
             CompoundTag nbt;
             try {
-                nbt = TagParser.parseTag(name.substring(idx));
+                nbt = TagParser.parseCompoundFully(name.substring(idx));
             } catch (CommandSyntaxException e) {
                 ErrorHandler.error("Error parsing NBT in '" + name + "'!");
                 return ItemStack.EMPTY;
@@ -105,7 +119,7 @@ public class Tools {
             }
             CompoundTag nbt;
             try {
-                nbt = TagParser.parseTag(name.substring(idx + 1));
+                nbt = TagParser.parseCompoundFully(name.substring(idx + 1));
             } catch (CommandSyntaxException e) {
                 ErrorHandler.error("Error parsing NBT in '" + name + "'!");
                 return ItemStack.EMPTY;
@@ -125,7 +139,7 @@ public class Tools {
             return ItemStack.EMPTY;
         }
         String name = obj.get("item").getAsString();
-        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(name));
+        Item item = BuiltInRegistries.ITEM.getValue(Identifier.parse(name));
         if (item == null) {
             ErrorHandler.error("Unknown item '" + name + "'!");
             return null;
@@ -141,7 +155,7 @@ public class Tools {
             String nbt = obj.get("nbt").toString();
             CompoundTag tag = null;
             try {
-                tag = TagParser.parseTag(nbt);
+                tag = TagParser.parseCompoundFully(nbt);
             } catch (CommandSyntaxException e) {
                 ErrorHandler.error("Error parsing json '" + nbt + "'!");
                 return ItemStack.EMPTY;
@@ -154,7 +168,7 @@ public class Tools {
     }
 
     private static ItemStack parseStackNoNBT(String name) {
-        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(name));
+        Item item = BuiltInRegistries.ITEM.getValue(Identifier.parse(name));
         if (item == null) {
             return ItemStack.EMPTY;
         }

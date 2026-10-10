@@ -29,7 +29,7 @@ public class ExperienceRule extends RuleBase<RuleBase.EventGetter> {
     public static final IEventQuery<LivingExperienceDropEvent> EVENT_QUERY = new IEventQuery<>() {
         @Override
         public Level getWorld(LivingExperienceDropEvent o) {
-            return o.getEntity().getCommandSenderWorld();
+            return o.getEntity().level();
         }
 
         @Override

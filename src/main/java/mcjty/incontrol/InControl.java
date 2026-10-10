@@ -39,7 +39,7 @@ public class InControl implements ModInitializer {
             setup.cache = new mcjty.incontrol.rules.support.RuleCache();
             ServerLifecycleHooks.setCurrentServer(null);
         });
-        ServerTickEvents.START_WORLD_TICK.register(level -> HANDLERS.onWorldTick(new LevelTickEvent.Pre(level)));
+        ServerTickEvents.START_LEVEL_TICK.register(level -> HANDLERS.onWorldTick(new LevelTickEvent.Pre(level)));
         ServerTickEvents.END_SERVER_TICK.register(server -> server.getPlayerList().getPlayers().forEach(player ->
                 HANDLERS.onPlayerTick(new PlayerTickEvent.Post(player))));
         ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> {

@@ -1,10 +1,10 @@
 package mcjty.incontrol.platform;
 
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.EntitySpawnReason;
 
 public interface MobState {
-    MobSpawnType incontrol$getSpawnType();
-    void incontrol$setSpawnType(MobSpawnType type);
+    EntitySpawnReason incontrol$getSpawnType();
+    void incontrol$setSpawnType(EntitySpawnReason type);
     boolean incontrol$isSpawnCancelled();
     void incontrol$setSpawnCancelled(boolean canceled);
 }
