@@ -9,7 +9,7 @@ import mcjty.incontrol.InControl;
 import mcjty.incontrol.compat.CustomNPCSupport;
 import mcjty.incontrol.setup.ModSetup;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.LevelAccessor;
@@ -177,7 +177,7 @@ class CountInfo {
     }
 
     private static EntityType findEntity(String id) {
-        EntityType<?> ee = BuiltInRegistries.ENTITY_TYPE.get(ResourceLocation.parse(id));
+        EntityType<?> ee = BuiltInRegistries.ENTITY_TYPE.getValue(Identifier.parse(id));
         if (ee == null) {
             ErrorHandler.error("Unknown mob '" + id + "'!");
             return null;

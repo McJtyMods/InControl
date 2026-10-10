@@ -5,7 +5,7 @@ import mcjty.incontrol.tools.varia.Tools;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
@@ -48,8 +48,8 @@ public class StructureCache {
 
     public boolean isInStructure(LevelAccessor world, String structure, BlockPos pos) {
         ResourceKey<Level> dimension = Tools.getDimensionKey(world);
-        ChunkPos cp = new ChunkPos(pos);
-        long cplong = ChunkPos.asLong(cp.x, cp.z);
+        ChunkPos cp = ChunkPos.containing(pos);
+        long cplong = cp.pack();
         StructureCacheEntry entry = new StructureCacheEntry(structure, dimension, cplong);
         if (structureCache.containsKey(entry)) {
             return structureCache.get(entry);
@@ -65,7 +65,7 @@ public class StructureCache {
             LongSet longs = e.getValue();
             if (!longs.isEmpty()) {
                 Structure struct = e.getKey();
-                ResourceLocation key = sw.registryAccess().registryOrThrow(Registries.STRUCTURE).getKey(struct);
+                Identifier key = sw.registryAccess().lookupOrThrow(Registries.STRUCTURE).getKey(struct);
                 structureCache.put(new StructureCacheEntry(key.toString(), dimension, cplong), true);
             }
         }

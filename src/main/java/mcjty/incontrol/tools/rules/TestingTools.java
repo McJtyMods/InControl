@@ -17,7 +17,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
@@ -37,8 +37,10 @@ import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.common.util.FakePlayer;
-import net.neoforged.neoforge.energy.IEnergyStorage;
-import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.transfer.energy.EnergyHandler;
+import net.neoforged.neoforge.transfer.access.ItemAccess;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -138,17 +140,17 @@ public class TestingTools {
         if (element.isJsonPrimitive()) {
             if (element.getAsJsonPrimitive().isNumber()) {
                 int amount = element.getAsInt();
-                return tagCompound -> tagCompound.getInt(tag) == amount;
+                return tagCompound -> tagCompound.getIntOr(tag, 0) == amount;
             } else if (element.getAsJsonPrimitive().isBoolean()) {
                 boolean v = element.getAsBoolean();
-                return tagCompound -> tagCompound.getBoolean(tag) == v;
+                return tagCompound -> tagCompound.getBooleanOr(tag, false) == v;
             } else {
                 String str = element.getAsString();
                 Predicate<Integer> predicate = getExpressionInteger(str, false);
                 if (predicate == null) {
-                    return tagCompound -> str.equals(tagCompound.getString(tag));
+                    return tagCompound -> str.equals(tagCompound.getStringOr(tag, ""));
                 }
-                return tagCompound -> predicate.test(tagCompound.getInt(tag));
+                return tagCompound -> predicate.test(tagCompound.getIntOr(tag, 0));
             }
         } else {
             ErrorHandler.error("Bad expression!");
@@ -182,7 +184,7 @@ public class TestingTools {
         Item item;
         if (obj.has("item")) {
             String name = obj.get("item").getAsString();
-            item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(name));
+            item = BuiltInRegistries.ITEM.getValue(Identifier.parse(name));
             if (item == null) {
                 ErrorHandler.error("Unknown item '" + name + "'!");
                 return null;
@@ -222,7 +224,7 @@ public class TestingTools {
             }
         }
         if (obj.has("tag")) {
-            ResourceLocation tagname = ResourceLocation.parse(obj.get("tag").getAsString());
+            Identifier tagname = Identifier.parse(obj.get("tag").getAsString());
             TagKey<Item> key = TagKey.create(Registries.ITEM, tagname);
             if (test == null) {
                 test = s -> s.is(key);
@@ -280,11 +282,11 @@ public class TestingTools {
     }
 
     private static int getEnergy(ItemStack stack) {
-        IEnergyStorage capability = stack.getCapability(Capabilities.EnergyStorage.ITEM);
+        EnergyHandler capability = ItemAccess.forStack(stack).getCapability(Capabilities.Energy.ITEM);
         if (capability == null) {
             return 0;
         } else {
-            return capability.getEnergyStored();
+            return capability.getAmountAsInt();
         }
     }
 
@@ -294,10 +296,10 @@ public class TestingTools {
         }
         BlockEntity tileEntity = world.getBlockEntity(pos);
         if (tileEntity != null) {
-            IItemHandler h = serverLevel.getCapability(Capabilities.ItemHandler.BLOCK, pos, side);
+            ResourceHandler<ItemResource> h = serverLevel.getCapability(Capabilities.Item.BLOCK, pos, side);
             if (h != null) {
-                for (int i = 0 ; i < h.getSlots() ; i++) {
-                    ItemStack stack = h.getStackInSlot(i);
+                for (int i = 0 ; i < h.size() ; i++) {
+                    ItemStack stack = h.getResource(i).toStack(h.getAmountAsInt(i));
                     if (!stack.isEmpty()) {
                         for (Predicate<ItemStack> matcher : matchers) {
                             if (matcher.test(stack)) {
@@ -318,9 +320,9 @@ public class TestingTools {
         }
         BlockEntity tileEntity = world.getBlockEntity(pos);
         if (tileEntity != null) {
-            IEnergyStorage s = serverLevel.getCapability(Capabilities.EnergyStorage.BLOCK, pos, side);
+            EnergyHandler s = serverLevel.getCapability(Capabilities.Energy.BLOCK, pos, side);
             if (s != null) {
-                return s.getEnergyStored();
+                return s.getAmountAsInt();
             }
         }
         return 0;
@@ -340,10 +342,10 @@ public class TestingTools {
                 List<Predicate<CompoundTag>> subMatchers = getNbtMatchers(o.getAsJsonArray("contains"));
                 nbtMatchers.add(tagCompound -> {
                     if (tagCompound != null) {
-                        ListTag list = tagCompound.getList(tag, Tag.TAG_COMPOUND);
+                        ListTag list = tagCompound.getListOrEmpty(tag);
                         for (Tag base : list) {
                             for (Predicate<CompoundTag> matcher : subMatchers) {
-                                if (matcher.test((CompoundTag) base)) {
+                                if (base instanceof CompoundTag compound && matcher.test(compound)) {
                                     return true;
                                 }
                             }
@@ -391,7 +393,7 @@ public class TestingTools {
         if (world instanceof WorldGenLevel level) {
             seed = level.getSeed();
         }
-        return WorldgenRandom.seedSlimeChunk(cp.x, cp.z, seed, 987234911L).nextInt(10) == 0;
+        return WorldgenRandom.seedSlimeChunk(cp.x(), cp.z(), seed, 987234911L).nextInt(10) == 0;
     }
 
     public static boolean isFakePlayer(Entity entity) {
@@ -404,8 +406,8 @@ public class TestingTools {
         }
 
         // If this returns false it is still possible we have a fake player. Try to find the player in the list of online players
-        PlayerList playerList = entity.getCommandSenderWorld().getServer().getPlayerList();
-        ServerPlayer playerByUUID = playerList.getPlayer(((Player) entity).getGameProfile().getId());
+        PlayerList playerList = entity.level().getServer().getPlayerList();
+        ServerPlayer playerByUUID = playerList.getPlayer(((Player) entity).getGameProfile().id());
         if (playerByUUID == null) {
             // The player isn't online. Then it can't be real
             return true;

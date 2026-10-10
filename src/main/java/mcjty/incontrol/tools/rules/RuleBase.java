@@ -26,7 +26,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
@@ -324,7 +324,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         actions.add(event -> {
             MinecraftServer server = event.getWorld().getServer();
             Player player = event.getPlayer();
-            CommandSourceStack stack = new CommandSourceStack(EMPTY, Vec3.atCenterOf(event.getPosition()), Vec2.ZERO, (ServerLevel) event.getWorld(), 2,
+            CommandSourceStack stack = new CommandSourceStack(EMPTY, Vec3.atCenterOf(event.getPosition()), Vec2.ZERO, (ServerLevel) event.getWorld(), net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER,
                     DEFAULT_NAME.getString(), DEFAULT_NAME, server, player);
             for (String command : commands) {
                 server.getCommands().performPrefixedCommand(stack, command);
@@ -361,8 +361,8 @@ public class RuleBase<T extends RuleBase.EventGetter> {
 
     private void addDoDamageAction(String damage) {
         String[] split = StringUtils.split(damage, "=");
-        Registry<DamageType> damageTypes = ServerLifecycleHooks.getCurrentServer().registryAccess().registryOrThrow(Registries.DAMAGE_TYPE);
-        Optional<Holder.Reference<DamageType>> type = damageTypes.getHolder(ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.parse(split[0])));
+        Registry<DamageType> damageTypes = ServerLifecycleHooks.getCurrentServer().registryAccess().lookupOrThrow(Registries.DAMAGE_TYPE);
+        Optional<Holder.Reference<DamageType>> type = damageTypes.get(ResourceKey.create(Registries.DAMAGE_TYPE, Identifier.parse(split[0])));
         if (!type.isPresent()) {
             ErrorHandler.error("Can't find damage source '" + split[0] + "'!");
             return;
@@ -389,7 +389,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
                 player = event.getWorld().getNearestPlayer(event.getEntityLiving(), Config.PERPLAYER_RADIUS.get());
             }
             if (player != null) {
-                player.displayClientMessage(Component.literal(message), false);
+                player.sendSystemMessage(Component.literal(message));
             }
         });
     }
@@ -406,7 +406,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
                 Player player = event.getPlayer();
                 if (player != null) {
                     if (!player.getInventory().add(item.copy())) {
-                        player.spawnAtLocation(item.copy(), 1.05f);
+                        player.spawnAtLocation((ServerLevel) player.level(), item.copy(), 1.05f);
                     }
                 }
             });
@@ -417,7 +417,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
                 if (player != null) {
                     ItemStack item = getRandomItem(items, total);
                     if (!player.getInventory().add(item.copy())) {
-                        player.spawnAtLocation(item.copy(), 1.05f);
+                        player.spawnAtLocation((ServerLevel) player.level(), item.copy(), 1.05f);
                     }
                 }
             });
@@ -559,7 +559,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         JsonElement element = parser.parse(json);
         if (element.isJsonPrimitive()) {
             String blockname = element.getAsString();
-            Block block = BuiltInRegistries.BLOCK.get(ResourceLocation.parse(blockname));
+            Block block = BuiltInRegistries.BLOCK.getValue(Identifier.parse(blockname));
             if (block == null) {
                 ErrorHandler.error("Block '" + blockname + "' is not valid!");
                 return;
@@ -579,7 +579,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
             }
 
             String blockname = obj.get("block").getAsString();
-            Block block = BuiltInRegistries.BLOCK.get(ResourceLocation.parse(blockname));
+            Block block = BuiltInRegistries.BLOCK.getValue(Identifier.parse(blockname));
             if (block == null) {
                 ErrorHandler.error("Block '" + blockname + "' is not valid!");
                 return;
@@ -700,7 +700,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
                 ErrorHandler.error("Bad potion specifier '" + p + "'! Use <potion>,<duration>,<amplifier>");
                 continue;
             }
-            Optional<Holder.Reference<MobEffect>> potion = BuiltInRegistries.MOB_EFFECT.getHolder(ResourceLocation.parse(splitted[0]));
+            Optional<Holder.Reference<MobEffect>> potion = BuiltInRegistries.MOB_EFFECT.get(Identifier.parse(splitted[0]));
             if (potion.isEmpty()) {
                 ErrorHandler.error("Can't find potion '" + p + "'!");
                 continue;
@@ -744,7 +744,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         actions.add(event -> {
             LivingEntity entityLiving = event.getEntityLiving();
             if (entityLiving != null) {
-                if (!entityLiving.getTags().contains(key)) {
+                if (!entityLiving.entityTags().contains(key)) {
                     AttributeInstance attr = entityLiving.getAttribute(attribute);
                     if (attr != null) {
                         action.accept(entityLiving, attr);
@@ -772,7 +772,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         actions.add(event -> {
             LivingEntity entityLiving = event.getEntityLiving();
             if (entityLiving != null) {
-                if (!entityLiving.getTags().contains("ctrlDamageSet" + index)) {
+                if (!entityLiving.entityTags().contains("ctrlDamageSet" + index)) {
                     AttributeInstance entityAttribute = entityLiving.getAttribute(Attributes.ATTACK_DAMAGE);
                     if (entityAttribute != null) {
                         entityAttribute.setBaseValue(s);
@@ -789,7 +789,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         actions.add(event -> {
             LivingEntity entityLiving = event.getEntityLiving();
             if (entityLiving != null) {
-                if (!entityLiving.getTags().contains("ctrlDamage" + index)) {
+                if (!entityLiving.entityTags().contains("ctrlDamage" + index)) {
                     AttributeInstance entityAttribute = entityLiving.getAttribute(Attributes.ATTACK_DAMAGE);
                     if (entityAttribute != null) {
                         double newMax = entityAttribute.getBaseValue() * finalM + finalA;
@@ -868,14 +868,14 @@ public class RuleBase<T extends RuleBase.EventGetter> {
         if (mobnbt != null) {
             CompoundTag tagCompound;
             try {
-                tagCompound = TagParser.parseTag(mobnbt);
+                tagCompound = TagParser.parseCompoundFully(mobnbt);
             } catch (CommandSyntaxException e) {
                 ErrorHandler.error("Bad NBT for mob!");
                 return;
             }
             actions.add(event -> {
                 LivingEntity entityLiving = event.getEntityLiving();
-                entityLiving.readAdditionalSaveData(tagCompound);   // @todo 1.15 right?
+                Tools.applyEntityNbt(entityLiving, tagCompound);
             });
         }
     }

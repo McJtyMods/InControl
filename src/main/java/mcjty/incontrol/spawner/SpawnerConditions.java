@@ -6,7 +6,7 @@ import mcjty.incontrol.ErrorHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import org.apache.commons.lang3.function.TriFunction;
@@ -263,11 +263,11 @@ public class SpawnerConditions {
                     JsonElement value = object.get(attr);
                     if (value.isJsonArray()) {
                         for (JsonElement element : value.getAsJsonArray()) {
-                            ResourceKey<Level> key = ResourceKey.create(Registries.DIMENSION, ResourceLocation.parse(element.getAsString()));
+                            ResourceKey<Level> key = ResourceKey.create(Registries.DIMENSION, Identifier.parse(element.getAsString()));
                             builder.dimensions(key);
                         }
                     } else {
-                        ResourceKey<Level> key = ResourceKey.create(Registries.DIMENSION, ResourceLocation.parse(value.getAsString()));
+                        ResourceKey<Level> key = ResourceKey.create(Registries.DIMENSION, Identifier.parse(value.getAsString()));
                         builder.dimensions(key);
                     }
                 }

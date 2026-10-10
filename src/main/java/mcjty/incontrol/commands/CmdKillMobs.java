@@ -31,7 +31,7 @@ public class CmdKillMobs  implements Command<CommandSourceStack> {
 
     public static ArgumentBuilder<CommandSourceStack, ?> register(CommandDispatcher<CommandSourceStack> dispatcher) {
         return Commands.literal("kill")
-                .requires(cs -> cs.hasPermission(2))
+                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .then(Commands.argument("type", StringArgumentType.word())
                         .executes(CMD));
     }
@@ -45,7 +45,7 @@ public class CmdKillMobs  implements Command<CommandSourceStack> {
             InControl.setup.getLogger().error("Use 'all', 'passive', 'hostile', 'entity' or name of the mob followed by optional dimension id");
             return 0;
         }
-        ResourceKey<Level> dimension = player.getCommandSenderWorld().dimension();
+        ResourceKey<Level> dimension = player.level().dimension();
 //            if (args.length > 1) {
 //                dimension = Integer.parseInt(args[1]);
 //            }
@@ -54,7 +54,7 @@ public class CmdKillMobs  implements Command<CommandSourceStack> {
         boolean hostile = "hostile".equals(type);
         boolean entity = "entity".equals(type);
 
-        ServerLevel worldServer = player.getCommandSenderWorld().getServer().getLevel(dimension);
+        ServerLevel worldServer = player.level().getServer().getLevel(dimension);
         List<? extends Entity> entities = worldServer.getEntities(ANY_TYPE, input -> {
             if (all) {
                 return !(input instanceof Player);

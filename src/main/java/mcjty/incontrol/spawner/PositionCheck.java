@@ -15,7 +15,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -97,11 +97,11 @@ public class PositionCheck {
             switch (cmd) {
                 case MINTIME -> {
                     final int mintime = object.getAsJsonPrimitive("mintime").getAsInt();
-                    builder.extraCondition((level, pos, player) -> (int) (level.getDayTime() % 24000) >= mintime);
+                    builder.extraCondition((level, pos, player) -> (int) (level.getOverworldClockTime() % 24000) >= mintime);
                 }
                 case MAXTIME -> {
                     final int maxtime = object.getAsJsonPrimitive("maxtime").getAsInt();
-                    builder.extraCondition((level, pos, player) -> (int) (level.getDayTime() % 24000) <= maxtime);
+                    builder.extraCondition((level, pos, player) -> (int) (level.getOverworldClockTime() % 24000) <= maxtime);
                 }
                 case MINLIGHT -> {
                     final int minlight = object.getAsJsonPrimitive("minlight").getAsInt();
@@ -132,13 +132,13 @@ public class PositionCheck {
                     if (value.isJsonArray()) {
                         Set<ResourceKey<Biome>> keys = new HashSet<>();
                         for (JsonElement element : value.getAsJsonArray()) {
-                            ResourceKey<Biome> key = ResourceKey.create(Registries.BIOME, ResourceLocation.parse(element.getAsString()));
+                            ResourceKey<Biome> key = ResourceKey.create(Registries.BIOME, Identifier.parse(element.getAsString()));
                             keys.add(key);
                         }
                         Predicate<ResourceKey<Biome>> predicate = key -> keys.contains(key);
                         builder.extraCondition((level, pos, player) -> level.getBiome(pos).is(predicate));
                     } else {
-                        ResourceKey<Biome> key = ResourceKey.create(Registries.BIOME, ResourceLocation.parse(value.getAsString()));
+                        ResourceKey<Biome> key = ResourceKey.create(Registries.BIOME, Identifier.parse(value.getAsString()));
                         builder.extraCondition((level, pos, player) -> level.getBiome(pos).is(key));
                     }
                 }
@@ -147,7 +147,7 @@ public class PositionCheck {
                     if (value.isJsonArray()) {
                         Set<TagKey<Biome>> keys = new HashSet<>();
                         for (JsonElement element : value.getAsJsonArray()) {
-                            ResourceLocation key = ResourceLocation.parse(element.getAsString());
+                            Identifier key = Identifier.parse(element.getAsString());
                             keys.add(TagKey.create(Registries.BIOME, key));
                         }
                         builder.extraCondition((level, pos, player) -> {
@@ -160,7 +160,7 @@ public class PositionCheck {
                             return false;
                         });
                     } else {
-                        TagKey<Biome> tag = TagKey.create(Registries.BIOME, ResourceLocation.parse(value.getAsString()));
+                        TagKey<Biome> tag = TagKey.create(Registries.BIOME, Identifier.parse(value.getAsString()));
                         builder.extraCondition((level, pos, player) -> level.getBiome(pos).is(tag));
                     }
                 }
@@ -201,12 +201,12 @@ public class PositionCheck {
                     Set<TagKey<Structure>> tagSet = new HashSet<>();
                     if (value.isJsonArray()) {
                         for (JsonElement element : value.getAsJsonArray()) {
-                            ResourceLocation key = ResourceLocation.parse(element.getAsString());
+                            Identifier key = Identifier.parse(element.getAsString());
                             TagKey<Structure> tag = TagKey.create(Registries.STRUCTURE, key);
                             tagSet.add(tag);
                         }
                     } else {
-                        ResourceLocation key = ResourceLocation.parse(value.getAsString());
+                        Identifier key = Identifier.parse(value.getAsString());
                         TagKey<Structure> tag = TagKey.create(Registries.STRUCTURE, key);
                         tagSet.add(tag);
                     }
@@ -217,9 +217,9 @@ public class PositionCheck {
                             LongSet longs = e.getValue();
                             if (!longs.isEmpty()) {
                                 Structure struct = e.getKey();
-                                Optional<ResourceKey<Structure>> resourceKey = level.registryAccess().registryOrThrow(Registries.STRUCTURE).getResourceKey(struct);
+                                Optional<ResourceKey<Structure>> resourceKey = level.registryAccess().lookupOrThrow(Registries.STRUCTURE).getResourceKey(struct);
                                 if (resourceKey.isPresent()) {
-                                    Holder.Reference<Structure> holder = level.registryAccess().registryOrThrow(Registries.STRUCTURE).getHolder(resourceKey.get()).get();
+                                    Holder.Reference<Structure> holder = level.registryAccess().lookupOrThrow(Registries.STRUCTURE).get(resourceKey.get()).get();
                                     for (TagKey<Structure> tagKey : tagSet) {
                                         if (holder.is(tagKey)) {
                                             return true;

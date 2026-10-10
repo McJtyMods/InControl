@@ -13,7 +13,7 @@ public class CmdDays {
 
     public static ArgumentBuilder<CommandSourceStack, ?> register(CommandDispatcher<CommandSourceStack> dispatcher) {
         return Commands.literal("days")
-                .requires(cs -> cs.hasPermission(2))
+                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .then(Commands.argument("number", IntegerArgumentType.integer()).executes(CmdDays::setDays))
                 .executes(CmdDays::showDays);
     }

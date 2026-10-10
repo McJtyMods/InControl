@@ -239,7 +239,7 @@ public class RuleCache {
 
                 if (ModSetup.customnpcs) {
                     if (CustomNPCSupport.hasNPCInterface(entity) && entity.getPersistentData().contains("InControlNatSpawnName") && entity.getPersistentData().contains("InControlNatSpawnTab")) {
-                        CNPCMob mob = new CNPCMob(entity.getPersistentData().getInt("InControlNatSpawnTab"), entity.getPersistentData().getString("InControlNatSpawnName"));
+                        CNPCMob mob = new CNPCMob(entity.getPersistentData().getIntOr("InControlNatSpawnTab", 0), entity.getPersistentData().getStringOr("InControlNatSpawnName", ""));
                         cnt = cachedNpcCounters.getOrDefault(mob, 0) + 1;
                         cachedNpcCounters.put(mob, cnt);
                     }
@@ -297,7 +297,7 @@ public class RuleCache {
         // This function is only called if ModSetup.customnpcs is true
         public int getNpcCount(Entity entity) {
             if (CustomNPCSupport.hasNPCInterface(entity) && entity.getPersistentData().contains("InControlNatSpawnName") && entity.getPersistentData().contains("InControlNatSpawnTab")){
-                CNPCMob mob = new CNPCMob(entity.getPersistentData().getInt("InControlNatSpawnTab"), entity.getPersistentData().getString("InControlNatSpawnName"));
+                CNPCMob mob = new CNPCMob(entity.getPersistentData().getIntOr("InControlNatSpawnTab", 0), entity.getPersistentData().getStringOr("InControlNatSpawnName", ""));
                 return cachedNpcCounters.getOrDefault(mob, 0);
             }
             return getCount(entity.getType());

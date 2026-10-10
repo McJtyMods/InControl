@@ -1,5 +1,6 @@
 package mcjty.incontrol.rules;
 
+import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
 import com.google.gson.JsonElement;
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.compat.ModRuleCompatibilityLayer;
@@ -30,49 +31,49 @@ import static mcjty.incontrol.rules.support.RuleKeys.*;
 public class HarvestRule extends RuleBase<RuleBase.EventGetter> {
 
     private static final GenericAttributeMapFactory FACTORY = new GenericAttributeMapFactory();
-    public static final IEventQuery<BlockEvent.BreakEvent> EVENT_QUERY = new IEventQuery<BlockEvent.BreakEvent>() {
+    public static final IEventQuery<BreakBlockEvent> EVENT_QUERY = new IEventQuery<BreakBlockEvent>() {
         @Override
-        public LevelAccessor getWorld(BlockEvent.BreakEvent o) {
+        public LevelAccessor getWorld(BreakBlockEvent o) {
             return o.getLevel();
         }
 
         @Override
-        public BlockPos getPos(BlockEvent.BreakEvent o) {
+        public BlockPos getPos(BreakBlockEvent o) {
             return o.getPos();
         }
 
         @Override
-        public BlockPos getValidBlockPos(BlockEvent.BreakEvent o) {
+        public BlockPos getValidBlockPos(BreakBlockEvent o) {
             return o.getPos();
         }
 
         @Override
-        public int getY(BlockEvent.BreakEvent o) {
+        public int getY(BreakBlockEvent o) {
             return o.getPos().getY();
         }
 
         @Override
-        public Entity getEntity(BlockEvent.BreakEvent o) {
+        public Entity getEntity(BreakBlockEvent o) {
             return o.getPlayer();
         }
 
         @Override
-        public DamageSource getSource(BlockEvent.BreakEvent o) {
+        public DamageSource getSource(BreakBlockEvent o) {
             return null;
         }
 
         @Override
-        public Entity getAttacker(BlockEvent.BreakEvent o) {
+        public Entity getAttacker(BreakBlockEvent o) {
             return null;
         }
 
         @Override
-        public Player getPlayer(BlockEvent.BreakEvent o) {
+        public Player getPlayer(BreakBlockEvent o) {
             return o.getPlayer();
         }
 
         @Override
-        public ItemStack getItem(BlockEvent.BreakEvent o) {
+        public ItemStack getItem(BreakBlockEvent o) {
             return ItemStack.EMPTY;
         }
     };
@@ -201,11 +202,11 @@ public class HarvestRule extends RuleBase<RuleBase.EventGetter> {
         }
     }
 
-    public boolean match(BlockEvent.BreakEvent event) {
+    public boolean match(BreakBlockEvent event) {
         return ruleEvaluator.match(event, EVENT_QUERY);
     }
 
-    public void action(BlockEvent.BreakEvent event) {
+    public void action(BreakBlockEvent event) {
         EventGetter getter = new EventGetter() {
             @Override
             public LivingEntity getEntityLiving() {

@@ -1,5 +1,6 @@
 package mcjty.incontrol;
 
+import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
 import mcjty.incontrol.areas.AreaSystem;
 import mcjty.incontrol.commands.ModCommands;
 import mcjty.incontrol.data.DataStorage;
@@ -17,15 +18,15 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
-import net.minecraft.world.entity.animal.Cow;
-import net.minecraft.world.entity.animal.Sheep;
-import net.minecraft.world.entity.monster.ZombifiedPiglin;
+import net.minecraft.world.entity.animal.cow.Cow;
+import net.minecraft.world.entity.animal.sheep.Sheep;
+import net.minecraft.world.entity.monster.zombie.ZombifiedPiglin;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.common.util.TriState;
+import net.minecraft.util.TriState;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
@@ -80,7 +81,7 @@ public class ForgeEventHandlers {
         if (event.getEntity() instanceof Player) {
             return;
         }
-        if (event.getLevel().isClientSide) {
+        if (event.getLevel().isClientSide()) {
             return;
         }
 
@@ -142,7 +143,7 @@ public class ForgeEventHandlers {
         if (event.getEntity() instanceof Player) {
             return;
         }
-        if (event.getLevel().isClientSide) {
+        if (event.getLevel().isClientSide()) {
             return;
         }
         InControl.setup.cache.removeMob(event.getLevel(), event.getEntity());
@@ -150,7 +151,7 @@ public class ForgeEventHandlers {
 
     @SubscribeEvent
     public void onWorldTick(LevelTickEvent.Pre event) {
-        if (!event.getLevel().isClientSide) {
+        if (!event.getLevel().isClientSide()) {
             // For every world tick we reset the cache
             InControl.setup.cache.performCount(event.getLevel());
 
@@ -170,7 +171,7 @@ public class ForgeEventHandlers {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onEntitySpawnEvent(FinalizeSpawnEvent event) {
         int i = 0;
-        for (SpawnRule rule : RulesManager.getFilteredRules(event.getEntity().getCommandSenderWorld(), SpawnWhen.FINALIZE)) {
+        for (SpawnRule rule : RulesManager.getFilteredRules(event.getEntity().level(), SpawnWhen.FINALIZE)) {
             if (rule.match(event)) {
                 ICResult result = rule.getResult();
                 if (debug) {
@@ -214,7 +215,7 @@ public class ForgeEventHandlers {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onPositionCheck(MobSpawnEvent.PositionCheck event) {
         int i = 0;
-        for (SpawnRule rule : RulesManager.getFilteredRules(event.getEntity().getCommandSenderWorld(), SpawnWhen.POSITION)) {
+        for (SpawnRule rule : RulesManager.getFilteredRules(event.getEntity().level(), SpawnWhen.POSITION)) {
             if (rule.match(event)) {
                 ICResult result = rule.getResult();
                 if (debug) {
@@ -258,7 +259,7 @@ public class ForgeEventHandlers {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onCheckDespawn(MobDespawnEvent event) {
         int i = 0;
-        for (SpawnRule rule : RulesManager.getFilteredRules(event.getEntity().getCommandSenderWorld(), SpawnWhen.DESPAWN)) {
+        for (SpawnRule rule : RulesManager.getFilteredRules(event.getEntity().level(), SpawnWhen.DESPAWN)) {
             if (rule.match(event)) {
                 ICResult result = rule.getResult();
                 if (debug) {
@@ -322,7 +323,7 @@ public class ForgeEventHandlers {
 
     @SubscribeEvent
     public void onRightClickEvent(PlayerInteractEvent.RightClickBlock event) {
-        if (event.getLevel().isClientSide) {
+        if (event.getLevel().isClientSide()) {
             return;
         }
         int i = 0;
@@ -358,7 +359,7 @@ public class ForgeEventHandlers {
 
     @SubscribeEvent
     public void onLeftClickEvent(PlayerInteractEvent.LeftClickBlock event) {
-        if (event.getLevel().isClientSide) {
+        if (event.getLevel().isClientSide()) {
             return;
         }
         int i = 0;
@@ -421,7 +422,7 @@ public class ForgeEventHandlers {
     }
 
     @SubscribeEvent
-    public void onBlockBreakEvent(BlockEvent.BreakEvent event) {
+    public void onBlockBreakEvent(BreakBlockEvent event) {
         if (event.getLevel().isClientSide()) {
             return;
         }
@@ -440,6 +441,7 @@ public class ForgeEventHandlers {
                 rule.action(event);
                 if (result == MobSpawnEvent.SpawnPlacementCheck.Result.FAIL) {
                     event.setCanceled(true);
+                    event.setNotifyClient(true);
                 }
                 return;
             }
@@ -451,7 +453,7 @@ public class ForgeEventHandlers {
 
     @SubscribeEvent
     public void onPlayerTick(PlayerTickEvent.Post event) {
-        if (event.getEntity().level().isClientSide) {
+        if (event.getEntity().level().isClientSide()) {
             return;
         }
 
@@ -462,7 +464,7 @@ public class ForgeEventHandlers {
         int tickCounter = tickCounters.get(id) + 1;
         tickCounters.put(id, tickCounter);
         int i = 0;
-        for (EffectRule rule : RulesManager.getFilteredEffectRules(event.getEntity().getCommandSenderWorld())) {
+        for (EffectRule rule : RulesManager.getFilteredEffectRules(event.getEntity().level())) {
             if (tickCounter % rule.getTimeout() == 0 && rule.match(event)) {
                 if (debug) {
                     InControl.setup.getLogger().log(org.apache.logging.log4j.Level.INFO, "Join Rule " + i
@@ -478,7 +480,7 @@ public class ForgeEventHandlers {
 
     @SubscribeEvent
     public void onEntityKilled(LivingDeathEvent event) {
-        if (!event.getEntity().level().isClientSide) {
+        if (!event.getEntity().level().isClientSide()) {
             EventsSystem.onEntityKilled(event);
         }
     }

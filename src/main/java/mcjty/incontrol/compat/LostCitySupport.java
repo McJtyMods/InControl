@@ -2,10 +2,6 @@ package mcjty.incontrol.compat;
 
 import mcjty.incontrol.InControl;
 import mcjty.incontrol.tools.rules.IEventQuery;
-import mcjty.lostcities.api.ILostChunkInfo;
-import mcjty.lostcities.api.ILostCities;
-import mcjty.lostcities.api.ILostCityInformation;
-import mcjty.lostcities.api.ILostSphere;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -13,26 +9,51 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.neoforged.fml.InterModComms;
 import net.neoforged.fml.ModList;
 
+import java.lang.reflect.Method;
 import java.util.function.Function;
 
 public class LostCitySupport {
 
     private static boolean registered = false;
-    private static ILostCities lostCities;
+    private static Object lostCities;
+    private static Method getLostInfo;
+    private static Method getChunkInfo;
+    private static Method getSphere;
+    private static Method isCity;
+    private static Method getBuildingType;
+    private static Method getMultiBuildingInfo;
+    private static Method buildingType;
 
     public static void register() {
-        if (ModList.get().isLoaded("lostcities")) {
-            registerInternal();
-        }
-    }
-
-    private static void registerInternal() {
-        if (registered) {
+        if (registered || !ModList.get().isLoaded("lostcities")) {
             return;
+        }
+        try {
+            // Use the public API from the installed mod, so an unpublished API jar
+            // or a development checkout is not required to build In Control.
+            getLostInfo = Class.forName("mcjty.lostcities.api.ILostCities").getMethod("getLostInfo", Level.class);
+            Class<?> info = Class.forName("mcjty.lostcities.api.ILostCityInformation");
+            getChunkInfo = info.getMethod("getChunkInfo", int.class, int.class);
+            getSphere = info.getMethod("getSphere", int.class, int.class);
+            Class<?> chunk = Class.forName("mcjty.lostcities.api.ILostChunkInfo");
+            isCity = chunk.getMethod("isCity");
+            getBuildingType = chunk.getMethod("getBuildingType");
+            getMultiBuildingInfo = chunk.getMethod("getMultiBuildingInfo");
+            buildingType = Class.forName("mcjty.lostcities.api.ILostChunkInfo$MultiBuildingInfo").getMethod("buildingType");
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("Unsupported Lost Cities API", e);
         }
         registered = true;
         InterModComms.sendTo("lostcities", "getLostCities", GetLostCities::new);
         InControl.setup.getLogger().info("Enabling support for Lost Cities");
+    }
+
+    private static Object call(Method method, Object target, Object... arguments) {
+        try {
+            return method.invoke(target, arguments);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("Error querying Lost Cities", e);
+        }
     }
 
     private static <T> Level getWorld(IEventQuery<T> query, T event) {
@@ -40,199 +61,93 @@ public class LostCitySupport {
         if (world.isClientSide()) {
             return null;
         }
-        Level w;
-        if (world instanceof Level) {
-            w = (Level) world;
-        } else if (world instanceof ServerLevelAccessor) {
-            w = ((ServerLevelAccessor) world).getLevel();
-        } else {
-            throw new IllegalStateException("Bad world!");
+        if (world instanceof Level level) {
+            return level;
         }
-        return w;
+        if (world instanceof ServerLevelAccessor accessor) {
+            return accessor.getLevel();
+        }
+        throw new IllegalStateException("Bad world!");
     }
 
+    private static Object getInfo(Level world) {
+        return world == null || lostCities == null ? null : call(getLostInfo, lostCities, world);
+    }
+
+    private static Object getChunk(Level world, BlockPos pos) {
+        Object info = getInfo(world);
+        return info == null ? null : call(getChunkInfo, info, pos.getX() >> 4, pos.getZ() >> 4);
+    }
 
     public static <T> boolean isCity(IEventQuery<T> query, T event) {
-        Level w = getWorld(query, event);
-        if (w == null) {
-            return false;   // This test don't work client side
-        }
-        ILostCityInformation info = lostCities.getLostInfo(w);
-        if (info != null) {
-            BlockPos pos = query.getPos(event);
-            ILostChunkInfo chunkInfo = info.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
-            return chunkInfo.isCity();
-        }
-        return false;
+        return isCity(getWorld(query, event), query.getPos(event));
     }
 
     public static boolean isCity(Level world, BlockPos pos) {
-        ILostCityInformation info = lostCities.getLostInfo(world);
-        if (info != null) {
-            ILostChunkInfo chunkInfo = info.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
-            return chunkInfo.isCity();
-        }
-        return false;
+        Object chunk = getChunk(world, pos);
+        return chunk != null && (boolean) call(isCity, chunk);
     }
 
     public static <T> boolean isStreet(IEventQuery<T> query, T event) {
-        Level w = getWorld(query, event);
-        if (w == null) {
-            return false;   // This test don't work client side
-        }
-        ILostCityInformation info = lostCities.getLostInfo(w);
-        if (info != null) {
-            BlockPos pos = query.getPos(event);
-            ILostChunkInfo chunkInfo = info.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
-            return chunkInfo.isCity() && chunkInfo.getBuildingType() == null;
-        }
-        return false;
+        return isStreet(getWorld(query, event), query.getPos(event));
     }
 
     public static boolean isStreet(Level world, BlockPos pos) {
-        ILostCityInformation info = lostCities.getLostInfo(world);
-        if (info != null) {
-            ILostChunkInfo chunkInfo = info.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
-            return chunkInfo.isCity() && chunkInfo.getBuildingType() == null;
-        }
-        return false;
+        Object chunk = getChunk(world, pos);
+        return chunk != null && (boolean) call(isCity, chunk) && call(getBuildingType, chunk) == null;
     }
 
     public static <T> boolean inSphere(IEventQuery<T> query, T event) {
-        Level w = getWorld(query, event);
-        if (w == null) {
-            return false;   // This test don't work client side
-        }
-        ILostCityInformation info = lostCities.getLostInfo(w);
-        if (info != null) {
-            BlockPos pos = query.getPos(event);
-            ILostSphere sphere = info.getSphere(pos.getX(), pos.getZ());
-            return sphere != null;
-        }
-        return false;
+        return inSphere(getWorld(query, event), query.getPos(event));
     }
 
     public static boolean inSphere(Level world, BlockPos pos) {
-        ILostCityInformation info = lostCities.getLostInfo(world);
-        if (info != null) {
-            ILostSphere sphere = info.getSphere(pos.getX(), pos.getZ());
-            return sphere != null;
-        }
-        return false;
+        Object info = getInfo(world);
+        return info != null && call(getSphere, info, pos.getX(), pos.getZ()) != null;
     }
 
     public static <T> boolean isBuilding(IEventQuery<T> query, T event) {
-        Level w = getWorld(query, event);
-        if (w == null) {
-            return false;   // This test don't work client side
-        }
-        ILostCityInformation info = lostCities.getLostInfo(w);
-        if (info != null) {
-            BlockPos pos = query.getPos(event);
-            ILostChunkInfo chunkInfo = info.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
-            return chunkInfo.isCity() && chunkInfo.getBuildingType() != null;
-        }
-        return false;
+        return isBuilding(getWorld(query, event), query.getPos(event));
     }
 
     public static boolean isBuilding(Level world, BlockPos pos) {
-        ILostCityInformation info = lostCities.getLostInfo(world);
-        if (info != null) {
-            ILostChunkInfo chunkInfo = info.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
-            return chunkInfo.isCity() && chunkInfo.getBuildingType() != null;
-        }
-        return false;
+        Object chunk = getChunk(world, pos);
+        return chunk != null && (boolean) call(isCity, chunk) && call(getBuildingType, chunk) != null;
     }
 
     public static <T> boolean isMultiBuilding(IEventQuery<T> query, T event) {
-        Level w = getWorld(query, event);
-        if (w == null) {
-            return false;   // This test don't work client side
-        }
-        ILostCityInformation info = lostCities.getLostInfo(w);
-        if (info != null) {
-            BlockPos pos = query.getPos(event);
-            ILostChunkInfo chunkInfo = info.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
-            if (!chunkInfo.isCity()) {
-                return false;
-            }
-            ILostChunkInfo.MultiBuildingInfo mi = chunkInfo.getMultiBuildingInfo();
-            return mi != null;
-        }
-        return false;
+        return isMultiBuilding(getWorld(query, event), query.getPos(event));
     }
 
     public static boolean isMultiBuilding(Level world, BlockPos pos) {
-        ILostCityInformation info = lostCities.getLostInfo(world);
-        if (info != null) {
-            ILostChunkInfo chunkInfo = info.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
-            if (!chunkInfo.isCity()) {
-                return false;
-            }
-            ILostChunkInfo.MultiBuildingInfo mi = chunkInfo.getMultiBuildingInfo();
-            return mi != null;
-        }
-        return false;
+        Object chunk = getChunk(world, pos);
+        return chunk != null && (boolean) call(isCity, chunk) && call(getMultiBuildingInfo, chunk) != null;
     }
 
-    // Get the name of the building
     public static <T> String getBuildingName(IEventQuery<T> query, T event) {
-        Level w = getWorld(query, event);
-        if (w == null) {
-            return null;   // This test don't work client side
-        }
-        ILostCityInformation info = lostCities.getLostInfo(w);
-        if (info != null) {
-            BlockPos pos = query.getPos(event);
-            ILostChunkInfo chunkInfo = info.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
-            return chunkInfo.getBuildingType();
-        }
-        return null;
+        return getBuildingName(getWorld(query, event), query.getPos(event));
     }
 
     public static String getBuildingName(Level world, BlockPos pos) {
-        ILostCityInformation info = lostCities.getLostInfo(world);
-        if (info != null) {
-            ILostChunkInfo chunkInfo = info.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
-            return chunkInfo.getBuildingType();
-        }
-        return null;
+        Object chunk = getChunk(world, pos);
+        return chunk == null ? null : (String) call(getBuildingType, chunk);
     }
 
-    // Get the name of the multi building
     public static <T> String getMultiBuildingName(IEventQuery<T> query, T event) {
-        Level w = getWorld(query, event);
-        if (w == null) {
-            return null;   // This test don't work client side
-        }
-        ILostCityInformation info = lostCities.getLostInfo(w);
-        if (info != null) {
-            BlockPos pos = query.getPos(event);
-            ILostChunkInfo chunkInfo = info.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
-            ILostChunkInfo.MultiBuildingInfo mi = chunkInfo.getMultiBuildingInfo();
-            return mi != null ? mi.buildingType().toString() : null;
-        }
-        return null;
+        return getMultiBuildingName(getWorld(query, event), query.getPos(event));
     }
 
     public static String getMultiBuildingName(Level world, BlockPos pos) {
-        ILostCityInformation info = lostCities.getLostInfo(world);
-        if (info != null) {
-            ILostChunkInfo chunkInfo = info.getChunkInfo(pos.getX() >> 4, pos.getZ() >> 4);
-            ILostChunkInfo.MultiBuildingInfo mi = chunkInfo.getMultiBuildingInfo();
-            return mi != null ? mi.buildingType().toString() : null;
-        }
-        return null;
+        Object chunk = getChunk(world, pos);
+        Object multi = chunk == null ? null : call(getMultiBuildingInfo, chunk);
+        return multi == null ? null : call(buildingType, multi).toString();
     }
 
-    public static class GetLostCities implements Function<ILostCities, Void> {
-
+    public static class GetLostCities implements Function<Object, Void> {
         @Override
-        public Void apply(ILostCities lc) {
+        public Void apply(Object lc) {
             lostCities = lc;
             return null;
         }
     }
-
 }
-

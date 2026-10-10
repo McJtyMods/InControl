@@ -30,23 +30,22 @@ import static mcjty.incontrol.ForgeEventHandlers.debug;
 
 public class InControlLootModifier extends LootModifier {
 
-    public static final MapCodec<InControlLootModifier> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-            LOOT_CONDITIONS_CODEC.fieldOf("conditions").forGetter(l -> l.conditions)
-    ).apply(instance, InControlLootModifier::new));
+    public static final MapCodec<InControlLootModifier> CODEC = RecordCodecBuilder.mapCodec(instance ->
+            codecStart(instance).apply(instance, InControlLootModifier::new));
 
-    public InControlLootModifier(LootItemCondition[] conditionsIn) {
-        super(conditionsIn);
+    public InControlLootModifier(LootItemCondition[] conditionsIn, int priority) {
+        super(conditionsIn, priority);
     }
 
     @Override
     protected @NotNull ObjectArrayList<ItemStack> doApply(ObjectArrayList<ItemStack> generatedLoot, LootContext context) {
-        Entity entity = context.getParamOrNull(LootContextParams.THIS_ENTITY);
+        Entity entity = context.getOptionalParameter(LootContextParams.THIS_ENTITY);
         if (entity == null) {
             return generatedLoot;
         }
         ServerLevel level = context.getLevel();
         int looting = 0;
-        if (context.getParamOrNull(LootContextParams.ATTACKING_ENTITY) instanceof LivingEntity attacker) {
+        if (context.getOptionalParameter(LootContextParams.ATTACKING_ENTITY) instanceof LivingEntity attacker) {
             Optional<Holder.Reference<Enchantment>> holder = level.registryAccess().holder(Enchantments.LOOTING);
             if (holder.isPresent()) {
                 looting = EnchantmentHelper.getTagEnchantmentLevel(holder.get(), attacker.getWeaponItem());

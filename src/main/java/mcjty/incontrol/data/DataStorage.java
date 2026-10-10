@@ -1,20 +1,27 @@
 package mcjty.incontrol.data;
 
+import com.mojang.serialization.Codec;
+import mcjty.incontrol.InControl;
 import mcjty.incontrol.rules.PhaseRule;
 import mcjty.incontrol.rules.RulesManager;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtAccounter;
+import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.saveddata.SavedData;
-import net.minecraft.world.level.storage.DimensionDataStorage;
+import net.minecraft.world.level.saveddata.SavedDataType;
+import net.minecraft.world.level.storage.LevelResource;
+import net.minecraft.world.level.storage.SavedDataStorage;
 
 import javax.annotation.Nonnull;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -22,7 +29,11 @@ import java.util.Set;
 
 public class DataStorage extends SavedData {
 
-    private static final String NAME = "InControlData";
+    static final Codec<DataStorage> CODEC = CompoundTag.CODEC.xmap(DataStorage::new, DataStorage::save);
+
+    private static final SavedDataType<DataStorage> TYPE = new SavedDataType<>(
+            Identifier.fromNamespaceAndPath(InControl.MODID, "data"),
+            DataStorage::new, CODEC);
 
     private Boolean isDay = null;
     private int daycounter = 0;
@@ -35,19 +46,19 @@ public class DataStorage extends SavedData {
     }
 
     public DataStorage(CompoundTag tag) {
-        daycounter = tag.getInt("daycounter");
+        daycounter = tag.getIntOr("daycounter", 0);
         if (tag.contains("isday")) {
-            isDay = tag.getBoolean("isday");
+            isDay = tag.getBooleanOr("isday", false);
         } else {
             isDay = null;
         }
-        ListTag phasesTag = tag.getList("phases", Tag.TAG_STRING);
+        ListTag phasesTag = tag.getListOrEmpty("phases");
         for (int i = 0 ; i < phasesTag.size() ; i++) {
-            phases.add(phasesTag.getString(i));
+            phases.add(phasesTag.getStringOr(i, ""));
         }
-        CompoundTag numbersTag = tag.getCompound("numbers");
-        for (String key : numbersTag.getAllKeys()) {
-            numbers.put(key, numbersTag.getInt(key));
+        CompoundTag numbersTag = tag.getCompoundOrEmpty("numbers");
+        for (String key : numbersTag.keySet()) {
+            numbers.put(key, numbersTag.getIntOr(key, 0));
         }
     }
 
@@ -57,10 +68,29 @@ public class DataStorage extends SavedData {
             throw new RuntimeException("Don't access this client-side!");
         }
         MinecraftServer server = world.getServer();
-        ServerLevel overworld = server.getLevel(Level.OVERWORLD);
+        SavedDataStorage storage = server.getDataStorage();
+        DataStorage data = storage.get(TYPE);
+        if (data == null) {
+            // Older versions stored this in the overworld under an unnamespaced name.
+            Path legacyFile = server.getWorldPath(LevelResource.ROOT).resolve("data/InControlData.dat");
+            data = readLegacyData(legacyFile);
+            storage.set(TYPE, data);
+        }
+        return data;
+    }
 
-        DimensionDataStorage storage = overworld.getDataStorage();
-        return storage.computeIfAbsent(new Factory<>(DataStorage::new, (compoundTag, provider) -> new DataStorage(compoundTag)), NAME);
+    static DataStorage readLegacyData(Path legacyFile) {
+        if (!Files.isRegularFile(legacyFile)) {
+            return new DataStorage();
+        }
+        try {
+            CompoundTag tag = NbtIo.readCompressed(legacyFile, NbtAccounter.unlimitedHeap());
+            DataStorage data = new DataStorage(tag.getCompoundOrEmpty("data"));
+            data.setDirty();
+            return data;
+        } catch (IOException e) {
+            throw new IllegalStateException("Cannot read legacy In Control saved data", e);
+        }
     }
 
     public int getDaycounter() {
@@ -83,7 +113,7 @@ public class DataStorage extends SavedData {
     }
 
     private void tickTime(Level world) {
-        long time = world.getDayTime() % 24000;
+        long time = world.getOverworldClockTime() % 24000;
         boolean day = time >= 0 && time < 12000;
         if (isDay == null) {
             isDay = day;
@@ -160,8 +190,8 @@ public class DataStorage extends SavedData {
         }
     }
 
-    @Override
-    public CompoundTag save(CompoundTag tag, HolderLookup.Provider provider) {
+    private CompoundTag save() {
+        CompoundTag tag = new CompoundTag();
         tag.putInt("daycounter", daycounter);
         if (isDay != null) {
             tag.putBoolean("isday", isDay);

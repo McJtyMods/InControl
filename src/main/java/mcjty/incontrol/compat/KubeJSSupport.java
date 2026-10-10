@@ -3,14 +3,15 @@ package mcjty.incontrol.compat;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import dev.latvian.mods.kubejs.core.WithPersistentData;
 import mcjty.incontrol.ErrorHandler;
 import mcjty.incontrol.setup.ModSetup;
 import mcjty.incontrol.tools.varia.JSonTools;
+import net.minecraft.nbt.ByteTag;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.NumericTag;
 import net.minecraft.server.MinecraftServer;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
@@ -41,7 +42,7 @@ public class KubeJSSupport {
             ErrorHandler.error("KubeJS condition needs at least one variable check!");
             return NEVER;
         }
-        return server -> server != null && matches(((WithPersistentData) server).kjs$getPersistentData(), conditions);
+        return persistentDataCondition(conditions);
     }
 
     public static Predicate<MinecraftServer> parse(List<String> elements) {
@@ -63,7 +64,28 @@ public class KubeJSSupport {
             ErrorHandler.error("KubeJS condition needs at least one variable check!");
             return NEVER;
         }
-        return server -> server != null && matches(((WithPersistentData) server).kjs$getPersistentData(), conditions);
+        return persistentDataCondition(conditions);
+    }
+
+    private static Predicate<MinecraftServer> persistentDataCondition(List<VariableCondition> conditions) {
+        try {
+            Method getter = Class.forName("dev.latvian.mods.kubejs.core.WithPersistentData")
+                    .getMethod("kjs$getPersistentData");
+            return server -> {
+                if (server == null) {
+                    return false;
+                }
+                try {
+                    return matches((CompoundTag) getter.invoke(server), conditions);
+                } catch (ReflectiveOperationException e) {
+                    ErrorHandler.error("Error reading KubeJS server persistent data: " + e.getMessage());
+                    return false;
+                }
+            };
+        } catch (ReflectiveOperationException e) {
+            ErrorHandler.error("Unsupported KubeJS persistent data API: " + e.getMessage());
+            return NEVER;
+        }
     }
 
     static VariableCondition parseCondition(JsonElement element) {
@@ -177,23 +199,23 @@ public class KubeJSSupport {
     record BooleanCondition(String variable, boolean expected) implements VariableCondition {
         @Override
         public boolean matches(CompoundTag variables) {
-            return variables.contains(variable, Tag.TAG_BYTE) && variables.getBoolean(variable) == expected;
+            return variables.get(variable) instanceof ByteTag && variables.getBooleanOr(variable, false) == expected;
         }
     }
 
     record IntegerCondition(String variable, String operator, int expected) implements VariableCondition {
         @Override
         public boolean matches(CompoundTag variables) {
-            return variables.contains(variable, Tag.TAG_ANY_NUMERIC)
-                    && compare(variables.getDouble(variable), operator, expected);
+            return variables.get(variable) instanceof NumericTag
+                    && compare(variables.getDoubleOr(variable, 0.0), operator, expected);
         }
     }
 
     record DoubleCondition(String variable, String operator, double expected) implements VariableCondition {
         @Override
         public boolean matches(CompoundTag variables) {
-            return variables.contains(variable, Tag.TAG_ANY_NUMERIC)
-                    && compare(variables.getDouble(variable), operator, expected);
+            return variables.get(variable) instanceof NumericTag
+                    && compare(variables.getDoubleOr(variable, 0.0), operator, expected);
         }
     }
 

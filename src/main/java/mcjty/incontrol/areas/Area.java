@@ -5,7 +5,7 @@ import mcjty.incontrol.ErrorHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.Level;
 
 public record Area(ResourceKey<Level> dimension, String name, Type type, BlockPos center, int dimx, int dimy, int dimz) {
@@ -16,7 +16,7 @@ public record Area(ResourceKey<Level> dimension, String name, Type type, BlockPo
 
     public static boolean parse(JsonObject object, Builder builder) {
         if (object.has("dimension")) {
-            ResourceKey<Level> key = ResourceKey.create(Registries.DIMENSION, ResourceLocation.parse(object.get("dimension").getAsString()));
+            ResourceKey<Level> key = ResourceKey.create(Registries.DIMENSION, Identifier.parse(object.get("dimension").getAsString()));
             builder.dimension(key);
         } else {
             ErrorHandler.error("Area has no dimension!");

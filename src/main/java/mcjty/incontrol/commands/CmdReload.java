@@ -23,7 +23,7 @@ public class CmdReload implements Command<CommandSourceStack> {
 
     public static ArgumentBuilder<CommandSourceStack, ?> register(CommandDispatcher<CommandSourceStack> dispatcher) {
         return Commands.literal("reload")
-                .requires(cs -> cs.hasPermission(1))
+                .requires(Commands.hasPermission(Commands.LEVEL_MODERATORS))
                 .executes(CMD);
     }
 

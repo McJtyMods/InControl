@@ -6,7 +6,7 @@ import mcjty.incontrol.ErrorHandler;
 import net.minecraft.core.registries.BuiltInRegistries;
 import mcjty.incontrol.mob.CNPCMob;
 import mcjty.incontrol.mob.DefaultMob;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -18,16 +18,16 @@ public record SpawnEventAction(List<DefaultMob> mobid, int attempts,
 
     @Nullable
     public static DefaultMob parseMob(JsonElement mob) {
-        ResourceLocation mobid;
+        Identifier mobid;
         if (mob.isJsonObject()){
             JsonObject object = mob.getAsJsonObject();
             String mobName = object.get("mob").getAsString();
             if (mobName.equals("customnpcs:customnpc")){
                 return new CNPCMob(object.get("cloneTab").getAsInt(), object.get("cloneName").getAsString());
             }
-            mobid = ResourceLocation.parse(mobName);
+            mobid = Identifier.parse(mobName);
         } else {
-            mobid = ResourceLocation.parse(mob.getAsString());
+            mobid = Identifier.parse(mob.getAsString());
         }
         if (!BuiltInRegistries.ENTITY_TYPE.containsKey(mobid)) {
             ErrorHandler.error("Invalid mob '" + mobid + "' for events rule!");

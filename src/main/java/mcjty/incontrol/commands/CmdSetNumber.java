@@ -13,7 +13,7 @@ public class CmdSetNumber {
 
     public static ArgumentBuilder<CommandSourceStack, ?> register(CommandDispatcher<CommandSourceStack> dispatcher) {
         return Commands.literal("setnumber")
-                .requires(cs -> cs.hasPermission(2))
+                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .then(Commands.argument("number", StringArgumentType.word())
                         .then(Commands.argument("value", IntegerArgumentType.integer())
                                 .executes(CmdSetNumber::setNumber)));
