@@ -10,10 +10,16 @@ Install the built mod jar and Fabric API in `mods/`. Rules remain in `config/inc
 
 ## Build
 
-Run with a Java 21 JDK:
+The project's `gradle/gradle-daemon-jvm.properties` requests Java 21 for Gradle itself. The wrapper selects a matching installed JDK, or downloads one using the configured URLs when needed, even if your shell uses Java 17:
 
 ```sh
 ./gradlew build
+```
+
+Keep that file in separate checkouts. The compilation toolchain alone does not select the JVM running Loom. For an older checkout without the daemon settings, point `JAVA_HOME` at a Java 21 JDK before building:
+
+```sh
+JAVA_HOME=/path/to/jdk-21 ./gradlew build
 ```
 
 The installable jar is `build/libs/incontrol-1.21.1-10.3.0-fabric.jar`; the `-sources.jar` is for development.
