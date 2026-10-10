@@ -24,6 +24,10 @@ java {
     withSourcesJar()
 }
 
+tasks.named('updateDaemonJvm') {
+    languageVersion = JavaLanguageVersion.of(Integer.parseInt(java_version))
+}
+
 repos()
 runs()
 jars()
