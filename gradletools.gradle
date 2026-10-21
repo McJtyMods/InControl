@@ -1,4 +1,4 @@
-// Local Fabric 26.2 build and publishing helpers.
+// Local Fabric 26.3 build and publishing helpers.
 project.ext.set('mod_group_id', 'com.github.mcjty')
 project.ext.set('mod_authors', 'McJty')
 

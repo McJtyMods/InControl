@@ -14,6 +14,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.Difficulty;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
@@ -224,7 +225,8 @@ public class SpawnerSystem {
     private static EntityType<?> selectMob(ServerLevel world, MobCategory classification, SpawnerConditions conditions, BlockPos pos) {
         EntityType<?> spawnable = null;
         if (classification != null) {
-            WeightedList<MobSpawnSettings.SpawnerData> spawners = world.getBiome(pos).value().getMobSettings().getMobs(classification);
+            WeightedList<MobSpawnSettings.SpawnerData> spawners = world.environmentAttributes()
+                    .getValue(EnvironmentAttributes.NATURAL_MOB_SPAWNS, pos).getMobsToSpawn(classification);
             if (spawners.isEmpty()) {
                 return null;
             }

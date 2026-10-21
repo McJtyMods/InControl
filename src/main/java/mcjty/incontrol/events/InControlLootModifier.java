@@ -26,13 +26,13 @@ import static mcjty.incontrol.FabricEventHandlers.debug;
 public final class InControlLootModifier {
 
     public static @NotNull ObjectArrayList<ItemStack> apply(ObjectArrayList<ItemStack> generatedLoot, LootContext context) {
-        Entity entity = context.getOptionalParameter(LootContextParams.THIS_ENTITY);
+        Entity entity = context.getOptional(LootContextParams.THIS_ENTITY);
         if (entity == null) {
             return generatedLoot;
         }
         ServerLevel level = context.getLevel();
         int looting = 0;
-        if (context.getOptionalParameter(LootContextParams.ATTACKING_ENTITY) instanceof LivingEntity attacker) {
+        if (context.getOptional(LootContextParams.ATTACKING_ENTITY) instanceof LivingEntity attacker) {
             Optional<Holder.Reference<Enchantment>> holder = level.registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).get(Enchantments.LOOTING);
             if (holder.isPresent()) {
                 looting = EnchantmentHelper.getItemEnchantmentLevel(holder.get(), attacker.getWeaponItem());

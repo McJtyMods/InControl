@@ -52,40 +52,40 @@ public class LootRule extends RuleBase<RuleBase.EventGetter> {
 
         @Override
         public BlockPos getPos(LootContext o) {
-            Entity entity = o.getOptionalParameter(LootContextParams.THIS_ENTITY);
+            Entity entity = o.getOptional(LootContextParams.THIS_ENTITY);
             return entity == null ? null : entity.blockPosition();
         }
 
         @Override
         public BlockPos getValidBlockPos(LootContext o) {
-            Entity entity = o.getOptionalParameter(LootContextParams.THIS_ENTITY);
+            Entity entity = o.getOptional(LootContextParams.THIS_ENTITY);
             return entity == null ? null : entity.blockPosition().below();
         }
 
         @Override
         public int getY(LootContext o) {
-            Entity entity = o.getOptionalParameter(LootContextParams.THIS_ENTITY);
+            Entity entity = o.getOptional(LootContextParams.THIS_ENTITY);
             return entity == null ? 0 : entity.blockPosition().getY();
         }
 
         @Override
         public Entity getEntity(LootContext o) {
-            return o.getOptionalParameter(LootContextParams.THIS_ENTITY);
+            return o.getOptional(LootContextParams.THIS_ENTITY);
         }
 
         @Override
         public DamageSource getSource(LootContext o) {
-            return o.getOptionalParameter(LootContextParams.DAMAGE_SOURCE);
+            return o.getOptional(LootContextParams.DAMAGE_SOURCE);
         }
 
         @Override
         public Entity getAttacker(LootContext o) {
-            return o.getOptionalParameter(LootContextParams.ATTACKING_ENTITY);
+            return o.getOptional(LootContextParams.ATTACKING_ENTITY);
         }
 
         @Override
         public Player getPlayer(LootContext o) {
-            Entity entity = o.getOptionalParameter(LootContextParams.ATTACKING_ENTITY);
+            Entity entity = o.getOptional(LootContextParams.ATTACKING_ENTITY);
             return entity instanceof Player ? (Player) entity : null;
         }
 

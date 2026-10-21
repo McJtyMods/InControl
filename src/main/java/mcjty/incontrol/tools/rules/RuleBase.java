@@ -42,7 +42,7 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.monster.EnderMan;
+import net.minecraft.world.entity.monster.Enderman;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
@@ -325,7 +325,7 @@ public class RuleBase<T extends RuleBase.EventGetter> {
             MinecraftServer server = event.getWorld().getServer();
             Player player = event.getPlayer();
             CommandSourceStack stack = new CommandSourceStack(EMPTY, Vec3.atCenterOf(event.getPosition()), Vec2.ZERO, (ServerLevel) event.getWorld(), net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER,
-                    DEFAULT_NAME.getString(), DEFAULT_NAME, server, player);
+                    DEFAULT_NAME, server).withEntity(player);
             for (String command : commands) {
                 server.getCommands().performPrefixedCommand(stack, command);
             }
@@ -835,10 +835,10 @@ public class RuleBase<T extends RuleBase.EventGetter> {
             actions.add(event -> {
                 LivingEntity entityLiving = event.getEntityLiving();
                 if (entityLiving != null) {
-                    if (entityLiving instanceof EnderMan) {
+                    if (entityLiving instanceof Enderman) {
                         if (item.getItem() instanceof BlockItem) {
                             BlockItem b = (BlockItem) item.getItem();
-                            ((EnderMan) entityLiving).setCarriedBlock(b.getBlock().defaultBlockState());
+                            ((Enderman) entityLiving).setCarriedBlock(b.getBlock().defaultBlockState());
                         }
                     } else {
                         entityLiving.setItemInHand(InteractionHand.MAIN_HAND, item.copy());
@@ -851,10 +851,10 @@ public class RuleBase<T extends RuleBase.EventGetter> {
                 LivingEntity entityLiving = event.getEntityLiving();
                 if (entityLiving != null) {
                     ItemStack item = getRandomItem(items, total);
-                    if (entityLiving instanceof EnderMan) {
+                    if (entityLiving instanceof Enderman) {
                         if (item.getItem() instanceof BlockItem) {
                             BlockItem b = (BlockItem) item.getItem();
-                            ((EnderMan) entityLiving).setCarriedBlock(b.getBlock().defaultBlockState());
+                            ((Enderman) entityLiving).setCarriedBlock(b.getBlock().defaultBlockState());
                         }
                     } else {
                         entityLiving.setItemInHand(InteractionHand.MAIN_HAND, item.copy());
