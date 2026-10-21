@@ -23,6 +23,6 @@ public class Config {
 
         builder.pop();
 
-        container.registerConfig(ModConfig.Type.SERVER, builder.build());
+        container.registerConfig(ModConfig.Type.SYNCED, builder.build(), "incontrol-server.toml");
     }
 }

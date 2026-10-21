@@ -1,3 +1,6 @@
+26.3-12.0.0:
+- Port to 26.3/NeoForge
+
 26.2-11.0.0:
 - Port to 26.2/NeoForge
 

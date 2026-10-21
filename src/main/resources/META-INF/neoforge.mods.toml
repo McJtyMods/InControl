@@ -16,19 +16,19 @@ Be in control of spawns
 [[dependencies.incontrol]]
     modId="neoforge"
     type="required"
-    versionRange="[26.2.0.75,)"
+    versionRange="[26.3.0.83,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.incontrol]]
     modId="minecraft"
     type="required"
-    versionRange="[26.2]"
+    versionRange="[26.3]"
     ordering="NONE"
     side="BOTH"
 [[dependencies.incontrol]]
     modId="lostcities"
     type="optional"
-    versionRange="[26.2-10.1.0,)"
+    versionRange="[26.3-12.0.0,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.incontrol]]

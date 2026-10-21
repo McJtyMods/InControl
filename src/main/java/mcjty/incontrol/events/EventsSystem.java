@@ -94,7 +94,7 @@ public class EventsSystem {
         if (action != null) {
             List<String> commands = action.commands();
             CommandSourceStack stack = new CommandSourceStack(EMPTY, Vec3.atCenterOf(pos), Vec2.ZERO, level, net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER,
-                    DEFAULT_NAME.getString(), DEFAULT_NAME, level.getServer(), player);
+                    DEFAULT_NAME, level.getServer()).withEntity(player);
             for (String command : commands) {
                 level.getServer().getCommands().performPrefixedCommand(stack, command);
 
