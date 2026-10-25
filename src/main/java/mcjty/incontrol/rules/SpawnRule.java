@@ -232,6 +232,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
     static {
         FACTORY
                 .attribute(Attribute.create(WHEN))
+                .attribute(Attribute.create(FIRSTJOIN))
                 .attribute(Attribute.createMulti(PHASE))
                 .attribute(Attribute.create(NUMBER))
                 .attribute(Attribute.createMulti(KUBEJS))
@@ -379,6 +380,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
     }
 
     private final SpawnWhen when;
+    private final Boolean firstJoin;
     private final GenericRuleEvaluator ruleEvaluator;
     private ICResult result = null;
     private boolean doContinue = false;
@@ -386,6 +388,7 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
     private SpawnRule(AttributeMap map, SpawnWhen when, Set<String> phases, int index) {
         super(phases, index);
         this.when = when;
+        firstJoin = map.consumeAndFetch(FIRSTJOIN);
         ruleEvaluator = new GenericRuleEvaluator(map);
         addActions(map, new ModRuleCompatibilityLayer());
         if (!map.isEmpty()) {
@@ -404,6 +407,10 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
             SpawnWhen when = SpawnWhen.getByName(whenS);
             if (when == null) {
                 ErrorHandler.error("Invalid spawn rule 'when' value '" + whenS + "'!. Should be one of " + Arrays.toString(SpawnWhen.values()) + "");
+            }
+            if (map.has(FIRSTJOIN) && when != SpawnWhen.ONJOIN) {
+                ErrorHandler.error("The 'firstjoin' condition requires spawn rule 'when' to be 'onjoin'");
+                return null;
             }
             return new SpawnRule(map, when, PhaseTools.getPhases(element), index);
         }
@@ -441,8 +448,9 @@ public class SpawnRule extends RuleBase<RuleBase.EventGetter> {
         return ruleEvaluator.match(event, EVENT_QUERY_DESPAWN);
     }
 
-    public boolean match(EntityJoinLevelEvent event) {
-        return ruleEvaluator.match(event, EVENT_QUERY_JOIN);
+    public boolean match(EntityJoinLevelEvent event, boolean firstJoin) {
+        return (this.firstJoin == null || this.firstJoin == firstJoin)
+                && ruleEvaluator.match(event, EVENT_QUERY_JOIN);
     }
 
     public void action(FinalizeSpawnEvent event) {
