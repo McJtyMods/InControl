@@ -15,7 +15,7 @@ plugins {
 }
 
 apply plugin: 'com.hypherionmc.modutils.modpublisher'
-apply from: 'gradletools.gradle'
+apply from: 'https://raw.githubusercontent.com/McJtyMods/MultiWorkSpace/26.2_fabric/gradletools.gradle'
 
 group = mod_group_id
 base { archivesName = 'incontrol' }
@@ -32,8 +32,41 @@ if (project == rootProject) {
 }
 
 repos()
-runs()
+access()
 jars()
+
+// InControl's development runs and resource expansion are mod-specific.
+loom {
+    mods {
+        incontrol { sourceSet sourceSets.main }
+    }
+    runs {
+        server {
+            name 'Fabric Server'
+            ideConfigGenerated true
+            runDir 'runs/fabric-server'
+        }
+        client {
+            name 'Fabric Client'
+            ideConfigGenerated true
+            runDir 'runs/fabric-client'
+        }
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = Integer.parseInt(java_version)
+}
+processResources {
+    def properties = [version: project.version, minecraft_version: project.minecraft_version,
+                      fabric_loader_version: project.fabric_loader_version,
+                      fabric_api_version: project.fabric_version, java_version: project.java_version]
+    inputs.properties properties
+    filesMatching('fabric.mod.json') { expand properties }
+}
+jar {
+    from('LICENSE') { rename { "${it}_${project.mod_id}" } }
+}
 
 sourceSets.main.resources.srcDir 'src/generated/resources'
 
@@ -51,6 +84,9 @@ test {
 }
 
 modpublisher(['game-stages', 'the-lost-cities'], ['fabric-api'], ['the-lost-cities'], ['fabric-api'], [])
+publisher {
+    debug.set(providers.gradleProperty('publishDebug').map { it.toBoolean() }.orElse(false))
+}
 
 publishing {
     publications { mavenJava(MavenPublication) { from components.java } }

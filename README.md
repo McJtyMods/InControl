@@ -24,7 +24,7 @@ Existing world phases, numbers, and day counters migrate from `data/InControlDat
 
 ## Publishing
 
-The build uses a local `gradletools.gradle`, shared by the build and publishing configuration for Fabric 26.2. Release settings (`version`, `curse_type`, `projectId`, `projectSlug`, `modrinthId`, and `github_project`) are in `gradle.properties`. The `modpublisher(...)` helper configures ModPublisher to upload the Fabric jar for Minecraft 26.2, with Fabric API as a required dependency and the existing optional dependency declarations.
+The build applies [MultiWorkSpace's shared Fabric 26.2 script](https://github.com/McJtyMods/MultiWorkSpace/blob/26.2_fabric/gradletools.gradle) directly from the remote branch for build and publishing settings. Release settings (`version`, `curse_type`, `projectId`, `projectSlug`, `modrinthId`, and `github_project`) are in `gradle.properties`. The `modpublisher(...)` helper configures ModPublisher to upload the Fabric jar for Minecraft 26.2, with Fabric API as a required dependency and the existing optional dependency declarations.
 
 Provide `curseforge_key` and `modrinth_token` in your user Gradle properties, or set `CURSEFORGE_TOKEN` (also accepts `CURSE_TOKEN`) and `MODRINTH_TOKEN`. Run `./gradlew publishMod` for both configured platforms, or `./gradlew publishCurseforge` / `./gradlew publishModrinth` individually. Platforms without credentials are skipped.
 

@@ -1,4 +1,5 @@
 26.2-11.0.1-fabric:
+- Build and publishing settings now use the shared remote Fabric 26.2 script
 - Added the optional 'firstjoin' condition for "when": "onjoin": true matches only new mobs, false matches subsequent joins; omitting it preserves the existing behavior
 - First-join tracking survives world/chunk reloads and dimension transfers, preventing repeated spawn-rule effects when firstjoin is true (#165)
 
