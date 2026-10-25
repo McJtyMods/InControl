@@ -11,6 +11,7 @@ public interface RuleKeys {
     // Special
     Key<String> PHASE = Key.create(Type.STRING, "phase");
     Key<String> WHEN = Key.create(Type.STRING, "when");
+    Key<Boolean> FIRSTJOIN = Key.create(Type.BOOLEAN, "firstjoin");
     Key<Integer> TIMEOUT = Key.create(Type.INTEGER, "timeout");
 
     // Inputs
