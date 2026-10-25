@@ -8,6 +8,7 @@ import mcjty.incontrol.events.EventsSystem;
 import mcjty.incontrol.rules.*;
 import mcjty.incontrol.rules.support.ICResult;
 import mcjty.incontrol.rules.support.SpawnWhen;
+import mcjty.incontrol.rules.support.FirstJoinTracker;
 import mcjty.incontrol.spawner.SpawnerSystem;
 import mcjty.incontrol.tools.varia.Tools;
 import net.minecraft.core.BlockPos;
@@ -60,8 +61,9 @@ public class FabricEventHandlers {
             return;
         }
 
+        boolean firstJoin = FirstJoinTracker.beginJoin(event.loadedFromDisk(), event.getEntity().entityTags());
         for (SpawnRule rule : RulesManager.getFilteredRules(event.getLevel(), SpawnWhen.ONJOIN)) {
-            if (rule.match(event)) {
+            if (rule.match(event, firstJoin)) {
                 ICResult result = rule.getResult();
                 if (debug) {
                     InControl.setup.getLogger().log(org.apache.logging.log4j.Level.INFO, "Join Rule " + i + ": " + result

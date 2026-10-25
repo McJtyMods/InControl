@@ -39,6 +39,13 @@ dependencies {
     mc()
     implementation include("teamreborn:energy:${energy_version}")
     compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
+    testImplementation "org.junit.jupiter:junit-jupiter:5.10.2"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+test {
+    useJUnitPlatform()
+    jvmArgs '--enable-native-access=ALL-UNNAMED'
 }
 
 modpublisher(['game-stages', 'the-lost-cities'], ['fabric-api'], ['the-lost-cities'], ['fabric-api'], [])
