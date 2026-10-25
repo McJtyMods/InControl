@@ -24,8 +24,11 @@ java {
     withSourcesJar()
 }
 
-tasks.named('updateDaemonJvm') {
-    languageVersion = JavaLanguageVersion.of(Integer.parseInt(java_version))
+// Gradle creates this task only on the root project (standalone builds).
+if (project == rootProject) {
+    tasks.named('updateDaemonJvm') {
+        languageVersion = JavaLanguageVersion.of(Integer.parseInt(java_version))
+    }
 }
 
 repos()
