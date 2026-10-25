@@ -1,3 +1,7 @@
+26.2-11.0.1:
+- Added the optional 'firstjoin' condition for "when": "onjoin": true matches only new mobs, false matches subsequent joins; omitting it preserves the existing behavior
+- First-join tracking survives world/chunk reloads and dimension transfers, preventing repeated spawn-rule effects when firstjoin is true (#165)
+
 26.2-11.0.0:
 - Port to 26.2/NeoForge
 

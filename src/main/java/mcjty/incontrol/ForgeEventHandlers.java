@@ -1,32 +1,25 @@
 package mcjty.incontrol;
 
-import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
 import mcjty.incontrol.areas.AreaSystem;
 import mcjty.incontrol.commands.ModCommands;
 import mcjty.incontrol.data.DataStorage;
 import mcjty.incontrol.data.Statistics;
 import mcjty.incontrol.events.EventsSystem;
 import mcjty.incontrol.rules.*;
+import mcjty.incontrol.rules.support.FirstJoinTracker;
 import mcjty.incontrol.rules.support.ICResult;
 import mcjty.incontrol.rules.support.SpawnWhen;
 import mcjty.incontrol.spawner.SpawnerSystem;
 import mcjty.incontrol.tools.varia.Tools;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.util.TriState;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
-import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
-import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
-import net.minecraft.world.entity.animal.cow.Cow;
-import net.minecraft.world.entity.animal.sheep.Sheep;
-import net.minecraft.world.entity.monster.zombie.ZombifiedPiglin;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.minecraft.util.TriState;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
@@ -34,6 +27,7 @@ import net.neoforged.neoforge.event.entity.living.*;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
+import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
@@ -95,8 +89,9 @@ public class ForgeEventHandlers {
 //        }
 
 
+        boolean firstJoin = FirstJoinTracker.beginJoin(event.loadedFromDisk(), event.getEntity().entityTags());
         for (SpawnRule rule : RulesManager.getFilteredRules(event.getLevel(), SpawnWhen.ONJOIN)) {
-            if (rule.match(event)) {
+            if (rule.match(event, firstJoin)) {
                 ICResult result = rule.getResult();
                 if (debug) {
                     InControl.setup.getLogger().log(org.apache.logging.log4j.Level.INFO, "Join Rule " + i + ": " + result
