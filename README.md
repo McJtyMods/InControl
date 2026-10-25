@@ -1,12 +1,14 @@
 # InControl for Fabric 1.21.1
 
-Fabric port of InControl 10.3.0. Controls mob spawning and despawning, loot, experience, player effects, block interactions, phases, areas, and custom world events using the existing InControl JSON rules and commands.
+Fabric port of InControl 10.3.1. Controls mob spawning and despawning, loot, experience, player effects, block interactions, phases, areas, and custom world events using the existing InControl JSON rules and commands.
 
 Requires Minecraft **1.21.1**, **Java 21**, **Fabric Loader 0.16.14 or newer**, and **Fabric API 0.116.6+1.21.1 or newer for 1.21.1**. Team Reborn Energy 4.1.0 is included in the mod jar for energy conditions.
 
 Install the built mod jar and Fabric API in `mods/`. Rules remain in `config/incontrol/` with the same filenames and syntax. Server settings remain in `<world>/serverconfig/incontrol-server.toml`; `defaultconfigs/incontrol-server.toml` supplies defaults for new worlds. `/incontrol reload` reloads both rules and server settings. Fabric inventory and energy conditions use Fabric Transfer API and Team Reborn Energy providers. Use Fabric's `c:` convention tags in rules that previously referenced Forge tags.
 
 [InControl documentation](https://mcjty.eu/docs/mods/control-mods)
+
+Spawn rules with `"when": "onjoin"` support the optional `"firstjoin"` condition. Set it to `true` to apply a rule only when a mob first joins the world, or `false` for subsequent joins. Omitting it matches every join as before. First-join tracking persists across chunk/world reloads and dimension transfers; existing mobs loaded from disk do not count as new mobs. Using `firstjoin` with another `when` value is rejected.
 
 ## Build
 
@@ -22,7 +24,7 @@ Keep that file in separate checkouts. The compilation toolchain alone does not s
 JAVA_HOME=/path/to/jdk-21 ./gradlew build
 ```
 
-The installable jar is `build/libs/incontrol-1.21.1-10.3.0-fabric.jar`; the `-sources.jar` is for development.
+The installable jar is `build/libs/incontrol-1.21.1-10.3.1-fabric.jar`; the `-sources.jar` is for development.
 
 ## Publishing
 
