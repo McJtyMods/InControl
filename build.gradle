@@ -37,10 +37,19 @@ tasks.matching { it.name == 'updateDaemonJvm' }.configureEach {
 }
 
 repos()
+access()
 runs()
 jars()
 
 sourceSets.main.resources.srcDir 'src/generated/resources'
+
+processResources {
+    def properties = [version: project.version, minecraft_version: project.minecraft_version,
+                      fabric_loader_version: project.fabric_loader_version,
+                      fabric_api_version: project.fabric_api_version, java_version: project.java_version]
+    inputs.properties properties
+    filesMatching('fabric.mod.json') { expand properties }
+}
 
 dependencies {
     mc()
