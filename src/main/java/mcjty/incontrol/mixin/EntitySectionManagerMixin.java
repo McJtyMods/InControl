@@ -17,7 +17,7 @@ public abstract class EntitySectionManagerMixin {
     private void incontrol$join(EntityAccess access, boolean existing, CallbackInfoReturnable<Boolean> cir) {
         if (!(access instanceof Entity entity) || entity.level().isClientSide()) return;
         if (entity instanceof MobState mob && mob.incontrol$isSpawnCancelled()) { cir.setReturnValue(false); return; }
-        EntityJoinLevelEvent event = new EntityJoinLevelEvent(entity, entity.level());
+        EntityJoinLevelEvent event = new EntityJoinLevelEvent(entity, entity.level(), existing);
         InControl.HANDLERS.onEntityJoinWorld(event);
         if (event.isCanceled()) cir.setReturnValue(false);
     }
